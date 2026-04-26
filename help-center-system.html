@@ -691,69 +691,25 @@
       <!-- GUIDES -->
       <div id="guides-page" class="page hidden">
         <div class="page-header">
-          <h1 class="page-title">📖 Business Guides</h1>
-          <p class="page-subtitle">Step-by-step guides for building your business</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div>
+              <h1 class="page-title">📖 Business Guides</h1>
+              <p class="page-subtitle">Step-by-step guides for building your business</p>
+            </div>
+            <button class="btn btn-solid" onclick="openAddGuideModal()">+ New Guide</button>
+          </div>
         </div>
-
         <div class="content">
-          <div class="tabs">
-            <div class="tab active">All Guides</div>
-            <div class="tab">Formation</div>
-            <div class="tab">Marketing</div>
-            <div class="tab">Finance</div>
-            <div class="tab">Legal</div>
+          <div class="tabs" id="guide-tabs">
+            <div class="tab active" onclick="filterGuides('All',this)">All Guides</div>
+            <div class="tab" onclick="filterGuides('Formation',this)">Formation</div>
+            <div class="tab" onclick="filterGuides('Marketing',this)">Marketing</div>
+            <div class="tab" onclick="filterGuides('Finance',this)">Finance</div>
+            <div class="tab" onclick="filterGuides('Legal',this)">Legal</div>
+            <div class="tab" onclick="filterGuides('Leadership',this)">Leadership</div>
+            <div class="tab" onclick="filterGuides('Career',this)">Career</div>
           </div>
-
-          <div class="guide-card">
-            <div class="guide-header-row">
-              <div class="guide-title-row">
-                <span class="guide-icon">📘</span>
-                <h3 class="guide-title">LLC Formation Complete Guide</h3>
-              </div>
-              <span class="guide-duration">30 min read</span>
-            </div>
-            <p class="guide-description">Step-by-step guide to choosing your state, naming your business, filing articles of organization, getting your EIN, and creating your operating agreement.</p>
-            <div class="guide-meta">Last updated: March 2026</div>
-            <div class="guide-actions">
-              <button class="btn btn-solid">Read Guide</button>
-              <button class="btn btn-outline">Download PDF</button>
-              <button class="btn btn-outline">🔖 Bookmark</button>
-            </div>
-          </div>
-
-          <div class="guide-card">
-            <div class="guide-header-row">
-              <div class="guide-title-row">
-                <span class="guide-icon">💰</span>
-                <h3 class="guide-title">Business Credit Building</h3>
-              </div>
-              <span class="guide-duration">45 min read</span>
-            </div>
-            <p class="guide-description">Build business credit separate from your personal credit. Learn about D&B, Experian Business, working with banks, and establishing vendor credit lines.</p>
-            <div class="guide-meta">Last updated: March 2026</div>
-            <div class="guide-actions">
-              <button class="btn btn-solid">Read Guide</button>
-              <button class="btn btn-outline">Download PDF</button>
-              <button class="btn btn-outline">🔖 Bookmark</button>
-            </div>
-          </div>
-
-          <div class="guide-card">
-            <div class="guide-header-row">
-              <div class="guide-title-row">
-                <span class="guide-icon">📱</span>
-                <h3 class="guide-title">Social Media Marketing Mastery</h3>
-              </div>
-              <span class="guide-duration">60 min read</span>
-            </div>
-            <p class="guide-description">Complete guide to building your social media presence across platforms. Content strategies, posting schedules, engagement tactics, and paid advertising.</p>
-            <div class="guide-meta">Last updated: March 2026</div>
-            <div class="guide-actions">
-              <button class="btn btn-solid">Read Guide</button>
-              <button class="btn btn-outline">Download PDF</button>
-              <button class="btn btn-outline">🔖 Bookmark</button>
-            </div>
-          </div>
+          <div id="guides-list"></div>
         </div>
       </div>
 
@@ -1806,7 +1762,7 @@
       document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
       if (event && event.currentTarget) event.currentTarget.classList.add('active');
       if (window.innerWidth <= 768) closeSidebar();
-      const renders = { dashboard: updateDashboard, clients: renderClients, 'my-ideas': renderIdeasKanban, 'client-portal': renderPortalLinks, 'income-pathway': renderIncomeWizard, 'credit-pathway': renderBizCreditChecklist, settings: loadSettingsPage, revenue: renderRevenue, calendar: renderCalendar, 'state-resources': renderStates, library: renderLibrary };
+      const renders = { dashboard: updateDashboard, clients: renderClients, 'my-ideas': renderIdeasKanban, 'client-portal': renderPortalLinks, 'income-pathway': renderIncomeWizard, 'credit-pathway': renderBizCreditChecklist, settings: loadSettingsPage, revenue: renderRevenue, calendar: renderCalendar, 'state-resources': renderStates, library: renderLibrary, guides: renderGuides };
       if (renders[pageId] && typeof renders[pageId] === 'function') renders[pageId]();
       if (typeof setAiContext === 'function') setAiContext(pageId);
     }
@@ -3488,6 +3444,217 @@ When you know the client's name or situation, personalize specifically. Never gi
             </div>
           </div>`;
       }).join('');
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // GUIDES SYSTEM
+    // ══════════════════════════════════════════════════════════════
+
+    const DEFAULT_GUIDES = [
+      { id:'guide-001', icon:'📘', title:'LLC Formation Complete Guide', category:'Formation', duration:'30 min read',
+        description:'Step-by-step guide to choosing your state, naming your business, filing articles of organization, getting your EIN, and creating your operating agreement.',
+        content:'# LLC Formation Complete Guide\n\n## Step 1 — Choose Your State\nMost small businesses form in their home state. Wyoming and Delaware offer extra privacy and flexibility for holding companies.\n\n## Step 2 — Name Your Business\nCheck availability on your state SOS website. Name must include "LLC" or "Limited Liability Company."\n\n## Step 3 — File Articles of Organization\nFiling fees range from $50–$500 depending on state. Most states process in 1–5 business days online.\n\n## Step 4 — Get Your EIN\nApply free at IRS.gov. Takes 5 minutes online. Required to open a business bank account.\n\n## Step 5 — Create an Operating Agreement\nEven single-member LLCs need one. Details ownership, management, and profit distribution.\n\n## Next Steps\n- Open a business checking account\n- Register for state taxes if required\n- Get any required business licenses',
+        lastUpdated:'2026-03-01', bookmarked:false },
+      { id:'guide-002', icon:'💰', title:'Business Credit Building', category:'Finance', duration:'45 min read',
+        description:'Build business credit separate from your personal credit. Learn about D&B, Experian Business, working with banks, and establishing vendor credit lines.',
+        content:'# Business Credit Building\n\n## Why Separate Business Credit?\nProtects your personal credit. Unlocks higher credit limits. Needed for loans and contracts.\n\n## Step 1 — Get Your DUNS Number\nFree at Dun & Bradstreet (dnb.com). Takes 30 days to activate. This is your business credit ID.\n\n## Step 2 — Open a Business Bank Account\nUse your EIN only — never your SSN. Keep it active with regular deposits.\n\n## Step 3 — Get Vendor Net-30 Accounts\nStart with Uline, Quill, Grainger. They report to D&B. Buy small amounts and pay in full every 30 days.\n\n## Step 4 — Apply for a Business Credit Card\nAfter 3–6 months of vendor history. Start with your bank or Capital One Spark.\n\n## Step 5 — Monitor Your Scores\nCheck Nav.com for free. Target a Paydex score of 80+.',
+        lastUpdated:'2026-03-01', bookmarked:false },
+      { id:'guide-003', icon:'📱', title:'Social Media Marketing Mastery', category:'Marketing', duration:'60 min read',
+        description:'Complete guide to building your social media presence across platforms. Content strategies, posting schedules, engagement tactics, and paid advertising.',
+        content:'# Social Media Marketing Mastery\n\n## Choose Your Platforms\n- Facebook: Best for local business, community groups, paid ads\n- Instagram: Visual brands, products, coaching\n- LinkedIn: B2B, consulting, professional services\n- TikTok: Fastest reach for new audiences\n\n## Content Strategy\nFollow the 80/20 rule: 80% value (tips, education, behind the scenes), 20% promotion.\n\n## Posting Schedule\n- Facebook: 3–5x per week\n- Instagram: 4–7x per week (mix posts + Reels)\n- LinkedIn: 3x per week\n\n## Engagement Tactics\n- Reply to every comment within 1 hour\n- Use polls and questions in Stories\n- Collaborate with complementary businesses',
+        lastUpdated:'2026-03-01', bookmarked:false }
+    ];
+
+    let guidesFilter = 'All';
+
+    function getGuides() {
+      const stored = localStorage.getItem('guides');
+      if (!stored) { localStorage.setItem('guides', JSON.stringify(DEFAULT_GUIDES)); return DEFAULT_GUIDES; }
+      return JSON.parse(stored);
+    }
+
+    function saveGuides(guides) { setData('guides', guides); }
+
+    function filterGuides(cat, el) {
+      guidesFilter = cat;
+      document.querySelectorAll('#guide-tabs .tab').forEach(t => t.classList.remove('active'));
+      if (el) el.classList.add('active');
+      renderGuides();
+    }
+
+    function renderGuides() {
+      const guides = getGuides();
+      const list = document.getElementById('guides-list');
+      if (!list) return;
+      const filtered = guidesFilter === 'All' ? guides : guides.filter(g => g.category === guidesFilter);
+      if (!filtered.length) {
+        list.innerHTML = '<div style="text-align:center;padding:60px;color:var(--gray-400);">No guides yet. Click + New Guide to create one.</div>';
+        return;
+      }
+      list.innerHTML = filtered.map(g => `
+        <div class="guide-card">
+          <div class="guide-header-row">
+            <div class="guide-title-row">
+              <span class="guide-icon">${g.icon||'📄'}</span>
+              <h3 class="guide-title">${g.title}</h3>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+              <span class="guide-duration">${g.duration||''}</span>
+              <span style="font-size:11px;padding:2px 8px;border-radius:3px;background:#EFF3FB;color:#4267B2;font-weight:600">${g.category}</span>
+            </div>
+          </div>
+          <p class="guide-description">${g.description}</p>
+          <div class="guide-meta">Last updated: ${g.lastUpdated||''}</div>
+          <div class="guide-actions">
+            <button class="btn btn-solid" onclick="openReadGuideModal('${g.id}')">Read Guide</button>
+            <button class="btn btn-outline" onclick="openEditGuideModal('${g.id}')">✏️ Edit</button>
+            <button class="btn btn-outline" onclick="toggleGuideBookmark('${g.id}')" style="${g.bookmarked?'color:#4267B2;border-color:#4267B2':''}">${g.bookmarked?'🔖 Saved':'🔖 Bookmark'}</button>
+            <button class="btn btn-outline" onclick="deleteGuide('${g.id}')" style="color:var(--error);border-color:var(--error)">Delete</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function toggleGuideBookmark(id) {
+      const guides = getGuides();
+      const g = guides.find(x => x.id === id);
+      if (g) { g.bookmarked = !g.bookmarked; saveGuides(guides); renderGuides(); }
+    }
+
+    function deleteGuide(id) {
+      if (!confirm('Delete this guide?')) return;
+      saveGuides(getGuides().filter(g => g.id !== id));
+      renderGuides();
+    }
+
+    function openReadGuideModal(id) {
+      const guide = getGuides().find(g => g.id === id);
+      if (!guide) return;
+      let modal = document.getElementById('read-guide-modal');
+      if (!modal) { modal = document.createElement('div'); modal.id = 'read-guide-modal'; document.body.appendChild(modal); }
+      const html = (guide.content||'')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+        .replace(/^# (.+)$/gm,'<h2 style="font-size:20px;font-weight:800;margin:0 0 16px;color:#0F172A">$1</h2>')
+        .replace(/^## (.+)$/gm,'<h3 style="font-size:16px;font-weight:700;margin:20px 0 8px;color:#0F172A">$1</h3>')
+        .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+        .replace(/^- (.+)$/gm,'<li style="margin-left:20px;margin-bottom:4px">$1</li>')
+        .replace(/\n/g,'<br>');
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto';
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:12px;width:100%;max-width:760px;box-shadow:0 24px 48px rgba(0,0,0,0.2)">
+          <div style="background:#0F172A;padding:24px 28px;display:flex;justify-content:space-between;align-items:start;border-radius:12px 12px 0 0">
+            <div>
+              <div style="font-size:28px;margin-bottom:8px">${guide.icon||'📄'}</div>
+              <h2 style="color:#fff;font-size:22px;font-weight:800;margin-bottom:4px">${guide.title}</h2>
+              <div style="color:#94A3B8;font-size:13px">${guide.category} · ${guide.duration||''} · Updated ${guide.lastUpdated||''}</div>
+            </div>
+            <button onclick="document.getElementById('read-guide-modal').remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;width:36px;height:36px;border-radius:8px;font-size:18px;cursor:pointer;flex-shrink:0">✕</button>
+          </div>
+          <div style="padding:28px;font-size:15px;line-height:1.8;color:#334155">${html}</div>
+          <div style="padding:16px 28px;border-top:1px solid #E2E8F0;display:flex;gap:10px">
+            <button onclick="openEditGuideModal('${id}');document.getElementById('read-guide-modal').remove()" class="btn btn-outline">✏️ Edit Guide</button>
+            <button onclick="document.getElementById('read-guide-modal').remove()" class="btn btn-solid">Close</button>
+          </div>
+        </div>`;
+    }
+
+    function openAddGuideModal() { openGuideFormModal(null); }
+    function openEditGuideModal(id) { openGuideFormModal(getGuides().find(g => g.id === id)); }
+
+    function openGuideFormModal(guide) {
+      const isEdit = !!guide;
+      let modal = document.getElementById('guide-form-modal');
+      if (!modal) { modal = document.createElement('div'); modal.id = 'guide-form-modal'; document.body.appendChild(modal); }
+      const cats = ['Formation','Marketing','Finance','Legal','Leadership','Career','Youth','Other'];
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto';
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:12px;width:100%;max-width:680px;box-shadow:0 24px 48px rgba(0,0,0,0.2)">
+          <div style="padding:24px 28px;border-bottom:1px solid #E2E8F0;display:flex;justify-content:space-between;align-items:center">
+            <h2 style="font-size:20px;font-weight:700">${isEdit?'Edit Guide':'Create New Guide'}</h2>
+            <button onclick="document.getElementById('guide-form-modal').remove()" style="background:none;border:1px solid #E2E8F0;width:36px;height:36px;border-radius:8px;font-size:18px;cursor:pointer">✕</button>
+          </div>
+          <div style="padding:24px 28px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+              <div style="grid-column:1/-1"><label class="form-label">Title</label><input id="gf-title" class="form-input" style="margin:0" placeholder="Guide title" value="${isEdit?guide.title:''}"></div>
+              <div><label class="form-label">Icon (emoji)</label><input id="gf-icon" class="form-input" style="margin:0" placeholder="📘" value="${isEdit?(guide.icon||'📄'):'📄'}"></div>
+              <div><label class="form-label">Category</label>
+                <select id="gf-category" class="form-select" style="margin:0">${cats.map(c=>`<option value="${c}"${isEdit&&guide.category===c?' selected':''}>${c}</option>`).join('')}</select>
+              </div>
+              <div><label class="form-label">Duration</label><input id="gf-duration" class="form-input" style="margin:0" placeholder="30 min read" value="${isEdit?(guide.duration||''):''}"></div>
+              <div><label class="form-label">Last Updated</label><input id="gf-date" type="date" class="form-input" style="margin:0" value="${isEdit?(guide.lastUpdated||''):''}"></div>
+              <div style="grid-column:1/-1"><label class="form-label">Short Description</label><textarea id="gf-desc" class="form-input" style="margin:0;height:70px;resize:vertical" placeholder="Brief summary shown on the card...">${isEdit?(guide.description||''):''}</textarea></div>
+              <div style="grid-column:1/-1">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <label class="form-label" style="margin:0">Guide Content</label>
+                  <div style="display:flex;gap:8px">
+                    <button onclick="toggleAiPanel()" class="btn btn-outline" style="padding:6px 12px;font-size:12px">✨ Generate with AI</button>
+                    <label class="btn btn-outline" style="padding:6px 12px;font-size:12px;cursor:pointer">📁 Upload File<input type="file" accept=".txt,.md,.html" style="display:none" onchange="loadGuideFile(event)"></label>
+                  </div>
+                </div>
+                <textarea id="gf-content" class="form-input" style="margin:0;height:280px;resize:vertical;font-family:monospace;font-size:13px" placeholder="Write your guide content here.&#10;# Heading&#10;## Section&#10;**bold**&#10;- bullet">${isEdit?(guide.content||''):''}</textarea>
+              </div>
+              <div id="gf-ai-panel" style="grid-column:1/-1;display:none;background:#F8FAFC;border-radius:8px;padding:16px;border:1px solid #E2E8F0">
+                <div style="font-weight:600;margin-bottom:10px">✨ Generate with AI</div>
+                <input id="gf-ai-topic" class="form-input" style="margin:0 0 10px" placeholder="e.g. How to start a cleaning business in Florida">
+                <button onclick="generateGuideContent()" class="btn btn-solid" style="width:100%">Generate</button>
+                <div id="gf-ai-status" style="font-size:13px;color:var(--gray-500);margin-top:8px;display:none"></div>
+              </div>
+            </div>
+            <div id="gf-error" style="color:var(--error);font-size:14px;margin-bottom:12px;display:none"></div>
+            <div style="display:flex;gap:10px">
+              <button onclick="saveGuideForm('${isEdit?guide.id:''}')" class="btn-primary" style="flex:1">${isEdit?'Save Changes':'Create Guide'}</button>
+              <button onclick="document.getElementById('guide-form-modal').remove()" style="padding:14px 20px;background:none;border:1px solid var(--gray-300);border-radius:8px;cursor:pointer">Cancel</button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function toggleAiPanel() {
+      const p = document.getElementById('gf-ai-panel');
+      if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function loadGuideFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => { const c = document.getElementById('gf-content'); if (c) c.value = e.target.result; };
+      reader.readAsText(file);
+    }
+
+    async function generateGuideContent() {
+      const topic = (document.getElementById('gf-ai-topic')?.value||'').trim();
+      if (!topic) { alert('Enter a topic first.'); return; }
+      const status = document.getElementById('gf-ai-status');
+      const contentEl = document.getElementById('gf-content');
+      if (status) { status.style.display = 'block'; status.textContent = 'Generating...'; }
+      if (contentEl) contentEl.value = '';
+      const messages = [
+        { role:'system', content: HELPCENTER_SYSTEM_PROMPT },
+        { role:'user', content: `Write a comprehensive business guide about: "${topic}"\n\nFormat with:\n# Title\n## Section Headings\n- Bullet points\n**Bold** for key terms\n\nInclude specific steps, real tools, timelines, and dollar amounts. End with clear next steps.` }
+      ];
+      const result = await callAI(messages, chunk => { if (contentEl) contentEl.value += chunk; });
+      if (contentEl && !contentEl.value.trim()) contentEl.value = result;
+      if (status) status.textContent = 'Done! Review and edit above.';
+      const titleEl = document.getElementById('gf-title');
+      if (titleEl && !titleEl.value) titleEl.value = topic;
+    }
+
+    function saveGuideForm(editId) {
+      const title = (document.getElementById('gf-title')?.value||'').trim();
+      const err = document.getElementById('gf-error');
+      if (!title) { if(err){err.textContent='Title is required.';err.style.display='block';} return; }
+      const guides = getGuides();
+      const now = document.getElementById('gf-date')?.value || new Date().toISOString().slice(0,10);
+      if (editId) {
+        const g = guides.find(x => x.id === editId);
+        if (g) { g.title=title; g.icon=document.getElementById('gf-icon')?.value||g.icon; g.category=document.getElementById('gf-category')?.value||g.category; g.duration=document.getElementById('gf-duration')?.value||''; g.description=document.getElementById('gf-desc')?.value||''; g.content=document.getElementById('gf-content')?.value||''; g.lastUpdated=now; }
+      } else {
+        guides.push({ id:'guide-'+generateId(), icon:document.getElementById('gf-icon')?.value||'📄', title, category:document.getElementById('gf-category')?.value||'Other', duration:document.getElementById('gf-duration')?.value||'', description:document.getElementById('gf-desc')?.value||'', content:document.getElementById('gf-content')?.value||'', lastUpdated:now, bookmarked:false });
+      }
+      saveGuides(guides);
+      document.getElementById('guide-form-modal').remove();
+      renderGuides();
+      showToast(editId ? 'Guide updated!' : 'Guide created!', 'success');
     }
   </script>
 

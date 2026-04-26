@@ -1134,33 +1134,86 @@
               </div>
             </div>
             <div id="career-tab-goals" class="path-tab-content">
-              <div class="card">
-                <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">The Career Goal Framework</h3>
-                <div class="tip-box"><h4>📍 The North Star Method</h4><p>Define your 3-year vision in one sentence: "In 3 years, I am [role] at [type of company/org], earning $[X], doing [specific work] that [impact]." Write it down. Every career decision should be filtered through whether it moves you toward or away from this north star.</p></div>
-                <div class="tip-box"><h4>🎯 The 3 Gaps Framework</h4><p>The gap between where you are and your next level usually breaks into three areas: (1) Skills Gap — what capabilities do you need that you don't yet have? (2) Visibility Gap — who needs to know about your work who doesn't? (3) Positioning Gap — how are you currently perceived vs. how you need to be perceived? Address all three simultaneously.</p></div>
-                <div class="tip-box"><h4>📈 The Promotion Formula</h4><p>Getting promoted isn't about working harder — it's about: (1) Doing your current job excellently, (2) Solving problems one level above your current role, (3) Making your manager's goals easier to achieve, (4) Building relationships across the org, not just up and down. The formula: Excellence × Visibility × Sponsorship = Advancement.</p></div>
-                <div class="tip-box"><h4>💰 Salary Negotiation Script</h4><p>After receiving an offer: "Thank you — I'm genuinely excited about this role. Based on my research and experience, I was expecting something in the range of $[X–Y]. Is there flexibility there?" Then stay silent. Never accept on the spot. Counter everything by at least 10–15%. The worst they can say is no — and they almost never rescind an offer over a professional counteroffer.</p></div>
+              <div class="card" style="margin-bottom:20px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                  <h3 style="font-size:18px;font-weight:700">📍 My Career Goals</h3>
+                  <button onclick="saveCareerGoals()" class="btn btn-solid" style="padding:8px 18px">Save Goals</button>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">My North Star — 3-Year Vision</label>
+                  <textarea id="cg-northstar" class="form-input" style="height:80px;resize:vertical" placeholder="In 3 years, I am [role] at [type of company], earning $[X], doing [specific work] that [impact]."></textarea>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                  <div class="form-group">
+                    <label class="form-label">Current Role / Title</label>
+                    <input id="cg-current-role" class="form-input" style="margin:0" placeholder="e.g. Operations Coordinator">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Target Role / Title</label>
+                    <input id="cg-target-role" class="form-input" style="margin:0" placeholder="e.g. Director of Operations">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Current Salary</label>
+                    <input id="cg-current-salary" class="form-input" style="margin:0" placeholder="$55,000">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Target Salary</label>
+                    <input id="cg-target-salary" class="form-input" style="margin:0" placeholder="$85,000">
+                  </div>
+                </div>
+                <div class="form-group" style="margin-top:8px">
+                  <label class="form-label">Skills Gap — What skills do you need that you don't yet have?</label>
+                  <textarea id="cg-skills-gap" class="form-input" style="height:70px;resize:vertical" placeholder="e.g. Data analysis, budget management, leading a team of 10+"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Visibility Gap — Who needs to know about your work who doesn't?</label>
+                  <textarea id="cg-visibility-gap" class="form-input" style="height:70px;resize:vertical" placeholder="e.g. VP of Operations, leaders in other departments, industry contacts"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Positioning Gap — How are you perceived vs. how you need to be perceived?</label>
+                  <textarea id="cg-positioning-gap" class="form-input" style="height:70px;resize:vertical" placeholder="e.g. Currently seen as an executor; need to be seen as a strategic leader"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Timeline / Target Date for Next Level</label>
+                  <input id="cg-timeline" type="date" class="form-input" style="margin:0">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">My Salary Negotiation Floor (minimum I'll accept)</label>
+                  <input id="cg-salary-floor" class="form-input" style="margin:0" placeholder="$75,000">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Notes / Action Steps</label>
+                  <textarea id="cg-notes" class="form-input" style="height:80px;resize:vertical" placeholder="What are you doing this week to move forward?"></textarea>
+                </div>
+                <div id="cg-saved-msg" style="display:none;color:var(--success);font-size:14px;font-weight:600;margin-top:8px">✅ Goals saved!</div>
               </div>
             </div>
             <div id="career-tab-toolkit" class="path-tab-content">
-              <div class="card">
+              <div class="card" style="margin-bottom:20px">
                 <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Job Search Toolkit</h3>
                 <h4 style="font-weight:700;margin-bottom:12px;">Resume Power Checklist</h4>
-                <div class="checklist-item"><input type="checkbox" onchange="saveCareerCheck('res1',this)"> <span><strong>Lead with impact numbers</strong> — "Increased revenue by 34%" beats "Responsible for sales"</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveCareerCheck('res2',this)"> <span><strong>Tailor for each application</strong> — mirror the job description's keywords (ATS systems scan for matches)</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveCareerCheck('res3',this)"> <span><strong>One page for under 10 years experience</strong> — two pages maximum for senior roles</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveCareerCheck('res4',this)"> <span><strong>Strong summary section at top</strong> — 2–3 sentences positioning you for the specific role</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveCareerCheck('res5',this)"> <span><strong>No objectives, no references available upon request</strong> — both are outdated</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-res1" onchange="saveCareerCheck('res1',this)"> <span><strong>Lead with impact numbers</strong> — "Increased revenue by 34%" beats "Responsible for sales"</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-res2" onchange="saveCareerCheck('res2',this)"> <span><strong>Tailor for each application</strong> — mirror the job description's keywords (ATS systems scan for matches)</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-res3" onchange="saveCareerCheck('res3',this)"> <span><strong>One page for under 10 years experience</strong> — two pages maximum for senior roles</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-res4" onchange="saveCareerCheck('res4',this)"> <span><strong>Strong summary section at top</strong> — 2–3 sentences positioning you for the specific role</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-res5" onchange="saveCareerCheck('res5',this)"> <span><strong>No objectives, no references available upon request</strong> — both are outdated</span></div>
                 <h4 style="font-weight:700;margin:20px 0 12px;">LinkedIn Optimization</h4>
-                <div class="checklist-item"><input type="checkbox" onchange="saveCareerCheck('li1',this)"> <span><strong>Professional headshot</strong> — profiles with photos get 21x more views</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveCareerCheck('li2',this)"> <span><strong>Headline beyond your job title</strong> — "Operations Leader helping teams scale without burning out" beats "Operations Manager at ACME Corp"</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveCareerCheck('li3',this)"> <span><strong>About section in first person</strong> — tell your story, not a job description</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveCareerCheck('li4',this)"> <span><strong>Request 3–5 recommendations</strong> — from managers, clients, and peers</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveCareerCheck('li5',this)"> <span><strong>Turn on "Open to Work"</strong> — for passive searches, keep it visible to recruiters only</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-li1" onchange="saveCareerCheck('li1',this)"> <span><strong>Professional headshot</strong> — profiles with photos get 21x more views</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-li2" onchange="saveCareerCheck('li2',this)"> <span><strong>Headline beyond your job title</strong> — "Operations Leader helping teams scale without burning out"</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-li3" onchange="saveCareerCheck('li3',this)"> <span><strong>About section in first person</strong> — tell your story, not a job description</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-li4" onchange="saveCareerCheck('li4',this)"> <span><strong>Request 3–5 recommendations</strong> — from managers, clients, and peers</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-li5" onchange="saveCareerCheck('li5',this)"> <span><strong>Turn on "Open to Work"</strong> — for passive searches, keep it visible to recruiters only</span></div>
                 <h4 style="font-weight:700;margin:20px 0 12px;">Networking Strategy</h4>
-                <div class="checklist-item"><input type="checkbox" onchange="saveCareerCheck('net1',this)"> <span><strong>Reconnect with 5 former colleagues</strong> — most opportunities come from "weak ties," not close friends</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveCareerCheck('net2',this)"> <span><strong>Request 2 informational interviews per month</strong> — "coffee chats" at target companies</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveCareerCheck('net3',this)"> <span><strong>Join 1–2 professional associations</strong> — in your target industry or function</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-net1" onchange="saveCareerCheck('net1',this)"> <span><strong>Reconnect with 5 former colleagues</strong> — most opportunities come from "weak ties," not close friends</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-net2" onchange="saveCareerCheck('net2',this)"> <span><strong>Request 2 informational interviews per month</strong> — "coffee chats" at target companies</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-net3" onchange="saveCareerCheck('net3',this)"> <span><strong>Join 1–2 professional associations</strong> — in your target industry or function</span></div>
+              </div>
+              <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+                  <h3 style="font-size:18px;font-weight:700">💼 Job Applications Tracker</h3>
+                  <button onclick="openAddJobModal()" class="btn btn-solid">+ Add Application</button>
+                </div>
+                <div id="job-apps-list"></div>
               </div>
             </div>
             <div id="career-tab-resources" class="path-tab-content">
@@ -1191,53 +1244,177 @@
               <button class="path-tab" onclick="pTab('youth','platform',this)">Platform Guide</button>
             </div>
             <div id="youth-tab-planning" class="path-tab-content active">
+              <div class="card" style="margin-bottom:20px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                  <h3 style="font-size:18px;font-weight:700">🎯 My Program Details</h3>
+                  <button onclick="saveYouthProgram()" class="btn btn-solid" style="padding:8px 18px">Save Program</button>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                  <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Program Name</label>
+                    <input id="yp-name" class="form-input" style="margin:0" placeholder="e.g. H.E.L.P. Youth Leaders Academy">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Target Age Group</label>
+                    <select id="yp-age" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>8–12 (Elementary)</option>
+                      <option>13–17 (Teens)</option>
+                      <option>18–24 (Young Adults)</option>
+                      <option>Mixed Ages</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Program Format</label>
+                    <select id="yp-format" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>In-Person</option>
+                      <option>Virtual</option>
+                      <option>Hybrid</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Program Model</label>
+                    <select id="yp-model" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>One-Day Workshop</option>
+                      <option>Multi-Week Cohort</option>
+                      <option>Ongoing Membership</option>
+                      <option>School Partnership</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Program Length</label>
+                    <input id="yp-length" class="form-input" style="margin:0" placeholder="e.g. 6 weeks, 1 day, 12 sessions">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Program Price</label>
+                    <input id="yp-price" class="form-input" style="margin:0" placeholder="e.g. $350 per participant">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Scholarship Policy</label>
+                    <input id="yp-scholarship" class="form-input" style="margin:0" placeholder="e.g. 20% of seats at 50% discount">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Max Cohort Size</label>
+                    <input id="yp-size" class="form-input" style="margin:0" placeholder="e.g. 15 participants">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Launch Date</label>
+                    <input id="yp-launch" type="date" class="form-input" style="margin:0">
+                  </div>
+                  <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Program Promise / Transformation Statement</label>
+                    <textarea id="yp-promise" class="form-input" style="height:70px;resize:vertical" placeholder="By the end of this program, participants will be able to..."></textarea>
+                  </div>
+                  <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Registration / Payment Link</label>
+                    <input id="yp-reg-link" class="form-input" style="margin:0" placeholder="https://...">
+                  </div>
+                  <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Notes</label>
+                    <textarea id="yp-notes" class="form-input" style="height:70px;resize:vertical" placeholder="Insurance provider, partner contacts, next steps..."></textarea>
+                  </div>
+                </div>
+                <div id="yp-saved-msg" style="display:none;color:var(--success);font-size:14px;font-weight:600;margin-top:8px">✅ Program saved!</div>
+              </div>
               <div class="card">
-                <h3 style="font-size:18px;font-weight:700;margin-bottom:4px;">Youth Program Planning Guide</h3>
-                <p style="color:var(--gray-500);font-size:14px;margin-bottom:20px;">Build a program that transforms young people's relationship with money, leadership, and possibility.</p>
-                <div class="tip-box"><h4>🎯 Define Your Program Model</h4><p>Answer these before you build anything: Who is your target age group (8–12, 13–17, 18–24)? What transformation do you promise parents and youth? Is it in-person, virtual, or hybrid? Is it a one-day workshop, 6-week cohort, or ongoing membership? Your answers shape everything — pricing, marketing, delivery, and staffing.</p></div>
-                <div class="tip-box"><h4>⚖️ Legal Requirements for Youth Programs</h4><p>For programs serving minors: (1) Get liability insurance — youth programs require general liability + professional liability. (2) All staff and volunteers need background checks — use Checkr or Sterling. (3) Create a parent/guardian consent form covering photos, medical needs, and program terms. (4) Establish a safeguarding policy — adult:youth ratios, two-adult rule, communication guidelines. (5) If you're a 501(c)(3), you may need additional state nonprofit youth licensing.</p></div>
-                <div class="tip-box"><h4>💵 Pricing Strategies</h4><p>Options: (1) Flat program fee ($200–$800 for a multi-week cohort), (2) Sliding scale based on household income, (3) Scholarship model — full-pay participants subsidize scholarship seats, (4) School/district contract — sell to institutions rather than individual families. Institutional contracts (schools, churches, community centers) provide more stable revenue than individual enrollment.</p></div>
-                <h4 style="font-weight:700;margin:20px 0 12px;">Program Launch Checklist</h4>
-                <div class="checklist-item"><input type="checkbox" onchange="saveYouthCheck('p1',this)"> <span><strong>Define target age group and program model</strong> — workshop, cohort, or ongoing</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveYouthCheck('p2',this)"> <span><strong>Set pricing and scholarship policy</strong></span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveYouthCheck('p3',this)"> <span><strong>Get liability insurance</strong> — at minimum $1M general liability</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveYouthCheck('p4',this)"> <span><strong>Set up background check process</strong> — for yourself and any facilitators</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveYouthCheck('p5',this)"> <span><strong>Create parent consent and media release forms</strong></span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveYouthCheck('p6',this)"> <span><strong>Write your safeguarding/child protection policy</strong></span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveYouthCheck('p7',this)"> <span><strong>Set up registration and payment system</strong> — Jotform + Stripe works well</span></div>
+                <h4 style="font-weight:700;margin-bottom:12px;">Program Launch Checklist</h4>
+                <div class="checklist-item"><input type="checkbox" id="yc-p1" onchange="saveYouthCheck('p1',this)"> <span><strong>Define target age group and program model</strong> — workshop, cohort, or ongoing</span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-p2" onchange="saveYouthCheck('p2',this)"> <span><strong>Set pricing and scholarship policy</strong></span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-p3" onchange="saveYouthCheck('p3',this)"> <span><strong>Get liability insurance</strong> — at minimum $1M general liability</span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-p4" onchange="saveYouthCheck('p4',this)"> <span><strong>Set up background check process</strong> — for yourself and any facilitators</span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-p5" onchange="saveYouthCheck('p5',this)"> <span><strong>Create parent consent and media release forms</strong></span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-p6" onchange="saveYouthCheck('p6',this)"> <span><strong>Write your safeguarding/child protection policy</strong></span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-p7" onchange="saveYouthCheck('p7',this)"> <span><strong>Set up registration and payment system</strong> — Jotform + Stripe works well</span></div>
               </div>
             </div>
             <div id="youth-tab-curriculum" class="path-tab-content">
-              <div class="card">
-                <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Curriculum Design Framework</h3>
-                <div class="tip-box"><h4>📚 Core Content Areas for Youth Financial Literacy</h4><p>A strong youth financial program covers: (1) Earning — how money is made through jobs, entrepreneurship, and investing. (2) Saving — the habit of paying yourself first, emergency funds, goal-based saving. (3) Spending — needs vs. wants, advertising literacy, comparison shopping. (4) Investing — compound interest, stock market basics, retirement accounts. (5) Giving — charitable giving, community investment, legacy thinking.</p></div>
-                <div class="tip-box"><h4>🎮 Engagement Strategies That Work</h4><p>Youth learn best through: (1) Real simulations — mock businesses, stock market games, budgeting challenges. (2) Guest speakers — entrepreneurs, professionals, and community leaders who look like them. (3) Project-based learning — let participants build something real (a business plan, a savings goal, a pitch). (4) Peer teaching — older youth teaching younger ones. (5) Recognition — certificates, graduations, and public presentations build identity as leaders.</p></div>
-                <div class="tip-box"><h4>📋 Sample 6-Week Cohort Outline</h4><p>Week 1: Money &amp; Mindset — breaking family money patterns. Week 2: Earning — job readiness, entrepreneurship, and side hustles. Week 3: Saving &amp; Banking — accounts, compound interest, the 3-jar system. Week 4: Spending &amp; Debt — budgets, credit, consumer traps. Week 5: Investing &amp; Wealth — stocks, index funds, business ownership. Week 6: Giving Back &amp; Legacy — community investment and personal mission. Culmination: presentations to family and community.</p></div>
+              <div class="card" style="margin-bottom:20px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+                  <h3 style="font-size:18px;font-weight:700">📚 My Curriculum</h3>
+                  <button onclick="openAddCurriculumWeek()" class="btn btn-solid">+ Add Week / Module</button>
+                </div>
+                <div id="curriculum-list"></div>
               </div>
             </div>
             <div id="youth-tab-launch" class="path-tab-content">
+              <div class="card" style="margin-bottom:20px">
+                <h4 style="font-weight:700;margin-bottom:12px;">Launch Checklist</h4>
+                <div class="checklist-item"><input type="checkbox" id="yc-m1" onchange="saveYouthCheck('m1',this)"> <span><strong>Create a program one-pager</strong> — printable flyer for schools and churches</span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-m2" onchange="saveYouthCheck('m2',this)"> <span><strong>Build a landing page or website page</strong> — with registration link</span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-m3" onchange="saveYouthCheck('m3',this)"> <span><strong>Reach out to 5 schools or community orgs</strong> — offer a free intro workshop</span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-m4" onchange="saveYouthCheck('m4',this)"> <span><strong>Set a launch date and cohort size cap</strong> — scarcity creates urgency</span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-m5" onchange="saveYouthCheck('m5',this)"> <span><strong>Collect 3 testimonials or endorsements</strong> — before or at launch</span></div>
+              </div>
               <div class="card">
-                <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Marketing &amp; Launch Strategy</h3>
-                <div class="tip-box"><h4>🎯 Where to Find Youth Program Participants</h4><p>Top channels: (1) School partnerships — meet with principals and counselors; offer free workshops to get in front of students. (2) Church youth groups — pastoral network partnerships are highly effective in Black communities. (3) Community centers and Boys &amp; Girls Clubs — already have youth infrastructure. (4) Social media — Instagram and TikTok reach teens directly; Facebook reaches the parents paying tuition. (5) Word of mouth — incentivize referrals from enrolled families.</p></div>
-                <div class="tip-box"><h4>📣 Marketing Messaging That Converts</h4><p>Parents enroll kids when they believe the program will give their child a competitive advantage. Lead with outcomes: "Your child will graduate knowing how to earn, save, invest, and build wealth — skills most adults never learned." Show testimonials, photos (with consent), and graduation moments. Make parents feel they're giving their child a gift, not buying a service.</p></div>
-                <div class="tip-box"><h4>🤝 Partnership Outreach Template</h4><p>"Hi [Name] — I'm Joy Watford, founder of H.E.L.P. Center. I run a youth financial literacy and leadership program for [age group] that teaches kids the money and leadership skills most schools don't cover. I'd love to bring a free 60-minute workshop to your [school/church/center] this semester and talk about a potential ongoing partnership. Would you have 15 minutes to connect?"</p></div>
-                <h4 style="font-weight:700;margin:20px 0 12px;">Launch Checklist</h4>
-                <div class="checklist-item"><input type="checkbox" onchange="saveYouthCheck('m1',this)"> <span><strong>Create a program one-pager</strong> — printable flyer for schools and churches</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveYouthCheck('m2',this)"> <span><strong>Build a landing page or website page</strong> — with registration link</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveYouthCheck('m3',this)"> <span><strong>Reach out to 5 schools or community orgs</strong> — offer a free intro workshop</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveYouthCheck('m4',this)"> <span><strong>Set a launch date and cohort size cap</strong> — scarcity creates urgency</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveYouthCheck('m5',this)"> <span><strong>Collect 3 testimonials or endorsements</strong> — before or at launch</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+                  <h3 style="font-size:18px;font-weight:700">🤝 Partnership Outreach Tracker</h3>
+                  <button onclick="openAddOutreachModal()" class="btn btn-solid">+ Add Contact</button>
+                </div>
+                <div id="outreach-list"></div>
               </div>
             </div>
             <div id="youth-tab-platform" class="path-tab-content">
               <div class="card">
-                <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Platform &amp; Tools Guide</h3>
-                <div class="tip-box"><h4>🖥️ Virtual Delivery Platforms</h4><p>For virtual or hybrid programs: Zoom (simple, familiar to families), Google Meet (free, integrates with Classroom), Microsoft Teams (good for school district partnerships). For recorded content and self-paced modules: Teachable, Thinkific, or Kajabi. For community and accountability: Mighty Networks or a private Facebook Group.</p></div>
-                <div class="tip-box"><h4>💳 Registration &amp; Payment Tools</h4><p>Jotform (forms + payment in one) works great for small programs. For larger cohorts: Eventbrite for registration + Stripe for payment. For recurring memberships: Stripe Subscriptions or MemberSpace integrated with your website. Always accept scholarships via a separate PayPal or Zelle link to reduce friction for families who need financial assistance.</p></div>
-                <div class="tip-box"><h4>🎓 Certification &amp; Recognition</h4><p>Give youth something tangible: a printed certificate of completion, a digital badge (Credly is free), or a "graduation day" event with family invited. Recognition events are also marketing opportunities — post photos (with consent) and let the moment speak for your program. Consider partnering with local businesses to offer small prizes or mentoring opportunities for top graduates.</p></div>
-                <a class="resource-link" href="https://www.jumpstart.org" target="_blank"><span class="icon">🏃</span><div class="info"><strong>JumpStart Coalition</strong><span>National standards for youth financial literacy</span></div></a>
-                <a class="resource-link" href="https://ngpf.org" target="_blank"><span class="icon">📚</span><div class="info"><strong>Next Gen Personal Finance</strong><span>Free curriculum and lesson plans for educators</span></div></a>
-                <a class="resource-link" href="https://www.weareteachersofcolor.org" target="_blank"><span class="icon">🌟</span><div class="info"><strong>Teachers of Color Network</strong><span>Culturally responsive curriculum resources</span></div></a>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                  <h3 style="font-size:18px;font-weight:700">🖥️ My Platform Choices</h3>
+                  <button onclick="saveYouthPlatform()" class="btn btn-solid" style="padding:8px 18px">Save</button>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                  <div class="form-group">
+                    <label class="form-label">Delivery Platform</label>
+                    <select id="ypl-delivery" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>Zoom</option><option>Google Meet</option><option>Microsoft Teams</option><option>In-Person Only</option><option>Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Course / Content Platform</label>
+                    <select id="ypl-course" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>Teachable</option><option>Thinkific</option><option>Kajabi</option><option>Google Classroom</option><option>None</option><option>Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Registration Tool</label>
+                    <select id="ypl-reg" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>Jotform</option><option>Eventbrite</option><option>Google Forms</option><option>Website Form</option><option>Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Payment Processor</label>
+                    <select id="ypl-payment" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>Stripe</option><option>PayPal</option><option>Square</option><option>Zelle</option><option>Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Community Platform</label>
+                    <select id="ypl-community" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>Mighty Networks</option><option>Facebook Group</option><option>Discord</option><option>None</option><option>Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Certificate / Badge Tool</label>
+                    <select id="ypl-cert" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>Canva (printed)</option><option>Credly (digital badge)</option><option>Custom design</option><option>None yet</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Platform Notes / Links / Login Info</label>
+                    <textarea id="ypl-notes" class="form-input" style="height:90px;resize:vertical" placeholder="URLs, login details, setup notes..."></textarea>
+                  </div>
+                </div>
+                <div id="ypl-saved-msg" style="display:none;color:var(--success);font-size:14px;font-weight:600;margin-top:8px">✅ Platform settings saved!</div>
+                <div style="margin-top:20px;border-top:1px solid var(--gray-200);padding-top:16px">
+                  <h4 style="font-weight:700;margin-bottom:12px">Resources</h4>
+                  <a class="resource-link" href="https://www.jumpstart.org" target="_blank"><span class="icon">🏃</span><div class="info"><strong>JumpStart Coalition</strong><span>National standards for youth financial literacy</span></div></a>
+                  <a class="resource-link" href="https://ngpf.org" target="_blank"><span class="icon">📚</span><div class="info"><strong>Next Gen Personal Finance</strong><span>Free curriculum and lesson plans for educators</span></div></a>
+                </div>
               </div>
             </div>
           </div>
@@ -1762,7 +1939,10 @@
       document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
       if (event && event.currentTarget) event.currentTarget.classList.add('active');
       if (window.innerWidth <= 768) closeSidebar();
-      const renders = { dashboard: updateDashboard, clients: renderClients, 'my-ideas': renderIdeasKanban, 'client-portal': renderPortalLinks, 'income-pathway': renderIncomeWizard, 'credit-pathway': renderBizCreditChecklist, settings: loadSettingsPage, revenue: renderRevenue, calendar: renderCalendar, 'state-resources': renderStates, library: renderLibrary, guides: renderGuides };
+      const renders = { dashboard: updateDashboard, clients: renderClients, 'my-ideas': renderIdeasKanban, 'client-portal': renderPortalLinks, 'income-pathway': renderIncomeWizard, 'credit-pathway': renderBizCreditChecklist, settings: loadSettingsPage, revenue: renderRevenue, calendar: renderCalendar, 'state-resources': renderStates, library: renderLibrary, guides: renderGuides,
+  'career-pathway': () => { renderJobApps(); restoreCareerChecks(); loadCareerGoals(); },
+  'youth-pathway': () => { renderCurriculum(); renderOutreach(); restoreYouthChecks(); loadYouthProgram(); loadYouthPlatform(); }
+};
       if (renders[pageId] && typeof renders[pageId] === 'function') renders[pageId]();
       if (typeof setAiContext === 'function') setAiContext(pageId);
     }
@@ -3392,6 +3572,360 @@ When you know the client's name or situation, personalize specifically. Never gi
       careerAiDiv.innerHTML='<button class="btn btn-solid" style="background:linear-gradient(135deg,var(--accent),#7C3AED);width:100%" onclick="getAiCoaching(\'career-ai-coaching\',\'Stage: '+stage+', Obstacle: '+obstacle+', Clarity: '+clarity+'\',\'Career Advancement — promotions, salary negotiation, LinkedIn, networking, executive presence\')">✨ Get Personalized AI Coaching</button><div id="career-ai-coaching" style="display:none;margin-top:12px"></div>';
       const careerResEl=document.getElementById('career-assess-results'); if(careerResEl)careerResEl.appendChild(careerAiDiv);
       logActivity('career','Completed Career Advancement assessment');
+    }
+
+    // ── CAREER GOALS ───────────────────────────────────────────────
+
+    function saveCareerGoals() {
+      const data = {
+        northStar: document.getElementById('cg-northstar')?.value||'',
+        currentRole: document.getElementById('cg-current-role')?.value||'',
+        targetRole: document.getElementById('cg-target-role')?.value||'',
+        currentSalary: document.getElementById('cg-current-salary')?.value||'',
+        targetSalary: document.getElementById('cg-target-salary')?.value||'',
+        salaryFloor: document.getElementById('cg-salary-floor')?.value||'',
+        skillsGap: document.getElementById('cg-skills-gap')?.value||'',
+        visibilityGap: document.getElementById('cg-visibility-gap')?.value||'',
+        positioningGap: document.getElementById('cg-positioning-gap')?.value||'',
+        timeline: document.getElementById('cg-timeline')?.value||'',
+        notes: document.getElementById('cg-notes')?.value||''
+      };
+      localStorage.setItem('careerGoals', JSON.stringify(data));
+      const msg = document.getElementById('cg-saved-msg');
+      if (msg) { msg.style.display='block'; setTimeout(()=>msg.style.display='none',2500); }
+      showToast('Career goals saved!','success');
+    }
+
+    function loadCareerGoals() {
+      const data = JSON.parse(localStorage.getItem('careerGoals')||'{}');
+      const fields = {
+        'cg-northstar':'northStar','cg-current-role':'currentRole','cg-target-role':'targetRole',
+        'cg-current-salary':'currentSalary','cg-target-salary':'targetSalary','cg-salary-floor':'salaryFloor',
+        'cg-skills-gap':'skillsGap','cg-visibility-gap':'visibilityGap','cg-positioning-gap':'positioningGap',
+        'cg-timeline':'timeline','cg-notes':'notes'
+      };
+      Object.entries(fields).forEach(([id,key]) => { const el=document.getElementById(id); if(el&&data[key]) el.value=data[key]; });
+    }
+
+    // ── JOB APPLICATIONS TRACKER ───────────────────────────────────
+
+    function getJobApps() { return JSON.parse(localStorage.getItem('jobApps')||'[]'); }
+    function saveJobApps(apps) { setData('jobApps', apps); }
+
+    function renderJobApps() {
+      const el = document.getElementById('job-apps-list');
+      if (!el) return;
+      const apps = getJobApps();
+      if (!apps.length) { el.innerHTML='<p style="color:var(--gray-400);padding:20px 0">No applications yet. Click + Add Application to start tracking.</p>'; return; }
+      const statusColors = { Applied:'#3B82F6', Interview:'#F59E0B', Offer:'#10B981', Rejected:'#EF4444', Withdrawn:'#94A3B8' };
+      el.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px">
+        <thead><tr style="background:var(--gray-50);border-bottom:2px solid var(--gray-200)">
+          <th style="padding:10px;text-align:left;font-weight:700">Company</th>
+          <th style="padding:10px;text-align:left;font-weight:700">Role</th>
+          <th style="padding:10px;text-align:left;font-weight:700">Applied</th>
+          <th style="padding:10px;text-align:left;font-weight:700">Status</th>
+          <th style="padding:10px;text-align:left;font-weight:700">Next Step</th>
+          <th style="padding:10px;text-align:center;font-weight:700">Actions</th>
+        </tr></thead><tbody>
+        ${apps.map(a=>`<tr style="border-bottom:1px solid var(--gray-100)">
+          <td style="padding:10px;font-weight:600">${a.company}</td>
+          <td style="padding:10px">${a.role}</td>
+          <td style="padding:10px;color:var(--gray-500)">${a.applied||'—'}</td>
+          <td style="padding:10px"><span style="padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;background:${statusColors[a.status]||'#94A3B8'}22;color:${statusColors[a.status]||'#64748B'}">${a.status}</span></td>
+          <td style="padding:10px;color:var(--gray-600);font-size:13px">${a.nextStep||'—'}</td>
+          <td style="padding:10px;text-align:center;white-space:nowrap">
+            <button onclick="openEditJobModal('${a.id}')" class="btn btn-outline" style="padding:5px 10px;font-size:12px">Edit</button>
+            <button onclick="deleteJobApp('${a.id}')" style="background:none;border:none;color:var(--error);cursor:pointer;font-size:18px;padding:0 4px">×</button>
+          </td>
+        </tr>`).join('')}
+        </tbody></table></div>`;
+    }
+
+    function openAddJobModal() { openJobModal(null); }
+    function openEditJobModal(id) { openJobModal(getJobApps().find(a=>a.id===id)); }
+
+    function openJobModal(app) {
+      const isEdit=!!app;
+      let modal=document.getElementById('job-modal');
+      if(!modal){modal=document.createElement('div');modal.id='job-modal';document.body.appendChild(modal);}
+      modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+      modal.innerHTML=`<div style="background:#fff;border-radius:12px;width:100%;max-width:540px;padding:28px;box-shadow:0 24px 48px rgba(0,0,0,0.2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <h3 style="font-size:18px;font-weight:700">${isEdit?'Edit Application':'Add Application'}</h3>
+          <button onclick="document.getElementById('job-modal').remove()" style="background:none;border:1px solid var(--gray-200);width:32px;height:32px;border-radius:6px;cursor:pointer">✕</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div><label class="form-label">Company</label><input id="jm-company" class="form-input" style="margin:0" placeholder="Company name" value="${isEdit?app.company:''}"></div>
+          <div><label class="form-label">Role / Position</label><input id="jm-role" class="form-input" style="margin:0" placeholder="Job title" value="${isEdit?app.role:''}"></div>
+          <div><label class="form-label">Date Applied</label><input id="jm-applied" type="date" class="form-input" style="margin:0" value="${isEdit?(app.applied||''):''}"></div>
+          <div><label class="form-label">Status</label>
+            <select id="jm-status" class="form-select" style="margin:0">
+              ${['Applied','Interview','Offer','Rejected','Withdrawn'].map(s=>`<option${isEdit&&app.status===s?' selected':''}>${s}</option>`).join('')}
+            </select>
+          </div>
+          <div><label class="form-label">Salary Range</label><input id="jm-salary" class="form-input" style="margin:0" placeholder="e.g. $70k–$85k" value="${isEdit?(app.salary||''):''}"></div>
+          <div><label class="form-label">Interview Date</label><input id="jm-interview-date" type="date" class="form-input" style="margin:0" value="${isEdit?(app.interviewDate||''):''}"></div>
+          <div style="grid-column:1/-1"><label class="form-label">Next Step / Notes</label><textarea id="jm-nextstep" class="form-input" style="margin:0;height:70px;resize:vertical" placeholder="Follow-up date, contact name, prep notes...">${isEdit?(app.nextStep||''):''}</textarea></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button onclick="saveJobApp('${isEdit?app.id:''}')" class="btn-primary" style="flex:1">${isEdit?'Save Changes':'Add Application'}</button>
+          <button onclick="document.getElementById('job-modal').remove()" style="padding:14px 20px;background:none;border:1px solid var(--gray-300);border-radius:8px;cursor:pointer">Cancel</button>
+        </div>
+      </div>`;
+    }
+
+    function saveJobApp(editId) {
+      const company=(document.getElementById('jm-company')?.value||'').trim();
+      if(!company){alert('Company name is required.');return;}
+      const apps=getJobApps();
+      const entry={
+        id:editId||'job-'+generateId(),
+        company,
+        role:document.getElementById('jm-role')?.value||'',
+        applied:document.getElementById('jm-applied')?.value||'',
+        status:document.getElementById('jm-status')?.value||'Applied',
+        salary:document.getElementById('jm-salary')?.value||'',
+        interviewDate:document.getElementById('jm-interview-date')?.value||'',
+        nextStep:document.getElementById('jm-nextstep')?.value||''
+      };
+      if(editId){const i=apps.findIndex(a=>a.id===editId);if(i>-1)apps[i]=entry;}
+      else apps.push(entry);
+      saveJobApps(apps);
+      document.getElementById('job-modal').remove();
+      renderJobApps();
+      showToast(editId?'Application updated!':'Application added!','success');
+    }
+
+    function deleteJobApp(id) {
+      if(!confirm('Delete this application?'))return;
+      saveJobApps(getJobApps().filter(a=>a.id!==id));
+      renderJobApps();
+    }
+
+    // ── YOUTH PROGRAM ──────────────────────────────────────────────
+
+    function saveYouthProgram() {
+      const data={
+        name:document.getElementById('yp-name')?.value||'',
+        age:document.getElementById('yp-age')?.value||'',
+        format:document.getElementById('yp-format')?.value||'',
+        model:document.getElementById('yp-model')?.value||'',
+        length:document.getElementById('yp-length')?.value||'',
+        price:document.getElementById('yp-price')?.value||'',
+        scholarship:document.getElementById('yp-scholarship')?.value||'',
+        size:document.getElementById('yp-size')?.value||'',
+        launch:document.getElementById('yp-launch')?.value||'',
+        promise:document.getElementById('yp-promise')?.value||'',
+        regLink:document.getElementById('yp-reg-link')?.value||'',
+        notes:document.getElementById('yp-notes')?.value||''
+      };
+      localStorage.setItem('youthProgram',JSON.stringify(data));
+      const msg=document.getElementById('yp-saved-msg');
+      if(msg){msg.style.display='block';setTimeout(()=>msg.style.display='none',2500);}
+      showToast('Program saved!','success');
+    }
+
+    function loadYouthProgram() {
+      const data=JSON.parse(localStorage.getItem('youthProgram')||'{}');
+      const fields={'yp-name':'name','yp-age':'age','yp-format':'format','yp-model':'model','yp-length':'length',
+        'yp-price':'price','yp-scholarship':'scholarship','yp-size':'size','yp-launch':'launch',
+        'yp-promise':'promise','yp-reg-link':'regLink','yp-notes':'notes'};
+      Object.entries(fields).forEach(([id,key])=>{
+        const el=document.getElementById(id);
+        if(el&&data[key]){if(el.tagName==='SELECT'){el.value=data[key];}else{el.value=data[key];}}
+      });
+    }
+
+    function saveYouthPlatform() {
+      const data={
+        delivery:document.getElementById('ypl-delivery')?.value||'',
+        course:document.getElementById('ypl-course')?.value||'',
+        reg:document.getElementById('ypl-reg')?.value||'',
+        payment:document.getElementById('ypl-payment')?.value||'',
+        community:document.getElementById('ypl-community')?.value||'',
+        cert:document.getElementById('ypl-cert')?.value||'',
+        notes:document.getElementById('ypl-notes')?.value||''
+      };
+      localStorage.setItem('youthPlatform',JSON.stringify(data));
+      const msg=document.getElementById('ypl-saved-msg');
+      if(msg){msg.style.display='block';setTimeout(()=>msg.style.display='none',2500);}
+      showToast('Platform settings saved!','success');
+    }
+
+    function loadYouthPlatform() {
+      const data=JSON.parse(localStorage.getItem('youthPlatform')||'{}');
+      const fields={'ypl-delivery':'delivery','ypl-course':'course','ypl-reg':'reg','ypl-payment':'payment','ypl-community':'community','ypl-cert':'cert','ypl-notes':'notes'};
+      Object.entries(fields).forEach(([id,key])=>{const el=document.getElementById(id);if(el&&data[key])el.value=data[key];});
+    }
+
+    // ── CURRICULUM BUILDER ─────────────────────────────────────────
+
+    function getCurriculum() { return JSON.parse(localStorage.getItem('curriculum')||'[]'); }
+    function saveCurriculum(weeks) { setData('curriculum',weeks); }
+
+    function renderCurriculum() {
+      const el=document.getElementById('curriculum-list');
+      if(!el)return;
+      const weeks=getCurriculum();
+      if(!weeks.length){el.innerHTML='<p style="color:var(--gray-400);padding:20px 0">No modules yet. Click + Add Week / Module to build your curriculum.</p>';return;}
+      el.innerHTML=weeks.map((w,i)=>`
+        <div style="border:1px solid var(--gray-200);border-radius:8px;padding:16px;margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px">
+            <div>
+              <span style="font-size:11px;font-weight:700;color:#4267B2;background:#EFF3FB;padding:2px 8px;border-radius:3px">Week ${i+1}</span>
+              <div style="font-size:16px;font-weight:700;margin-top:6px">${w.title}</div>
+              ${w.objective?`<div style="font-size:13px;color:var(--gray-500);margin-top:2px">${w.objective}</div>`:''}
+            </div>
+            <div style="display:flex;gap:6px">
+              <button onclick="openEditCurriculumWeek(${i})" class="btn btn-outline" style="padding:5px 10px;font-size:12px">Edit</button>
+              <button onclick="deleteCurriculumWeek(${i})" style="background:none;border:none;color:var(--error);cursor:pointer;font-size:18px;padding:0 4px">×</button>
+            </div>
+          </div>
+          ${w.topics?`<div style="font-size:13px;color:var(--gray-600);line-height:1.6">${w.topics}</div>`:''}
+          ${w.activities?`<div style="font-size:13px;color:var(--gray-500);margin-top:6px;font-style:italic">Activities: ${w.activities}</div>`:''}
+        </div>`).join('');
+    }
+
+    function openAddCurriculumWeek() { openCurriculumModal(null,-1); }
+    function openEditCurriculumWeek(index) { openCurriculumModal(getCurriculum()[index],index); }
+
+    function openCurriculumModal(week,index) {
+      const isEdit=week!==null;
+      let modal=document.getElementById('curriculum-modal');
+      if(!modal){modal=document.createElement('div');modal.id='curriculum-modal';document.body.appendChild(modal);}
+      modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+      modal.innerHTML=`<div style="background:#fff;border-radius:12px;width:100%;max-width:520px;padding:28px;box-shadow:0 24px 48px rgba(0,0,0,0.2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <h3 style="font-size:18px;font-weight:700">${isEdit?'Edit Module':'Add Week / Module'}</h3>
+          <button onclick="document.getElementById('curriculum-modal').remove()" style="background:none;border:1px solid var(--gray-200);width:32px;height:32px;border-radius:6px;cursor:pointer">✕</button>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div><label class="form-label">Week / Module Title</label><input id="cm-title" class="form-input" style="margin:0" placeholder="e.g. Week 1: Money & Mindset" value="${isEdit?week.title:''}"></div>
+          <div><label class="form-label">Learning Objective</label><input id="cm-objective" class="form-input" style="margin:0" placeholder="By the end, participants will be able to..." value="${isEdit?(week.objective||''):''}"></div>
+          <div><label class="form-label">Topics Covered</label><textarea id="cm-topics" class="form-input" style="margin:0;height:80px;resize:vertical" placeholder="Bullet-point the main topics...">${isEdit?(week.topics||''):''}</textarea></div>
+          <div><label class="form-label">Activities / Exercises</label><textarea id="cm-activities" class="form-input" style="margin:0;height:70px;resize:vertical" placeholder="Mock business, budgeting game, guest speaker...">${isEdit?(week.activities||''):''}</textarea></div>
+          <div><label class="form-label">Materials Needed</label><input id="cm-materials" class="form-input" style="margin:0" placeholder="Workbooks, slides, supplies..." value="${isEdit?(week.materials||''):''}"></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px">
+          <button onclick="saveCurriculumWeek(${index})" class="btn-primary" style="flex:1">${isEdit?'Save Changes':'Add Module'}</button>
+          <button onclick="document.getElementById('curriculum-modal').remove()" style="padding:14px 20px;background:none;border:1px solid var(--gray-300);border-radius:8px;cursor:pointer">Cancel</button>
+        </div>
+      </div>`;
+    }
+
+    function saveCurriculumWeek(editIndex) {
+      const title=(document.getElementById('cm-title')?.value||'').trim();
+      if(!title){alert('Title is required.');return;}
+      const weeks=getCurriculum();
+      const entry={title,objective:document.getElementById('cm-objective')?.value||'',topics:document.getElementById('cm-topics')?.value||'',activities:document.getElementById('cm-activities')?.value||'',materials:document.getElementById('cm-materials')?.value||''};
+      if(editIndex>=0){weeks[editIndex]=entry;}else{weeks.push(entry);}
+      saveCurriculum(weeks);
+      document.getElementById('curriculum-modal').remove();
+      renderCurriculum();
+      showToast(editIndex>=0?'Module updated!':'Module added!','success');
+    }
+
+    function deleteCurriculumWeek(index) {
+      if(!confirm('Delete this module?'))return;
+      const weeks=getCurriculum();weeks.splice(index,1);saveCurriculum(weeks);renderCurriculum();
+    }
+
+    // ── OUTREACH TRACKER ───────────────────────────────────────────
+
+    function getOutreach() { return JSON.parse(localStorage.getItem('outreach')||'[]'); }
+    function saveOutreach(data) { setData('outreach',data); }
+
+    function renderOutreach() {
+      const el=document.getElementById('outreach-list');
+      if(!el)return;
+      const contacts=getOutreach();
+      if(!contacts.length){el.innerHTML='<p style="color:var(--gray-400);padding:20px 0">No contacts yet. Track your school, church, and community org outreach here.</p>';return;}
+      const statusColors={'Not Started':'#94A3B8','Contacted':'#3B82F6','Meeting Scheduled':'#F59E0B','Partnership Active':'#10B981','Declined':'#EF4444'};
+      el.innerHTML=contacts.map(c=>`
+        <div style="border:1px solid var(--gray-200);border-radius:8px;padding:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:10px">
+          <div style="flex:1;min-width:200px">
+            <div style="font-weight:700">${c.org}</div>
+            <div style="font-size:13px;color:var(--gray-500)">${c.contact||''}${c.contact&&c.type?' · ':''}${c.type||''}</div>
+            ${c.notes?`<div style="font-size:13px;color:var(--gray-600);margin-top:4px">${c.notes}</div>`:''}
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <span style="padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;background:${statusColors[c.status]||'#94A3B8'}22;color:${statusColors[c.status]||'#64748B'}">${c.status}</span>
+            <button onclick="openEditOutreachModal('${c.id}')" class="btn btn-outline" style="padding:5px 10px;font-size:12px">Edit</button>
+            <button onclick="deleteOutreach('${c.id}')" style="background:none;border:none;color:var(--error);cursor:pointer;font-size:18px;padding:0 4px">×</button>
+          </div>
+        </div>`).join('');
+    }
+
+    function openAddOutreachModal() { openOutreachModal(null); }
+    function openEditOutreachModal(id) { openOutreachModal(getOutreach().find(c=>c.id===id)); }
+
+    function openOutreachModal(contact) {
+      const isEdit=!!contact;
+      let modal=document.getElementById('outreach-modal');
+      if(!modal){modal=document.createElement('div');modal.id='outreach-modal';document.body.appendChild(modal);}
+      modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+      modal.innerHTML=`<div style="background:#fff;border-radius:12px;width:100%;max-width:500px;padding:28px;box-shadow:0 24px 48px rgba(0,0,0,0.2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <h3 style="font-size:18px;font-weight:700">${isEdit?'Edit Contact':'Add Outreach Contact'}</h3>
+          <button onclick="document.getElementById('outreach-modal').remove()" style="background:none;border:1px solid var(--gray-200);width:32px;height:32px;border-radius:6px;cursor:pointer">✕</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+          <div style="grid-column:1/-1"><label class="form-label">Organization Name</label><input id="om-org" class="form-input" style="margin:0" placeholder="e.g. Douglas Anderson School" value="${isEdit?contact.org:''}"></div>
+          <div><label class="form-label">Contact Person</label><input id="om-contact" class="form-input" style="margin:0" placeholder="Name" value="${isEdit?(contact.contact||''):''}"></div>
+          <div><label class="form-label">Type</label>
+            <select id="om-type" class="form-select" style="margin:0">
+              ${['School','Church','Community Center','Boys & Girls Club','Other'].map(t=>`<option${isEdit&&contact.type===t?' selected':''}>${t}</option>`).join('')}
+            </select>
+          </div>
+          <div><label class="form-label">Status</label>
+            <select id="om-status" class="form-select" style="margin:0">
+              ${['Not Started','Contacted','Meeting Scheduled','Partnership Active','Declined'].map(s=>`<option${isEdit&&contact.status===s?' selected':''}>${s}</option>`).join('')}
+            </select>
+          </div>
+          <div><label class="form-label">Follow-Up Date</label><input id="om-followup" type="date" class="form-input" style="margin:0" value="${isEdit?(contact.followup||''):''}"></div>
+          <div style="grid-column:1/-1"><label class="form-label">Notes</label><textarea id="om-notes" class="form-input" style="margin:0;height:70px;resize:vertical" placeholder="Email sent, what was discussed, next steps...">${isEdit?(contact.notes||''):''}</textarea></div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:16px">
+          <button onclick="saveOutreachContact('${isEdit?contact.id:''}')" class="btn-primary" style="flex:1">${isEdit?'Save Changes':'Add Contact'}</button>
+          <button onclick="document.getElementById('outreach-modal').remove()" style="padding:14px 20px;background:none;border:1px solid var(--gray-300);border-radius:8px;cursor:pointer">Cancel</button>
+        </div>
+      </div>`;
+    }
+
+    function saveOutreachContact(editId) {
+      const org=(document.getElementById('om-org')?.value||'').trim();
+      if(!org){alert('Organization name is required.');return;}
+      const contacts=getOutreach();
+      const entry={id:editId||'out-'+generateId(),org,contact:document.getElementById('om-contact')?.value||'',type:document.getElementById('om-type')?.value||'',status:document.getElementById('om-status')?.value||'Not Started',followup:document.getElementById('om-followup')?.value||'',notes:document.getElementById('om-notes')?.value||''};
+      if(editId){const i=contacts.findIndex(c=>c.id===editId);if(i>-1)contacts[i]=entry;}else{contacts.push(entry);}
+      saveOutreach(contacts);
+      document.getElementById('outreach-modal').remove();
+      renderOutreach();
+      showToast(editId?'Contact updated!':'Contact added!','success');
+    }
+
+    function deleteOutreach(id) {
+      if(!confirm('Delete this contact?'))return;
+      saveOutreach(getOutreach().filter(c=>c.id!==id));
+      renderOutreach();
+    }
+
+    // ── RESTORE CHECKLIST STATE ────────────────────────────────────
+
+    function restoreCareerChecks() {
+      const saved=JSON.parse(localStorage.getItem('careerChecks')||'{}');
+      Object.entries(saved).forEach(([id,checked])=>{
+        const el=document.getElementById('cc-'+id);
+        if(el){el.checked=checked;if(el.nextElementSibling)el.nextElementSibling.style.cssText=checked?'text-decoration:line-through;color:var(--gray-400)':'';}
+      });
+    }
+
+    function restoreYouthChecks() {
+      const saved=JSON.parse(localStorage.getItem('youthChecks')||'{}');
+      Object.entries(saved).forEach(([id,checked])=>{
+        const el=document.getElementById('yc-'+id);
+        if(el){el.checked=checked;if(el.nextElementSibling)el.nextElementSibling.style.cssText=checked?'text-decoration:line-through;color:var(--gray-400)':'';}
+      });
     }
 
     // ── CHECKLIST SAVE HELPERS ─────────────────────────────────────

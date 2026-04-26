@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>H.E.L.P. Center - Complete Business System</title>
+  <script>(function(){var t=localStorage.getItem('hc-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
   <style>
     :root {
       --primary: #0F172A;
@@ -36,6 +37,10 @@
       --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
       --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
       --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      --gold: #C9A84C;
+      --gold-hover: #E8C97A;
+      --gold-dim: rgba(201,168,76,0.12);
+      --gold-border: rgba(201,168,76,0.25);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: var(--font-sans); background: #F4F6F9; color: var(--gray-900); line-height: 1.5; -webkit-font-smoothing: antialiased; }
@@ -53,6 +58,13 @@
     .btn-primary { width: 100%; padding: 14px; background: #0F172A; color: white; border: none; border-radius: 4px; font-size: 15px; font-weight: 700; cursor: pointer; letter-spacing: 0.5px; text-transform: uppercase; transition: background 0.2s; margin-bottom: var(--space-4); }
     .btn-primary:hover { background: #4267B2; }
     .change-password { color: var(--gray-500); text-decoration: none; font-size: 13px; font-weight: 500; }
+    [data-theme="dark"] body { background:#0F1117; color:#E8EAED; }
+    [data-theme="dark"] .card { background:#1E2130; border-color:rgba(255,255,255,0.07); color:#E8EAED; }
+    [data-theme="dark"] .main-content { background:#0F1117; }
+    [data-theme="dark"] .page-title { color:#E8EAED; }
+    [data-theme="dark"] .page-subtitle { color:rgba(232,234,237,0.6); }
+    [data-theme="dark"] .form-input, [data-theme="dark"] .form-select { background:#0F1117; border-color:rgba(255,255,255,0.1); color:#E8EAED; }
+    .theme-btn { background:none; border:1px solid var(--gray-200); border-radius:6px; padding:6px 12px; font-size:12px; cursor:pointer; color:var(--gray-600); }
 
     /* APP LAYOUT */
     .app { display: flex; min-height: 100vh; background: #F4F6F9; }
@@ -438,6 +450,16 @@
         </div>
 
         <div class="nav-section">
+          <div class="nav-section-title">Business</div>
+          <a class="nav-link" onclick="showPage('pricing', event)">
+            <span class="nav-icon" style="font-size:13px">▸</span><span>Services & Pricing</span>
+          </a>
+          <a class="nav-link" onclick="showPage('strategy', event)">
+            <span class="nav-icon" style="font-size:13px">▸</span><span>Growth Strategy Hub</span>
+          </a>
+        </div>
+
+        <div class="nav-section">
           <div class="nav-section-title">System</div>
           <a class="nav-link" onclick="showPage('revenue', event)">
             <span class="nav-icon" style="font-size:13px">▸</span><span>Revenue Tracker</span>
@@ -449,6 +471,9 @@
       </nav>
 
       <div class="sidebar-footer">
+        <div style="padding:8px 0 12px">
+          <button class="theme-btn" onclick="toggleTheme()" id="theme-btn" style="width:100%">🌙 Dark Mode</button>
+        </div>
         <div class="user-profile">
           <div class="user-avatar">JW</div>
           <div class="user-info">
@@ -1613,6 +1638,159 @@
         </div>
       </div>
 
+
+<div id="pricing-page" class="page hidden">
+  <div class="page-header">
+    <h1 class="page-title">💰 Services & Pricing</h1>
+    <p class="page-subtitle">Your rate card, retainers, proposal builder, and client policies</p>
+  </div>
+  <div class="content">
+    <div class="path-tabs-container">
+      <div class="path-tabs-nav">
+        <button class="path-tab active" onclick="pTab('pricing','grid',this)">Pricing</button>
+        <button class="path-tab" onclick="pTab('pricing','retainers',this)">Retainers</button>
+        <button class="path-tab" onclick="pTab('pricing','proposal',this)">Proposal Builder</button>
+        <button class="path-tab" onclick="pTab('pricing','policies',this)">Client Policies</button>
+      </div>
+
+      <!-- TAB: PRICING GRID -->
+      <div id="pricing-tab-grid" class="path-tab-content active">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px" id="pricing-cards"></div>
+      </div>
+
+      <!-- TAB: RETAINERS -->
+      <div id="pricing-tab-retainers" class="path-tab-content">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-bottom:24px" id="retainer-cards"></div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <h4 style="font-weight:700">Retainer Outreach Email Template</h4>
+            <button onclick="copyText(this,document.getElementById('retainer-email-text').value)" class="btn btn-outline" style="padding:6px 14px;font-size:12px;color:var(--gold);border-color:var(--gold-border)">Copy Email</button>
+          </div>
+          <textarea id="retainer-email-text" class="form-input" style="height:220px;font-size:13px;font-family:monospace" readonly>Subject: Protect Your Website — Monthly Care Plans Now Available
+
+Hi [Name],
+
+I hope things are going well! I wanted to reach out because I'm now offering monthly website maintenance plans to my existing clients.
+
+As your site grows, keeping it updated, backed up, and running smoothly takes ongoing attention — and I want to make sure you're covered.
+
+MONTHLY PLANS:
+• Site Care Plan — $150/mo (2 updates, bug fixes, monthly backup)
+• Growth Plan — $250/mo (5 updates, new pages, priority support)
+• Full Partner Plan — $400/mo (unlimited updates, strategy call, social graphics)
+
+If you're interested, just reply to this email and I'll send over the details. No long-term contract — cancel anytime.
+
+Talk soon,
+Joy Watford
+H.E.L.P. Center | joy@helpcenter.com</textarea>
+        </div>
+      </div>
+
+      <!-- TAB: PROPOSAL BUILDER -->
+      <div id="pricing-tab-proposal" class="path-tab-content">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+          <div class="card">
+            <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Proposal Details</h3>
+            <div class="form-group"><label class="form-label">Client / Organization Name</label><input id="pb-client" class="form-input" style="margin:0" placeholder="e.g. Greater Hope Church"></div>
+            <div class="form-group"><label class="form-label">Contact Person</label><input id="pb-contact" class="form-input" style="margin:0" placeholder="e.g. Pastor James Williams"></div>
+            <div class="form-group"><label class="form-label">Service Package</label>
+              <select id="pb-service" class="form-select" style="margin:0" onchange="updateProposalPreview()">
+                <option value="">Select service...</option>
+                <option>Landing Page — $600</option><option>Landing Page — $800</option><option>Landing Page — $1,000</option>
+                <option>Business Website — $1,200</option><option>Business Website — $1,500</option><option>Business Website — $2,000</option><option>Business Website — $2,500</option>
+                <option>E-Commerce Store — $1,500</option><option>E-Commerce Store — $2,000</option><option>E-Commerce Store — $2,500</option>
+                <option>Custom Dashboard — $2,500</option><option>Custom Dashboard — $4,000</option><option>Custom Dashboard — $6,000</option>
+                <option>Marketplace Platform — $4,000</option><option>Marketplace Platform — $6,000</option>
+                <option>AI-Powered App — $1,500</option><option>AI-Powered App — $3,000</option>
+                <option>Maintenance Retainer — $150/mo</option><option>Growth Retainer — $250/mo</option><option>Full Partner Retainer — $400/mo</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Project Description</label><textarea id="pb-desc" class="form-input" style="height:80px;resize:vertical;margin:0" placeholder="Brief description of what the client needs..." oninput="updateProposalPreview()"></textarea></div>
+            <div class="form-group"><label class="form-label">Estimated Timeline</label>
+              <select id="pb-timeline" class="form-select" style="margin:0" onchange="updateProposalPreview()">
+                <option>1–2 business days</option><option>3–5 business days</option><option>5–7 business days</option>
+                <option>1–2 weeks</option><option>2–3 weeks</option><option>3–4 weeks</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Additional Notes (optional)</label><textarea id="pb-notes" class="form-input" style="height:60px;resize:vertical;margin:0" placeholder="Hosting, domain transfer, special requirements..." oninput="updateProposalPreview()"></textarea></div>
+            <button onclick="updateProposalPreview()" class="btn btn-solid" style="width:100%;margin-top:4px">Generate Proposal</button>
+          </div>
+          <div class="card" style="display:flex;flex-direction:column">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <h3 style="font-size:16px;font-weight:700">Live Preview</h3>
+              <button onclick="copyProposal()" class="btn btn-outline" style="padding:6px 14px;font-size:12px;color:var(--gold);border-color:var(--gold-border)">Copy Proposal</button>
+            </div>
+            <textarea id="pb-preview" class="form-input" style="flex:1;min-height:420px;font-size:12px;font-family:monospace;resize:none" readonly placeholder="Fill in the form to generate your proposal..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: CLIENT POLICIES -->
+      <div id="pricing-tab-policies" class="path-tab-content">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px" id="policies-cards"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="strategy-page" class="page hidden">
+  <div class="page-header">
+    <h1 class="page-title">🚀 Growth Strategy Hub</h1>
+    <p class="page-subtitle">SaaS launch roadmap, church outreach scripts, and your 48-hour action list</p>
+  </div>
+  <div class="content">
+    <div class="path-tabs-container">
+      <div class="path-tabs-nav">
+        <button class="path-tab active" onclick="pTab('strategy','saas',this)">SaaS Launch Plan</button>
+        <button class="path-tab" onclick="pTab('strategy','outreach',this)">Church Outreach</button>
+        <button class="path-tab" onclick="pTab('strategy','checklist',this)">48-Hr Action List</button>
+      </div>
+
+      <!-- TAB: SAAS LAUNCH PLAN -->
+      <div id="strategy-tab-saas" class="path-tab-content active">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
+          <div class="card" style="text-align:center;border-top:3px solid var(--gold)"><div style="font-size:22px;font-weight:800;color:var(--gold)">$490</div><div style="font-size:12px;color:var(--gray-500)">10 users @ $49/mo</div></div>
+          <div class="card" style="text-align:center;border-top:3px solid var(--gold)"><div style="font-size:22px;font-weight:800;color:var(--gold)">$980</div><div style="font-size:12px;color:var(--gray-500)">20 users @ $49/mo</div></div>
+          <div class="card" style="text-align:center;border-top:3px solid var(--gold)"><div style="font-size:22px;font-weight:800;color:var(--gold)">$2,450</div><div style="font-size:12px;color:var(--gray-500)">50 users @ $49/mo</div></div>
+          <div class="card" style="text-align:center;border-top:3px solid var(--gold)"><div style="font-size:22px;font-weight:800;color:var(--gold)">$4,900</div><div style="font-size:12px;color:var(--gray-500)">100 users @ $49/mo</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:28px">
+          <div class="card"><div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px">STARTER</div><div style="font-size:20px;font-weight:800;margin-bottom:2px">$19<span style="font-size:14px;font-weight:400;color:var(--gray-500)">/mo</span></div><div style="font-size:12px;color:var(--gray-500);margin-bottom:12px">$190/yr (save $38)</div><div style="font-size:13px;font-weight:700;margin-bottom:8px">Spark Plan</div><div style="font-size:13px;color:var(--gray-600)">Dashboard & KPI tracking<br>Up to 5 clients<br>Business idea tools<br>Basic pathways<br>Email support</div></div>
+          <div class="card" style="border:2px solid var(--gold);background:var(--gold-dim)"><div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:6px">MOST POPULAR</div><div style="font-size:20px;font-weight:800;margin-bottom:2px;color:var(--gold)">$49<span style="font-size:14px;font-weight:400;color:var(--gray-500)">/mo</span></div><div style="font-size:12px;color:var(--gray-500);margin-bottom:12px">$490/yr (save $98)</div><div style="font-size:13px;font-weight:700;margin-bottom:8px">Growth Plan</div><div style="font-size:13px;color:var(--gray-600)">Everything in Spark<br>Unlimited clients<br>AI business plan generator<br>Revenue tracking<br>All pathways unlocked<br>Priority support</div></div>
+          <div class="card"><div style="font-size:11px;font-weight:700;color:#A78BFA;margin-bottom:6px">PRO</div><div style="font-size:20px;font-weight:800;margin-bottom:2px">$97<span style="font-size:14px;font-weight:400;color:var(--gray-500)">/mo</span></div><div style="font-size:12px;color:var(--gray-500);margin-bottom:12px">$970/yr (save $194)</div><div style="font-size:13px;font-weight:700;margin-bottom:8px">Elite Plan</div><div style="font-size:13px;color:var(--gray-600)">Everything in Growth<br>White-label options<br>Team member access<br>Custom branding<br>Monthly strategy call<br>Beta feature access</div></div>
+        </div>
+        <h3 style="font-size:17px;font-weight:700;margin-bottom:20px">Launch Roadmap</h3>
+        <div id="roadmap-phases"></div>
+      </div>
+
+      <!-- TAB: CHURCH OUTREACH -->
+      <div id="strategy-tab-outreach" class="path-tab-content">
+        <h3 style="font-size:17px;font-weight:700;margin-bottom:16px">Target Client Niches</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:28px" id="niche-cards"></div>
+        <h3 style="font-size:17px;font-weight:700;margin-bottom:16px">Outreach Scripts</h3>
+        <div id="outreach-scripts"></div>
+      </div>
+
+      <!-- TAB: 48-HR ACTION LIST -->
+      <div id="strategy-tab-checklist" class="path-tab-content">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+          <div class="card" style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">$1,500</div><div style="font-size:12px;font-weight:600;color:var(--gray-500)">Conservative</div><div style="font-size:12px;color:var(--gray-400)">2 landing pages + 3 retainer clients</div></div>
+          <div class="card" style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">$3,500</div><div style="font-size:12px;font-weight:600;color:var(--gray-500)">Realistic</div><div style="font-size:12px;color:var(--gray-400)">1 church site + 1 business site + 4 retainers</div></div>
+          <div class="card" style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">$7,000+</div><div style="font-size:12px;font-weight:600;color:var(--gray-500)">Strong Month</div><div style="font-size:12px;color:var(--gray-400)">2 church sites + 1 dashboard + retainers + 5 SaaS users</div></div>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 style="font-size:17px;font-weight:700">Your 48-Hour Action Plan</h3>
+            <button onclick="resetActionChecklist()" class="btn btn-outline" style="font-size:12px;padding:6px 12px">Reset</button>
+          </div>
+          <div id="action-checklist"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
     </main>
   </div>
 
@@ -1941,7 +2119,9 @@
       if (window.innerWidth <= 768) closeSidebar();
       const renders = { dashboard: updateDashboard, clients: renderClients, 'my-ideas': renderIdeasKanban, 'client-portal': renderPortalLinks, 'income-pathway': renderIncomeWizard, 'credit-pathway': renderBizCreditChecklist, settings: loadSettingsPage, revenue: renderRevenue, calendar: renderCalendar, 'state-resources': renderStates, library: renderLibrary, guides: renderGuides,
   'career-pathway': () => { renderJobApps(); restoreCareerChecks(); loadCareerGoals(); },
-  'youth-pathway': () => { renderCurriculum(); renderOutreach(); restoreYouthChecks(); loadYouthProgram(); loadYouthPlatform(); }
+  'youth-pathway': () => { renderCurriculum(); renderOutreach(); restoreYouthChecks(); loadYouthProgram(); loadYouthPlatform(); },
+  pricing: () => { renderPricingPage(); updateProposalPreview(); },
+  strategy: () => { renderStrategyPage(); }
 };
       if (renders[pageId] && typeof renders[pageId] === 'function') renders[pageId]();
       if (typeof setAiContext === 'function') setAiContext(pageId);
@@ -1969,6 +2149,7 @@
     function init() {
       initializeData();
       if (!checkPortalRoute()) checkSession();
+      initThemeBtn();
     }
 
     window.addEventListener('hashchange', checkPortalRoute);
@@ -4190,6 +4371,307 @@ When you know the client's name or situation, personalize specifically. Never gi
       renderGuides();
       showToast(editId ? 'Guide updated!' : 'Guide created!', 'success');
     }
+
+// ── THEME TOGGLE ───────────────────────────────────────────────
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('hc-theme', next);
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = next === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
+function initThemeBtn() {
+  const t = localStorage.getItem('hc-theme') || 'light';
+  const btn = document.getElementById('theme-btn');
+  if (btn) btn.textContent = t === 'dark' ? '☀️ Light Mode' : '🌙 Dark Mode';
+}
+
+// ── PRICING DATA ───────────────────────────────────────────────
+const SERVICES = [
+  { icon:'🚀', name:'Landing Page', desc:'Single-page high-converting websites for launches, events, and new businesses.', range:'$600–$1,000', note:'Delivered in 1–3 business days', features:['1-page custom design','Mobile responsive','Contact form','Basic SEO setup','1 revision round'], featured:false, badge:null },
+  { icon:'🏛️', name:'Business Website', desc:'Full multi-page sites for businesses, churches, and organizations.', range:'$1,200–$2,500', note:'Delivered in 3–7 business days', features:['Up to 6 custom pages','Full navigation system','Contact & booking forms','Policy pages','2 revision rounds','Mobile responsive'], featured:true, badge:'Most Popular' },
+  { icon:'🛍️', name:'E-Commerce Store', desc:'Full online stores with categories, cart, checkout, and policies.', range:'$1,500–$2,500', note:'Delivered in 4–7 business days', features:['Product categories','Shopping cart & search','Shipping & returns pages','Contact form','2 revision rounds'], featured:false, badge:null },
+  { icon:'📊', name:'Custom Dashboard', desc:'Business portals, client dashboards, and internal management tools.', range:'$2,500–$6,000', note:'Delivered in 7–14 business days', features:['KPI tracking cards','Sidebar navigation','Data visualization','Client/user management','3 revision rounds'], featured:false, badge:null },
+  { icon:'🏪', name:'Platform / Marketplace', desc:'Full P2P or B2C marketplace with accounts, listings, and dashboards.', range:'$4,000–$10,000', note:'Timeline varies by scope', features:['User authentication','Listing creation & search','Seller/buyer dashboards','Live price tickers','Unlimited revisions'], featured:true, badge:'Premium' },
+  { icon:'🤖', name:'AI-Powered App', desc:'Custom web apps with Claude, ChatGPT, or Groq API integration.', range:'$1,500–$5,000', note:'Timeline based on complexity', features:['AI model integration','Custom prompt engineering','API connection setup','Response UI design','2–3 revision rounds'], featured:false, badge:null },
+];
+
+const RETAINERS = [
+  { tier:'Basic', name:'Site Care Plan', price:'$150/mo', period:'Monthly · Cancel anytime', features:['2 content updates/month','Bug fixes & minor edits','Email support — 48hr','Monthly site backup'], featured:false },
+  { tier:'Pro', name:'Growth Plan', price:'$250/mo', period:'Monthly · Cancel anytime', features:['5 content updates/month','New page additions','Priority support — 24hr','Monthly performance report','New feature additions'], featured:true },
+  { tier:'Premium', name:'Full Partner Plan', price:'$400/mo', period:'Monthly · Cancel anytime', features:['Unlimited content updates','New pages & features','Same-day support','Monthly strategy call','Social media graphics','New integrations'], featured:false },
+];
+
+const POLICIES = [
+  { icon:'💵', name:'Payment Terms', desc:'50% deposit required before work begins. Remaining 50% due upon delivery. No exceptions.' },
+  { icon:'🔄', name:'Revisions Policy', desc:'Revisions per package included. Additional rounds billed at $75/hour.' },
+  { icon:'⏱️', name:'Rush Delivery', desc:'Under 48 hours: 50% surcharge on base price. Subject to availability.' },
+  { icon:'📦', name:'Deliverables', desc:'All files and source code delivered upon final payment. Hosting assistance included.' },
+  { icon:'❌', name:'Cancellation', desc:'Deposit non-refundable once work begins. Cancellation requires written notice.' },
+  { icon:'🤝', name:'Scope Changes', desc:'Changes beyond agreed scope require a new quote. May affect timeline.' },
+];
+
+function renderPricingPage() {
+  const grid = document.getElementById('pricing-cards');
+  if (grid) grid.innerHTML = SERVICES.map(s => `
+    <div class="card" style="${s.featured?'border:2px solid var(--gold);background:var(--gold-dim)':''}">
+      ${s.badge?`<div style="display:inline-block;font-size:11px;font-weight:700;padding:2px 10px;border-radius:99px;background:var(--gold-dim);color:var(--gold);margin-bottom:10px">${s.badge}</div>`:''}
+      <div style="font-size:26px;margin-bottom:8px">${s.icon}</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:6px">${s.name}</div>
+      <div style="font-size:13px;color:var(--gray-500);margin-bottom:12px;line-height:1.5">${s.desc}</div>
+      <div style="font-size:22px;font-weight:800;color:var(--gold);margin-bottom:2px">${s.range}</div>
+      <div style="font-size:12px;color:var(--gray-400);margin-bottom:14px">${s.note}</div>
+      <div style="margin-bottom:16px">${s.features.map(f=>`<div style="font-size:13px;padding:4px 0;border-bottom:1px solid var(--gray-100)">✓ ${f}</div>`).join('')}</div>
+      <button onclick="selectServicePackage('${s.name}','${s.range.split('–')[0]}')" class="btn btn-solid" style="${s.featured?'background:var(--gold);border-color:var(--gold);color:#0F172A':''}">Select Package</button>
+    </div>`).join('');
+
+  const ret = document.getElementById('retainer-cards');
+  if (ret) ret.innerHTML = RETAINERS.map(r => `
+    <div class="card" style="${r.featured?'border:2px solid var(--gold);background:var(--gold-dim)':''}">
+      <div style="font-size:11px;font-weight:700;color:${r.featured?'var(--gold)':'var(--gray-400)'};margin-bottom:8px">${r.tier.toUpperCase()}</div>
+      <div style="font-size:18px;font-weight:700;margin-bottom:4px">${r.name}</div>
+      <div style="font-size:24px;font-weight:800;color:var(--gold);margin-bottom:2px">${r.price}</div>
+      <div style="font-size:12px;color:var(--gray-500);margin-bottom:14px">${r.period}</div>
+      ${r.features.map(f=>`<div style="font-size:13px;padding:5px 0;border-bottom:1px solid var(--gray-100)">✓ ${f}</div>`).join('')}
+    </div>`).join('');
+
+  const pol = document.getElementById('policies-cards');
+  if (pol) pol.innerHTML = POLICIES.map(p => `
+    <div class="card">
+      <div style="font-size:24px;margin-bottom:8px">${p.icon}</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:6px">${p.name}</div>
+      <div style="font-size:14px;color:var(--gray-600);line-height:1.6">${p.desc}</div>
+    </div>`).join('');
+}
+
+function selectServicePackage(name, price) {
+  document.querySelectorAll('#pricing-page .path-tab').forEach(b => { if(b.textContent.includes('Proposal')) b.click(); });
+  const sel = document.getElementById('pb-service');
+  if (sel) { for(let o of sel.options){ if(o.value.includes(name)) { sel.value = o.value; break; } } }
+  updateProposalPreview();
+}
+
+function updateProposalPreview() {
+  const client = document.getElementById('pb-client')?.value || '[Client Name]';
+  const contact = document.getElementById('pb-contact')?.value || '';
+  const service = document.getElementById('pb-service')?.value || '[Service Type]';
+  const desc = document.getElementById('pb-desc')?.value || '[Project description]';
+  const timeline = document.getElementById('pb-timeline')?.value || '';
+  const notes = document.getElementById('pb-notes')?.value || '';
+  const today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const proposal = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+H.E.L.P. CENTER — PROJECT PROPOSAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Date: ${today}
+Prepared By: Joy Watford
+Web Developer & Digital Architect
+joy@helpcenter.com
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PREPARED FOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Organization: ${client}${contact?'\nContact: '+contact:''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROJECT OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Service: ${service}
+Description: ${desc}
+Estimated Timeline: ${timeline}${notes?'\nAdditional Notes: '+notes:''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+WHAT'S INCLUDED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Custom design built from scratch — no templates
+✓ Mobile-responsive layout
+✓ All agreed pages and functionality
+✓ Revision rounds per selected package
+✓ Final file delivery upon payment
+✓ Post-launch deployment assistance
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INVESTMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Package: ${service}
+
+PAYMENT SCHEDULE:
+→ 50% Deposit: Due upon agreement
+→ 50% Final: Due upon delivery
+
+Accepted: Venmo · CashApp · Zelle · PayPal
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TERMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Work begins upon receipt of 50% deposit
+• Deposit is non-refundable once work begins
+• Additional revisions beyond package: $75/hr
+• Scope changes require written agreement
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NEXT STEPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Review and approve this proposal
+2. Submit 50% deposit to begin
+3. Receive project intake form within 24 hours
+4. Work begins upon deposit confirmation
+
+joy@helpcenter.com
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Joy Watford | H.E.L.P. Center
+AI-Powered Web Development
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`.trim();
+  const preview = document.getElementById('pb-preview');
+  if (preview) preview.value = proposal;
+}
+
+function copyProposal() {
+  const t = document.getElementById('pb-preview');
+  if (!t) return;
+  navigator.clipboard.writeText(t.value).catch(()=>{ t.select(); document.execCommand('copy'); });
+  showToast('Proposal copied!','success');
+}
+
+// ── STRATEGY DATA ──────────────────────────────────────────────
+const ROADMAP_PHASES = [
+  { num:1, time:'Week 1–2', title:'🔧 Genericize & Polish', desc:'Convert your personal H.E.L.P. Center into a multi-user ready platform.', tasks:['Remove personal hardcoded data — replace with dynamic user variables','Build a simple onboarding flow (name, business type, goals)','Create a generic marketing landing page for the platform','Add basic user account system (email + password)','Test with genealogy business version as second use case'] },
+  { num:2, time:'Week 2–3', title:'💳 Add Payments', desc:'Integrate a payment system so you can start charging immediately.', tasks:['Integrate Stripe or Lemon Squeezy','Set up 3 pricing tiers with monthly/annual toggle','Create founding member offer — $29/mo locked for life','Add subscription management view to your admin dashboard'] },
+  { num:3, time:'Week 3–4', title:'🚀 Beta Launch', desc:'Soft launch to a small group for feedback and validation.', tasks:['Recruit 5–10 founding members from your network','Offer founding member pricing in exchange for written feedback','Post in Facebook groups for entrepreneurs and coaches','Create a short screen-recorded demo walkthrough video','Set up a feedback form inside the app'] },
+  { num:4, time:'Month 2+', title:'📈 Scale & Iterate', desc:'Use beta feedback to improve, then open to the public.', tasks:['Launch public waitlist page with email capture','Post consistently on LinkedIn and TikTok about the build journey','Add the features most requested by beta users','Target 50 paying users by end of Month 2','Explore partnerships with coaching programs and business organizations'] },
+];
+
+const NICHES = [
+  { icon:'⛪', name:'Small & Mid-Size Churches', value:'$800–$2,000/site', desc:'Independent and community churches needing a professional online presence.', pain:'"We have a Facebook page but no real website. People can\'t find our service times or give online."' },
+  { icon:'🏥', name:'Counseling Practices', value:'$1,000–$2,500/site', desc:'Individual therapists and small practices who need booking and a trust-building presence.', pain:'"My website looks like it was built in 2009. I\'m losing clients to people with better-looking sites."' },
+  { icon:'🌱', name:'New Businesses (Year 1–2)', value:'$500–$1,200/site', desc:'Entrepreneurs who just registered their business and need a launch presence fast.', pain:'"I just got my LLC but don\'t have a website. I need something professional ASAP."' },
+  { icon:'👑', name:'Coaches & Speakers', value:'$800–$2,000/site', desc:'Life coaches, business coaches, and speakers who need booking pages and program sales pages.', pain:'"I charge $500 per session but my website looks like it charges $50. I need to level up."' },
+];
+
+const SCRIPTS = [
+  { color:'#4267B2', label:'EMAIL — Churches', title:'Church Website Outreach Email', body:`Subject: Professional Website for [Church Name] — Starting at $800
+
+Hi Pastor [Name],
+
+I'm Joy Watford, a web developer and digital architect based in Jacksonville. I specialize in building professional websites for churches and faith-based organizations.
+
+I noticed [Church Name] doesn't currently have a website (or could use an upgrade), and I'd love to help you create a strong online presence that helps you:
+• Reach new visitors searching for a church home
+• Share service times, events, and sermons
+• Accept tithes and offerings online
+• Connect with your community 24/7
+
+Church websites start at $800 and are typically completed within 3–5 business days.
+
+Would you be open to a 15-minute call this week to discuss what you're looking for?
+
+Blessings,
+Joy Watford
+H.E.L.P. Center | joy@helpcenter.com` },
+  { color:'#10B981', label:'FACEBOOK DM — New Business Owners', title:'Facebook DM to New Business Owners', body:`Hi [Name]! Congratulations on your new business — that's exciting! 🎉
+
+I'm Joy, a web developer who helps new entrepreneurs get a professional online presence fast. I saw your post about [business name] and wanted to reach out.
+
+I build business websites starting at $600, usually delivered in 3–5 business days. That includes:
+✓ Custom design (no templates)
+✓ Mobile-friendly
+✓ Contact form
+✓ Ready to share on social media
+
+If you're interested in getting a professional website that matches your brand, I'd love to connect. What does your current online presence look like?` },
+  { color:'#A78BFA', label:'TEXT / WHATSAPP — Warm Referrals', title:'Text Message for Warm Referrals', body:`Hey [Name]! Hope you're doing well 🙏
+
+I'm expanding my web development business and I'm looking for referrals. Do you know anyone who:
+• Just started a business and needs a website
+• Has a church or nonprofit that needs a better online presence
+• Runs a coaching or consulting practice
+
+I pay a $50 referral bonus for every client that books. Takes 30 seconds to make an intro — just send them my number or this message.
+
+Thanks in advance! — Joy Watford, H.E.L.P. Center` },
+];
+
+const ACTION_ITEMS = [
+  { label:'1. Contact ALL existing clients about maintenance retainers', priority:'TODAY', sub:'Send the retainer email to Les & Nes, JL Foreman, WAT4D, and church clients. Potential: $450–$1,500/month recurring.' },
+  { label:'2. Deploy your portfolio page to GitHub Pages or Netlify', priority:'TODAY', sub:'Your portfolio HTML is ready. Push it live so you have a professional link to share today.' },
+  { label:'3. Post your portfolio in 5 Facebook groups', priority:'TODAY', sub:'Target small business, entrepreneur, church, and local community groups. Include portfolio link and starting price.' },
+  { label:'4. Update LinkedIn headline and post your 3 best projects', priority:'TODAY', sub:'Headline: "Web Developer & Digital Architect | AI-Powered | Websites from $600". Include portfolio link.' },
+  { label:'5. Create 3 Fiverr gigs', priority:'TODAY', sub:'Post: Landing Page ($600), Church Website ($800), Custom Dashboard ($1,500). Use real screenshots as gig images.' },
+  { label:'6. Ask every existing client for 1 referral', priority:'TOMORROW', sub:'Offer $50 referral bonus. This alone could land 2–3 new projects this week.' },
+  { label:'7. Send 10 cold DMs to churches on Instagram/Facebook', priority:'TOMORROW', sub:'Look for churches with no website link in bio or poorly-designed sites. Use the church script from the Outreach tab.' },
+  { label:'8. Begin H.E.L.P. Center generic onboarding flow', priority:'THIS WEEK', sub:'Start by replacing hardcoded personal data with dynamic user variables. First step to a launchable SaaS.' },
+];
+
+function renderStrategyPage() {
+  const rmap = document.getElementById('roadmap-phases');
+  if (rmap) rmap.innerHTML = ROADMAP_PHASES.map((p,i) => `
+    <div style="display:grid;grid-template-columns:90px 1fr;gap:20px;margin-bottom:24px;position:relative">
+      ${i<ROADMAP_PHASES.length-1?`<div style="position:absolute;left:44px;top:42px;width:2px;height:calc(100% + 4px);background:linear-gradient(to bottom,var(--gold),rgba(201,168,76,0.05))"></div>`:''}
+      <div style="text-align:center">
+        <div style="width:42px;height:42px;border-radius:50%;background:var(--gold);color:#0F172A;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;margin:0 auto">${p.num}</div>
+        <div style="font-size:11px;font-weight:600;color:var(--gold);margin-top:6px">${p.time}</div>
+      </div>
+      <div class="card">
+        <div style="font-size:16px;font-weight:700;margin-bottom:4px">${p.title}</div>
+        <div style="font-size:13px;color:var(--gray-500);margin-bottom:12px">${p.desc}</div>
+        ${p.tasks.map(t=>`<div style="font-size:13px;padding:5px 0;border-bottom:1px solid var(--gray-100)">→ ${t}</div>`).join('')}
+      </div>
+    </div>`).join('');
+
+  const niches = document.getElementById('niche-cards');
+  if (niches) niches.innerHTML = NICHES.map(n => `
+    <div class="card">
+      <div style="font-size:28px;margin-bottom:8px">${n.icon}</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px">${n.name}</div>
+      <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:8px">${n.value}</div>
+      <div style="font-size:13px;color:var(--gray-600);margin-bottom:10px;line-height:1.5">${n.desc}</div>
+      <div style="font-size:12px;color:var(--gray-500);font-style:italic;border-left:3px solid var(--gold-border);padding-left:10px">${n.pain}</div>
+    </div>`).join('');
+
+  const scripts = document.getElementById('outreach-scripts');
+  if (scripts) scripts.innerHTML = SCRIPTS.map(s => `
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div>
+          <span style="font-size:11px;font-weight:700;padding:2px 10px;border-radius:99px;background:${s.color}22;color:${s.color}">${s.label}</span>
+          <div style="font-size:15px;font-weight:700;margin-top:6px">${s.title}</div>
+        </div>
+        <button onclick="copyText(this,\`${s.body.replace(/`/g,"'")}\`)" class="btn btn-outline" style="padding:6px 14px;font-size:12px;color:var(--gold);border-color:var(--gold-border);white-space:nowrap">Copy Script</button>
+      </div>
+      <pre style="font-size:13px;line-height:1.7;white-space:pre-wrap;color:var(--gray-700);background:var(--gray-50);border-radius:6px;padding:14px;font-family:inherit">${s.body}</pre>
+    </div>`).join('');
+
+  renderActionChecklist();
+}
+
+function renderActionChecklist() {
+  const el = document.getElementById('action-checklist');
+  if (!el) return;
+  const state = JSON.parse(localStorage.getItem('help-checklist-state')||'{}');
+  const colors = { TODAY:'var(--gold)', TOMORROW:'#4267B2', 'THIS WEEK':'#A78BFA' };
+  el.innerHTML = ACTION_ITEMS.map((item,i) => `
+    <div style="display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--gray-100);align-items:start;opacity:${state[i]?'0.45':'1'}">
+      <input type="checkbox" ${state[i]?'checked':''} onchange="toggleActionItem(${i},this)" style="margin-top:3px;width:16px;height:16px;cursor:pointer;accent-color:var(--gold);flex-shrink:0">
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600;${state[i]?'text-decoration:line-through;color:var(--gray-400)':''}">${item.label}</div>
+        <div style="font-size:13px;color:var(--gray-500);margin-top:3px">${item.sub}</div>
+      </div>
+      <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:${colors[item.priority]}22;color:${colors[item.priority]};white-space:nowrap;flex-shrink:0">${item.priority}</span>
+    </div>`).join('');
+}
+
+function toggleActionItem(index, el) {
+  const state = JSON.parse(localStorage.getItem('help-checklist-state')||'{}');
+  state[index] = el.checked;
+  localStorage.setItem('help-checklist-state', JSON.stringify(state));
+  renderActionChecklist();
+}
+
+function resetActionChecklist() {
+  if (!confirm('Reset all checklist items?')) return;
+  localStorage.removeItem('help-checklist-state');
+  renderActionChecklist();
+}
   </script>
 
 </body>

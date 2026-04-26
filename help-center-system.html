@@ -464,6 +464,9 @@
           <a class="nav-link" onclick="showPage('revenue', event)">
             <span class="nav-icon" style="font-size:13px">▸</span><span>Revenue Tracker</span>
           </a>
+          <a class="nav-link" onclick="showPage('reports', event)">
+            <span class="nav-icon" style="font-size:13px">▸</span><span>Reports &amp; Documents</span>
+          </a>
           <a class="nav-link" onclick="showPage('settings', event)">
             <span class="nav-icon" style="font-size:13px">▸</span><span>Settings</span>
           </a>
@@ -1446,35 +1449,48 @@
           </div>
         </div>
       </div>
-      <div id="calendar-page" class="page hidden">
-        <div class="page-header"><h1 class="page-title">Calendar</h1><p class="page-subtitle">Schedule sessions, deadlines, and business milestones</p></div>
-        <div class="content">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
-            <div style="display:flex;align-items:center;gap:12px">
-              <button onclick="calNav(-1)" class="btn btn-outline" style="padding:8px 14px">‹</button>
-              <div id="cal-month-label" style="font-size:18px;font-weight:700;min-width:160px;text-align:center"></div>
-              <button onclick="calNav(1)" class="btn btn-outline" style="padding:8px 14px">›</button>
-            </div>
-            <button onclick="openAddEventModal()" class="btn btn-solid">+ Add Event</button>
-          </div>
-          <div class="card" style="margin-bottom:20px;padding:0;overflow:hidden">
-            <div style="display:grid;grid-template-columns:repeat(7,1fr);background:var(--gray-50)">
-              <div style="padding:10px;text-align:center;font-size:12px;font-weight:700;color:var(--gray-500)">Sun</div>
-              <div style="padding:10px;text-align:center;font-size:12px;font-weight:700;color:var(--gray-500)">Mon</div>
-              <div style="padding:10px;text-align:center;font-size:12px;font-weight:700;color:var(--gray-500)">Tue</div>
-              <div style="padding:10px;text-align:center;font-size:12px;font-weight:700;color:var(--gray-500)">Wed</div>
-              <div style="padding:10px;text-align:center;font-size:12px;font-weight:700;color:var(--gray-500)">Thu</div>
-              <div style="padding:10px;text-align:center;font-size:12px;font-weight:700;color:var(--gray-500)">Fri</div>
-              <div style="padding:10px;text-align:center;font-size:12px;font-weight:700;color:var(--gray-500)">Sat</div>
-            </div>
-            <div id="cal-grid" style="display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--gray-200)"></div>
-          </div>
-          <div class="card">
-            <div style="font-weight:700;font-size:15px;margin-bottom:12px">Upcoming Events</div>
-            <div id="cal-upcoming"></div>
-          </div>
+<div id="calendar-page" class="page hidden">
+  <div class="page-header">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1 class="page-title">📅 Calendar</h1>
+        <p class="page-subtitle">Schedule sessions, deadlines, and business milestones</p>
+      </div>
+      <button onclick="openAddEventModal()" class="btn btn-solid">+ Add Event</button>
+    </div>
+  </div>
+  <div class="content">
+    <!-- View switcher + nav -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button onclick="calNav(-1)" class="btn btn-outline" style="padding:8px 14px;font-weight:700">‹</button>
+        <div id="cal-month-label" style="font-size:18px;font-weight:700;min-width:200px;text-align:center;color:var(--gray-900)"></div>
+        <button onclick="calNav(1)" class="btn btn-outline" style="padding:8px 14px;font-weight:700">›</button>
+        <button onclick="calGoToday()" class="btn btn-outline" style="padding:8px 14px;font-size:12px">Today</button>
+      </div>
+      <div style="display:flex;gap:6px;background:var(--gray-100);border-radius:8px;padding:4px">
+        <button id="cal-view-day" onclick="setCalView('day',this)" class="btn" style="padding:7px 14px;font-size:12px;font-weight:600;border-radius:6px;background:#fff;border:none;box-shadow:0 1px 3px rgba(0,0,0,0.1)">Day</button>
+        <button id="cal-view-week" onclick="setCalView('week',this)" class="btn" style="padding:7px 14px;font-size:12px;font-weight:600;border-radius:6px;background:none;border:none;color:var(--gray-500)">Week</button>
+        <button id="cal-view-month" onclick="setCalView('month',this)" class="btn" style="padding:7px 14px;font-size:12px;font-weight:600;border-radius:6px;background:none;border:none;color:var(--gray-500)">Month</button>
+        <button id="cal-view-year" onclick="setCalView('year',this)" class="btn" style="padding:7px 14px;font-size:12px;font-weight:600;border-radius:6px;background:none;border:none;color:var(--gray-500)">Year</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start">
+      <!-- Main calendar view -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div id="cal-main-view"></div>
+      </div>
+      <!-- Upcoming events sidebar -->
+      <div>
+        <div class="card">
+          <div style="font-weight:700;font-size:15px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--gray-100)">📋 Upcoming Events</div>
+          <div id="cal-upcoming"></div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
       <div id="state-resources-page" class="page hidden">
         <div class="page-header">
           <h1 class="page-title">State Resources</h1>
@@ -1586,6 +1602,7 @@
               <select id="set-ai-provider" class="form-select" onchange="updateAiModelOptions()">
                 <option value="groq">Groq (Recommended — Fast, Capable, Free Tier Available)</option>
                 <option value="openai">OpenAI</option>
+                <option value="claude">Claude (Anthropic) — Most Capable, Advanced Reasoning</option>
               </select>
             </div>
             <div class="form-group"><label class="form-label">API Key</label>
@@ -1792,6 +1809,148 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
   </div>
 </div>
 
+    <div id="reports-page" class="page hidden">
+      <div class="page-header">
+        <h1 class="page-title">📄 Reports &amp; Documents</h1>
+        <p class="page-subtitle">Generate, preview, print, and download business documents</p>
+      </div>
+      <div class="content">
+        <div class="path-tabs-container">
+          <div class="path-tabs-nav">
+            <button class="path-tab active" onclick="pTab('reports','proposal',this)">Proposal</button>
+            <button class="path-tab" onclick="pTab('reports','bizplan',this)">Business Plan</button>
+            <button class="path-tab" onclick="pTab('reports','contract',this)">Contract</button>
+            <button class="path-tab" onclick="pTab('reports','program',this)">Program Plan</button>
+            <button class="path-tab" onclick="pTab('reports','revenue',this)">Revenue Report</button>
+          </div>
+
+          <!-- PROPOSAL -->
+          <div id="reports-tab-proposal" class="path-tab-content active">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+              <div class="card">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Proposal Details</h3>
+                <div class="form-group"><label class="form-label">Client / Organization</label><input id="rp-client" class="form-input" style="margin:0" placeholder="Client name"></div>
+                <div class="form-group"><label class="form-label">Contact Person</label><input id="rp-contact" class="form-input" style="margin:0" placeholder="Contact name"></div>
+                <div class="form-group"><label class="form-label">Service / Package</label><input id="rp-service" class="form-input" style="margin:0" placeholder="e.g. Business Website — $1,500"></div>
+                <div class="form-group"><label class="form-label">Project Description</label><textarea id="rp-desc" class="form-input" style="height:80px;resize:vertical;margin:0" placeholder="Describe the project scope..."></textarea></div>
+                <div class="form-group"><label class="form-label">Timeline</label><input id="rp-timeline" class="form-input" style="margin:0" placeholder="e.g. 5–7 business days"></div>
+                <div class="form-group"><label class="form-label">Additional Notes</label><textarea id="rp-notes" class="form-input" style="height:60px;resize:vertical;margin:0" placeholder="Special requirements, hosting, domain..."></textarea></div>
+                <button onclick="generateReportDoc('proposal')" class="btn btn-solid" style="width:100%">Generate Proposal</button>
+              </div>
+              <div class="card" style="display:flex;flex-direction:column">
+                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                  <button onclick="printDoc('report-preview')" class="btn btn-outline" style="flex:1;padding:8px">🖸️ Print</button>
+                  <button onclick="downloadDoc('report-preview','proposal')" class="btn btn-outline" style="flex:1;padding:8px">⬇️ Download</button>
+                  <button onclick="copyDocText('report-preview')" class="btn btn-outline" style="flex:1;padding:8px">📋 Copy</button>
+                </div>
+                <textarea id="report-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" readonly placeholder="Fill in the form and click Generate..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- BUSINESS PLAN -->
+          <div id="reports-tab-bizplan" class="path-tab-content">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+              <div class="card">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Business Plan Details</h3>
+                <div class="form-group"><label class="form-label">Business Name</label><input id="bp-bizname" class="form-input" style="margin:0" placeholder="Your business name"></div>
+                <div class="form-group"><label class="form-label">Owner / Founder</label><input id="bp-owner" class="form-input" style="margin:0" placeholder="Your name"></div>
+                <div class="form-group"><label class="form-label">Business Type / Industry</label><input id="bp-industry" class="form-input" style="margin:0" placeholder="e.g. Business Consulting"></div>
+                <div class="form-group"><label class="form-label">Mission Statement</label><textarea id="bp-mission" class="form-input" style="height:70px;resize:vertical;margin:0" placeholder="What does your business do and for whom?"></textarea></div>
+                <div class="form-group"><label class="form-label">Target Market</label><textarea id="bp-market" class="form-input" style="height:60px;resize:vertical;margin:0" placeholder="Who are your ideal clients?"></textarea></div>
+                <div class="form-group"><label class="form-label">Services / Products</label><textarea id="bp-services" class="form-input" style="height:70px;resize:vertical;margin:0" placeholder="List your main offerings..."></textarea></div>
+                <div class="form-group"><label class="form-label">Revenue Goals (12 months)</label><input id="bp-revenue" class="form-input" style="margin:0" placeholder="e.g. $75,000"></div>
+                <div class="form-group"><label class="form-label">Startup / Operating Costs</label><input id="bp-costs" class="form-input" style="margin:0" placeholder="e.g. $2,000/month"></div>
+                <div class="form-group"><label class="form-label">Competitive Advantage</label><textarea id="bp-advantage" class="form-input" style="height:60px;resize:vertical;margin:0" placeholder="What makes you different?"></textarea></div>
+                <button onclick="generateReportDoc('bizplan')" class="btn btn-solid" style="width:100%">Generate Business Plan</button>
+              </div>
+              <div class="card" style="display:flex;flex-direction:column">
+                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                  <button onclick="printDoc('bizplan-preview')" class="btn btn-outline" style="flex:1;padding:8px">🖸️ Print</button>
+                  <button onclick="downloadDoc('bizplan-preview','business-plan')" class="btn btn-outline" style="flex:1;padding:8px">⬇️ Download</button>
+                  <button onclick="copyDocText('bizplan-preview')" class="btn btn-outline" style="flex:1;padding:8px">📋 Copy</button>
+                </div>
+                <textarea id="bizplan-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" readonly placeholder="Fill in the form and click Generate..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTRACT -->
+          <div id="reports-tab-contract" class="path-tab-content">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+              <div class="card">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Service Agreement Details</h3>
+                <div class="form-group"><label class="form-label">Client Full Name</label><input id="ct-client" class="form-input" style="margin:0" placeholder="Client legal name"></div>
+                <div class="form-group"><label class="form-label">Client Business / Org</label><input id="ct-org" class="form-input" style="margin:0" placeholder="Organization name (if applicable)"></div>
+                <div class="form-group"><label class="form-label">Service Description</label><textarea id="ct-service" class="form-input" style="height:70px;resize:vertical;margin:0" placeholder="Describe the exact services being provided..."></textarea></div>
+                <div class="form-group"><label class="form-label">Total Project Price</label><input id="ct-price" class="form-input" style="margin:0" placeholder="e.g. $1,500.00"></div>
+                <div class="form-group"><label class="form-label">Deposit Amount</label><input id="ct-deposit" class="form-input" style="margin:0" placeholder="e.g. $750.00 (50%)"></div>
+                <div class="form-group"><label class="form-label">Project Start Date</label><input id="ct-start" type="date" class="form-input" style="margin:0"></div>
+                <div class="form-group"><label class="form-label">Estimated Completion</label><input id="ct-end" type="date" class="form-input" style="margin:0"></div>
+                <div class="form-group"><label class="form-label">Revision Rounds Included</label><input id="ct-revisions" class="form-input" style="margin:0" placeholder="e.g. 2 revision rounds"></div>
+                <button onclick="generateReportDoc('contract')" class="btn btn-solid" style="width:100%">Generate Contract</button>
+              </div>
+              <div class="card" style="display:flex;flex-direction:column">
+                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                  <button onclick="printDoc('contract-preview')" class="btn btn-outline" style="flex:1;padding:8px">🖸️ Print</button>
+                  <button onclick="downloadDoc('contract-preview','contract')" class="btn btn-outline" style="flex:1;padding:8px">⬇️ Download</button>
+                  <button onclick="copyDocText('contract-preview')" class="btn btn-outline" style="flex:1;padding:8px">📋 Copy</button>
+                </div>
+                <textarea id="contract-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" readonly placeholder="Fill in the form and click Generate..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- PROGRAM PLAN -->
+          <div id="reports-tab-program" class="path-tab-content">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+              <div class="card">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Program Plan Details</h3>
+                <div class="form-group"><label class="form-label">Program Name</label><input id="pp-name" class="form-input" style="margin:0" placeholder="e.g. H.E.L.P. Youth Leaders Academy"></div>
+                <div class="form-group"><label class="form-label">Program Director</label><input id="pp-director" class="form-input" style="margin:0" placeholder="Your name / organization"></div>
+                <div class="form-group"><label class="form-label">Target Participants</label><input id="pp-participants" class="form-input" style="margin:0" placeholder="e.g. Youth ages 13–17 in Jacksonville, FL"></div>
+                <div class="form-group"><label class="form-label">Program Goals</label><textarea id="pp-goals" class="form-input" style="height:70px;resize:vertical;margin:0" placeholder="What will participants achieve?"></textarea></div>
+                <div class="form-group"><label class="form-label">Curriculum Overview</label><textarea id="pp-curriculum" class="form-input" style="height:80px;resize:vertical;margin:0" placeholder="Week by week topics..."></textarea></div>
+                <div class="form-group"><label class="form-label">Budget / Pricing</label><input id="pp-budget" class="form-input" style="margin:0" placeholder="e.g. $350/participant, 15 seats"></div>
+                <div class="form-group"><label class="form-label">Start Date</label><input id="pp-start" type="date" class="form-input" style="margin:0"></div>
+                <div class="form-group"><label class="form-label">Partners / Sponsors</label><textarea id="pp-partners" class="form-input" style="height:60px;resize:vertical;margin:0" placeholder="Schools, churches, community orgs..."></textarea></div>
+                <button onclick="generateReportDoc('program')" class="btn btn-solid" style="width:100%">Generate Program Plan</button>
+              </div>
+              <div class="card" style="display:flex;flex-direction:column">
+                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                  <button onclick="printDoc('program-preview')" class="btn btn-outline" style="flex:1;padding:8px">🖸️ Print</button>
+                  <button onclick="downloadDoc('program-preview','program-plan')" class="btn btn-outline" style="flex:1;padding:8px">⬇️ Download</button>
+                  <button onclick="copyDocText('program-preview')" class="btn btn-outline" style="flex:1;padding:8px">📋 Copy</button>
+                </div>
+                <textarea id="program-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" readonly placeholder="Fill in the form and click Generate..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- REVENUE REPORT -->
+          <div id="reports-tab-revenue" class="path-tab-content">
+            <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+              <select id="rr-year" class="form-select" style="margin:0;width:120px" onchange="generateReportDoc('revenue')">
+                <option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option>
+              </select>
+              <select id="rr-month" class="form-select" style="margin:0;width:140px" onchange="generateReportDoc('revenue')">
+                <option value="">All Months</option>
+                <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+                <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+                <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+                <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+              </select>
+              <button onclick="generateReportDoc('revenue')" class="btn btn-solid" style="padding:10px 18px">Generate Report</button>
+              <button onclick="printDoc('revenue-report-preview')" class="btn btn-outline" style="padding:10px 18px">🖸️ Print</button>
+              <button onclick="downloadDoc('revenue-report-preview','revenue-report')" class="btn btn-outline" style="padding:10px 18px">⬇️ Download</button>
+            </div>
+            <div class="card">
+              <textarea id="revenue-report-preview" class="form-input" style="width:100%;min-height:500px;font-size:13px;font-family:monospace;resize:vertical" readonly placeholder="Select filters and click Generate Report..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     </main>
   </div>
 
@@ -2122,7 +2281,8 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
   'career-pathway': () => { renderJobApps(); restoreCareerChecks(); loadCareerGoals(); },
   'youth-pathway': () => { renderCurriculum(); renderOutreach(); restoreYouthChecks(); loadYouthProgram(); loadYouthPlatform(); },
   pricing: () => { renderPricingPage(); updateProposalPreview(); },
-  strategy: () => { renderStrategyPage(); }
+  strategy: () => { renderStrategyPage(); },
+  reports: () => {}
 };
       if (renders[pageId] && typeof renders[pageId] === 'function') renders[pageId]();
       if (typeof setAiContext === 'function') setAiContext(pageId);
@@ -2777,6 +2937,11 @@ When you know the client's name or situation, personalize specifically. Never gi
       { id:'gpt-4o-mini', label:'GPT-4o Mini — Fast & Affordable' },
       { id:'gpt-4o', label:'GPT-4o — Most Capable' }
     ];
+    const CLAUDE_MODELS = [
+      { id:'claude-sonnet-4-6', label:'Claude Sonnet 4.6 — Recommended (Latest)' },
+      { id:'claude-opus-4-7', label:'Claude Opus 4.7 — Most Powerful' },
+      { id:'claude-haiku-4-5-20251001', label:'Claude Haiku 4.5 — Fast & Efficient' }
+    ];
 
     function getAiSettings() {
       const s = JSON.parse(localStorage.getItem('settings')) || {};
@@ -2786,7 +2951,41 @@ When you know the client's name or situation, personalize specifically. Never gi
     async function callAI(messages, onChunk) {
       const ai = getAiSettings();
       if (!ai.key) return 'Add your API key in Settings → AI Integration to enable AI coaching.';
-      const endpoint = ai.provider==='groq' ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://api.openai.com/v1/chat/completions';
+
+      // Claude (Anthropic) uses a different API format
+      if (ai.provider === 'claude') {
+        try {
+          // Separate system message from user/assistant messages
+          const sysMsg = messages.find(m => m.role === 'system');
+          const chatMsgs = messages.filter(m => m.role !== 'system');
+          const body = { model: ai.model || 'claude-sonnet-4-6', max_tokens: 1200, stream: true, messages: chatMsgs };
+          if (sysMsg) body.system = sysMsg.content;
+          const resp = await fetch('https://api.anthropic.com/v1/messages', {
+            method: 'POST',
+            headers: { 'x-api-key': ai.key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json', 'anthropic-dangerous-direct-browser-access': 'true' },
+            body: JSON.stringify(body)
+          });
+          if (!resp.ok) { const e = await resp.json().catch(() => ({})); return 'AI Error: ' + (e.error?.message || resp.statusText); }
+          const reader = resp.body.getReader(), dec = new TextDecoder();
+          let full = '';
+          while (true) {
+            const { done, value } = await reader.read(); if (done) break;
+            for (const line of dec.decode(value).split('\n')) {
+              if (!line.startsWith('data: ')) continue;
+              const d = line.slice(6); if (d === '[DONE]') continue;
+              try {
+                const evt = JSON.parse(d);
+                const delta = evt.delta?.text || evt.content_block?.text || '';
+                if (delta) { full += delta; if (onChunk) onChunk(delta, full); }
+              } catch {}
+            }
+          }
+          return full;
+        } catch (e) { return 'Connection error: ' + e.message; }
+      }
+
+      // Groq / OpenAI (OpenAI-compatible streaming)
+      const endpoint = ai.provider === 'groq' ? 'https://api.groq.com/openai/v1/chat/completions' : 'https://api.openai.com/v1/chat/completions';
       try {
         const resp = await fetch(endpoint, {
           method:'POST',
@@ -2948,7 +3147,7 @@ When you know the client's name or situation, personalize specifically. Never gi
 
     function updateAiModelOptions() {
       const provider=document.getElementById('set-ai-provider')?.value||'groq';
-      const models=provider==='groq'?GROQ_MODELS:OPENAI_MODELS;
+      const models=provider==='groq'?GROQ_MODELS:provider==='claude'?CLAUDE_MODELS:OPENAI_MODELS;
       const el=document.getElementById('set-ai-model');
       if(el)el.innerHTML=models.map(m=>`<option value="${m.id}">${m.label}</option>`).join('');
     }
@@ -2976,12 +3175,19 @@ When you know the client's name or situation, personalize specifically. Never gi
       const key=document.getElementById('set-ai-key')?.value.trim(); if(!key){if(res)res.innerHTML='<span style="color:var(--error)">Enter an API key first.</span>';return;}
       const provider=document.getElementById('set-ai-provider')?.value||'groq';
       const model=document.getElementById('set-ai-model')?.value;
-      const endpoint=provider==='groq'?'https://api.groq.com/openai/v1/chat/completions':'https://api.openai.com/v1/chat/completions';
       try {
-        const r=await fetch(endpoint,{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({model,messages:[{role:'user',content:'Reply with exactly: H.E.L.P. Center AI connected!'}],max_tokens:20})});
-        const d=await r.json();
-        if(r.ok){if(res)res.innerHTML='<span style="color:#10B981">✓ '+( d.choices?.[0]?.message?.content||'Connected!')+'</span>';}
-        else{if(res)res.innerHTML='<span style="color:var(--error)">✗ '+(d.error?.message||'Failed')+'</span>';}
+        if (provider === 'claude') {
+          const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'x-api-key':key,'anthropic-version':'2023-06-01','content-type':'application/json','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:model||'claude-haiku-4-5-20251001',max_tokens:20,messages:[{role:'user',content:'Reply with exactly: H.E.L.P. Center AI connected!'}]})});
+          const d=await r.json();
+          if(r.ok){if(res)res.innerHTML='<span style="color:#10B981">✓ '+(d.content?.[0]?.text||'Connected!')+'</span>';}
+          else{if(res)res.innerHTML='<span style="color:var(--error)">✗ '+(d.error?.message||'Failed')+'</span>';}
+        } else {
+          const endpoint=provider==='groq'?'https://api.groq.com/openai/v1/chat/completions':'https://api.openai.com/v1/chat/completions';
+          const r=await fetch(endpoint,{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({model,messages:[{role:'user',content:'Reply with exactly: H.E.L.P. Center AI connected!'}],max_tokens:20})});
+          const d=await r.json();
+          if(r.ok){if(res)res.innerHTML='<span style="color:#10B981">✓ '+(d.choices?.[0]?.message?.content||'Connected!')+'</span>';}
+          else{if(res)res.innerHTML='<span style="color:var(--error)">✗ '+(d.error?.message||'Failed')+'</span>';}
+        }
       } catch(e){if(res)res.innerHTML='<span style="color:var(--error)">✗ '+e.message+'</span>';}
     }
 
@@ -3188,119 +3394,337 @@ When you know the client's name or situation, personalize specifically. Never gi
       renderStates(data);
     }
 
-    // ── CALENDAR ───────────────────────────────────────────────────────────────
-    let calYear = new Date().getFullYear();
-    let calMonth = new Date().getMonth();
+    // ══════════════════════════════════════════════════════════════
+    // CALENDAR SYSTEM — Full overhaul with Day/Week/Month/Year views
+    // ══════════════════════════════════════════════════════════════
 
-    function renderCalendar() {
-      renderCalGrid();
-      renderUpcomingEvents();
-    }
+    let calCurrentDate = new Date();
+    let calView = 'month';
+
+    const EVENT_COLORS = [
+      { label:'Blue',   value:'#4267B2' },
+      { label:'Green',  value:'#10B981' },
+      { label:'Gold',   value:'#C9A84C' },
+      { label:'Red',    value:'#EF4444' },
+      { label:'Purple', value:'#8B5CF6' },
+      { label:'Pink',   value:'#EC4899' },
+    ];
+
+    const EVENT_TYPES = ['Meeting','Appointment','Deadline','Follow-Up','Workshop','Payment','Call','Other'];
+
+    function getEvents() { return JSON.parse(localStorage.getItem('calEvents')||'[]'); }
+    function saveEvents(ev) { setData('calEvents', ev); }
+
+    function calGoToday() { calCurrentDate = new Date(); renderCalendar(); }
 
     function calNav(dir) {
-      calMonth += dir;
-      if (calMonth > 11) { calMonth = 0; calYear++; }
-      if (calMonth < 0)  { calMonth = 11; calYear--; }
-      renderCalGrid();
+      if (calView === 'day')   calCurrentDate.setDate(calCurrentDate.getDate() + dir);
+      else if (calView === 'week') calCurrentDate.setDate(calCurrentDate.getDate() + dir*7);
+      else if (calView === 'month') calCurrentDate.setMonth(calCurrentDate.getMonth() + dir);
+      else if (calView === 'year') calCurrentDate.setFullYear(calCurrentDate.getFullYear() + dir);
+      renderCalendar();
     }
 
-    function renderCalGrid() {
-      const grid = document.getElementById('cal-grid');
-      const title = document.getElementById('cal-month-title');
-      if (!grid) return;
-      const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-      if (title) title.textContent = months[calMonth] + ' ' + calYear;
-      const events = getData('events');
-      const firstDay = new Date(calYear, calMonth, 1).getDay();
-      const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-      const today = new Date();
-      let html = '';
-      for (let i = 0; i < firstDay; i++) html += `<div style="padding:8px;min-height:64px"></div>`;
-      for (let d = 1; d <= daysInMonth; d++) {
-        const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-        const dayEvents = events.filter(e => e.date === dateStr);
-        const isToday = d===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear();
-        html += `<div onclick="openAddEventModal('${dateStr}')" style="padding:8px;min-height:64px;border:1px solid var(--gray-200);border-radius:6px;cursor:pointer;transition:background 0.15s;background:${isToday?'rgba(66,103,178,0.08)':'#fff'}" onmouseenter="this.style.background='var(--gray-50)'" onmouseleave="this.style.background='${isToday?'rgba(66,103,178,0.08)':'#fff'}'">
-          <div style="font-weight:${isToday?'800':'600'};font-size:13px;color:${isToday?'var(--accent)':'var(--gray-700)'};margin-bottom:4px">${d}</div>
-          ${dayEvents.map(e=>`<div style="font-size:10px;font-weight:600;padding:2px 5px;border-radius:4px;margin-bottom:2px;background:${e.color||'var(--accent)'};color:#fff;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${e.title}</div>`).join('')}
-        </div>`;
+    function setCalView(view, btn) {
+      calView = view;
+      document.querySelectorAll('[id^="cal-view-"]').forEach(b => {
+        b.style.background = 'none'; b.style.boxShadow = 'none'; b.style.color = 'var(--gray-500)';
+      });
+      if (btn) { btn.style.background = '#fff'; btn.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)'; btn.style.color = 'var(--gray-900)'; }
+      renderCalendar();
+    }
+
+    function renderCalendar() {
+      updateCalLabel();
+      renderUpcomingEvents();
+      const view = document.getElementById('cal-main-view');
+      if (!view) return;
+      if (calView === 'day')   renderDayView(view);
+      else if (calView === 'week')  renderWeekView(view);
+      else if (calView === 'month') renderMonthView(view);
+      else if (calView === 'year')  renderYearView(view);
+    }
+
+    function updateCalLabel() {
+      const el = document.getElementById('cal-month-label');
+      if (!el) return;
+      const opts = { month:'long', year:'numeric' };
+      if (calView === 'day') el.textContent = calCurrentDate.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+      else if (calView === 'week') {
+        const start = new Date(calCurrentDate); start.setDate(start.getDate() - start.getDay());
+        const end = new Date(start); end.setDate(end.getDate() + 6);
+        el.textContent = start.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' + end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
       }
-      grid.innerHTML = html;
+      else if (calView === 'month') el.textContent = calCurrentDate.toLocaleDateString('en-US', opts);
+      else el.textContent = calCurrentDate.getFullYear().toString();
     }
 
+    function getEventsForDate(ds) {
+      return getEvents().filter(e => e.date === ds);
+    }
+
+    function dateStr(d) {
+      return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    }
+
+    // ── DAY VIEW ──────────────────────────────────────────────────
+    function renderDayView(container) {
+      const events = getEventsForDate(dateStr(calCurrentDate));
+      const hours = [];
+      for (let h = 0; h < 24; h++) {
+        for (let m = 0; m < 60; m += 30) {
+          const timeLabel = (h === 0 ? 12 : h > 12 ? h-12 : h) + ':' + (m===0?'00':'30') + ' ' + (h < 12 ? 'AM' : 'PM');
+          const timeKey = String(h).padStart(2,'0') + ':' + (m===0?'00':'30');
+          const slotEvents = events.filter(e => e.time && e.time.startsWith(timeKey));
+          hours.push(
+            '<div style="display:grid;grid-template-columns:70px 1fr;min-height:40px;border-bottom:1px solid var(--gray-100)">' +
+            '<div style="padding:8px 10px;font-size:11px;color:var(--gray-400);font-weight:500;border-right:1px solid var(--gray-100);background:var(--gray-50)">' + (m===0?timeLabel:'') + '</div>' +
+            '<div style="padding:4px 8px;position:relative">' +
+            slotEvents.map(ev => '<div onclick="openEditEventModal(''+ev.id+'')" style="background:'+(ev.color||'#4267B2')+';color:#fff;border-radius:4px;padding:3px 8px;font-size:12px;font-weight:600;cursor:pointer;margin-bottom:2px">'+ev.title+'</div>').join('') +
+            '</div></div>'
+          );
+        }
+      }
+      container.innerHTML =
+        '<div style="padding:14px 16px;border-bottom:2px solid var(--gray-200);background:var(--gray-50)">' +
+        '<div style="font-weight:700;font-size:15px">' + calCurrentDate.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'}) + '</div>' +
+        '<div style="font-size:13px;color:var(--gray-500)">' + events.length + ' event' + (events.length!==1?'s':'') + '</div>' +
+        '</div>' +
+        '<div style="overflow-y:auto;max-height:600px">' + hours.join('') + '</div>';
+    }
+
+    // ── WEEK VIEW ─────────────────────────────────────────────────
+    function renderWeekView(container) {
+      const startOfWeek = new Date(calCurrentDate);
+      startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
+      const days = [];
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(startOfWeek); d.setDate(d.getDate() + i);
+        days.push(d);
+      }
+      const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+      const todayStr = dateStr(new Date());
+
+      const dayHeaders = days.map((d,i) => {
+        const isToday = dateStr(d) === todayStr;
+        return '<div style="text-align:center;padding:10px 4px;border-right:1px solid var(--gray-100);font-size:12px">' +
+          '<div style="font-weight:600;color:var(--gray-500)">' + DAY_NAMES[i] + '</div>' +
+          '<div style="width:28px;height:28px;border-radius:50%;' + (isToday?'background:#4267B2;color:#fff;':'') + 'font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;margin:4px auto">' + d.getDate() + '</div>' +
+          '</div>';
+      }).join('');
+
+      const hourRows = [];
+      for (let h = 6; h < 22; h++) {
+        for (let m = 0; m < 60; m += 30) {
+          const timeLabel = (h===0?12:h>12?h-12:h)+':'+(m===0?'00':'30')+' '+(h<12?'AM':'PM');
+          const timeKey = String(h).padStart(2,'0')+':'+(m===0?'00':'30');
+          const cells = days.map(d => {
+            const ev = getEventsForDate(dateStr(d)).filter(e => e.time && e.time.startsWith(timeKey));
+            return '<div style="border-right:1px solid var(--gray-100);padding:2px 4px;min-height:36px">' +
+              ev.map(e => '<div onclick="openEditEventModal(''+e.id+'')" style="background:'+(e.color||'#4267B2')+';color:#fff;border-radius:3px;padding:2px 6px;font-size:11px;font-weight:600;cursor:pointer;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.title+'</div>').join('') +
+              '</div>';
+          }).join('');
+          hourRows.push('<div style="display:grid;grid-template-columns:60px repeat(7,1fr);border-bottom:1px solid var(--gray-100)">' +
+            '<div style="padding:4px 6px;font-size:10px;color:var(--gray-400);border-right:1px solid var(--gray-100);background:var(--gray-50)">' + (m===0?timeLabel:'') + '</div>' +
+            cells + '</div>');
+        }
+      }
+
+      container.innerHTML =
+        '<div style="display:grid;grid-template-columns:60px repeat(7,1fr);border-bottom:2px solid var(--gray-200);background:var(--gray-50)">' +
+        '<div></div>' + dayHeaders + '</div>' +
+        '<div style="overflow-y:auto;max-height:580px">' + hourRows.join('') + '</div>';
+    }
+
+    // ── MONTH VIEW ────────────────────────────────────────────────
+    function renderMonthView(container) {
+      const year = calCurrentDate.getFullYear();
+      const month = calCurrentDate.getMonth();
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month+1, 0).getDate();
+      const todayStr = dateStr(new Date());
+      const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+      let cells = '';
+      for (let i = 0; i < firstDay; i++) cells += '<div style="min-height:90px;border-right:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100);background:var(--gray-50)"></div>';
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const date = new Date(year, month, d);
+        const ds = dateStr(date);
+        const isToday = ds === todayStr;
+        const dayEvents = getEventsForDate(ds);
+        cells +=
+          '<div onclick="calClickDay(''+ds+'')" style="min-height:90px;border-right:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100);padding:6px;cursor:pointer;transition:background 0.1s" onmouseover="this.style.background='var(--gray-50)'" onmouseout="this.style.background=''">' +
+          '<div style="width:26px;height:26px;border-radius:50%;' + (isToday?'background:#4267B2;color:#fff;':'color:var(--gray-700);') + 'font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;margin-bottom:4px">' + d + '</div>' +
+          dayEvents.slice(0,3).map(ev => '<div style="background:'+(ev.color||'#4267B2')+';color:#fff;border-radius:3px;padding:2px 6px;font-size:11px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+ev.title+'</div>').join('') +
+          (dayEvents.length>3?'<div style="font-size:10px;color:var(--gray-400);font-weight:600">+'+(dayEvents.length-3)+' more</div>':'') +
+          '</div>';
+      }
+
+      container.innerHTML =
+        '<div style="display:grid;grid-template-columns:repeat(7,1fr);background:var(--gray-50);border-bottom:2px solid var(--gray-200)">' +
+        DAY_NAMES.map(d => '<div style="padding:10px;text-align:center;font-size:12px;font-weight:700;color:var(--gray-500)">'+d+'</div>').join('') +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:repeat(7,1fr)">' + cells + '</div>';
+    }
+
+    // ── YEAR VIEW ─────────────────────────────────────────────────
+    function renderYearView(container) {
+      const year = calCurrentDate.getFullYear();
+      const months = [];
+      const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+      const todayStr = dateStr(new Date());
+
+      for (let m = 0; m < 12; m++) {
+        const firstDay = new Date(year, m, 1).getDay();
+        const daysInMonth = new Date(year, m+1, 0).getDate();
+        let cells = '';
+        for (let i = 0; i < firstDay; i++) cells += '<div></div>';
+        for (let d = 1; d <= daysInMonth; d++) {
+          const ds = year+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+          const hasEvents = getEventsForDate(ds).length > 0;
+          const isToday = ds === todayStr;
+          cells += '<div onclick="calClickDay(''+ds+'')" style="width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;'+(isToday?'background:#4267B2;color:#fff;font-weight:700;':hasEvents?'background:var(--gold-dim);color:var(--gray-900);font-weight:600;':'color:var(--gray-600);')+'">'+d+'</div>';
+        }
+        months.push(
+          '<div style="padding:14px">' +
+          '<div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--gray-700)">'+MONTH_NAMES[m]+'</div>' +
+          '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;font-size:10px;color:var(--gray-400);font-weight:600;margin-bottom:4px">' +
+          ['S','M','T','W','T','F','S'].map(d=>'<div style="text-align:center">'+d+'</div>').join('') +
+          '</div>' +
+          '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px">'+cells+'</div>' +
+          '</div>'
+        );
+      }
+
+      container.innerHTML = '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--gray-100)">' +
+        months.map((m,i) => '<div style="border-right:'+(i%4!==3?'1px solid var(--gray-100)':'none')+';border-bottom:1px solid var(--gray-100)">'+m+'</div>').join('') +
+        '</div>';
+    }
+
+    function calClickDay(ds) {
+      const d = new Date(ds+'T12:00:00');
+      calCurrentDate = d;
+      setCalView('day', document.getElementById('cal-view-day'));
+    }
+
+    // ── UPCOMING EVENTS ───────────────────────────────────────────
     function renderUpcomingEvents() {
       const el = document.getElementById('cal-upcoming');
       if (!el) return;
-      const events = getData('events');
       const today = new Date(); today.setHours(0,0,0,0);
-      const upcoming = events.filter(e => new Date(e.date+'T00:00:00') >= today).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,8);
-      if (!upcoming.length) { el.innerHTML = '<p style="font-size:14px;color:var(--gray-400);text-align:center;padding:20px 0">No upcoming events. Click a day to add one.</p>'; return; }
-      el.innerHTML = upcoming.map(e => {
-        const d = new Date(e.date+'T00:00:00');
-        return `<div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--gray-100)">
-          <div style="text-align:center;min-width:44px;background:${e.color||'var(--accent)'};color:#fff;border-radius:8px;padding:6px">
-            <div style="font-size:11px;font-weight:700;opacity:.85">${d.toLocaleDateString('en',{month:'short'}).toUpperCase()}</div>
-            <div style="font-size:20px;font-weight:800;line-height:1">${d.getDate()}</div>
-          </div>
-          <div style="flex:1">
-            <div style="font-weight:600;font-size:14px">${e.title}</div>
-            ${e.description?`<div style="font-size:13px;color:var(--gray-500);margin-top:2px">${e.description}</div>`:''}
-          </div>
-          <button onclick="deleteEvent('${e.id}')" style="background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:16px;padding:4px">×</button>
-        </div>`;
-      }).join('');
+      const events = getEvents()
+        .filter(e => new Date(e.date+'T12:00:00') >= today)
+        .sort((a,b) => a.date.localeCompare(b.date))
+        .slice(0,10);
+      if (!events.length) { el.innerHTML = '<div style="color:var(--gray-400);font-size:13px;text-align:center;padding:20px 0">No upcoming events</div>'; return; }
+      el.innerHTML = events.map(e =>
+        '<div onclick="openEditEventModal(''+e.id+'')" style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--gray-100);cursor:pointer;align-items:start" onmouseover="this.style.opacity='.7'" onmouseout="this.style.opacity='1'">' +
+        '<div style="width:4px;border-radius:2px;background:'+(e.color||'#4267B2')+';align-self:stretch;flex-shrink:0"></div>' +
+        '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+e.title+'</div>' +
+        '<div style="font-size:11px;color:var(--gray-500)">'+new Date(e.date+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})+(e.time?' · '+formatTime(e.time):'')+'</div>' +
+        (e.type?'<div style="font-size:10px;font-weight:700;color:var(--gray-400);text-transform:uppercase;margin-top:1px">'+e.type+'</div>':'') +
+        '</div></div>'
+      ).join('');
     }
 
-    function openAddEventModal(dateStr) {
-      let modal = document.getElementById('add-event-modal');
-      if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'add-event-modal';
-        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
-        modal.innerHTML = `<div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:440px">
-          <h3 style="font-size:20px;font-weight:700;margin-bottom:20px">Add Event</h3>
-          <div class="form-group"><label class="form-label">Title</label><input id="ev-title" class="form-input" style="margin:0" placeholder="Event title"></div>
-          <div class="form-group" style="margin-top:12px"><label class="form-label">Date</label><input id="ev-date" type="date" class="form-input" style="margin:0"></div>
-          <div class="form-group" style="margin-top:12px"><label class="form-label">Description (optional)</label><input id="ev-desc" class="form-input" style="margin:0" placeholder="Details..."></div>
-          <div class="form-group" style="margin-top:12px"><label class="form-label">Color</label>
-            <div style="display:flex;gap:8px">
-              ${['#4267B2','#10B981','#F59E0B','#EF4444','#7C3AED','#0EA5E9'].map(c=>`<div onclick="this.parentElement.querySelectorAll('div').forEach(d=>d.style.outline='');this.style.outline='3px solid #000';document.getElementById('ev-color').value='${c}'" style="width:28px;height:28px;border-radius:6px;background:${c};cursor:pointer"></div>`).join('')}
-            </div>
-            <input type="hidden" id="ev-color" value="#4267B2">
-          </div>
-          <div style="display:flex;gap:10px;margin-top:20px">
-            <button onclick="saveEvent()" class="btn btn-solid" style="flex:1">Save Event</button>
-            <button onclick="document.getElementById('add-event-modal').remove()" class="btn btn-outline" style="flex:1">Cancel</button>
-          </div>
-        </div>`;
-        document.body.appendChild(modal);
-      }
-      const dateInput = document.getElementById('ev-date');
-      if (dateInput && dateStr) dateInput.value = dateStr;
-      modal.style.display = 'flex';
+    function formatTime(t) {
+      if (!t) return '';
+      const [h,m] = t.split(':').map(Number);
+      return (h===0?12:h>12?h-12:h)+':'+String(m).padStart(2,'0')+' '+(h<12?'AM':'PM');
     }
 
-    function saveEvent() {
-      const title = document.getElementById('ev-title')?.value.trim();
-      const date = document.getElementById('ev-date')?.value;
-      if (!title||!date) { alert('Title and date are required.'); return; }
-      const event = { id: generateId(), title, date, description: document.getElementById('ev-desc')?.value.trim()||'', color: document.getElementById('ev-color')?.value||'#4267B2' };
-      const events = getData('events'); events.push(event); setData('events', events);
-      document.getElementById('add-event-modal').remove();
+    // ── ADD / EDIT EVENT MODAL ────────────────────────────────────
+    function openAddEventModal(ds) {
+      openEventModal(null, ds);
+    }
+
+    function openEditEventModal(id) {
+      openEventModal(getEvents().find(e => e.id === id));
+    }
+
+    function openEventModal(event, prefillDate) {
+      const isEdit = !!event;
+      let modal = document.getElementById('event-modal');
+      if (!modal) { modal = document.createElement('div'); modal.id = 'event-modal'; document.body.appendChild(modal); }
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px';
+      modal.innerHTML =
+        '<div style="background:#fff;border-radius:12px;width:100%;max-width:500px;padding:28px;box-shadow:0 24px 48px rgba(0,0,0,0.2)">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">' +
+        '<h3 style="font-size:18px;font-weight:700">'+(isEdit?'Edit Event':'New Event')+'</h3>' +
+        '<button onclick="document.getElementById('event-modal').remove()" style="background:none;border:1px solid var(--gray-200);width:32px;height:32px;border-radius:6px;cursor:pointer">✕</button>' +
+        '</div>' +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">' +
+        '<div style="grid-column:1/-1"><label class="form-label">Event Title</label><input id="em-title" class="form-input" style="margin:0" placeholder="e.g. Client Call — Joy" value="'+(isEdit?event.title:'')+'"></div>' +
+        '<div><label class="form-label">Date</label><input id="em-date" type="date" class="form-input" style="margin:0" value="'+(isEdit?event.date:(prefillDate||''))+'"></div>' +
+        '<div><label class="form-label">Time</label><input id="em-time" type="time" class="form-input" style="margin:0" value="'+(isEdit?(event.time||''):'09:00')+'"></div>' +
+        '<div><label class="form-label">End Time</label><input id="em-endtime" type="time" class="form-input" style="margin:0" value="'+(isEdit?(event.endTime||''):'10:00')+'"></div>' +
+        '<div><label class="form-label">Type</label>' +
+        '<select id="em-type" class="form-select" style="margin:0">' +
+        EVENT_TYPES.map(t => '<option'+(isEdit&&event.type===t?' selected':'')+'>'+t+'</option>').join('') +
+        '</select></div>' +
+        '<div style="grid-column:1/-1"><label class="form-label">Color</label>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">' +
+        EVENT_COLORS.map(c => '<div onclick="selectEventColor(''+c.value+'',this)" data-color="'+c.value+'" style="width:28px;height:28px;border-radius:50%;background:'+c.value+';cursor:pointer;border:3px solid '+(isEdit&&event.color===c.value?'#0F172A':'transparent')+';transition:border 0.1s" title="'+c.label+'"></div>').join('') +
+        '</div>' +
+        '<input type="hidden" id="em-color" value="'+(isEdit?(event.color||'#4267B2'):'#4267B2')+'"></div>' +
+        '<div style="grid-column:1/-1"><label class="form-label">Description / Notes</label><textarea id="em-desc" class="form-input" style="margin:0;height:70px;resize:vertical" placeholder="Meeting agenda, location, prep notes...">'+(isEdit?(event.description||''):'')+'</textarea></div>' +
+        '<div style="grid-column:1/-1"><label class="form-label">Location / Link</label><input id="em-location" class="form-input" style="margin:0" placeholder="Office, Zoom link, phone number..." value="'+(isEdit?(event.location||''):'')+'"></div>' +
+        '</div>' +
+        '<div style="display:flex;gap:10px;margin-top:18px">' +
+        '<button onclick="saveEvent(''+(isEdit?event.id:'')+'')" class="btn-primary" style="flex:1">'+(isEdit?'Save Changes':'Add Event')+'</button>' +
+        (isEdit?'<button onclick="deleteEvent(''+event.id+'')" style="padding:14px 16px;background:none;border:1px solid var(--error);color:var(--error);border-radius:8px;cursor:pointer">Delete</button>':'') +
+        '<button onclick="document.getElementById('event-modal').remove()" style="padding:14px 16px;background:none;border:1px solid var(--gray-300);border-radius:8px;cursor:pointer">Cancel</button>' +
+        '</div></div>';
+      setTimeout(() => {
+        const color = isEdit ? (event.color||'#4267B2') : '#4267B2';
+        document.querySelectorAll('[data-color]').forEach(dot => {
+          dot.style.border = dot.dataset.color === color ? '3px solid #0F172A' : '3px solid transparent';
+        });
+      }, 10);
+    }
+
+    function selectEventColor(color, el) {
+      document.querySelectorAll('[data-color]').forEach(d => d.style.border = '3px solid transparent');
+      el.style.border = '3px solid #0F172A';
+      const inp = document.getElementById('em-color');
+      if (inp) inp.value = color;
+    }
+
+    function saveEvent(editId) {
+      const title = (document.getElementById('em-title')?.value||'').trim();
+      if (!title) { alert('Event title is required.'); return; }
+      const events = getEvents();
+      const entry = {
+        id: editId || 'ev-'+generateId(),
+        title,
+        date: document.getElementById('em-date')?.value||'',
+        time: document.getElementById('em-time')?.value||'',
+        endTime: document.getElementById('em-endtime')?.value||'',
+        type: document.getElementById('em-type')?.value||'',
+        color: document.getElementById('em-color')?.value||'#4267B2',
+        description: document.getElementById('em-desc')?.value||'',
+        location: document.getElementById('em-location')?.value||''
+      };
+      if (editId) { const i = events.findIndex(e=>e.id===editId); if(i>-1) events[i]=entry; }
+      else events.push(entry);
+      saveEvents(events);
+      document.getElementById('event-modal').remove();
       renderCalendar();
-      logActivity('calendar','Added event: '+title);
-      showToast('Event added', 'success');
+      showToast(editId?'Event updated!':'Event added!','success');
     }
 
     function deleteEvent(id) {
       if (!confirm('Delete this event?')) return;
-      const events = getData('events').filter(e=>e.id!==id);
-      setData('events', events);
+      saveEvents(getEvents().filter(e=>e.id!==id));
+      const modal = document.getElementById('event-modal');
+      if (modal) modal.remove();
       renderCalendar();
+      showToast('Event deleted','success');
     }
 
-    // ── BUSINESS LIBRARY ───────────────────────────────────────────────────────
-    const LIBRARY_IDEAS = [
+        const LIBRARY_IDEAS = [
       { id:'lib-001', icon:'💼', title:'Business Consulting', rating:4.9, revenue:'$3K-15K/mo', launch:'1-2 weeks', cost:'$0-200', difficulty:'Beginner', tags:['Services','High Margin','Scalable'], description:'Offer business strategy, operations, and growth consulting to small business owners. H.E.L.P. Center rate: $75/hr.', plan:`<h3>Getting Started</h3><ul><li>Define your niche (business formation, operations, marketing, financial planning)</li><li>Create a simple services menu with clear pricing ($75-150/hr or packaged retainers)</li><li>Build a one-page website or use your H.E.L.P. Center portal</li><li>Reach first 3 clients through your warm network — Facebook groups, LinkedIn, church, family</li></ul><h3>90-Day Milestones</h3><p>Month 1: Niche + pricing + first 1-2 paying clients. Month 2: Systematize your intake and delivery. Month 3: Launch referral program and aim for $2K/month.</p>` },
       { id:'lib-002', icon:'🌐', title:'Web Design & Development', rating:4.8, revenue:'$2K-10K/mo', launch:'2-4 weeks', cost:'$100-500', difficulty:'Beginner-Intermediate', tags:['Design','Tech','Project-Based'], description:'Build websites, landing pages, and e-commerce stores for small businesses. H.E.L.P. Center starting rate: $250/site.', plan:`<h3>Service Tiers</h3><ul><li>Basic Landing Page — $250-500</li><li>Full Business Website — $500-1,500</li><li>E-commerce Store — $1,000-3,000</li><li>Maintenance Retainer — $75-150/month</li></ul><h3>Tools to Start</h3><p>WordPress + Elementor (low cost), Webflow (premium), or Squarespace for beginners. Buy domain + hosting from Namecheap (~$15/yr + $4/mo). No code required for basic sites.</p><h3>First Client Strategy</h3><p>Identify 5 local businesses with bad or no websites. Pitch them with a screenshot of competitors and a $250 offer to start.</p>` },
       { id:'lib-003', icon:'🤖', title:'AI Services Business', rating:4.8, revenue:'$5K-25K/mo', launch:'1-2 weeks', cost:'$50-500', difficulty:'Intermediate', tags:['AI Tools','Automation','High Demand'], description:'Offer AI automation, chatbot development, and integration services to small businesses.', plan:`<h3>Service Ideas</h3><ul><li>AI chatbot setup for customer service ($500-2,000)</li><li>Automated email + follow-up sequences ($300-1,500)</li><li>AI content creation workflows ($200-800/month retainer)</li><li>Data entry and report automation ($500-2,000)</li></ul><h3>Tools You Need</h3><p>Make.com (automation), ChatGPT API, Zapier, Manychat (chatbots), Voiceflow. Total tool cost: under $100/month when starting.</p><h3>Client Target</h3><p>Service businesses — salons, real estate agents, coaches, restaurants — who spend hours on repetitive admin tasks.</p>` },
@@ -4673,6 +5097,373 @@ function resetActionChecklist() {
   localStorage.removeItem('help-checklist-state');
   renderActionChecklist();
 }
+// ══════════════════════════════════════════════════════════════
+// REPORTS & DOCUMENTS
+// ══════════════════════════════════════════════════════════════
+
+function generateReportDoc(type) {
+  const today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  let content = '', previewId = '';
+
+  if (type === 'proposal') {
+    previewId = 'report-preview';
+    const client = document.getElementById('rp-client')?.value||'[Client Name]';
+    const contact = document.getElementById('rp-contact')?.value||'';
+    const service = document.getElementById('rp-service')?.value||'[Service Type]';
+    const desc = document.getElementById('rp-desc')?.value||'[Project description]';
+    const timeline = document.getElementById('rp-timeline')?.value||'';
+    const notes = document.getElementById('rp-notes')?.value||'';
+    content = [`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+H.E.L.P. CENTER — PROJECT PROPOSAL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Date: ${today}
+Prepared By: Joy Watford
+Web Developer & Digital Architect
+joy@helpcenter.com | H.E.L.P. Center
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PREPARED FOR
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Client: ${client}${contact?'\nContact: '+contact:''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROJECT OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Service: ${service}
+Description: ${desc}
+Timeline: ${timeline}${notes?'\nNotes: '+notes:''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DELIVERABLES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ Custom design — no templates
+✓ Mobile-responsive layout
+✓ All agreed pages and features
+✓ Revision rounds per package
+✓ Source files upon final payment
+✓ Deployment assistance
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+INVESTMENT & PAYMENT SCHEDULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Package: ${service}
+
+→ 50% Deposit — Due upon agreement (work begins)
+→ 50% Final — Due upon project delivery
+
+Payment Methods: Venmo · CashApp · Zelle · PayPal
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TERMS & CONDITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Deposit is non-refundable once work begins
+• Additional revisions beyond package: $75/hr
+• Scope changes require written agreement
+• All files delivered upon final payment
+• Rush delivery (under 48hrs): 50% surcharge
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NEXT STEPS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Review and approve this proposal
+2. Submit 50% deposit to begin
+3. Receive intake form within 24 hours
+4. Work begins upon deposit confirmation
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Joy Watford | H.E.L.P. Center
+joy@helpcenter.com
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`].join('').trim();
+  }
+
+  else if (type === 'bizplan') {
+    previewId = 'bizplan-preview';
+    const biz = document.getElementById('bp-bizname')?.value||'[Business Name]';
+    const owner = document.getElementById('bp-owner')?.value||'[Owner]';
+    const industry = document.getElementById('bp-industry')?.value||'';
+    const mission = document.getElementById('bp-mission')?.value||'';
+    const market = document.getElementById('bp-market')?.value||'';
+    const services = document.getElementById('bp-services')?.value||'';
+    const revenue = document.getElementById('bp-revenue')?.value||'';
+    const costs = document.getElementById('bp-costs')?.value||'';
+    const advantage = document.getElementById('bp-advantage')?.value||'';
+    content = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BUSINESS PLAN
+${biz.toUpperCase()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Prepared: ${today}
+Owner / Founder: ${owner}
+Industry: ${industry}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EXECUTIVE SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${biz} is a ${industry} business founded by ${owner}. This plan outlines the business model, target market, services, financial projections, and growth strategy.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MISSION STATEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${mission||'[Enter your mission statement]'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TARGET MARKET
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${market||'[Describe your ideal clients]'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SERVICES & PRODUCTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${services||'[List your services]'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+COMPETITIVE ADVANTAGE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${advantage||'[What makes you different?]'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FINANCIAL PROJECTIONS (12 MONTHS)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Revenue Goal:      ${revenue||'[Target revenue]'}
+Operating Costs:   ${costs||'[Monthly costs]'}
+
+MONTHLY MILESTONES:
+Month 1–3:   Establish client base, complete first 5 projects
+Month 4–6:   Reach consistent monthly revenue, add retainer clients
+Month 7–9:   Expand service offerings, build referral pipeline
+Month 10–12: Hit annual revenue goal, plan Year 2 growth
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+MARKETING STRATEGY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Social media presence (Facebook, Instagram, LinkedIn)
+• Word-of-mouth referral program ($50 bonus)
+• Community partnerships and church outreach
+• Portfolio showcasing completed work
+• Google Business profile optimization
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${owner} | ${biz}
+Date: ${today}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`.trim();
+  }
+
+  else if (type === 'contract') {
+    previewId = 'contract-preview';
+    const client = document.getElementById('ct-client')?.value||'[Client Name]';
+    const org = document.getElementById('ct-org')?.value||'';
+    const service = document.getElementById('ct-service')?.value||'[Service Description]';
+    const price = document.getElementById('ct-price')?.value||'[Total Price]';
+    const deposit = document.getElementById('ct-deposit')?.value||'[Deposit Amount]';
+    const start = document.getElementById('ct-start')?.value||'[Start Date]';
+    const end = document.getElementById('ct-end')?.value||'[Completion Date]';
+    const revisions = document.getElementById('ct-revisions')?.value||'2 revision rounds';
+    content = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SERVICE AGREEMENT
+H.E.L.P. CENTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Date: ${today}
+
+SERVICE PROVIDER:
+Joy Watford | H.E.L.P. Center
+joy@helpcenter.com
+
+CLIENT:
+${client}${org?'\n'+org:''}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SCOPE OF SERVICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${service}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROJECT TIMELINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Start Date:               ${start}
+Estimated Completion:     ${end}
+Revision Rounds Included: ${revisions}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+FEES & PAYMENT SCHEDULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Total Project Fee:  ${price}
+Deposit (due now):  ${deposit}
+Final Payment:      Remaining balance due upon delivery
+
+Payment Methods: Venmo · CashApp · Zelle · PayPal
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TERMS & CONDITIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. PAYMENT: Deposit is due before work begins. Deposit is non-refundable once work has commenced. Final payment is due upon project delivery before files are transferred.
+
+2. REVISIONS: This agreement includes ${revisions}. Additional revision rounds are billed at $75/hour. Revisions must be submitted within 7 days of delivery.
+
+3. SCOPE CHANGES: Any changes to the agreed scope of work require written approval and may result in additional fees and adjusted timeline.
+
+4. INTELLECTUAL PROPERTY: Upon receipt of final payment, the client receives full ownership of the delivered work product.
+
+5. CANCELLATION: Client may cancel with written notice. Deposit is non-refundable. Work completed to cancellation date will be billed at $75/hour.
+
+6. CONFIDENTIALITY: Both parties agree to keep business information confidential.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SIGNATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+By signing below, both parties agree to the terms of this agreement.
+
+Service Provider:
+Joy Watford, H.E.L.P. Center
+
+Signature: _________________________  Date: __________
+
+Client:
+${client}
+
+Signature: _________________________  Date: __________
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+H.E.L.P. Center | joy@helpcenter.com
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`.trim();
+  }
+
+  else if (type === 'program') {
+    previewId = 'program-preview';
+    const name = document.getElementById('pp-name')?.value||'[Program Name]';
+    const director = document.getElementById('pp-director')?.value||'[Director]';
+    const participants = document.getElementById('pp-participants')?.value||'';
+    const goals = document.getElementById('pp-goals')?.value||'';
+    const curriculum = document.getElementById('pp-curriculum')?.value||'';
+    const budget = document.getElementById('pp-budget')?.value||'';
+    const start = document.getElementById('pp-start')?.value||'';
+    const partners = document.getElementById('pp-partners')?.value||'';
+    content = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROGRAM PLAN
+${name.toUpperCase()}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Date: ${today}
+Program Director: ${director}
+Organization: H.E.L.P. Center
+Start Date: ${start||'TBD'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROGRAM OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${name} is designed to serve ${participants||'participants'} through structured education, skill-building, and community accountability.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PROGRAM GOALS & OUTCOMES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${goals||'[Enter program goals]'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CURRICULUM OUTLINE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${curriculum||'[Enter curriculum details]'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+BUDGET & PRICING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${budget||'[Enter budget details]'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PARTNERS & SPONSORS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${partners||'[Enter partner organizations]'}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EVALUATION & SUCCESS METRICS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+• Participant completion rate (target: 80%+)
+• Pre/post assessment scores
+• Participant satisfaction surveys
+• Follow-up outcomes at 90 days
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${director} | H.E.L.P. Center
+${today}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`.trim();
+  }
+
+  else if (type === 'revenue') {
+    previewId = 'revenue-report-preview';
+    const year = document.getElementById('rr-year')?.value||'2026';
+    const month = document.getElementById('rr-month')?.value||'';
+    const allRevenue = getData('revenue');
+    const filtered = allRevenue.filter(r => {
+      if (!r.date) return false;
+      if (!r.date.startsWith(year)) return false;
+      if (month && !r.date.startsWith(year+'-'+month)) return false;
+      return true;
+    });
+    const paid = filtered.filter(r=>r.status==='Paid');
+    const pending = filtered.filter(r=>r.status!=='Paid');
+    const totalPaid = paid.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
+    const totalPending = pending.reduce((s,r)=>s+(parseFloat(r.amount)||0),0);
+    const label = month ? new Date(year+'-'+month+'-01').toLocaleDateString('en-US',{month:'long',year:'numeric'}) : year;
+    const rows = filtered.sort((a,b)=>a.date.localeCompare(b.date))
+      .map(r=>r.date+'  '+(r.clientName||r.client||'Unknown').padEnd(22).slice(0,22)+'  '+(r.serviceType||r.service||'').padEnd(20).slice(0,20)+'  '+('$'+(parseFloat(r.amount)||0).toFixed(2)).padStart(10)+'  '+(r.status||''))
+      .join('\n');
+    content = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+REVENUE REPORT — ${label.toUpperCase()}
+H.E.L.P. CENTER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Generated: ${today}
+Prepared By: Joy Watford
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Total Transactions:  ${filtered.length}
+Total Paid:          $${totalPaid.toFixed(2)}
+Total Pending:       $${totalPending.toFixed(2)}
+Combined Total:      $${(totalPaid+totalPending).toFixed(2)}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TRANSACTION DETAIL
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+DATE        CLIENT                  SERVICE               AMOUNT      STATUS
+${'─'.repeat(78)}
+${rows||'No transactions found for this period.'}
+${'─'.repeat(78)}
+TOTALS                                                    $${(totalPaid+totalPending).toFixed(2)}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+H.E.L.P. Center | joy@helpcenter.com
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`.trim();
+  }
+
+  const el = document.getElementById(previewId);
+  if (el) el.value = content;
+}
+
+function printDoc(previewId) {
+  const content = document.getElementById(previewId)?.value;
+  if (!content) { alert('Generate a document first.'); return; }
+  const win = window.open('','_blank');
+  win.document.write('<html><head><title>H.E.L.P. Center Document</title><style>body{font-family:monospace;font-size:13px;line-height:1.7;padding:40px;white-space:pre-wrap;max-width:800px;margin:0 auto}@media print{body{padding:20px}}</style></head><body>'+content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</body></html>');
+  win.document.close();
+  win.focus();
+  setTimeout(() => win.print(), 500);
+}
+
+function downloadDoc(previewId, filename) {
+  const content = document.getElementById(previewId)?.value;
+  if (!content) { alert('Generate a document first.'); return; }
+  const blob = new Blob([content], { type:'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'helpcenter-'+filename+'-'+new Date().toISOString().slice(0,10)+'.txt';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+function copyDocText(previewId) {
+  const content = document.getElementById(previewId)?.value;
+  if (!content) { alert('Generate a document first.'); return; }
+  navigator.clipboard.writeText(content).catch(()=>{});
+  showToast('Document copied!','success');
+}
+
   </script>
 
 </body>

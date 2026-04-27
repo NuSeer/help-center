@@ -4591,19 +4591,415 @@ When you know the client's name or situation, personalize specifically. Never gi
     // ══════════════════════════════════════════════════════════════
 
     const DEFAULT_GUIDES = [
-      { id:'guide-001', icon:'📘', title:'LLC Formation Complete Guide', category:'Formation', duration:'30 min read',
-        description:'Step-by-step guide to choosing your state, naming your business, filing articles of organization, getting your EIN, and creating your operating agreement.',
-        content:'# LLC Formation Complete Guide\n\n## Step 1 — Choose Your State\nMost small businesses form in their home state. Wyoming and Delaware offer extra privacy and flexibility for holding companies.\n\n## Step 2 — Name Your Business\nCheck availability on your state SOS website. Name must include "LLC" or "Limited Liability Company."\n\n## Step 3 — File Articles of Organization\nFiling fees range from $50–$500 depending on state. Most states process in 1–5 business days online.\n\n## Step 4 — Get Your EIN\nApply free at IRS.gov. Takes 5 minutes online. Required to open a business bank account.\n\n## Step 5 — Create an Operating Agreement\nEven single-member LLCs need one. Details ownership, management, and profit distribution.\n\n## Next Steps\n- Open a business checking account\n- Register for state taxes if required\n- Get any required business licenses',
-        lastUpdated:'2026-03-01', bookmarked:false },
-      { id:'guide-002', icon:'💰', title:'Business Credit Building', category:'Finance', duration:'45 min read',
-        description:'Build business credit separate from your personal credit. Learn about D&B, Experian Business, working with banks, and establishing vendor credit lines.',
-        content:'# Business Credit Building\n\n## Why Separate Business Credit?\nProtects your personal credit. Unlocks higher credit limits. Needed for loans and contracts.\n\n## Step 1 — Get Your DUNS Number\nFree at Dun & Bradstreet (dnb.com). Takes 30 days to activate. This is your business credit ID.\n\n## Step 2 — Open a Business Bank Account\nUse your EIN only — never your SSN. Keep it active with regular deposits.\n\n## Step 3 — Get Vendor Net-30 Accounts\nStart with Uline, Quill, Grainger. They report to D&B. Buy small amounts and pay in full every 30 days.\n\n## Step 4 — Apply for a Business Credit Card\nAfter 3–6 months of vendor history. Start with your bank or Capital One Spark.\n\n## Step 5 — Monitor Your Scores\nCheck Nav.com for free. Target a Paydex score of 80+.',
-        lastUpdated:'2026-03-01', bookmarked:false },
-      { id:'guide-003', icon:'📱', title:'Social Media Marketing Mastery', category:'Marketing', duration:'60 min read',
-        description:'Complete guide to building your social media presence across platforms. Content strategies, posting schedules, engagement tactics, and paid advertising.',
-        content:'# Social Media Marketing Mastery\n\n## Choose Your Platforms\n- Facebook: Best for local business, community groups, paid ads\n- Instagram: Visual brands, products, coaching\n- LinkedIn: B2B, consulting, professional services\n- TikTok: Fastest reach for new audiences\n\n## Content Strategy\nFollow the 80/20 rule: 80% value (tips, education, behind the scenes), 20% promotion.\n\n## Posting Schedule\n- Facebook: 3–5x per week\n- Instagram: 4–7x per week (mix posts + Reels)\n- LinkedIn: 3x per week\n\n## Engagement Tactics\n- Reply to every comment within 1 hour\n- Use polls and questions in Stories\n- Collaborate with complementary businesses',
-        lastUpdated:'2026-03-01', bookmarked:false }
-    ];
+  { id:'guide-001', icon:'📘', title:'LLC Formation Complete Guide', category:'Formation', duration:'30 min read',
+    description:'Step-by-step guide to choosing your state, naming your business, filing articles of organization, getting your EIN, and creating your operating agreement.',
+    content:`# LLC Formation Complete Guide
+## Why Form an LLC?
+An LLC (Limited Liability Company) is the most popular business structure for small businesses and entrepreneurs — and for good reason. It gives you the legal separation between your personal assets and your business, meaning if your business gets sued or goes into debt, your personal bank accounts, car, and home are protected.
+
+Unlike a corporation, an LLC doesn't require a board of directors, shareholder meetings, or complex record-keeping. It's flexible, affordable, and can be taxed as a sole proprietor, partnership, or S-Corp depending on what saves you the most money.
+
+For H.E.L.P. Center clients, the LLC is almost always the right first step — before building a website, before getting clients, before anything else. Your business credit, your contracts, and your professional image all depend on having an official entity.
+
+## Step 1 — Choose Your State
+**Form in your home state first.** Most small businesses don't need to register in Wyoming or Delaware unless they have specific privacy or holding company needs.
+
+- **Your home state** — simplest option. No foreign registration needed. Local bank relationships are easier.
+- **Wyoming** — best for holding companies or businesses that want maximum privacy. No public disclosure of members. Strong asset protection laws. Annual fee ~$60.
+- **Delaware** — preferred by investors and venture-backed startups. No state income tax on out-of-state revenue. More flexible corporate law.
+
+Unless you're building a holding structure or planning to raise outside investment, file in the state where you actually operate.
+
+## Step 2 — Name Your Business
+Your LLC name must be unique within your state and must include "LLC," "L.L.C.," or "Limited Liability Company" at the end.
+
+**How to check availability:**
+1. Go to your state's Secretary of State website
+2. Search the business name database (free)
+3. If available, consider reserving it for $10–50 while you prepare your paperwork
+
+**Naming tips:**
+- Avoid names that are too generic (harder to trademark)
+- Avoid names that imply government affiliation (Federal, National, State)
+- Check that the matching domain name (.com) is available before you commit
+- Search the USPTO trademark database at tess.uspto.gov to avoid infringement
+
+## Step 3 — File Articles of Organization
+This is the official document that creates your LLC with the state.
+
+**What you'll need:**
+- Your LLC name
+- Registered agent name and address (a person or service that receives legal mail on behalf of your LLC — can be you if you have a physical address in the state)
+- Member names and addresses (or just yours for single-member)
+- Business purpose (most states accept "any lawful business")
+
+**Filing fees by state (approximate):**
+- Florida: $125
+- Georgia: $100
+- Texas: $300
+- Wyoming: $100
+- Delaware: $90
+
+**Processing time:** 1–5 business days online. Pay for expedited processing ($25–100 extra) if you need it faster.
+
+**Where to file:** Your state's Secretary of State website. Avoid third-party services like LegalZoom that charge $149+ for something you can do in 20 minutes for the state fee alone.
+
+## Step 4 — Get Your EIN (Employer Identification Number)
+Your EIN is your business's federal tax ID — like a Social Security number but for your LLC. You need it to:
+- Open a business bank account
+- Hire employees
+- Apply for business licenses
+- Build business credit separate from personal credit
+- File business taxes
+
+**How to get it:** Apply free at IRS.gov → "Apply for an EIN Online." Takes 5–10 minutes. You receive your EIN immediately upon completion.
+
+**Important:** Once you have your EIN, use ONLY your EIN (never your SSN) when opening business accounts, applying for credit, or signing contracts. This is how you build a business credit profile separate from your personal one.
+
+## Step 5 — Create an Operating Agreement
+Even if you're a single-member LLC, you need an operating agreement. Without one, your state's default LLC rules apply — which may not work in your favor.
+
+**What it covers:**
+- Who owns the LLC and what percentage
+- How profits and losses are distributed
+- How decisions are made
+- What happens if a member wants to leave
+- Dissolution procedures
+
+**For single-member LLCs**, the operating agreement mainly establishes that you and your business are separate entities — which is critical if you ever need to prove limited liability in court.
+
+You can find free templates on SCORE.org or LegalZoom. For a multi-member LLC or complex arrangements, have an attorney review it ($200–500 one-time cost well worth it).
+
+## Step 6 — Open a Business Bank Account
+Do this within 30 days of forming your LLC.
+
+**Requirements (usually):**
+- EIN confirmation letter from IRS
+- Filed Articles of Organization
+- Government-issued ID
+- Initial deposit (varies by bank — some require $0, some require $100–500)
+
+**Recommended banks for small businesses:**
+- **Chase Business Complete Banking** — large branch network, strong online tools
+- **Bank of America Business Advantage** — good for businesses with employees
+- **Relay** (online) — no fees, excellent bookkeeping integrations
+- **Bluevine** (online) — earns interest on balances, no monthly fees
+
+Keep your business and personal finances completely separate. Every business expense goes on the business card or out of the business account. This protects your limited liability and makes tax time dramatically easier.
+
+## Step 7 — Get Business Licenses & Permits
+After your LLC is formed, check what licenses you need to legally operate.
+
+- **Local business license** — most cities require one ($25–100/year). Check your city or county website.
+- **Home occupation permit** — if operating from home, some cities require this
+- **Professional licenses** — required for certain industries (real estate, contracting, cosmetology, etc.)
+- **Sales tax permit** — required if you sell taxable products or services in your state
+
+The SBA's Business License & Permit tool at sba.gov can help you identify what applies to your specific business type and location.
+
+## Your 30-Day Launch Checklist
+- [ ] Research and confirm your LLC name is available
+- [ ] Reserve the matching domain name
+- [ ] File Articles of Organization with your state
+- [ ] Apply for EIN at IRS.gov
+- [ ] Draft or download an operating agreement
+- [ ] Open a business checking account
+- [ ] Get your local business license
+- [ ] Update all professional profiles with your LLC name`,
+    lastUpdated:'2026-04-26', bookmarked:false },
+
+  { id:'guide-002', icon:'💰', title:'Business Credit Building Roadmap', category:'Finance', duration:'45 min read',
+    description:'Build business credit separate from your personal credit. Learn about D&B, Experian Business, working with banks, and establishing vendor credit lines.',
+    content:`# Business Credit Building Roadmap
+## Why Business Credit Matters
+Most entrepreneurs never build business credit — they put everything on personal cards, sign personal guarantees, and wonder why their business is always financially fragile. Business credit changes that.
+
+With strong business credit you can:
+- Get business loans without a personal guarantee
+- Access funding at lower interest rates
+- Qualify for larger credit limits ($50K–$500K+)
+- Win contracts that require proof of creditworthiness
+- Protect your personal credit score from business volatility
+
+The key insight: **business credit is completely separate from personal credit.** You build it differently, it's tracked by different bureaus, and it uses different scoring systems. This guide walks you through each phase.
+
+## The Three Business Credit Bureaus
+Unlike personal credit (Equifax, Experian, TransUnion), business credit is tracked by:
+
+**1. Dun & Bradstreet (D&B)**
+- Most important bureau for business credit
+- Uses the Paydex Score (0–100, higher is better, 80+ is excellent)
+- Nearly every vendor and lender checks D&B
+- Requires a DUNS Number to start building
+
+**2. Experian Business**
+- Intelliscore Plus (1–100)
+- Checked by many banks and credit card issuers
+- Often updated faster than D&B
+
+**3. Equifax Business**
+- Business Credit Risk Score
+- Checked by equipment lenders and some banks
+
+You need to build history on all three, but D&B is where you start.
+
+## Phase 1 — Foundation (Months 0–1)
+Before you can build business credit, your business must be set up correctly. Lenders verify this. If anything is inconsistent, they reject your application.
+
+**The Business Credit Foundation Checklist:**
+- [ ] LLC or Corporation formed (sole proprietors cannot build business credit)
+- [ ] EIN obtained from IRS (never use your SSN)
+- [ ] Business bank account open (funded and active)
+- [ ] Business phone number (can be Google Voice — must be listed)
+- [ ] Business address (cannot be a P.O. Box — use a real address or virtual office)
+- [ ] Business email address (professional domain — not Gmail)
+- [ ] Website live (even a basic one-page site)
+- [ ] Listed in 411 directory (use infoUSA.com to submit your listing)
+
+**Get your DUNS Number:**
+Go to dnb.com/get-a-duns-number. It's free. Takes 30 business days for standard, or you can pay $229 for same-day with CreditBuilder Plus (not necessary). Save your DUNS Number — you'll use it on every credit application.
+
+## Phase 2 — Vendor Credit (Months 1–3)
+Vendor credit (also called "trade credit" or "Net-30 accounts") is where business credit building actually begins. These are vendors that let you buy products and pay 30 days later — and report your payment history to D&B.
+
+**The Starter 5 — Vendor Accounts That Report to D&B:**
+
+| Vendor | What They Sell | Minimum Purchase | Reports To |
+|--------|---------------|-----------------|------------|
+| Uline | Shipping/office supplies | ~$50 | D&B |
+| Quill | Office supplies | ~$25 | D&B, Experian |
+| Grainger | Industrial/safety supplies | Varies | D&B |
+| Newegg Business | Electronics/tech | ~$50 | D&B |
+| Crown Office Supplies | Office supplies | ~$50 | D&B |
+
+**Strategy:**
+1. Apply using your EIN, business name, address, and DUNS Number
+2. Start with 3–4 vendors in the first month
+3. Make small purchases ($25–100)
+4. **Pay early or on time — NEVER late.** Your Paydex score reflects payment speed.
+4. Wait for payment to report (30–60 days)
+5. Add 2–3 more vendors once first accounts appear on your D&B report
+
+After 3–6 months with consistent on-time payments across 5+ vendor accounts, your Paydex score will typically hit 75–80.
+
+## Phase 3 — Business Credit Cards (Months 3–6)
+Once you have a few months of vendor payment history, you can apply for business credit cards. These have the biggest credit limits and report to Experian and sometimes D&B.
+
+**Starter Cards (No Personal Guarantee, or Easy to Get):**
+- **Capital One Spark Cash** — reports to D&B. Requires decent personal credit to start.
+- **Divvy Business Credit Card** — soft pull only. Reports to all three bureaus. Great starter.
+- **Brex** — designed for startups and LLCs. No personal guarantee required. Requires strong revenue or funding.
+- **Sam's Club Business Mastercard** — easy approval. Reports to D&B.
+
+**Usage Tips:**
+- Keep utilization below 30% of your credit limit
+- Pay in full every month to avoid interest
+- Use cards for regular business expenses (supplies, software subscriptions, advertising)
+- Never use business credit for personal expenses
+
+## Phase 4 — Bank Credit (Months 6–12)
+This is where business credit really pays off — bank lines of credit and term loans.
+
+**Types of Bank Credit:**
+- **Business Line of Credit** — revolving credit you draw from as needed. $25K–$250K typical. Best for cash flow gaps.
+- **SBA Loan** — government-backed. Lower rates. $5K–$5M. Requires 2 years in business and strong credit.
+- **Business Term Loan** — lump sum paid back over 1–5 years. Good for equipment or expansion.
+- **Business Credit Card with High Limit** — $25K–$100K+ once your profile is established.
+
+**What banks look for:**
+- Paydex score 75+
+- 6+ months of business banking history
+- Positive cash flow (revenue coming in)
+- No recent negative marks on business credit
+- Personal credit score 650+ (for most traditional lenders)
+
+## Monitoring Your Business Credit
+Check your reports regularly. Errors are common and can silently damage your score.
+
+**Free monitoring tools:**
+- **Nav.com** — shows D&B, Experian, and Equifax business scores. Free version is solid.
+- **CreditSafe** — popular with lenders. Free basic access.
+- **D&B Credit Monitor** — direct from Dun & Bradstreet. ~$15/month.
+
+**What to monitor for:**
+- New accounts you didn't open (fraud)
+- Incorrect payment histories
+- Wrong business information (address, name, phone)
+- Accounts that should be reporting but aren't
+
+Dispute errors directly with each bureau. D&B disputes go through dnb.com/business/dispute. Experian Business disputes go to sbcr.experian.com.
+
+## Common Mistakes to Avoid
+- **Using your SSN instead of EIN** — kills separation between personal and business credit
+- **Applying for too many credit accounts at once** — hard inquiries hurt your score
+- **Paying late** — even one late payment can drop your Paydex score significantly
+- **Mixing personal and business finances** — invalidates your limited liability and confuses credit bureaus
+- **Skipping vendor credit phase** — jumping straight to bank loans without a credit history leads to denials
+
+## 12-Month Business Credit Roadmap
+- **Month 1:** Get DUNS number, set up foundation (phone, address, website, 411 listing)
+- **Month 2:** Open 3–4 vendor Net-30 accounts. Make small purchases. Pay within 10 days.
+- **Month 3:** Add 2 more vendor accounts. Check D&B report for first entries.
+- **Month 4–5:** Apply for first business credit card (Divvy or Spark).
+- **Month 6:** Check all three bureau reports. Target Paydex 75+.
+- **Month 9:** Apply for a small business line of credit at your bank.
+- **Month 12:** Review full credit profile. Consider SBA loan or larger line of credit.`,
+    lastUpdated:'2026-04-26', bookmarked:false },
+
+  { id:'guide-003', icon:'📱', title:'Social Media Marketing Mastery', category:'Marketing', duration:'60 min read',
+    description:'Complete guide to building your social media presence, content strategy, posting schedules, engagement tactics, and converting followers to paying clients.',
+    content:`# Social Media Marketing Mastery
+## Why Social Media Is Non-Negotiable for Small Business
+Every day your ideal clients are scrolling Facebook, Instagram, and TikTok — making decisions about who to trust, who to hire, and where to spend their money. If your business isn't showing up consistently, someone else is taking those clients.
+
+The good news: you don't need to go viral. You don't need thousands of followers. You need the right 500 people — local community members, people in your niche, and referral partners — to see your content regularly and trust what you do.
+
+This guide covers every platform, every content type, and exactly how to turn followers into paying clients.
+
+## Platform Guide — Where Should You Show Up?
+
+### Facebook
+**Best for:** Local businesses, community groups, older demographics (35+), paid advertising
+**Key features:** Groups, Business Pages, Facebook Ads, Marketplace, Events
+
+Facebook Groups are still the highest-engagement space on any social platform. Join 5–10 groups where your ideal clients hang out (local entrepreneur groups, parenting groups, women in business groups, etc.) and show up with value — answer questions, share tips, build relationships. Don't spam links.
+
+Your Facebook Business Page is your official presence. Keep it updated with your hours, services, phone number, and website. Post 3–5 times per week minimum.
+
+### Instagram
+**Best for:** Visual brands, products, coaching, lifestyle businesses, women entrepreneurs, ages 18–45
+**Key features:** Feed posts, Stories, Reels, Link in Bio, Instagram Shopping
+
+Instagram Reels get 3–5x more reach than regular posts. If you're only going to learn one content type, make it Reels. They're 15–90 second videos that Instagram actively pushes to new audiences.
+
+Stories are for nurturing — quick behind-the-scenes, polls, questions, and daily updates that keep your current followers engaged. Post 3–7 Stories per day.
+
+### LinkedIn
+**Best for:** B2B services, consulting, professional services, corporate clients, speaking
+**Key features:** Articles, Thought Leadership Posts, Company Pages, Direct Messaging
+
+LinkedIn is underused by most small business owners, which means less competition. A well-written LinkedIn post showing your expertise can reach thousands of the right people — business owners, HR managers, and decision-makers.
+
+Post 3x per week. Mix personal stories (what you've learned), professional insights (industry knowledge), and social proof (client wins, results).
+
+### TikTok
+**Best for:** New audiences, trending content, under-35 demographics, explainer content
+**Key features:** Short videos (15 sec–10 min), Duets, Stitches, FYP algorithm
+
+TikTok's algorithm is the most democratic of any platform — your very first video can reach 10,000 people even with zero followers. The key is consistency and hooks. Your first 1–3 seconds must stop the scroll.
+
+TikTok doesn't require a large following to get results. Business service videos that are educational ("3 mistakes new LLCs make") consistently outperform entertainment content.
+
+## Content Strategy — The 80/20 Rule
+**80% value, 20% promotion.** This is the fundamental rule of social media marketing.
+
+Most businesses do it backwards — they post promotions 80% of the time and wonder why engagement is low. Nobody wants to follow an advertisement.
+
+**Value content (80%):**
+- Tips and how-to content ("5 steps to form an LLC in Florida")
+- Behind-the-scenes of your work ("How I built a client dashboard from scratch")
+- Educational posts ("The difference between an LLC and S-Corp")
+- Personal stories that relate to your audience ("When I started my business with $0...")
+- Answering common questions your clients ask
+- Sharing other people's content with your insights added
+
+**Promotional content (20%):**
+- Service announcements
+- Client testimonials and case studies
+- Special offers or packages
+- Program launches or events
+- Direct calls to action ("Book a free consultation")
+
+## The Content Pillars Framework
+Choose 3–5 "content pillars" — specific topic areas you consistently post about. This makes planning easier and positions you as an expert in specific areas.
+
+**Example pillars for H.E.L.P. Center:**
+1. Business formation & legal (LLC tips, EIN, licenses)
+2. Business credit & finance (building credit, separating finances)
+3. Marketing & growth (social media, client acquisition)
+4. Mindset & leadership (confidence, entrepreneurship journey)
+5. Client spotlight & success stories (social proof)
+
+Each week, create at least one piece of content for each pillar. Rotate through them so your feed is balanced and diverse.
+
+## Posting Schedule by Platform
+
+| Platform | Posts/Week | Best Times | Format Priority |
+|----------|-----------|-----------|----------------|
+| Facebook | 4–5x | Tue–Thu 9am–1pm | Video > Image > Text |
+| Instagram Feed | 4–7x | Mon/Wed/Fri 11am–1pm | Reels > Carousels > Images |
+| Instagram Stories | Daily | Morning + Evening | Behind-scenes, Polls |
+| LinkedIn | 3x | Tue–Thu 7–9am | Text > Article > Image |
+| TikTok | 3–5x | 6–10pm | Educational Video |
+
+**Important:** Consistency beats frequency. Posting 3x/week every week for 6 months beats posting 7x/week for 3 weeks and disappearing.
+
+## Writing Captions That Convert
+The goal of every caption is to stop the scroll, create connection, and drive action.
+
+**The 4-Part Caption Formula:**
+1. **Hook** — the first line must create curiosity or speak directly to a pain point. Examples: "Most new business owners skip this step and pay for it later." / "I made $3,000 in my first month without a single ad."
+2. **Value** — deliver on the hook with useful information, a story, or an insight.
+3. **Connection** — share your perspective, relate it to your audience's experience.
+4. **CTA (Call to Action)** — tell them what to do next. "Comment YES if you want the full checklist." / "DM me 'START' to book your free call." / "Save this post for later."
+
+**Hashtag Strategy:**
+- Use 5–10 hashtags per post (Instagram)
+- Mix large (#smallbusiness — 50M+ posts) and niche (#jacksonvillebusiness — 50K posts)
+- Create a branded hashtag (#HELPCenterJax) and use it every post
+- Don't use banned or spammy hashtags
+
+## Engagement — The Growth Engine
+Posting is only half the job. Engagement is how you grow.
+
+**Daily engagement tasks (20–30 minutes):**
+- Reply to every comment on your posts within 1–2 hours
+- Like and comment on 10 posts from potential clients or referral partners
+- Respond to all DMs within 24 hours
+- Engage in 2–3 relevant Facebook Groups
+- Like and comment on 5 posts from local businesses you want to partner with
+
+**Story engagement tactics:**
+- Post polls regularly ("Which do you struggle with more: Marketing or Finance?")
+- Use the question sticker ("Ask me anything about starting a business")
+- Share client wins on your Story and tag the client
+- Count down to a launch or event
+
+## Converting Followers to Clients
+Social media is a relationship-building tool, not a sales machine. The conversion happens when someone trusts you enough to book a call or buy your service.
+
+**The Follow → Client Journey:**
+1. **Stranger sees your content** (Reel, post, or comment in a group)
+2. **They follow you** to see more
+3. **They engage** with your content over days or weeks
+4. **They DM you** with a question or "I've been thinking about working with you"
+5. **You respond** with value, ask qualifying questions, invite them to a free call
+6. **Free 30-min call** — you learn their goals, show them how you can help
+7. **They become a client**
+
+**The DM Strategy:**
+When someone new follows you, send a simple DM: "Hey [Name], thanks for following! What's your business — I'd love to support what you're building." This starts a conversation without being pushy. 1 in 10 of these conversations will turn into a client inquiry.
+
+## Content Tools & Resources
+**Free tools:**
+- **Canva** — graphics, carousels, flyers, logos (free plan is excellent)
+- **CapCut** — video editing with captions and effects (free)
+- **ChatGPT** — caption ideas, content repurposing, hashtag research
+- **Later or Buffer** — schedule posts in advance (free plans available)
+- **Google Trends** — find trending topics in your niche
+
+**Content batching:**
+Instead of creating content every day, batch it once per week. Block 2–3 hours on a Saturday or Sunday. Create 5–7 pieces of content. Schedule them all. Done for the week.
+
+## 30-Day Quick Start Plan
+- **Week 1:** Choose your primary platform. Fully optimize your profile (bio, photo, link, contact info). Post 3x.
+- **Week 2:** Define your 5 content pillars. Create a content calendar for the month. Post daily.
+- **Week 3:** Start the DM strategy. Engage in 2 Facebook Groups daily. Run your first Story poll.
+- **Week 4:** Review your analytics. Double down on what's working. Start repurposing your top post across platforms.
+
+By Day 30, if you've been consistent, you'll have a growing following, warm leads in your DMs, and a clear understanding of what content your audience responds to.`,
+    lastUpdated:'2026-04-26', bookmarked:false }
+];
 
     let guidesFilter = 'All';
 
@@ -4667,35 +5063,68 @@ When you know the client's name or situation, personalize specifically. Never gi
     }
 
     function openReadGuideModal(id) {
-      const guide = getGuides().find(g => g.id === id);
-      if (!guide) return;
-      let modal = document.getElementById('read-guide-modal');
-      if (!modal) { modal = document.createElement('div'); modal.id = 'read-guide-modal'; document.body.appendChild(modal); }
-      const html = (guide.content||'')
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-        .replace(/^# (.+)$/gm,'<h2 style="font-size:20px;font-weight:800;margin:0 0 16px;color:#0F172A">$1</h2>')
-        .replace(/^## (.+)$/gm,'<h3 style="font-size:16px;font-weight:700;margin:20px 0 8px;color:#0F172A">$1</h3>')
-        .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-        .replace(/^- (.+)$/gm,'<li style="margin-left:20px;margin-bottom:4px">$1</li>')
-        .replace(/\n/g,'<br>');
-      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto';
-      modal.innerHTML = `
-        <div style="background:#fff;border-radius:12px;width:100%;max-width:760px;box-shadow:0 24px 48px rgba(0,0,0,0.2)">
-          <div style="background:#0F172A;padding:24px 28px;display:flex;justify-content:space-between;align-items:start;border-radius:12px 12px 0 0">
-            <div>
-              <div style="font-size:28px;margin-bottom:8px">${guide.icon||'📄'}</div>
-              <h2 style="color:#fff;font-size:22px;font-weight:800;margin-bottom:4px">${guide.title}</h2>
-              <div style="color:#94A3B8;font-size:13px">${guide.category} · ${guide.duration||''} · Updated ${guide.lastUpdated||''}</div>
-            </div>
-            <button onclick="document.getElementById('read-guide-modal').remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;width:36px;height:36px;border-radius:8px;font-size:18px;cursor:pointer;flex-shrink:0">✕</button>
-          </div>
-          <div style="padding:28px;font-size:15px;line-height:1.8;color:#334155">${html}</div>
-          <div style="padding:16px 28px;border-top:1px solid #E2E8F0;display:flex;gap:10px">
-            <button onclick="openEditGuideModal('${id}');document.getElementById('read-guide-modal').remove()" class="btn btn-outline">✏️ Edit Guide</button>
-            <button onclick="document.getElementById('read-guide-modal').remove()" class="btn btn-solid">Close</button>
-          </div>
-        </div>`;
-    }
+  const guide = getGuides().find(g => g.id === id);
+  if (!guide) return;
+  let modal = document.getElementById('read-guide-modal');
+  if (!modal) { modal = document.createElement('div'); modal.id = 'read-guide-modal'; document.body.appendChild(modal); }
+
+  function renderMd(text) {
+    return (text||'')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      // Tables: | col | col |
+      .replace(/^\|(.+)\|\s*\n\|[-| :]+\|\s*\n((?:\|.+\|\s*\n?)*)/gm, (m, header, rows) => {
+        const ths = header.split('|').filter(c=>c.trim()).map(c=>`<th style="padding:8px 12px;border:1px solid #CBD5E1;background:#F1F5F9;font-weight:700;text-align:left">${c.trim()}</th>`).join('');
+        const trs = rows.trim().split('\n').map(row => {
+          const tds = row.split('|').filter(c=>c.trim()).map(c=>`<td style="padding:8px 12px;border:1px solid #CBD5E1">${c.trim()}</td>`).join('');
+          return `<tr>${tds}</tr>`;
+        }).join('');
+        return `<table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:14px">${ths?`<thead><tr>${ths}</tr></thead>`:''}${trs?`<tbody>${trs}</tbody>`:''}</table>`;
+      })
+      // Headings
+      .replace(/^# (.+)$/gm,'<h2 style="font-size:22px;font-weight:800;margin:0 0 16px;color:#0F172A;border-bottom:2px solid #E2E8F0;padding-bottom:10px">$1</h2>')
+      .replace(/^## (.+)$/gm,'<h3 style="font-size:17px;font-weight:700;margin:28px 0 10px;color:#1E293B">$1</h3>')
+      .replace(/^### (.+)$/gm,'<h4 style="font-size:15px;font-weight:700;margin:20px 0 8px;color:#334155">$1</h4>')
+      // Horizontal rule
+      .replace(/^---$/gm,'<hr style="border:none;border-top:1px solid #E2E8F0;margin:24px 0">')
+      // Bold and italic
+      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g,'<em>$1</em>')
+      // Checkboxes
+      .replace(/^- \[ \] (.+)$/gm,'<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:6px"><input type="checkbox" style="margin-top:3px;flex-shrink:0"><span>$1</span></div>')
+      .replace(/^- \[x\] (.+)$/gm,'<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:6px"><input type="checkbox" checked style="margin-top:3px;flex-shrink:0"><span style="text-decoration:line-through;color:#94A3B8">$1</span></div>')
+      // Bullet lists
+      .replace(/^- (.+)$/gm,'<li style="margin-left:20px;margin-bottom:6px;line-height:1.7">$1</li>')
+      // Numbered lists
+      .replace(/^\d+\. (.+)$/gm,'<li style="margin-left:20px;margin-bottom:6px;line-height:1.7;list-style:decimal">$1</li>')
+      // Blockquotes
+      .replace(/^&gt; (.+)$/gm,'<blockquote style="border-left:4px solid #4267B2;padding:10px 16px;margin:12px 0;background:#F0F4FF;border-radius:0 8px 8px 0;font-style:italic;color:#334155">$1</blockquote>')
+      // Line breaks (but not inside HTML tags)
+      .replace(/\n\n/g,'</p><p style="margin-bottom:12px;line-height:1.8">')
+      .replace(/\n/g,'<br>');
+  }
+
+  const html = renderMd(guide.content);
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto';
+  modal.innerHTML = `
+    <div style="background:var(--white);border-radius:12px;width:100%;max-width:800px;box-shadow:0 24px 48px rgba(0,0,0,0.2)">
+      <div style="background:#0F172A;padding:24px 32px;display:flex;justify-content:space-between;align-items:start;border-radius:12px 12px 0 0">
+        <div>
+          <div style="font-size:32px;margin-bottom:8px">${guide.icon||'📄'}</div>
+          <h2 style="color:#fff;font-size:22px;font-weight:800;margin-bottom:4px">${guide.title}</h2>
+          <div style="color:#94A3B8;font-size:13px">${guide.category} · ${guide.duration||''} · Updated ${guide.lastUpdated||''}</div>
+        </div>
+        <button onclick="document.getElementById('read-guide-modal').remove()" style="background:rgba(255,255,255,0.1);border:none;color:#fff;width:36px;height:36px;border-radius:8px;font-size:18px;cursor:pointer;flex-shrink:0">✕</button>
+      </div>
+      <div style="padding:32px;font-size:15px;line-height:1.8;color:#334155"><p style="margin-bottom:12px;line-height:1.8">${html}</p></div>
+      <div style="padding:16px 32px;border-top:1px solid #E2E8F0;display:flex;gap:10px;justify-content:space-between;align-items:center">
+        <span style="font-size:13px;color:var(--gray-400)">${guide.category} Guide</span>
+        <div style="display:flex;gap:10px">
+          <button onclick="openEditGuideModal('${id}');document.getElementById('read-guide-modal').remove()" class="btn btn-outline">✏️ Edit Guide</button>
+          <button onclick="document.getElementById('read-guide-modal').remove()" class="btn btn-solid">Close</button>
+        </div>
+      </div>
+    </div>`;
+}
 
     function openAddGuideModal() { openGuideFormModal(null); }
     function openEditGuideModal(id) { openGuideFormModal(getGuides().find(g => g.id === id)); }

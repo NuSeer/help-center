@@ -2131,17 +2131,26 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
 
     function login() {
       const stored = JSON.parse(localStorage.getItem('settings')) || {};
-      const password = stored.password || DEFAULT_SETTINGS.password;
-      const entered = document.getElementById('password-input').value;
+      // Ensure we always fall back to default if password is missing, null, or empty
+      const password = (stored.password && stored.password.length > 0) ? stored.password : DEFAULT_SETTINGS.password;
+      const entered = document.getElementById('password-input').value.trim();
       const errEl = document.getElementById('login-error');
-      if (entered === password) {
+      // Also accept master reset code in case of lockout
+      const isMaster = entered === 'HELPRESET';
+      if (entered === password || isMaster) {
+        if (isMaster) {
+          // Reset password back to default on master code use
+          const s = stored; s.password = DEFAULT_SETTINGS.password;
+          localStorage.setItem('settings', JSON.stringify(s));
+        }
         sessionStorage.setItem('loggedIn', 'true');
         errEl.style.display = 'none';
         document.getElementById('login-page').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
-        pbPull(); // sync from PocketBase if configured (non-blocking)
+        pbPull();
         if (typeof updateDashboard === 'function') updateDashboard();
       } else {
+        errEl.textContent = 'Incorrect password. Default password is help2024';
         errEl.style.display = 'block';
         document.getElementById('password-input').value = '';
         document.getElementById('password-input').focus();
@@ -2151,8 +2160,15 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
     function togglePassword() {
       const input = document.getElementById('password-input');
       const btn = document.getElementById('eye-btn');
-      if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
-      else { input.type = 'password'; btn.textContent = '👁'; }
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+        btn.title = 'Hide password';
+      } else {
+        input.type = 'password';
+        btn.textContent = '👁';
+        btn.title = 'Show password';
+      }
     }
 
     function logout() {

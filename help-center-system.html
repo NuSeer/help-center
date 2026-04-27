@@ -3725,15 +3725,167 @@ When you know the client's name or situation, personalize specifically. Never gi
     }
 
         const LIBRARY_IDEAS = [
-      { id:'lib-001', icon:'💼', title:'Business Consulting', rating:4.9, revenue:'$3K-15K/mo', launch:'1-2 weeks', cost:'$0-200', difficulty:'Beginner', tags:['Services','High Margin','Scalable'], description:'Offer business strategy, operations, and growth consulting to small business owners. H.E.L.P. Center rate: $75/hr.', plan:`<h3>Getting Started</h3><ul><li>Define your niche (business formation, operations, marketing, financial planning)</li><li>Create a simple services menu with clear pricing ($75-150/hr or packaged retainers)</li><li>Build a one-page website or use your H.E.L.P. Center portal</li><li>Reach first 3 clients through your warm network — Facebook groups, LinkedIn, church, family</li></ul><h3>90-Day Milestones</h3><p>Month 1: Niche + pricing + first 1-2 paying clients. Month 2: Systematize your intake and delivery. Month 3: Launch referral program and aim for $2K/month.</p>` },
-      { id:'lib-002', icon:'🌐', title:'Web Design & Development', rating:4.8, revenue:'$2K-10K/mo', launch:'2-4 weeks', cost:'$100-500', difficulty:'Beginner-Intermediate', tags:['Design','Tech','Project-Based'], description:'Build websites, landing pages, and e-commerce stores for small businesses. H.E.L.P. Center starting rate: $250/site.', plan:`<h3>Service Tiers</h3><ul><li>Basic Landing Page — $250-500</li><li>Full Business Website — $500-1,500</li><li>E-commerce Store — $1,000-3,000</li><li>Maintenance Retainer — $75-150/month</li></ul><h3>Tools to Start</h3><p>WordPress + Elementor (low cost), Webflow (premium), or Squarespace for beginners. Buy domain + hosting from Namecheap (~$15/yr + $4/mo). No code required for basic sites.</p><h3>First Client Strategy</h3><p>Identify 5 local businesses with bad or no websites. Pitch them with a screenshot of competitors and a $250 offer to start.</p>` },
-      { id:'lib-003', icon:'🤖', title:'AI Services Business', rating:4.8, revenue:'$5K-25K/mo', launch:'1-2 weeks', cost:'$50-500', difficulty:'Intermediate', tags:['AI Tools','Automation','High Demand'], description:'Offer AI automation, chatbot development, and integration services to small businesses.', plan:`<h3>Service Ideas</h3><ul><li>AI chatbot setup for customer service ($500-2,000)</li><li>Automated email + follow-up sequences ($300-1,500)</li><li>AI content creation workflows ($200-800/month retainer)</li><li>Data entry and report automation ($500-2,000)</li></ul><h3>Tools You Need</h3><p>Make.com (automation), ChatGPT API, Zapier, Manychat (chatbots), Voiceflow. Total tool cost: under $100/month when starting.</p><h3>Client Target</h3><p>Service businesses — salons, real estate agents, coaches, restaurants — who spend hours on repetitive admin tasks.</p>` },
-      { id:'lib-004', icon:'📱', title:'Social Media Agency', rating:4.7, revenue:'$4K-20K/mo', launch:'1-3 weeks', cost:'$100-800', difficulty:'Beginner', tags:['Content','Marketing','Recurring'], description:'Manage social media accounts, content creation, and ad campaigns for small businesses.', plan:`<h3>Service Packages</h3><ul><li>Starter: 3 posts/week + community management — $500/month</li><li>Growth: Daily posting + stories + 1 ad campaign — $1,000/month</li><li>Premium: Full management + monthly strategy call — $2,000/month</li></ul><h3>Getting Clients</h3><p>DM 10 businesses per day on Instagram whose content is inconsistent or low quality. Offer a free 2-week trial or a content audit. Convert to retainer.</p><h3>Tools</h3><p>Canva (design), Buffer or Later (scheduling), CapCut (video), ChatGPT (captions). Under $50/month total.</p>` },
-      { id:'lib-005', icon:'📚', title:'Online Course Creator', rating:4.6, revenue:'$1K-20K/mo', launch:'4-8 weeks', cost:'$0-300', difficulty:'Intermediate', tags:['Digital Products','Passive Income','Expertise'], description:'Package your knowledge into a course or workshop and sell it repeatedly with no active time.', plan:`<h3>Course Development Steps</h3><ul><li>Choose your transformation: what result will students have after your course?</li><li>Outline 5-8 modules with clear, specific learning outcomes</li><li>Record with a phone on a tripod + natural light — no studio needed</li><li>Host on Teachable, Thinkific, or Kajabi ($30-120/mo)</li></ul><h3>Pricing Strategy</h3><p>Entry course: $47-97. Mid-tier with community: $197-497. Premium with 1:1: $997+. Start mid-tier and raise prices as testimonials build.</p>` },
-      { id:'lib-006', icon:'🏠', title:'Property Management', rating:4.5, revenue:'$2K-15K/mo', launch:'2-4 weeks', cost:'$200-1,000', difficulty:'Intermediate', tags:['Real Estate','Recurring','Scalable'], description:'Manage rental properties for landlords — tenant screening, rent collection, maintenance coordination.', plan:`<h3>Services Offered</h3><ul><li>Tenant screening and placement (one month's rent fee)</li><li>Monthly property management (8-12% of monthly rent)</li><li>Maintenance coordination and vendor management</li><li>Monthly financial reporting for owners</li></ul><h3>Getting Started</h3><p>Start with 1-3 properties from your network. Get licensed if required in your state. Use Buildium or Rentec Direct for software (~$50-100/mo). Your first client is often a landlord who's tired of managing their own properties.</p>` },
-      { id:'lib-007', icon:'📊', title:'Bookkeeping & Financial Services', rating:4.7, revenue:'$2K-12K/mo', launch:'1-3 weeks', cost:'$50-200', difficulty:'Beginner-Intermediate', tags:['Finance','Recurring','Essential'], description:'Offer monthly bookkeeping, tax prep coordination, and financial reporting for small businesses.', plan:`<h3>Service Menu</h3><ul><li>Monthly bookkeeping cleanup — $200-600/month</li><li>QuickBooks/Xero setup — $300-800 one-time</li><li>Financial reporting package — $150-400/month</li><li>Tax prep coordination with CPA — $500-1,500</li></ul><h3>Certifications</h3><p>QuickBooks ProAdvisor certification is free and takes 1-2 weeks. NACPB bookkeeping certification adds credibility. Neither is required to start — clients care about results.</p>` },
-      { id:'lib-008', icon:'🎯', title:'Life & Business Coach', rating:4.8, revenue:'$3K-20K/mo', launch:'1-2 weeks', cost:'$0-300', difficulty:'Beginner', tags:['Coaching','High Margin','Impact'], description:'Guide clients through business goals, mindset blocks, and life transitions via 1:1 or group coaching.', plan:`<h3>Coaching Models</h3><ul><li>1:1 Monthly Coaching: 4 sessions — $500-2,000/month</li><li>Group Program (6-12 people): 8 weeks — $500-2,000/person</li><li>VIP Day: Full-day intensive — $1,000-5,000</li><li>Self-Paced Course: $97-497 (leverage existing sessions)</li></ul><h3>First Client Formula</h3><p>Post a specific problem you solve, not your credentials. Example: "I help Black women entrepreneurs charge their worth and land premium clients." DM 5 people who liked your post. Offer a free 20-min call. Convert 2 in 10.</p>` }
-    ];
+  {
+    id:'lib-001', icon:'🍃', title:'Mobile Herbal Apothecary', rating:4.9,
+    revenue:'$500-$5,000/mo', launch:'60 days', cost:'$1,000-$5,000', difficulty:'Intermediate',
+    tags:['Wellness','Community','Mobile','Products'],
+    description:'A mobile apothecary serving herbal teas, tinctures, and salves at farmers markets, community events, and wellness fairs. Rooted in natural healing traditions.',
+    plan:`<h3>Business Concept</h3><p>A mobile herbal apothecary can operate from a compact setup — a bicycle cart, retrofitted van, or pop-up tent — serving herbal teas, tinctures, salves, and botanical remedies directly to the community. It bridges traditional herbal wisdom with modern wellness culture.</p>
+<h3>60-Day Launch Plan</h3>
+<ul><li><strong>Week 1-2:</strong> Define niche (teas, tinctures, salves), draft business plan, research local regulations. Register LLC, get EIN, obtain seller's permit and product liability insurance.</li>
+<li><strong>Week 3-4:</strong> Source herbs (grow, forage, or buy from Mountain Rose Herbs / Starwest Botanicals). Begin first test batches. Set up clean workspace with airtight storage.</li>
+<li><strong>Week 5-6:</strong> Finalize product formulas. Design brand identity and labels. Order packaging (amber glass, kraft pouches, tins). Ensure FDA compliance — no drug claims, proper disclaimers.</li>
+<li><strong>Week 7-8:</strong> Acquire booth equipment (10x10 tent, tables, display stands, mobile card reader). Apply for farmers market vendor spots. Soft launch to friends and family for feedback.</li>
+</ul>
+<h3>Revenue Streams</h3>
+<ul><li>Farmers market and event sales (direct, highest margin)</li><li>Online store via Etsy or personal website</li><li>Wholesale to local spas, health food stores, wellness centers</li><li>Workshops: Herbal Tea Blending, DIY Salve Making ($25-75/person)</li></ul>
+<h3>Legal & Compliance Notes</h3>
+<p>In Florida, "apothecary" in a business name is legally restricted to licensed pharmacies — use "Herbals" or "Botanicals" instead. Herbal teas under cottage food law may be sold from home (check state rules). Never claim to "treat or cure" any disease — FDA classification matters. Get product liability insurance before first sale.</p>
+<h3>Startup Budget (Lean)</h3>
+<ul><li>LLC formation + permits: $300-500</li><li>Initial herb inventory: $200-500</li><li>Packaging and labels: $200-400</li><li>Booth equipment (tent, table, display): $300-600</li><li>Insurance: $300-600/year</li></ul>`
+  },
+  {
+    id:'lib-002', icon:'🥗', title:'The Green Plate Restaurant', rating:4.8,
+    revenue:'$20,000-$50,000/mo', launch:'3-6 months', cost:'$30,000-$50,000', difficulty:'Intermediate',
+    tags:['Restaurant','Healthy','Family-Friendly','Sit-Down'],
+    description:'A modern casual sit-down restaurant near gyms and office parks offering customizable healthy bowls, wraps, smoothies, and kids meals. Tagline: Healthy Starts Here.',
+    plan:`<h3>Concept</h3>
+<p>The Green Plate is a vibrant, modern restaurant with a casual sit-down experience. Think natural wood, green plants, clean white walls with fitness-themed art, and energetic music. Customers build customizable bowls, wraps, and smoothies — catering to gym-goers, health-conscious professionals, and families.</p>
+<h3>Brand Identity</h3>
+<ul><li><strong>Tagline:</strong> Healthy Starts Here.</li><li><strong>Colors:</strong> Dark Green #1E4620, Leaf Green #5DAE49, Peach #F9D5A7, Citrus Coral #F86E51, Earth Brown #6C4F3D</li><li><strong>Fonts:</strong> Montserrat Bold (headings), Open Sans (body)</li><li><strong>Vibe:</strong> Modern + vibrant with earthy accents. Family-friendly with a fitness energy.</li></ul>
+<h3>Core Menu</h3>
+<ul><li><strong>Build-Your-Own Bowls:</strong> Base (quinoa, brown rice, mixed greens, cauliflower rice) + Protein (grilled chicken, tofu, grass-fed beef, salmon) + Toppings + House dressings</li><li><strong>Wraps & Paninis:</strong> Grilled Chicken Power Wrap, Tofu & Veggie Panini (Vegan), Keto Chicken Lettuce Wraps</li><li><strong>Smoothies:</strong> Green Detox, High-Protein Chocolate, Berry Antioxidant, Immunity Booster</li><li><strong>Kids' Mini Green Plates:</strong> Mini Protein Bowl, Kids' Smoothie, Whole Grain Quesadilla with Hidden Veggies, Fresh Fruit Cup</li><li><strong>Healthy Sides:</strong> Sweet Potato Fries, Hummus & Veggie Sticks, Roasted Veggies, Garlic Mashed Cauliflower</li><li><strong>Desserts:</strong> Avocado Chocolate Mousse, Chia Fruit Parfait, Baked Apple Crisp</li></ul>
+<h3>The Green Plate Nights</h3>
+<p>Late-night extension: Weekdays until 11 PM, Weekends until Midnight. Streamlined menu for gym-goers and night workers. Sub-brand with moon/star accent. Loyalty rewards after 8 PM.</p>
+<h3>Startup Budget</h3>
+<ul><li>Lease & Renovations: $20,000</li><li>Kitchen Equipment & Furnishings: $10,000</li><li>Branding, Website, Marketing: $5,000</li><li>Initial Inventory & Supplies: $5,000</li><li>Permits, Utilities & Misc: $10,000</li></ul>
+<h3>Revenue Streams</h3>
+<ul><li>Dine-in and takeout sales</li><li>Catering for corporate clients and events</li><li>Delivery via DoorDash / Uber Eats</li><li>Loyalty app and subscription meal plans</li><li>Branded merchandise (Year 2)</li></ul>
+<h3>Location Strategy</h3>
+<p>Urban or suburban area near gyms, office parks, and wellness centers. Look for 1,000–2,500 sq ft. Consider proximity to LA Fitness, Planet Fitness, or corporate campuses. Year 2: second location or food truck.</p>`
+  },
+  {
+    id:'lib-003', icon:'🌶️', title:'Bern Baby Burn Seasonings', rating:4.8,
+    revenue:'$1,000-$10,000/mo', launch:'30-60 days', cost:'$500-$2,000', difficulty:'Beginner',
+    tags:['Products','Food','Black-Owned','E-commerce'],
+    description:'A Black-owned specialty seasoning and sauce brand named after grandmother Bernice "Bern" — a Southern woman who loved to cook. Sweet, spicy, and soulful.',
+    plan:`<h3>Brand Story</h3>
+<p>Named after Bernice — called "Bern" for short — a Southern woman who poured love into every dish. Bern Baby Burn carries that legacy forward with bold, authentic seasonings and sauces rooted in Southern, African, and Caribbean culinary traditions. Black-owned. Family-rooted. Fire in every jar.</p>
+<h3>Product Line</h3>
+<ul>
+<li><strong>Southern-Style French Fry Seasoning (2.5 oz):</strong> Kosher salt, garlic powder, onion powder, smoked paprika, parsley, oregano, thyme, cayenne, brown sugar, mustard powder. The perfect balance of savory, smoky, and slightly sweet.</li>
+<li><strong>Spicy Cajun Seasoning (2.5 oz):</strong> Kosher salt, garlic powder, onion powder, smoked paprika, cayenne, black pepper, white pepper, thyme, oregano, red pepper flakes. Louisiana heat in every shake.</li>
+<li><strong>Herb Garden Seasoning (2.5 oz):</strong> Salt, garlic, onion powder, parsley, basil, chives, thyme, rosemary, oregano. Fresh and versatile — works on everything.</li>
+<li><strong>Grits Seasoning (2.5 oz):</strong> Garlic powder, onion powder, smoked paprika, thyme, oregano, black pepper, white pepper, cayenne, parsley. Elevates classic Southern grits.</li>
+<li><strong>Peach Blaze BBQ Sauce (16 oz):</strong> Canned peach purée, ketchup, apple cider vinegar, brown sugar, molasses, Worcestershire, liquid smoke, smoked paprika, cayenne. Sweet, smoky, and made in under 15 minutes.</li>
+<li><strong>Vegan Peach Blaze BBQ Sauce (16 oz):</strong> Same as above with vegan Worcestershire. Certified plant-based version.</li>
+</ul>
+<h3>Brand Identity</h3>
+<ul><li><strong>Colors:</strong> Deep red, burnt orange, golden yellow — fire palette with Southern heritage accents</li><li><strong>Taglines:</strong> "Sweet. Spicy. Southern." / "Taste the Bern" / "Where Flavor Ignites Tradition"</li><li><strong>Identity:</strong> Black-owned, family-recipe brand with cultural pride and modern appeal</li></ul>
+<h3>Launch Strategy</h3>
+<ul><li>Start with 3-4 flagship products (Southern Fry, Cajun, Peach BBQ, Vegan BBQ)</li><li>Test at farmers markets and local events</li><li>Build Etsy store and Instagram presence simultaneously</li><li>Approach local restaurants and specialty grocery stores for wholesale</li><li>Pitch to Whole Foods local supplier program and Black business directories</li></ul>
+<h3>Startup Budget</h3>
+<ul><li>Ingredients (first run): $300-600</li><li>Packaging (jars, labels, boxes): $400-800</li><li>LLC + cottage food or food processing permit: $200-400</li><li>Product liability insurance: $300-600/year</li><li>Marketing + Etsy setup: $100-200</li></ul>`
+  },
+  {
+    id:'lib-004', icon:'⚽', title:'Multi-Sport Complex', rating:4.7,
+    revenue:'$50,000-$200,000/mo', launch:'12-24 months', cost:'$500,000-$2,000,000', difficulty:'Advanced',
+    tags:['Sports','Community','Large-Scale','Facility'],
+    description:'A multi-sport facility offering courts, fields, training programs, leagues, and youth development. A community hub for athletics and leadership.',
+    plan:`<h3>Concept</h3>
+<p>A multi-sport complex that serves as a community hub — offering courts for basketball and volleyball, turf fields for soccer and football, training rooms, youth programs, adult leagues, and event space. This is about more than sports; it's about community development, leadership, and economic opportunity.</p>
+<h3>Facilities & Offerings</h3>
+<ul><li><strong>Indoor Courts:</strong> Basketball (2-4 courts), volleyball, pickleball, badminton</li><li><strong>Outdoor Fields:</strong> Soccer, flag football, track</li><li><strong>Training Center:</strong> Weight room, agility training, film room</li><li><strong>Youth Programs:</strong> After-school athletics, summer camps, leadership development</li><li><strong>Adult Leagues:</strong> Basketball, soccer, flag football, volleyball</li><li><strong>Event Space:</strong> Tournaments, fundraisers, community events, birthday parties</li><li><strong>Pro Shop & Café:</strong> Equipment, gear, healthy snacks and beverages</li></ul>
+<h3>Revenue Streams</h3>
+<ul><li>Membership fees (individual, family, corporate)</li><li>League registration fees</li><li>Court/field rental by the hour</li><li>Youth program fees</li><li>Tournament hosting fees</li><li>Event space rental</li><li>Concessions and pro shop sales</li><li>Sponsorships from local businesses and brands</li></ul>
+<h3>Target Market</h3>
+<ul><li>Youth athletes ages 8-18</li><li>Adult recreational players (25-55)</li><li>Corporate wellness programs</li><li>Schools and churches needing athletic space</li><li>Event organizers and tournament directors</li></ul>
+<h3>Key Startup Steps</h3>
+<ul><li>Identify and secure facility space (purchase or long-term lease)</li><li>Obtain all required permits (building, business, recreational facility)</li><li>Develop youth program curriculum and hire qualified coaches</li><li>Partner with local schools, churches, and recreation departments</li><li>Launch memberships pre-opening to fund initial operations</li></ul>
+<h3>Financial Overview</h3>
+<ul><li>Startup: $500K-$2M depending on facility size and whether building or leasing</li><li>Break-even: Typically 18-36 months with consistent membership and programming</li><li>Long-term revenue target: $50K-$200K/month at full capacity</li></ul>`
+  },
+  {
+    id:'lib-005', icon:'🍲', title:'Community Food Bank & Pantry', rating:4.6,
+    revenue:'Grant & Donation Funded', launch:'3-6 months', cost:'$10,000-$50,000', difficulty:'Intermediate',
+    tags:['Nonprofit','Community','Food Security','Mission-Driven'],
+    description:'A nonprofit community food bank providing groceries, fresh produce, and nutrition education to families in need. Funded through grants, donations, and community partnerships.',
+    plan:`<h3>Mission</h3>
+<p>To eliminate food insecurity in our community by providing nutritious food, resources, and dignity to families who need it most. The food bank operates as both a distribution center and a community gathering space — serving with compassion, not charity.</p>
+<h3>Programs & Services</h3>
+<ul><li><strong>Weekly Food Pantry:</strong> Households receive groceries based on family size</li><li><strong>Fresh Produce Program:</strong> Partner with local farms for fresh fruits and vegetables</li><li><strong>Mobile Food Distribution:</strong> Van or truck delivers to seniors, disabled individuals, and underserved areas</li><li><strong>Nutrition Education Workshops:</strong> Cooking classes, meal planning, healthy eating on a budget</li><li><strong>Emergency Food Boxes:</strong> Crisis response for families experiencing sudden hardship</li><li><strong>Holiday Programs:</strong> Thanksgiving baskets, Christmas toy/food drives</li></ul>
+<h3>Funding Strategy</h3>
+<ul><li><strong>Federal Grants:</strong> USDA Emergency Food Assistance Program (TEFAP), Community Development Block Grants</li><li><strong>State & Local Grants:</strong> Florida Department of Agriculture, local community foundations</li><li><strong>Corporate Sponsorships:</strong> Walmart, Publix, Amazon, local businesses</li><li><strong>Individual Donations:</strong> Monthly giving program, annual fundraiser gala</li><li><strong>Food Drives:</strong> Churches, schools, civic organizations</li><li><strong>Feeding America Network:</strong> Affiliate membership provides access to donated national food supply</li></ul>
+<h3>Organizational Structure</h3>
+<ul><li>Form 501(c)(3) nonprofit — IRS application + state registration</li><li>Board of Directors (5-9 members) with community leaders</li><li>Executive Director (paid), volunteer coordinator, part-time staff</li><li>Volunteer program — essential to operations</li></ul>
+<h3>Startup Steps</h3>
+<ul><li>Incorporate as nonprofit corporation in Florida</li><li>Apply for 501(c)(3) tax-exempt status with IRS (Form 1023)</li><li>Secure warehouse or distribution space</li><li>Apply to join Feeding America network for food supply access</li><li>Build donor base and apply for first foundation grants</li><li>Recruit board and launch volunteer program</li></ul>`
+  },
+  {
+    id:'lib-006', icon:'🎙️', title:'RealTalk Community Platform', rating:4.7,
+    revenue:'$5,000-$30,000/mo', launch:'2-4 months', cost:'$2,000-$10,000', difficulty:'Intermediate',
+    tags:['Media','Community','Digital','Education'],
+    description:'A community-focused media and coaching platform providing real conversations about business, life, finances, and leadership. Podcasts, events, coaching, and digital content.',
+    plan:`<h3>Concept</h3>
+<p>RealTalk is a platform rooted in authentic conversation — no fluff, no filter. It serves entrepreneurs, community leaders, and everyday people who want real information about building businesses, managing money, and leading with purpose. Think part podcast, part coaching network, part community movement.</p>
+<h3>Content & Programming</h3>
+<ul><li><strong>Podcast/Show:</strong> Weekly episodes featuring entrepreneurs, community leaders, financial experts, and everyday achievers. Real stories, real lessons.</li><li><strong>Live Events:</strong> Quarterly community forums, business mixers, women's empowerment summits, youth town halls</li><li><strong>Digital Content:</strong> YouTube channel, social media series, email newsletter</li><li><strong>Workshops & Masterclasses:</strong> Business formation, credit building, social media marketing, leadership</li><li><strong>1:1 Coaching:</strong> Business strategy sessions, accountability coaching, income pathway planning</li></ul>
+<h3>Revenue Streams</h3>
+<ul><li>Podcast sponsorships and brand partnerships</li><li>Event ticket sales and sponsorships</li><li>Digital course sales ($97-$497 each)</li><li>Coaching packages ($500-$2,000/month)</li><li>Membership community ($27-$97/month for premium content)</li><li>Affiliate partnerships with business tools and services</li></ul>
+<h3>Brand Identity</h3>
+<ul><li><strong>Tone:</strong> Direct, real, culturally grounded, empowering — not preachy</li><li><strong>Audience:</strong> Black entrepreneurs, community leaders, first-generation business owners, youth</li><li><strong>Tagline:</strong> "Real Conversations. Real Results."</li></ul>
+<h3>Launch Steps</h3>
+<ul><li>Choose platform (podcast host: Buzzsprout, Anchor, or Spotify for Podcasters)</li><li>Record first 3 episodes before launching (so listeners have content from Day 1)</li><li>Build social media presence 30-60 days before launch</li><li>Host first live event within 90 days of launch to build community</li><li>Launch first paid digital course within 6 months</li></ul>`
+  },
+  {
+    id:'lib-007', icon:'🤖', title:'AI Biz Builder Program', rating:4.9,
+    revenue:'$3,000-$20,000/mo', launch:'2-4 weeks', cost:'$200-$1,000', difficulty:'Beginner-Intermediate',
+    tags:['AI','Education','Coaching','Digital Products'],
+    description:'A structured program teaching entrepreneurs how to use AI tools to build, launch, and grow businesses faster. Curriculum-based with live coaching and digital resources.',
+    plan:`<h3>Program Vision</h3>
+<p>The AI Biz Builder Program teaches entrepreneurs and aspiring business owners how to leverage AI tools — ChatGPT, Claude, Groq, Canva AI, and more — to start and scale a business without a large team or budget. This is practical, hands-on, results-focused training that democratizes business-building tools.</p>
+<h3>Curriculum Overview</h3>
+<ul>
+<li><strong>Module 1 — AI Foundations:</strong> What AI is, how to prompt effectively, free vs paid tools, best tools for entrepreneurs</li>
+<li><strong>Module 2 — Business Ideation with AI:</strong> Using AI to validate ideas, research markets, identify competitors, and name your business</li>
+<li><strong>Module 3 — Branding with AI:</strong> Generate brand identity, logo concepts, color palettes, brand voice, and marketing copy</li>
+<li><strong>Module 4 — Content Creation:</strong> Social media posts, email newsletters, blog articles, video scripts — all AI-assisted</li>
+<li><strong>Module 5 — Business Documents:</strong> Business plans, proposals, contracts, SOPs — generated and customized with AI</li>
+<li><strong>Module 6 — Automation & Systems:</strong> Use Make.com, Zapier, and AI to automate client follow-up, invoicing, and scheduling</li>
+<li><strong>Module 7 — Client Acquisition:</strong> AI-powered outreach scripts, DM strategies, sales funnels</li>
+<li><strong>Module 8 — Launch & Scale:</strong> From idea to paying client in 30 days using AI as your co-founder</li>
+</ul>
+<h3>Delivery Formats</h3>
+<ul><li><strong>Self-Paced Course:</strong> $197-$497 on Teachable or Kajabi</li><li><strong>Group Cohort (6 weeks):</strong> $597-$997 with weekly live calls</li><li><strong>1:1 AI Business Coaching:</strong> $500-$1,500/month</li><li><strong>Corporate/School Workshops:</strong> $1,500-$5,000/day</li></ul>
+<h3>Target Audience</h3>
+<ul><li>Aspiring entrepreneurs with no tech background</li><li>Small business owners wanting to save time with AI</li><li>Corporate employees wanting to launch a side hustle</li><li>Youth ages 14-24 in entrepreneurship programs</li><li>Nonprofit and community organization staff</li></ul>
+<h3>Revenue Potential</h3>
+<p>With 20 students/month at $297 average = $5,940/month. With corporate contracts at $3,000/workshop = 3 workshops = $9,000/month. Combined at scale: $15,000-$20,000/month achievable within 12 months.</p>`
+  },
+  {
+    id:'lib-008', icon:'💳', title:'Smart Credit Repair Service', rating:4.8,
+    revenue:'$3,000-$15,000/mo', launch:'1-2 weeks', cost:'$0-$500', difficulty:'Beginner',
+    tags:['Finance','Credit','Services','Recurring'],
+    description:'A credit repair and financial coaching service that helps clients remove negative items, build positive credit history, and achieve financial goals through personalized strategy.',
+    plan:`<h3>Service Concept</h3>
+<p>Smart Credit Repair combines credit dispute services with financial education and coaching. Unlike generic credit repair mills, this service personalizes the strategy to each client — addressing their specific negative items, credit utilization, and financial habits — while teaching them how to maintain good credit long-term.</p>
+<h3>Service Packages</h3>
+<ul>
+<li><strong>Credit Audit ($75 one-time):</strong> Pull and analyze all 3 credit reports. Identify negative items, errors, and opportunities. Deliver a written action plan.</li>
+<li><strong>Dispute Service ($150-$300/month):</strong> Send dispute letters to Equifax, Experian, TransUnion on client's behalf. Follow up and track results. Monthly progress report.</li>
+<li><strong>Credit Builder Program ($297/month, 3-month minimum):</strong> Full dispute service + credit building strategy: secured cards, authorized user status, credit-builder loans. Weekly check-ins.</li>
+<li><strong>Financial Coaching Add-On ($150/month):</strong> Budgeting, debt payoff strategy, savings goals, and income planning alongside credit work.</li>
+</ul>
+<h3>What You Can Legally Do</h3>
+<ul><li>Dispute inaccurate, unverifiable, or outdated information on credit reports</li><li>Teach clients to write their own dispute letters (most powerful and free)</li><li>Advise on credit utilization, payment history, and positive credit building</li><li>Recommend credit products (secured cards, credit-builder loans)</li></ul>
+<h3>Legal Requirements</h3>
+<p>In Florida, credit repair organizations must comply with the Credit Repair Organizations Act (CROA) and Florida's Credit Services Organizations Act. You must: provide a written contract, give clients a 3-day right to cancel, and never charge upfront fees before services are rendered. Consult an attorney before launching.</p>
+<h3>Tools & Resources</h3>
+<ul><li>AnnualCreditReport.com — free credit reports for clients</li><li>Credit Karma / Experian — free monitoring and score tracking</li><li>CreditRepairCloud — software for managing disputes at scale ($179/month)</li><li>Sample dispute letter templates (customize for each client)</li></ul>
+<h3>Client Acquisition</h3>
+<ul><li>Partner with H.E.L.P. Center clients — credit repair is part of the pathways</li><li>Referrals from real estate agents, car dealerships, and mortgage brokers</li><li>Facebook groups focused on credit improvement</li><li>Free credit audit as a lead magnet</li></ul>`
+  }
+];
 
     function renderLibrary() {
       const grid = document.getElementById('library-ideas-grid');
@@ -4998,6 +5150,417 @@ Instead of creating content every day, batch it once per week. Block 2–3 hours
 - **Week 4:** Review your analytics. Double down on what's working. Start repurposing your top post across platforms.
 
 By Day 30, if you've been consistent, you'll have a growing following, warm leads in your DMs, and a clear understanding of what content your audience responds to.`,
+    lastUpdated:'2026-04-26', bookmarked:false },
+
+  { id:'guide-004', icon:'🏦', title:'The 3-Bank Method: Legacy Financial Strategy', category:'Finance', duration:'25 min read',
+    description:'A historical informal banking strategy used in Black and underserved communities in the 1930s-50s — rotating loans between banks to build credit, perceived liquidity, and financial standing.',
+    content:`# The 3-Bank Method: A Legacy Financial Strategy
+## Where This Comes From
+Long before credit scores, before instant bank transfers, before FICO ratings — people built financial standing through reputation, timing, and understanding how the banking system worked. In Black communities, rural communities, and immigrant neighborhoods of the 1930s, 1940s, and 1950s, financial wisdom was passed down through oral tradition, not textbooks.
+
+One of the most powerful informal strategies was what we can call **The 3-Bank Method** — a rotating loan and deposit cycle that used institutional trust, payment discipline, and timing to access more credit than any single bank would offer alone.
+
+This wasn't fraud. It wasn't illegal. It was mastery.
+
+## The Core Strategy
+
+The 3-Bank Method works through a deliberate cycle of borrowing, depositing, servicing, and leveraging:
+
+**Step 1 — Borrow from Bank A**
+Use your character, community reputation, and any existing deposit relationship to secure a small loan from Bank A. In the 1930s-50s, before credit scores, a banker who knew you — your name, your family, your track record — would extend credit based on relationship.
+
+**Step 2 — Deposit into Bank B**
+Take the funds borrowed from Bank A and deposit them into Bank B. You're not spending the money. You're building a deposit history at a second institution. Bank B now sees you as someone with savings, not just someone with a loan.
+
+**Step 3 — Service Bank A's Loan**
+Using income, savings, or managed cash flow, make consistent, on-time payments to Bank A. Every payment strengthens your reputation. Bank A sees you as reliable. This is the foundation of everything that follows.
+
+**Step 4 — Borrow from Bank B**
+After 3-6 months of steady deposits at Bank B, you now have a relationship there. Bank B sees a depositor with a savings pattern. Combined with your clean payment history at Bank A, you can now borrow from Bank B.
+
+**Step 5 — Deposit into Bank C**
+Deposit Bank B's funds into Bank C. Repeat the relationship-building process with a third institution.
+
+**Step 6 — Service Both Loans**
+Continue making payments to both Bank A and Bank B using income or cash flow management.
+
+**Step 7 — Use Bank C to Pay Off Bank A**
+When Bank C extends credit, use those funds strategically — including paying off the original loan at Bank A entirely. Closing Bank A's loan with a perfect payment record strengthens your overall credit picture.
+
+**Step 8 — Repeat and Expand**
+With Bank A's loan closed, Bank B becomes your primary lender. Bank C becomes your new deposit builder. The cycle continues — each rotation expanding your access to credit and institutional relationships.
+
+## Why It Worked
+
+This strategy succeeded because of specific conditions that existed before modern banking technology:
+
+**Float Time**
+In the 1930s-50s, banks processed transactions on paper. Checks could take 3-7 days to clear. Loan decisions were made weekly, not instantly. Deposits didn't show instantly — they showed in cycles. This gave a strategist room to maneuver between institutions before the full picture was visible to any one bank.
+
+**Relationship-Based Credit**
+There was no Equifax, no Experian, no TransUnion. Your credit "score" was your reputation. A banker who knew your father, your pastor, or your employer would extend credit based on that network. Regular deposits and on-time payments were visible proof of character.
+
+**Multiple Institutions, No Central View**
+Banks didn't share data in real time. What Bank A knew about you was different from what Bank B knew. A sophisticated person could present a stronger financial picture at each institution independently.
+
+## What Made This Different from Fraud
+
+Kiting — the illegal version — involves writing checks against unavailable funds, knowing they'll bounce, and cycling them to appear covered. That's deception with no intent to repay.
+
+The 3-Bank Method was different:
+- All loans were real obligations, genuinely intended to be repaid
+- Real deposits were made, not phantom entries
+- The strategy depended on actual repayment discipline — it collapsed without it
+- The practitioner was using timing and reputation, not deception
+
+The intent was never to deceive. It was to leverage a system that wasn't designed for them — and to get ahead within the rules of that system.
+
+## The Broader Tradition This Comes From
+
+The 3-Bank Method fits into a rich tradition of informal financial strategy in communities excluded from mainstream wealth:
+
+**Susu / Sou-Sou** — West African and Caribbean rotating savings circles where members contribute to a shared pot and take turns receiving the full sum. No bank required. Trust required.
+
+**Gemach Funds** — Jewish community interest-free loan funds based on moral obligation and community accountability. A form of social credit.
+
+**Stokvel** — South African savings clubs with rotating payouts, still widely used today.
+
+**Tanda / Chit Funds** — Latin American and South Asian rotating credit associations.
+
+All of these systems share the same foundation: **money moves through trust, not paperwork.**
+
+## Why This Matters Now
+
+The 3-Bank Method doesn't translate directly to 2025 banking, where:
+- All credit activity is reported to central bureaus in real time
+- Banks share data through Chexsystems and Early Warning Services
+- Float time is measured in seconds, not days
+- Loans require documented income verification
+
+But the **principle** still applies:
+- Build relationships at multiple institutions, not just one
+- Use deposits strategically before applying for credit
+- Let your payment history speak before your credit score does
+- Understand how institutions perceive you — and shape that perception with intention
+
+The wisdom your father carried wasn't just about banks. It was about understanding systems well enough to work them — with discipline, patience, and timing.
+
+That kind of financial intelligence doesn't expire.`,
+    lastUpdated:'2026-04-26', bookmarked:false },
+
+  { id:'guide-005', icon:'🤝', title:'Community Finance: ROSCAs & Mutual Aid Traditions', category:'Finance', duration:'35 min read',
+    description:'A deep guide to the informal financial traditions — susu, stokvel, tanda, gemach — that Black, immigrant, and underserved communities have used for centuries to build wealth outside formal banking.',
+    content:`# Community Finance: ROSCAs & Mutual Aid Traditions
+## What Is Community Finance?
+Long before banks existed, communities built financial systems around trust, reciprocity, and collective responsibility. These systems didn't require credit scores, collateral, or approval from institutions that often excluded them. They required one thing: **your word.**
+
+Community finance — also called informal finance or mutual aid finance — is the practice of pooling resources, sharing risk, and rotating access to capital within a trusted social group. It exists on every continent. It has different names in different cultures. But it shares a universal truth:
+
+**Money is social before it is mathematical.**
+
+## ROSCAs: Rotating Savings and Credit Associations
+
+The most widely documented form of community finance is the ROSCA — Rotating Savings and Credit Association.
+
+**How it works:**
+A group of people — neighbors, church members, coworkers, family — agree to contribute a fixed amount at regular intervals. Each cycle, one member receives the full collective pot. Then the next member gets it. The rotation continues until everyone has received their payout once.
+
+There's no interest. No formal contract. Just commitment and community.
+
+**A simple example:**
+10 people each contribute $100/month. Every month, one person receives $1,000. After 10 months, everyone has received $1,000 once. The cycle can repeat, and some groups run for years.
+
+## Names Around the World
+
+The same system exists under dozens of names across cultures:
+
+### Black & African Diaspora
+**Susu / Sou-Sou** — West Africa, Trinidad, Jamaica, Barbados, Guyana
+The susu is one of the most well-known forms. Common in Yoruba, Akan, and other West African communities. Brought to the Caribbean and Americas through the transatlantic slave trade. Still widely practiced in Black communities today.
+
+**Esusu** — Yoruba (Nigeria and diaspora)
+The Yoruba variant is one of the oldest documented forms of rotating savings — practiced for centuries before formal banking existed in West Africa.
+
+**Osusu** — Igbo communities (Nigeria)
+Similar to esusu but with slight regional variations in governance.
+
+**Stokvel** — South Africa
+A South African savings and social club with rotating payouts. Estimated that 11 million South Africans participate in stokvels, circulating billions of rands annually. One of the most formalized ROSCA traditions in the world.
+
+**Ekub** — Ethiopia
+A rotating savings group common among Ethiopian communities. Members gather regularly, contribute, and rotate the pot — with cultural, social, and spiritual dimensions alongside the financial.
+
+### Latin America
+**Tanda** — Mexico, Central America
+One of the most common informal savings systems in Mexico. A group (often women in a neighborhood) forms a tanda, agrees on a weekly amount, and rotates payouts. Tandas have helped generations of Mexican families accumulate emergency funds, pay for school, or invest in small businesses.
+
+**Pandeiro / Vaquinha** — Brazil
+Brazilian rotating savings groups, also used for collective fundraising.
+
+**Junta** — Peru, Ecuador
+Similar to the tanda but used across Andean communities.
+
+### Asia & Pacific
+**Hui** — China (and diaspora worldwide)
+Chinese rotating credit associations have existed for over 1,000 years. Used by Chinese immigrants throughout Southeast Asia, North America, and beyond to fund businesses, weddings, and community institutions.
+
+**Chit Fund** — India (especially Gujarati communities)
+One of the most formalized versions of the ROSCA. In India, chit funds are legally recognized and regulated. A chit fund company manages the process — members bid for the pot (the lowest bid wins, creating a small interest mechanism), and the company takes a commission. The Patel community (Gujarati, largely from the state of Gujarat) has historically used chit funds to accumulate capital for businesses. Many Gujarati entrepreneurs who built successful businesses in the UK, US, and East Africa trace their startup capital to community chit funds.
+
+**Kye** — Korea
+Korean rotating savings circles, widely used among Korean immigrants globally. The kye was instrumental in helping Korean business owners accumulate startup capital in the United States — particularly in the 1970s-90s.
+
+**Paluwagan** — Philippines
+Filipino rotating savings group. Extremely common among overseas Filipino workers who pool income to send lump sums home for family needs.
+
+**Arisan** — Indonesia
+A social savings gathering that combines the ROSCA mechanism with social events. Arisan meetings are cultural occasions — participants socialize while managing collective savings.
+
+### Jewish Community
+**Gemach (Gemilut Chasadim)** — Jewish communities worldwide
+The gemach is distinct from ROSCAs because it's not rotating savings — it's an interest-free loan fund rooted in Jewish law and ethics. Members of a community contribute to a fund. Someone who needs money for a wedding, emergency, or business can borrow from the gemach interest-free, with a repayment commitment governed by moral and religious obligation.
+
+Gemachs exist for money, but also for household goods, baby equipment, clothing, and other resources. The concept is: if you have more than you need, you lend it — not to profit, but to fulfill the obligation of kindness.
+
+## How These Systems Replaced Banks
+
+For communities historically excluded from formal banking — through slavery, redlining, immigration status, or poverty — these informal systems did what banks refused to:
+
+**They provided access to lump sums** for people who couldn't save that much alone.
+
+**They created accountability through relationships** — if you defaulted in a susu, you didn't just lose money. You damaged a relationship, your standing in the community, perhaps your place in the church or the neighborhood.
+
+**They financed businesses** — the Gujarati Patels built businesses, the Korean Kye funded corner stores, the Caribbean susu helped families buy homes.
+
+**They survived exclusion** — when banks said no, community said yes.
+
+## What These Systems Share
+
+Across every culture and continent, these systems share common DNA:
+
+**1. Trust is the currency**
+There is no formal contract. No credit check. No collateral. The only thing that makes it work is that everyone trusts everyone else to show up every cycle.
+
+**2. Rhythm and commitment**
+These systems run on consistency. Weekly, monthly, bi-weekly — the rhythm is non-negotiable. Missing a contribution is a social rupture, not just a financial one.
+
+**3. Collective before individual**
+The whole group benefits before any one person does. You may not receive your payout for months. Patience and group orientation are required.
+
+**4. No interest**
+Most traditional ROSCAs charge no interest. The value isn't financial return — it's access. You receive a lump sum you couldn't accumulate alone, and you repay it in small pieces over time.
+
+**5. Social accountability**
+Everyone knows everyone. Defaults are rare not because of legal consequences, but because of social consequences. Your reputation is your credit score.
+
+## Starting a Susu or Savings Circle Today
+
+If you want to start one:
+
+**Step 1: Choose your circle**
+5-15 people who trust each other. Same social network (church, neighborhood, friend group, family). Keep it small at first.
+
+**Step 2: Set the terms**
+How much per person per cycle? ($50, $100, $200)
+How often? (Weekly, monthly)
+How is payout order determined? (Lottery, rotation by need, or agreement)
+What happens if someone misses? (Define this upfront)
+
+**Step 3: Designate a treasurer**
+One trusted person collects contributions, holds the pot, and distributes payouts. This person must be above reproach.
+
+**Step 4: Keep records**
+Simple spreadsheet: who contributed, when, how much, who received the pot. Transparency prevents disputes.
+
+**Step 5: Run the cycle**
+Stick to the schedule. Celebrate each payout. Build the culture.
+
+## The H.E.L.P. Center Connection
+
+The informal financial traditions described here are the roots of financial empowerment for many communities we serve. Understanding where these practices come from — and why they worked — helps us teach financial literacy that is:
+
+- Culturally grounded
+- Practically powerful
+- Connected to generational wisdom
+
+Whether it's a susu among church members, a savings circle among entrepreneurs, or understanding the 3-Bank Method passed down from a grandparent — these practices represent real financial intelligence that belongs in every financial literacy curriculum.
+
+The formal banking world is just one path. Community has always been another.`,
+    lastUpdated:'2026-04-26', bookmarked:false },
+
+  { id:'guide-006', icon:'🔧', title:'Smart Credit Repair: The Complete Playbook', category:'Finance', duration:'40 min read',
+    description:'A complete guide to understanding, disputing, and rebuilding your credit. From pulling your reports to writing dispute letters to building a positive payment history.',
+    content:`# Smart Credit Repair: The Complete Playbook
+## Understanding Your Credit Before You Fix It
+Credit repair starts with knowledge, not action. Before you dispute anything, write any letters, or pay any service — you need to understand exactly what's on your reports and why it matters.
+
+Your credit history is stored across three separate bureaus:
+- **Equifax** — equifax.com
+- **Experian** — experian.com
+- **TransUnion** — transunion.com
+
+Each bureau collects data independently. The same account may show differently on each report. This is why checking all three is non-negotiable.
+
+**Get your free reports:**
+Go to AnnualCreditReport.com — the only federally mandated free credit report site. You're entitled to one free report per bureau per year. Since 2020, you can check weekly for free.
+
+Never pay for your credit report. Never pay for a credit "score" from a bureau. Free tools like Credit Karma, Experian's free tier, and your bank's credit monitoring give you scores at no cost.
+
+## The Five Factors That Make Your Score
+
+Understanding how your score is calculated tells you exactly where to focus your energy.
+
+**1. Payment History — 35%**
+The single most important factor. Every on-time payment builds it. Every late payment damages it. A 30-day late payment can drop your score 50-100 points. The only cure is time and consistent on-time payments going forward.
+
+**2. Credit Utilization — 30%**
+How much of your available credit you're using. If you have a $1,000 credit limit and a $400 balance, your utilization is 40% — too high. Target: keep each card below 30% utilization. Below 10% is ideal for maximum score benefit.
+
+**3. Length of Credit History — 15%**
+How long your accounts have been open. Older accounts are better. This is why you should almost never close your oldest credit card, even if you don't use it.
+
+**4. Credit Mix — 10%**
+Having a variety of credit types (credit cards, installment loans, auto loans, mortgage) shows you can manage different types of credit responsibly.
+
+**5. New Credit Inquiries — 10%**
+Every time you apply for new credit, a hard inquiry appears. Too many hard inquiries in a short period signals financial stress to lenders. Hard inquiries stay on your report for 2 years but only affect your score for about 12 months.
+
+## What Can and Cannot Be Disputed
+
+**You CAN dispute:**
+- Incorrect personal information (wrong name, address, SSN)
+- Accounts that don't belong to you (identity theft or mixed files)
+- Duplicate accounts listed more than once
+- Inaccurate late payment dates
+- Incorrect account status (marked open when it's closed, or charged off when it was paid)
+- Outdated items that should have aged off (most negative items must be removed after 7 years; bankruptcies after 10)
+- Accounts with incorrect balance or credit limit information
+
+**You CANNOT legally remove:**
+- Accurate, verifiable negative information that is still within its reporting window
+- Legitimate late payments that actually occurred within the last 7 years
+- Legitimate charge-offs or collections that are accurate and recent
+
+Anyone who claims they can remove accurate negative items is lying to you. Credit repair is not magic. It is your legal right to dispute inaccurate information — nothing more, nothing less.
+
+## How to Write a Dispute Letter
+
+The most powerful credit repair tool is a dispute letter written by you, not a credit repair company. The Fair Credit Reporting Act (FCRA) gives you the right to dispute any item you believe is inaccurate or unverifiable.
+
+**Basic Dispute Letter Structure:**
+\`\`\`
+[Your Name]
+[Your Address]
+[City, State, ZIP]
+[Date]
+
+[Bureau Name]
+[Bureau Address]
+
+RE: Dispute of Inaccurate Information — Account #[XXXX]
+
+Dear [Bureau Name] Dispute Team,
+
+I am writing to dispute the following information on my credit report. The item I am disputing is [account name, account number, type of item]. This information is [inaccurate / unverifiable / outdated] because [brief explanation].
+
+I am requesting that this item be investigated and corrected or removed from my credit file.
+
+Enclosed please find: [copy of ID, copy of credit report with item circled, supporting documentation if applicable]
+
+Please provide me with a written response and the results of your investigation within 30 days as required by the FCRA.
+
+Sincerely,
+[Your Name]
+[Your SSN (last 4 digits only)]
+\`\`\`
+
+**Send via:** Certified mail with return receipt requested. Never dispute by phone — you need a paper trail.
+
+**The bureau's obligation:** Under the FCRA, credit bureaus must investigate your dispute within 30 days. If they cannot verify the information, it must be removed. If they do not respond in 30 days, it must be removed.
+
+## The Dispute Process Step by Step
+
+**Step 1: Get all three credit reports**
+Go to AnnualCreditReport.com. Download and review all three.
+
+**Step 2: Identify every negative item**
+Create a list: account name, account number, type of negative item, date it appeared, bureau it appears on.
+
+**Step 3: Prioritize your disputes**
+Focus first on: items that don't belong to you, items with incorrect dates, items that should have aged off (7 years for most negatives), duplicates.
+
+**Step 4: Write your letters**
+One letter per bureau, per item. Keep them focused and professional. Never emotional. Never threatening.
+
+**Step 5: Send certified mail**
+Send each letter by certified mail with return receipt. Keep copies of everything.
+
+**Step 6: Follow up**
+Bureaus have 30 days to respond. If they remove the item, great. If they "verify" it, you can send a second dispute with more supporting documentation, or dispute directly with the original creditor.
+
+**Step 7: Track your progress**
+Create a simple spreadsheet: item disputed, bureau, date sent, date responded, outcome. Credit repair takes time — track everything.
+
+## Building Positive Credit (The Other Half)
+
+Removing negatives is only one side of the equation. You also need to build a strong positive credit history simultaneously.
+
+**Secured Credit Card**
+A secured card requires a cash deposit (usually $200-$500) that becomes your credit limit. You use it like a regular card and pay it monthly. Secured cards report to all three bureaus and are the #1 tool for building credit from scratch or rebuilding.
+Best options: Discover it Secured, Capital One Platinum Secured, OpenSky Secured Visa.
+
+**Credit-Builder Loan**
+Offered by credit unions and community banks. You "borrow" money that you don't actually receive — the bank holds it in savings while you make monthly payments. After the loan term, you receive the savings. Every payment reports to the bureaus and builds your history.
+Try: Self Financial (self.inc), local credit unions, SeedFi.
+
+**Become an Authorized User**
+Ask a family member or trusted friend with excellent credit to add you as an authorized user on their oldest credit card. Their positive payment history gets added to your file. You don't need to use the card — just being added helps.
+
+**Pay on Time, Every Time**
+Set up autopay for at least the minimum payment on every account. One missed payment can drop your score significantly. Automation removes human error.
+
+**Keep Utilization Below 30%**
+If you have a $500 limit, never carry more than $150 on the card. Pay it down before the statement closes each month.
+
+## Common Credit Repair Mistakes
+
+**Closing old accounts**
+Closing an old account reduces your available credit and shortens your credit age — both hurt your score.
+
+**Applying for too many cards at once**
+Multiple hard inquiries in a short period signal desperation to lenders and drop your score.
+
+**Paying collections on old accounts without a "pay-for-delete" agreement**
+Paying a collection doesn't remove it — it just changes the status to "paid collection." Always negotiate a pay-for-delete agreement (written) before paying.
+
+**Using credit repair companies without understanding what they do**
+Credit repair companies do nothing you cannot do yourself for free. They dispute inaccurate items — which is your legal right. If you pay for credit repair, make sure you understand exactly what you're paying for.
+
+**Falling for "new credit identity" scams**
+Some companies try to sell you a new Social Security Number or EIN as a "fresh start." This is illegal and constitutes fraud. Never do this.
+
+## The Timeline of Credit Repair
+
+Real credit repair takes time. Here's a realistic timeline:
+
+- **Month 1-2:** Pull reports, identify negatives, send first round of dispute letters
+- **Month 3:** Receive responses, review outcomes, send follow-up disputes if needed. Open secured card.
+- **Month 6:** First score improvements begin showing. 3-6 months of on-time secured card payments building history.
+- **Month 9-12:** Significant improvement for many clients. Hard inquiries aging off. Disputes resolved.
+- **Year 2:** Graduate from secured to unsecured cards. Credit-builder loan complete. Score typically in 650-720+ range with consistent work.
+- **Year 3+:** Strong credit profile with length of history, good utilization, and clean payment record.
+
+There are no shortcuts. Anyone promising dramatic score increases in 30 days is misleading you.
+
+## Credit Repair and H.E.L.P. Center
+
+At H.E.L.P. Center, credit repair is a pathway — not just a service. We believe:
+- Financial literacy is power. You should understand every step, not just outsource it.
+- Credit is a tool, not a measure of your worth.
+- Building credit is part of building a business foundation — business credit starts with personal credit.
+- Community matters — peer support, accountability partners, and shared knowledge accelerate results.
+
+Use this guide. Take it step by step. Your financial story is still being written.`,
     lastUpdated:'2026-04-26', bookmarked:false }
 ];
 
@@ -5006,7 +5569,15 @@ By Day 30, if you've been consistent, you'll have a growing following, warm lead
     function getGuides() {
       const stored = localStorage.getItem('guides');
       if (!stored) { localStorage.setItem('guides', JSON.stringify(DEFAULT_GUIDES)); return DEFAULT_GUIDES; }
-      return JSON.parse(stored);
+      const existing = JSON.parse(stored);
+      const existingIds = new Set(existing.map(g => g.id));
+      const newGuides = DEFAULT_GUIDES.filter(g => !existingIds.has(g.id));
+      if (newGuides.length) {
+        const merged = [...existing, ...newGuides];
+        localStorage.setItem('guides', JSON.stringify(merged));
+        return merged;
+      }
+      return existing;
     }
 
     function saveGuides(guides) { setData('guides', guides); }

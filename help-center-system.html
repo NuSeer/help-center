@@ -447,6 +447,9 @@
           <a class="nav-link" onclick="showPage('client-portal', event)">
             <span class="nav-icon" style="font-size:13px">▸</span><span>Client Portal</span>
           </a>
+          <a class="nav-link" onclick="showPage('booking', event)">
+            <span class="nav-icon">📅</span><span>Bookings</span>
+          </a>
         </div>
 
         <div class="nav-section">
@@ -1526,6 +1529,126 @@
           <div id="portal-links-list"></div>
         </div>
       </div>
+      <!-- ══════════════════════════════════════════════════════════ BOOKING PAGE -->
+      <div id="booking-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">📅 Bookings</h1>
+          <p class="page-subtitle">Manage appointments, services, and availability</p>
+        </div>
+        <div class="content">
+          <div class="path-tabs-container">
+            <div class="path-tabs-nav">
+              <button class="path-tab active" onclick="bookTab('overview',this)">Overview</button>
+              <button class="path-tab" onclick="bookTab('services',this)">Services</button>
+              <button class="path-tab" onclick="bookTab('availability',this)">Availability</button>
+              <button class="path-tab" onclick="bookTab('bk-settings',this)">Settings</button>
+              <button class="path-tab" onclick="bookTab('documents',this)">Documents</button>
+            </div>
+
+            <!-- TAB: OVERVIEW -->
+            <div id="booking-tab-overview" class="path-tab-content active">
+              <div id="booking-stats" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:24px"></div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+                <div style="font-weight:700;font-size:16px">Upcoming Bookings</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <select id="bk-filter-status" class="form-select" style="margin:0;padding:8px 12px;font-size:13px" onchange="renderBookingsList()">
+                    <option value="">All Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="confirmed">Confirmed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                  <button class="btn btn-primary" onclick="openAddBookingModal()" style="padding:8px 16px;font-size:13px">+ Add Booking</button>
+                </div>
+              </div>
+              <div id="bookings-list"></div>
+            </div>
+
+            <!-- TAB: SERVICES -->
+            <div id="booking-tab-services" class="path-tab-content">
+              <div style="display:flex;justify-content:flex-end;margin-bottom:16px">
+                <button class="btn btn-primary" onclick="openServiceModal()" style="padding:8px 16px;font-size:13px">+ New Service</button>
+              </div>
+              <div id="services-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px"></div>
+            </div>
+
+            <!-- TAB: AVAILABILITY -->
+            <div id="booking-tab-availability" class="path-tab-content">
+              <div class="card">
+                <div class="settings-section-title">Weekly Availability</div>
+                <div id="availability-rows"></div>
+                <div style="margin-top:20px;display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+                  <div>
+                    <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Buffer Between Appointments</label>
+                    <select id="avail-buffer" class="form-select" style="margin:0;width:160px">
+                      <option value="0">No buffer</option>
+                      <option value="5">5 min</option>
+                      <option value="10">10 min</option>
+                      <option value="15">15 min</option>
+                      <option value="30">30 min</option>
+                      <option value="60">60 min</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Max Days Ahead</label>
+                    <select id="avail-advance" class="form-select" style="margin:0;width:160px">
+                      <option value="7">7 days</option>
+                      <option value="14">14 days</option>
+                      <option value="30">30 days</option>
+                      <option value="60">60 days</option>
+                      <option value="90">90 days</option>
+                    </select>
+                  </div>
+                </div>
+                <button class="btn btn-primary" onclick="saveAvailability()" style="margin-top:20px">Save Availability</button>
+              </div>
+            </div>
+
+            <!-- TAB: SETTINGS -->
+            <div id="booking-tab-bk-settings" class="path-tab-content">
+              <div class="card">
+                <div class="settings-section-title">Booking Page Settings</div>
+                <div class="toggle-row">
+                  <div><div style="font-weight:600">Enable Public Booking Page</div><div style="font-size:13px;color:var(--gray-500);margin-top:2px">Allow clients to book appointments without logging in</div></div>
+                  <label class="toggle"><input type="checkbox" id="bk-enabled-toggle" onchange="saveBookingSettings()"><span class="toggle-slider"></span></label>
+                </div>
+                <div style="margin-top:16px">
+                  <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Your Public Booking Link</label>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <input type="text" id="bk-public-link" class="form-input" style="margin:0;font-family:monospace;font-size:12px" readonly>
+                    <button class="btn btn-outline" onclick="copyBookingLink()" style="white-space:nowrap;padding:8px 14px;font-size:13px">Copy Link</button>
+                  </div>
+                </div>
+                <div style="margin-top:16px">
+                  <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Timezone</label>
+                  <select id="bk-timezone" class="form-select" style="margin:0" onchange="saveBookingSettings()">
+                    <option value="America/New_York">Eastern (America/New_York)</option>
+                    <option value="America/Chicago">Central (America/Chicago)</option>
+                    <option value="America/Denver">Mountain (America/Denver)</option>
+                    <option value="America/Los_Angeles">Pacific (America/Los_Angeles)</option>
+                    <option value="UTC">UTC</option>
+                  </select>
+                </div>
+                <div style="margin-top:16px">
+                  <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Stripe Publishable Key (for paid bookings)</label>
+                  <input type="text" id="bk-stripe-key" class="form-input" style="margin:0" placeholder="pk_live_..." oninput="saveBookingSettings()">
+                  <div style="font-size:12px;color:var(--gray-500);margin-top:4px">Used to process payment for paid services. Leave blank to skip payment step.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB: DOCUMENTS -->
+            <div id="booking-tab-documents" class="path-tab-content">
+              <div class="card" style="margin-bottom:16px">
+                <div class="settings-section-title">DocuSeal Contract Tracking</div>
+                <p style="font-size:14px;color:var(--gray-500);margin-bottom:16px">Send contracts for e-signature via DocuSeal. Configure DocuSeal credentials in Settings → Integrations.</p>
+                <div id="documents-list"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ════════════════════════════════════════════════════════════════════════ -->
+
       <div id="revenue-page" class="page hidden">
         <div class="page-header">
           <h1 class="page-title">Revenue Tracker</h1>
@@ -1642,6 +1765,46 @@
               <button onclick="disablePb()" class="btn btn-outline" style="white-space:nowrap">Disable</button>
             </div>
           </div>
+          <div class="card">
+            <div class="settings-section-title">📧 Resend Email Integration</div>
+            <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">Send branded confirmation emails to clients after booking. <strong>Note:</strong> Your sender email must be verified in your Resend dashboard at resend.com.</p>
+            <div style="display:grid;gap:12px">
+              <div>
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Resend API Key</label>
+                <input type="text" id="resend-api-key" class="form-input" style="margin:0" placeholder="re_..." oninput="saveIntegrationSettings()">
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div>
+                  <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Sender Name</label>
+                  <input type="text" id="resend-sender-name" class="form-input" style="margin:0" placeholder="Joy Watford" oninput="saveIntegrationSettings()">
+                </div>
+                <div>
+                  <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Sender Email</label>
+                  <input type="email" id="resend-sender-email" class="form-input" style="margin:0" placeholder="joy@yourdomain.com" oninput="saveIntegrationSettings()">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="settings-section-title">📝 DocuSeal Integration</div>
+            <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">Send contracts for e-signature via your self-hosted DocuSeal instance. After saving, use the "Send Contract" button on any booking.</p>
+            <div style="display:grid;gap:12px">
+              <div>
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">DocuSeal URL</label>
+                <input type="text" id="docuseal-url" class="form-input" style="margin:0" placeholder="https://docuseal.yourdomain.com" oninput="saveIntegrationSettings()">
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">API Token</label>
+                <input type="text" id="docuseal-token" class="form-input" style="margin:0" placeholder="Your DocuSeal API token" oninput="saveIntegrationSettings()">
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Default Template ID</label>
+                <input type="text" id="docuseal-template-id" class="form-input" style="margin:0" placeholder="e.g. 42" oninput="saveIntegrationSettings()">
+              </div>
+            </div>
+          </div>
+
           <div class="card">
             <div class="settings-section-title">Data Management</div>
             <div class="toggle-row">
@@ -2223,6 +2386,11 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
         showPortal(token);
         return true;
       }
+      if (hash.startsWith('#book?u=')) {
+        const token = hash.split('u=')[1];
+        showPublicBookingPage(token);
+        return true;
+      }
       return false;
     }
 
@@ -2293,12 +2461,13 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
       document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
       if (event && event.currentTarget) event.currentTarget.classList.add('active');
       if (window.innerWidth <= 768) closeSidebar();
-      const renders = { dashboard: updateDashboard, clients: renderClients, 'my-ideas': renderIdeasKanban, 'client-portal': renderPortalLinks, 'income-pathway': renderIncomeWizard, 'credit-pathway': renderBizCreditChecklist, settings: loadSettingsPage, revenue: renderRevenue, calendar: renderCalendar, 'state-resources': renderStates, library: renderLibrary, guides: renderGuides,
+      const renders = { dashboard: updateDashboard, clients: renderClients, 'my-ideas': renderIdeasKanban, 'client-portal': renderPortalLinks, 'income-pathway': renderIncomeWizard, 'credit-pathway': renderBizCreditChecklist, settings: () => { loadSettingsPage(); loadIntegrationSettingsUI(); }, revenue: renderRevenue, calendar: renderCalendar, 'state-resources': renderStates, library: renderLibrary, guides: renderGuides,
   'career-pathway': () => { renderJobApps(); restoreCareerChecks(); loadCareerGoals(); },
   'youth-pathway': () => { renderCurriculum(); renderOutreach(); restoreYouthChecks(); loadYouthProgram(); loadYouthPlatform(); },
   pricing: () => { renderPricingPage(); updateProposalPreview(); },
   strategy: () => { renderStrategyPage(); },
-  reports: () => {}
+  reports: () => {},
+  booking: () => { renderBookingDashboard(); }
 };
       if (renders[pageId] && typeof renders[pageId] === 'function') renders[pageId]();
       if (typeof setAiContext === 'function') setAiContext(pageId);
@@ -6479,6 +6648,788 @@ function copyDocText(previewId) {
   navigator.clipboard.writeText(content).catch(()=>{});
   showToast('Document copied!','success');
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// BOOKING SYSTEM
+// ══════════════════════════════════════════════════════════════════════════════
+
+const DEFAULT_BOOKING_SERVICES = [
+  { id:'svc-001', name:'Discovery Call', duration:30, price:0, description:'Free 30-minute intro call', color:'#4267B2', active:true },
+  { id:'svc-002', name:'Strategy Session', duration:60, price:150, description:'Deep-dive business strategy session', color:'#10B981', active:true },
+  { id:'svc-003', name:'Document Review', duration:45, price:75, description:'Contract and document review session', color:'#F59E0B', active:true }
+];
+
+const DEFAULT_AVAILABILITY = {
+  0: { enabled:false, start:'09:00', end:'17:00' }, // Sun
+  1: { enabled:true,  start:'09:00', end:'17:00' }, // Mon
+  2: { enabled:true,  start:'09:00', end:'17:00' },
+  3: { enabled:true,  start:'09:00', end:'17:00' },
+  4: { enabled:true,  start:'09:00', end:'17:00' },
+  5: { enabled:true,  start:'09:00', end:'17:00' }, // Fri
+  6: { enabled:false, start:'09:00', end:'17:00' }  // Sat
+};
+
+function getBookingSettings() {
+  let s = getData('bookingSettings');
+  if (!s || typeof s !== 'object' || !s.bookingToken) {
+    s = {
+      enabled: true,
+      bufferMinutes: 15,
+      advanceDays: 30,
+      stripeKey: '',
+      bookingToken: 'bk-' + Math.random().toString(36).slice(2,10) + Date.now().toString(36),
+      timezone: 'America/New_York'
+    };
+    setData('bookingSettings', s);
+  }
+  return s;
+}
+
+function getBookingServices() {
+  let s = getData('bookingServices');
+  if (!s || !Array.isArray(s) || s.length === 0) {
+    s = DEFAULT_BOOKING_SERVICES;
+    setData('bookingServices', s);
+  }
+  return s;
+}
+
+function getAvailability() {
+  let a = getData('bookingAvailability');
+  if (!a || typeof a !== 'object') {
+    a = DEFAULT_AVAILABILITY;
+    setData('bookingAvailability', a);
+  }
+  return a;
+}
+
+function getBookings() {
+  return getData('bookings') || [];
+}
+
+function saveBookings(arr) { setData('bookings', arr); }
+
+// ── BOOKING DASHBOARD RENDER ────────────────────────────────────────────────
+function renderBookingDashboard() {
+  renderBookingStats();
+  renderBookingsList();
+  renderServicesList();
+  renderAvailabilityRows();
+  loadBookingSettingsUI();
+  renderDocumentsList();
+}
+
+function bookTab(tabId, btn) {
+  document.querySelectorAll('#booking-page .path-tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#booking-page .path-tab').forEach(t => t.classList.remove('active'));
+  const el = document.getElementById('booking-tab-' + tabId);
+  if (el) el.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function renderBookingStats() {
+  const bookings = getBookings();
+  const today = new Date().toISOString().slice(0,10);
+  const upcoming = bookings.filter(b => b.date >= today && b.status !== 'cancelled').length;
+  const confirmed = bookings.filter(b => b.status === 'confirmed').length;
+  const pending = bookings.filter(b => b.status === 'pending').length;
+  const revenue = bookings.filter(b => b.status === 'confirmed').reduce((s,b) => s + (b.price||0), 0);
+  const el = document.getElementById('booking-stats');
+  if (!el) return;
+  el.innerHTML = [
+    { label:'Upcoming', value: upcoming, color:'var(--accent)' },
+    { label:'Confirmed', value: confirmed, color:'var(--success)' },
+    { label:'Pending', value: pending, color:'var(--warning)' },
+    { label:'Revenue', value: '$'+revenue.toFixed(2), color:'var(--primary)' }
+  ].map(s => `<div class="card" style="text-align:center;padding:20px 16px">
+    <div style="font-size:28px;font-weight:800;color:${s.color}">${s.value}</div>
+    <div style="font-size:13px;color:var(--gray-500);margin-top:4px">${s.label}</div>
+  </div>`).join('');
+}
+
+function renderBookingsList() {
+  const el = document.getElementById('bookings-list');
+  if (!el) return;
+  const filter = document.getElementById('bk-filter-status')?.value || '';
+  let bookings = getBookings();
+  if (filter) bookings = bookings.filter(b => b.status === filter);
+  bookings.sort((a,b) => (a.date+a.time) > (b.date+b.time) ? 1 : -1);
+  if (!bookings.length) {
+    el.innerHTML = `<div class="card" style="text-align:center;padding:40px;color:var(--gray-400)">No bookings yet. Share your booking link to get started.</div>`;
+    return;
+  }
+  el.innerHTML = bookings.map(b => {
+    const statusColor = b.status==='confirmed'?'var(--success)':b.status==='cancelled'?'var(--error)':'var(--warning)';
+    const ds = getData('docusealSettings') || {};
+    const hasDSConfig = ds.url && ds.token;
+    const docStatus = b.docStatus || '';
+    return `<div class="card" style="margin-bottom:12px;padding:16px 20px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-weight:700;font-size:15px">${b.clientName}</div>
+          <div style="font-size:13px;color:var(--gray-500);margin-top:2px">${b.serviceName} · ${b.date} at ${b.time}</div>
+          <div style="font-size:13px;color:var(--gray-500)">${b.duration} min · ${b.price > 0 ? '$'+b.price : 'Free'}</div>
+          ${b.intakeNotes ? `<div style="font-size:12px;color:var(--gray-400);margin-top:4px;font-style:italic">"${b.intakeNotes}"</div>` : ''}
+          ${docStatus ? `<div style="font-size:12px;margin-top:4px;color:${docStatus==='signed'?'var(--success)':'var(--warning)'}">📄 Contract: ${docStatus==='signed'?'Signed':'Pending Signature'}</div>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <span style="background:${statusColor}22;color:${statusColor};padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600">${b.status}</span>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${b.status==='pending' ? `<button onclick="updateBookingStatus('${b.id}','confirmed')" class="btn btn-outline" style="padding:4px 10px;font-size:12px;color:var(--success);border-color:var(--success)">Confirm</button>` : ''}
+            ${b.status!=='cancelled' ? `<button onclick="updateBookingStatus('${b.id}','cancelled')" class="btn btn-outline" style="padding:4px 10px;font-size:12px;color:var(--error);border-color:var(--error)">Cancel</button>` : ''}
+            ${hasDSConfig && b.status!=='cancelled' ? `<button onclick="sendDocuSealContract('${b.id}')" class="btn btn-outline" style="padding:4px 10px;font-size:12px">Send Contract</button>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateBookingStatus(id, status) {
+  const bookings = getBookings();
+  const b = bookings.find(x => x.id === id);
+  if (!b) return;
+  b.status = status;
+  saveBookings(bookings);
+  if (status === 'confirmed') sendConfirmationEmail(b);
+  renderBookingsList();
+  renderBookingStats();
+  showToast('Booking ' + status, 'success');
+}
+
+// ── SERVICES ────────────────────────────────────────────────────────────────
+function renderServicesList() {
+  const el = document.getElementById('services-list');
+  if (!el) return;
+  const services = getBookingServices();
+  if (!services.length) { el.innerHTML = '<div class="card" style="text-align:center;padding:40px;color:var(--gray-400)">No services yet.</div>'; return; }
+  el.innerHTML = services.map(s => `
+    <div class="card" style="border-left:4px solid ${s.color};padding:16px 20px;position:relative">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-weight:700;font-size:15px">${s.name}</div>
+          <div style="font-size:13px;color:var(--gray-500);margin-top:2px">${s.duration} min · ${s.price > 0 ? '$'+s.price : 'Free'}</div>
+          <div style="font-size:13px;color:var(--gray-400);margin-top:4px">${s.description}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+          <span style="font-size:12px;padding:2px 8px;border-radius:99px;background:${s.active?'#D1FAE5':'#FEE2E2'};color:${s.active?'var(--success)':'var(--error)'}">${s.active?'Active':'Inactive'}</span>
+          <div style="display:flex;gap:6px">
+            <button onclick="openServiceModal('${s.id}')" class="btn btn-outline" style="padding:4px 10px;font-size:12px">Edit</button>
+            <button onclick="deleteService('${s.id}')" class="btn btn-outline" style="padding:4px 10px;font-size:12px;color:var(--error);border-color:var(--error)">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function openServiceModal(id) {
+  const services = getBookingServices();
+  const s = id ? services.find(x => x.id === id) : null;
+  const isEdit = !!s;
+  const m = document.createElement('div');
+  m.id = 'service-modal';
+  m.className = 'modal-overlay';
+  m.innerHTML = `<div class="modal-box" style="max-width:480px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="font-weight:700;font-size:17px">${isEdit ? 'Edit' : 'New'} Service</h3>
+      <button onclick="this.closest('#service-modal').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400)">✕</button>
+    </div>
+    <div style="display:grid;gap:12px">
+      <div><label class="form-label">Service Name</label><input id="svc-name" class="form-input" style="margin:0" value="${s?s.name:''}" placeholder="Discovery Call"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><label class="form-label">Duration (min)</label><input id="svc-duration" type="number" class="form-input" style="margin:0" value="${s?s.duration:30}" min="15" step="15"></div>
+        <div><label class="form-label">Price ($)</label><input id="svc-price" type="number" class="form-input" style="margin:0" value="${s?s.price:0}" min="0" step="1"></div>
+      </div>
+      <div><label class="form-label">Description</label><textarea id="svc-desc" class="form-input" style="margin:0;height:80px">${s?s.description:''}</textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><label class="form-label">Color</label><input id="svc-color" type="color" class="form-input" style="margin:0;height:42px;padding:4px" value="${s?s.color:'#4267B2'}"></div>
+        <div style="display:flex;align-items:center;gap:10px;padding-top:20px"><label class="toggle"><input type="checkbox" id="svc-active" ${!s||s.active?'checked':''}><span class="toggle-slider"></span></label><span style="font-size:14px">Active</span></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+      <button onclick="this.closest('#service-modal').remove()" class="btn btn-outline">Cancel</button>
+      <button onclick="saveService('${id||''}')" class="btn btn-primary">Save Service</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+}
+
+function saveService(id) {
+  const name = document.getElementById('svc-name').value.trim();
+  if (!name) { showToast('Name is required','error'); return; }
+  const services = getBookingServices();
+  const obj = {
+    id: id || 'svc-' + Date.now(),
+    name,
+    duration: parseInt(document.getElementById('svc-duration').value) || 30,
+    price: parseFloat(document.getElementById('svc-price').value) || 0,
+    description: document.getElementById('svc-desc').value.trim(),
+    color: document.getElementById('svc-color').value,
+    active: document.getElementById('svc-active').checked
+  };
+  if (id) {
+    const idx = services.findIndex(s => s.id === id);
+    if (idx >= 0) services[idx] = obj;
+  } else {
+    services.push(obj);
+  }
+  setData('bookingServices', services);
+  document.getElementById('service-modal').remove();
+  renderServicesList();
+  showToast('Service saved','success');
+}
+
+function deleteService(id) {
+  if (!confirm('Delete this service?')) return;
+  const services = getBookingServices().filter(s => s.id !== id);
+  setData('bookingServices', services);
+  renderServicesList();
+  showToast('Service deleted','success');
+}
+
+// ── AVAILABILITY ─────────────────────────────────────────────────────────────
+function renderAvailabilityRows() {
+  const el = document.getElementById('availability-rows');
+  if (!el) return;
+  const avail = getAvailability();
+  const settings = getBookingSettings();
+  const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  el.innerHTML = days.map((d,i) => {
+    const day = avail[i] || { enabled:false, start:'09:00', end:'17:00' };
+    return `<div class="toggle-row" style="padding:12px 0;border-bottom:1px solid var(--gray-200)">
+      <div style="display:flex;align-items:center;gap:12px;min-width:120px">
+        <label class="toggle"><input type="checkbox" class="avail-day" data-day="${i}" ${day.enabled?'checked':''}><span class="toggle-slider"></span></label>
+        <span style="font-weight:${day.enabled?'600':'400'};font-size:14px">${d}</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <input type="time" class="form-input avail-start" data-day="${i}" style="margin:0;width:120px;font-size:13px" value="${day.start}">
+        <span style="font-size:13px;color:var(--gray-400)">to</span>
+        <input type="time" class="form-input avail-end" data-day="${i}" style="margin:0;width:120px;font-size:13px" value="${day.end}">
+      </div>
+    </div>`;
+  }).join('');
+  if (document.getElementById('avail-buffer')) {
+    document.getElementById('avail-buffer').value = settings.bufferMinutes || 15;
+  }
+  if (document.getElementById('avail-advance')) {
+    document.getElementById('avail-advance').value = settings.advanceDays || 30;
+  }
+}
+
+function saveAvailability() {
+  const avail = {};
+  document.querySelectorAll('.avail-day').forEach(el => {
+    const i = el.dataset.day;
+    avail[i] = {
+      enabled: el.checked,
+      start: document.querySelector(`.avail-start[data-day="${i}"]`).value,
+      end: document.querySelector(`.avail-end[data-day="${i}"]`).value
+    };
+  });
+  setData('bookingAvailability', avail);
+  const s = getBookingSettings();
+  s.bufferMinutes = parseInt(document.getElementById('avail-buffer').value) || 15;
+  s.advanceDays = parseInt(document.getElementById('avail-advance').value) || 30;
+  setData('bookingSettings', s);
+  showToast('Availability saved','success');
+}
+
+// ── BOOKING SETTINGS UI ───────────────────────────────────────────────────────
+function loadBookingSettingsUI() {
+  const s = getBookingSettings();
+  const link = window.location.origin + window.location.pathname + '#book?u=' + s.bookingToken;
+  const lEl = document.getElementById('bk-public-link');
+  if (lEl) lEl.value = link;
+  const tog = document.getElementById('bk-enabled-toggle');
+  if (tog) tog.checked = s.enabled !== false;
+  const tz = document.getElementById('bk-timezone');
+  if (tz) tz.value = s.timezone || 'America/New_York';
+  const sk = document.getElementById('bk-stripe-key');
+  if (sk) sk.value = s.stripeKey || '';
+}
+
+function saveBookingSettings() {
+  const s = getBookingSettings();
+  const tog = document.getElementById('bk-enabled-toggle');
+  if (tog) s.enabled = tog.checked;
+  const tz = document.getElementById('bk-timezone');
+  if (tz) s.timezone = tz.value;
+  const sk = document.getElementById('bk-stripe-key');
+  if (sk) s.stripeKey = sk.value;
+  setData('bookingSettings', s);
+}
+
+function copyBookingLink() {
+  const s = getBookingSettings();
+  const link = window.location.origin + window.location.pathname + '#book?u=' + s.bookingToken;
+  navigator.clipboard.writeText(link).catch(()=>{});
+  showToast('Booking link copied!','success');
+}
+
+// ── ADD BOOKING MANUALLY ─────────────────────────────────────────────────────
+function openAddBookingModal() {
+  const services = getBookingServices().filter(s => s.active);
+  const m = document.createElement('div');
+  m.id = 'add-booking-modal';
+  m.className = 'modal-overlay';
+  m.innerHTML = `<div class="modal-box" style="max-width:500px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <h3 style="font-weight:700;font-size:17px">Add Booking</h3>
+      <button onclick="this.closest('#add-booking-modal').remove()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--gray-400)">✕</button>
+    </div>
+    <div style="display:grid;gap:12px">
+      <div><label class="form-label">Service</label>
+        <select id="ab-service" class="form-select" style="margin:0">
+          ${services.map(s=>`<option value="${s.id}" data-duration="${s.duration}" data-price="${s.price}">${s.name} (${s.duration}min · ${s.price>0?'$'+s.price:'Free'})</option>`).join('')}
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><label class="form-label">Date</label><input id="ab-date" type="date" class="form-input" style="margin:0" value="${new Date().toISOString().slice(0,10)}"></div>
+        <div><label class="form-label">Time</label><input id="ab-time" type="time" class="form-input" style="margin:0" value="09:00"></div>
+      </div>
+      <div><label class="form-label">Client Name</label><input id="ab-name" class="form-input" style="margin:0" placeholder="Jane Doe"></div>
+      <div><label class="form-label">Client Email</label><input id="ab-email" type="email" class="form-input" style="margin:0" placeholder="jane@email.com"></div>
+      <div><label class="form-label">Phone</label><input id="ab-phone" class="form-input" style="margin:0" placeholder="(555) 000-0000"></div>
+      <div><label class="form-label">Notes</label><textarea id="ab-notes" class="form-input" style="margin:0;height:70px"></textarea></div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;justify-content:flex-end">
+      <button onclick="this.closest('#add-booking-modal').remove()" class="btn btn-outline">Cancel</button>
+      <button onclick="saveManualBooking()" class="btn btn-primary">Save Booking</button>
+    </div>
+  </div>`;
+  document.body.appendChild(m);
+}
+
+function saveManualBooking() {
+  const svcEl = document.getElementById('ab-service');
+  const svcOpt = svcEl.options[svcEl.selectedIndex];
+  const svcId = svcEl.value;
+  const services = getBookingServices();
+  const svc = services.find(s => s.id === svcId);
+  const name = document.getElementById('ab-name').value.trim();
+  const email = document.getElementById('ab-email').value.trim();
+  if (!name || !email) { showToast('Name and email are required','error'); return; }
+  const booking = {
+    id: 'bk-' + Date.now(),
+    serviceId: svcId,
+    serviceName: svc ? svc.name : '',
+    clientName: name,
+    clientEmail: email,
+    clientPhone: document.getElementById('ab-phone').value.trim(),
+    date: document.getElementById('ab-date').value,
+    time: document.getElementById('ab-time').value,
+    duration: svc ? svc.duration : 30,
+    price: svc ? svc.price : 0,
+    status: 'confirmed',
+    intakeNotes: document.getElementById('ab-notes').value.trim(),
+    createdAt: new Date().toISOString()
+  };
+  const bookings = getBookings();
+  bookings.push(booking);
+  saveBookings(bookings);
+  autoCreateClient(booking);
+  document.getElementById('add-booking-modal').remove();
+  renderBookingsList();
+  renderBookingStats();
+  showToast('Booking added','success');
+}
+
+function autoCreateClient(booking) {
+  const clients = getData('clients') || [];
+  if (clients.find(c => c.email && c.email.toLowerCase() === booking.clientEmail.toLowerCase())) return;
+  const newClient = {
+    id: 'cl-' + Date.now(),
+    name: booking.clientName,
+    email: booking.clientEmail,
+    phone: booking.clientPhone || '',
+    businessName: '',
+    service: booking.serviceName,
+    status: 'Active',
+    projectStatus: 0,
+    invoice: booking.price || 0,
+    paid: 0,
+    notes: booking.intakeNotes || '',
+    deliverables: [],
+    messages: [],
+    portalToken: 'pt-' + Math.random().toString(36).slice(2,10) + Date.now().toString(36),
+    createdAt: new Date().toISOString()
+  };
+  clients.push(newClient);
+  setData('clients', clients);
+}
+
+// ── DOCUMENTS TAB ────────────────────────────────────────────────────────────
+function renderDocumentsList() {
+  const el = document.getElementById('documents-list');
+  if (!el) return;
+  const bookings = getBookings().filter(b => b.status !== 'cancelled');
+  if (!bookings.length) {
+    el.innerHTML = '<p style="color:var(--gray-400);text-align:center;padding:20px">No active bookings to show contracts for.</p>';
+    return;
+  }
+  el.innerHTML = bookings.map(b => {
+    const docStatus = b.docStatus || 'none';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--gray-200)">
+      <div>
+        <div style="font-weight:600;font-size:14px">${b.clientName}</div>
+        <div style="font-size:12px;color:var(--gray-500)">${b.serviceName} · ${b.date}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        ${docStatus==='signed' ? `<span style="color:var(--success);font-size:13px;font-weight:600">✓ Signed</span>` :
+          docStatus==='sent' ? `<span style="color:var(--warning);font-size:13px">Pending Signature</span>` :
+          `<button onclick="sendDocuSealContract('${b.id}')" class="btn btn-outline" style="padding:4px 12px;font-size:12px">Send Contract</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── DOCUSEAL ─────────────────────────────────────────────────────────────────
+async function sendDocuSealContract(bookingId) {
+  const ds = getData('docusealSettings') || {};
+  if (!ds.url || !ds.token) { showToast('Configure DocuSeal in Settings first','error'); return; }
+  const bookings = getBookings();
+  const b = bookings.find(x => x.id === bookingId);
+  if (!b) return;
+  try {
+    const resp = await fetch(ds.url.replace(/\/$/, '') + '/api/submissions', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'X-Auth-Token': ds.token },
+      body: JSON.stringify({
+        template_id: parseInt(ds.templateId) || undefined,
+        submitters: [{ role:'Signer', name: b.clientName, email: b.clientEmail }]
+      })
+    });
+    if (!resp.ok) throw new Error('DocuSeal error: ' + resp.status);
+    b.docStatus = 'sent';
+    saveBookings(bookings);
+    renderBookingsList();
+    renderDocumentsList();
+    showToast('Contract sent to ' + b.clientEmail, 'success');
+  } catch(e) {
+    showToast('Error: ' + e.message, 'error');
+  }
+}
+
+// ── RESEND EMAIL ──────────────────────────────────────────────────────────────
+async function sendResendEmail(to, subject, html) {
+  const integrations = getData('integrationSettings') || {};
+  const apiKey = integrations.resendApiKey;
+  if (!apiKey) return;
+  const senderName = integrations.resendSenderName || 'H.E.L.P. Center';
+  const senderEmail = integrations.resendSenderEmail || 'noreply@helpcenter.com';
+  try {
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization': 'Bearer ' + apiKey },
+      body: JSON.stringify({ from: senderName + ' <' + senderEmail + '>', to, subject, html })
+    });
+  } catch(e) {
+    console.warn('Resend error:', e);
+  }
+}
+
+function sendConfirmationEmail(booking) {
+  const settings = getData('settings') || {};
+  const biz = settings.businessName || 'H.E.L.P. Center';
+  const html = `
+    <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+      <div style="background:#0F172A;padding:24px 32px;border-radius:12px 12px 0 0">
+        <div style="color:#fff;font-size:20px;font-weight:700">${biz}</div>
+        <div style="color:#94A3B8;font-size:13px">Booking Confirmation</div>
+      </div>
+      <div style="background:#fff;padding:32px;border:1px solid #E2E8F0;border-radius:0 0 12px 12px">
+        <h2 style="color:#0F172A;margin-bottom:8px">Your booking is confirmed! 🎉</h2>
+        <p style="color:#64748B">Hi ${booking.clientName},</p>
+        <p style="color:#64748B">Your appointment has been confirmed. Here are the details:</p>
+        <div style="background:#F8FAFC;border-radius:8px;padding:20px;margin:20px 0">
+          <div style="margin-bottom:8px"><strong>Service:</strong> ${booking.serviceName}</div>
+          <div style="margin-bottom:8px"><strong>Date:</strong> ${booking.date}</div>
+          <div style="margin-bottom:8px"><strong>Time:</strong> ${booking.time}</div>
+          <div style="margin-bottom:8px"><strong>Duration:</strong> ${booking.duration} minutes</div>
+          ${booking.price > 0 ? `<div><strong>Price:</strong> $${booking.price}</div>` : ''}
+        </div>
+        <p style="color:#64748B;font-size:13px">If you need to reschedule or cancel, please contact us as soon as possible.</p>
+        <p style="color:#94A3B8;font-size:12px;margin-top:24px">— ${biz}</p>
+      </div>
+    </div>`;
+  sendResendEmail(booking.clientEmail, 'Booking Confirmed — ' + booking.serviceName, html);
+}
+
+// ── INTEGRATION SETTINGS ─────────────────────────────────────────────────────
+function saveIntegrationSettings() {
+  const s = {
+    resendApiKey: document.getElementById('resend-api-key')?.value || '',
+    resendSenderName: document.getElementById('resend-sender-name')?.value || '',
+    resendSenderEmail: document.getElementById('resend-sender-email')?.value || '',
+    docusealUrl: document.getElementById('docuseal-url')?.value || '',
+    docusealToken: document.getElementById('docuseal-token')?.value || '',
+    docusealTemplateId: document.getElementById('docuseal-template-id')?.value || ''
+  };
+  setData('integrationSettings', s);
+  // also save docuseal separately for quick access
+  setData('docusealSettings', { url: s.docusealUrl, token: s.docusealToken, templateId: s.docusealTemplateId });
+}
+
+// ── PUBLIC BOOKING PAGE ───────────────────────────────────────────────────────
+function showPublicBookingPage(token) {
+  const settings = getBookingSettings();
+  document.getElementById('login-page').classList.add('hidden');
+  document.getElementById('app').classList.add('hidden');
+  let el = document.getElementById('booking-public-view');
+  if (!el) { el = document.createElement('div'); el.id = 'booking-public-view'; document.body.appendChild(el); }
+
+  if (!settings.enabled || settings.bookingToken !== token) {
+    el.innerHTML = `<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F8FAFC;"><div style="text-align:center;padding:40px;"><div style="font-size:48px">📅</div><h2 style="color:#0F172A;margin-bottom:8px">Booking Not Available</h2><p style="color:#64748B">This booking link is invalid or disabled.</p></div></div>`;
+    return;
+  }
+
+  renderPublicBookingStep(el, 'services', {});
+}
+
+function publicBookingHeader(appSettings) {
+  const biz = (appSettings && appSettings.businessName) ? appSettings.businessName : 'H.E.L.P. Center';
+  return `<div style="background:#0F172A;padding:20px 32px;display:flex;align-items:center;gap:16px;">
+    <div style="width:40px;height:40px;background:linear-gradient(135deg,#4267B2,#5B8DD6);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;">H</div>
+    <div><div style="color:#fff;font-weight:700;font-size:18px;">${biz}</div><div style="color:#94A3B8;font-size:12px;">Book an Appointment</div></div>
+  </div>`;
+}
+
+function renderPublicBookingStep(container, step, state) {
+  const appSettings = getData('settings') || {};
+  const services = getBookingServices().filter(s => s.active);
+  const bkSettings = getBookingSettings();
+
+  if (step === 'services') {
+    container.innerHTML = `
+      <div style="min-height:100vh;background:#F8FAFC;">
+        ${publicBookingHeader(appSettings)}
+        <div style="max-width:720px;margin:40px auto;padding:0 20px;">
+          <h2 style="font-size:24px;font-weight:700;color:#0F172A;margin-bottom:6px">Choose a Service</h2>
+          <p style="color:#64748B;margin-bottom:28px">Select the type of appointment you'd like to book.</p>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">
+            ${services.map(s => `
+              <div onclick="publicBookSelectService('${s.id}')" style="background:#fff;border-radius:12px;padding:20px 24px;border:1px solid #E2E8F0;border-left:5px solid ${s.color};cursor:pointer;transition:box-shadow 0.15s" onmouseover="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.1)'" onmouseout="this.style.boxShadow='none'">
+                <div style="font-weight:700;font-size:16px;color:#0F172A">${s.name}</div>
+                <div style="font-size:13px;color:#64748B;margin:6px 0">${s.description}</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px">
+                  <span style="font-size:13px;color:#94A3B8">${s.duration} min</span>
+                  <span style="font-weight:700;color:${s.color};font-size:15px">${s.price > 0 ? '$'+s.price : 'Free'}</span>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  else if (step === 'date') {
+    const svc = services.find(s => s.id === state.serviceId);
+    const avail = getAvailability();
+    const today = new Date();
+    const maxDays = bkSettings.advanceDays || 30;
+    const days = [];
+    for (let i = 0; i < maxDays; i++) {
+      const d = new Date(today); d.setDate(today.getDate() + i);
+      const dow = d.getDay();
+      if (avail[dow] && avail[dow].enabled) days.push(d);
+    }
+    const months = {};
+    days.forEach(d => {
+      const key = d.toLocaleString('default',{month:'long',year:'numeric'});
+      if (!months[key]) months[key] = [];
+      months[key].push(d);
+    });
+    container.innerHTML = `
+      <div style="min-height:100vh;background:#F8FAFC;">
+        ${publicBookingHeader(appSettings)}
+        <div style="max-width:600px;margin:40px auto;padding:0 20px;">
+          <button onclick="publicBookGoBack('services',{})" style="background:none;border:none;color:#4267B2;font-size:14px;cursor:pointer;margin-bottom:16px">← Back to Services</button>
+          <h2 style="font-size:22px;font-weight:700;color:#0F172A;margin-bottom:4px">Pick a Date</h2>
+          <p style="color:#64748B;margin-bottom:24px">${svc ? svc.name + ' · ' + svc.duration + ' min' : ''}</p>
+          <div style="background:#fff;border-radius:12px;padding:24px;border:1px solid #E2E8F0;">
+            ${Object.entries(months).map(([mon, ds]) => `
+              <div style="margin-bottom:20px">
+                <div style="font-weight:600;color:#64748B;font-size:13px;margin-bottom:12px;text-transform:uppercase;letter-spacing:0.5px">${mon}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px">
+                  ${ds.map(d => {
+                    const iso = d.toISOString().slice(0,10);
+                    return `<button onclick="publicBookSelectDate('${iso}','${state.serviceId}')" style="width:44px;height:44px;border-radius:99px;border:2px solid #E2E8F0;background:#fff;font-weight:600;font-size:14px;cursor:pointer;color:#0F172A;transition:all 0.15s" onmouseover="this.style.background='#4267B2';this.style.color='#fff';this.style.borderColor='#4267B2'" onmouseout="this.style.background='#fff';this.style.color='#0F172A';this.style.borderColor='#E2E8F0'">${d.getDate()}</button>`;
+                  }).join('')}
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  else if (step === 'time') {
+    const svc = services.find(s => s.id === state.serviceId);
+    const avail = getAvailability();
+    const date = new Date(state.date + 'T12:00:00');
+    const dow = date.getDay();
+    const dayAvail = avail[dow] || { start:'09:00', end:'17:00' };
+    const slots = generateTimeSlots(dayAvail.start, dayAvail.end, svc ? svc.duration : 30, bkSettings.bufferMinutes || 15, state.date, state.serviceId);
+
+    container.innerHTML = `
+      <div style="min-height:100vh;background:#F8FAFC;">
+        ${publicBookingHeader(appSettings)}
+        <div style="max-width:600px;margin:40px auto;padding:0 20px;">
+          <button onclick="publicBookGoBack('date',{serviceId:'${state.serviceId}'})" style="background:none;border:none;color:#4267B2;font-size:14px;cursor:pointer;margin-bottom:16px">← Back to Date</button>
+          <h2 style="font-size:22px;font-weight:700;color:#0F172A;margin-bottom:4px">Pick a Time</h2>
+          <p style="color:#64748B;margin-bottom:24px">${state.date} · ${svc ? svc.name : ''}</p>
+          <div style="background:#fff;border-radius:12px;padding:24px;border:1px solid #E2E8F0;">
+            ${slots.length ? `<div style="display:flex;flex-wrap:wrap;gap:10px">
+              ${slots.map(slot => `<button onclick="publicBookSelectTime('${slot.time}','${state.date}','${state.serviceId}')"
+                style="padding:10px 20px;border-radius:99px;border:2px solid ${slot.available ? '#4267B2' : '#E2E8F0'};background:${slot.available ? '#fff' : '#F8FAFC'};color:${slot.available ? '#4267B2' : '#94A3B8'};font-weight:600;font-size:14px;cursor:${slot.available ? 'pointer' : 'not-allowed'};transition:all 0.15s" ${!slot.available ? 'disabled' : ''}
+                onmouseover="${slot.available ? "this.style.background='#4267B2';this.style.color='#fff'" : ''}"
+                onmouseout="${slot.available ? "this.style.background='#fff';this.style.color='#4267B2'" : ''}">${slot.time}</button>`).join('')}
+            </div>` : '<p style="color:#94A3B8;text-align:center;padding:20px">No available slots for this date. Please choose another day.</p>'}
+          </div>
+        </div>
+      </div>`;
+  }
+
+  else if (step === 'intake') {
+    const svc = services.find(s => s.id === state.serviceId);
+    container.innerHTML = `
+      <div style="min-height:100vh;background:#F8FAFC;">
+        ${publicBookingHeader(appSettings)}
+        <div style="max-width:560px;margin:40px auto;padding:0 20px;">
+          <button onclick="publicBookGoBack('time',{serviceId:'${state.serviceId}',date:'${state.date}'})" style="background:none;border:none;color:#4267B2;font-size:14px;cursor:pointer;margin-bottom:16px">← Back to Time</button>
+          <h2 style="font-size:22px;font-weight:700;color:#0F172A;margin-bottom:4px">Your Details</h2>
+          <p style="color:#64748B;margin-bottom:24px">${state.date} at ${state.time} · ${svc ? svc.name : ''}</p>
+          <div style="background:#fff;border-radius:12px;padding:28px;border:1px solid #E2E8F0;">
+            <div style="display:grid;gap:16px">
+              <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Full Name *</label><input id="pb-name" class="form-input" style="margin:0" placeholder="Jane Doe"></div>
+              <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Email Address *</label><input id="pb-email" type="email" class="form-input" style="margin:0" placeholder="jane@example.com"></div>
+              <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Phone Number</label><input id="pb-phone" class="form-input" style="margin:0" placeholder="(555) 000-0000"></div>
+              <div><label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Tell us about your needs</label><textarea id="pb-notes" class="form-input" style="margin:0;height:100px" placeholder="What would you like to discuss or accomplish?"></textarea></div>
+            </div>
+            ${svc && svc.price > 0 ? `
+              <div style="margin-top:20px;padding:16px;background:#F0FDF4;border-radius:8px;border:1px solid #BBF7D0">
+                <div style="font-weight:700;color:#065F46;font-size:15px">Payment Required: $${svc.price}</div>
+                <div style="font-size:13px;color:#047857;margin-top:4px">Payment will be processed securely via Stripe.</div>
+              </div>` : ''}
+            <button onclick="publicBookSubmit('${state.serviceId}','${state.date}','${state.time}')" style="width:100%;margin-top:20px;padding:14px;border-radius:8px;background:#4267B2;color:#fff;border:none;font-weight:700;font-size:16px;cursor:pointer;transition:opacity 0.15s" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">${svc && svc.price > 0 ? 'Pay $'+svc.price+' & Confirm Booking' : 'Confirm Booking'}</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  else if (step === 'confirm') {
+    const svc = services.find(s => s.id === state.serviceId);
+    container.innerHTML = `
+      <div style="min-height:100vh;background:#F8FAFC;">
+        ${publicBookingHeader(appSettings)}
+        <div style="max-width:520px;margin:60px auto;padding:0 20px;text-align:center">
+          <div style="font-size:60px;margin-bottom:16px">🎉</div>
+          <h2 style="font-size:26px;font-weight:800;color:#0F172A;margin-bottom:8px">You're booked!</h2>
+          <p style="color:#64748B;margin-bottom:28px">A confirmation has been sent to <strong>${state.email}</strong>.</p>
+          <div style="background:#fff;border-radius:12px;padding:24px;border:1px solid #E2E8F0;text-align:left">
+            <div style="margin-bottom:10px"><span style="color:#94A3B8;font-size:13px">Service</span><div style="font-weight:700;margin-top:2px">${svc ? svc.name : ''}</div></div>
+            <div style="margin-bottom:10px"><span style="color:#94A3B8;font-size:13px">Date & Time</span><div style="font-weight:700;margin-top:2px">${state.date} at ${state.time}</div></div>
+            <div style="margin-bottom:10px"><span style="color:#94A3B8;font-size:13px">Duration</span><div style="font-weight:700;margin-top:2px">${svc ? svc.duration : ''} minutes</div></div>
+            ${svc && svc.price > 0 ? `<div><span style="color:#94A3B8;font-size:13px">Price</span><div style="font-weight:700;margin-top:2px">$${svc.price}</div></div>` : ''}
+          </div>
+        </div>
+      </div>`;
+  }
+}
+
+function generateTimeSlots(startTime, endTime, durationMin, bufferMin, date, serviceId) {
+  const bookings = getBookings();
+  const slots = [];
+  const [sh, sm] = startTime.split(':').map(Number);
+  const [eh, em] = endTime.split(':').map(Number);
+  let cur = sh * 60 + sm;
+  const end = eh * 60 + em;
+  const step = durationMin + bufferMin;
+  while (cur + durationMin <= end) {
+    const h = Math.floor(cur/60);
+    const m = cur % 60;
+    const timeStr = (h < 10 ? '0'+h : h) + ':' + (m < 10 ? '0'+m : m);
+    const taken = bookings.some(b => b.date === date && b.status !== 'cancelled' && b.time === timeStr);
+    slots.push({ time: formatTime12(timeStr), time24: timeStr, available: !taken });
+    cur += step;
+  }
+  return slots;
+}
+
+function formatTime12(t24) {
+  const [h, m] = t24.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return h12 + ':' + (m < 10 ? '0'+m : m) + ' ' + ampm;
+}
+
+function publicBookSelectService(serviceId) {
+  const el = document.getElementById('booking-public-view');
+  renderPublicBookingStep(el, 'date', { serviceId });
+}
+function publicBookSelectDate(date, serviceId) {
+  const el = document.getElementById('booking-public-view');
+  renderPublicBookingStep(el, 'time', { serviceId, date });
+}
+function publicBookSelectTime(time, date, serviceId) {
+  const el = document.getElementById('booking-public-view');
+  renderPublicBookingStep(el, 'intake', { serviceId, date, time });
+}
+function publicBookGoBack(step, state) {
+  const el = document.getElementById('booking-public-view');
+  renderPublicBookingStep(el, step, state);
+}
+
+function publicBookSubmit(serviceId, date, time) {
+  const name = document.getElementById('pb-name')?.value.trim();
+  const email = document.getElementById('pb-email')?.value.trim();
+  const phone = document.getElementById('pb-phone')?.value.trim() || '';
+  const notes = document.getElementById('pb-notes')?.value.trim() || '';
+  if (!name || !email) { alert('Please enter your name and email address.'); return; }
+  const services = getBookingServices();
+  const svc = services.find(s => s.id === serviceId);
+  const booking = {
+    id: 'bk-' + Date.now(),
+    serviceId,
+    serviceName: svc ? svc.name : '',
+    clientName: name,
+    clientEmail: email,
+    clientPhone: phone,
+    date,
+    time,
+    duration: svc ? svc.duration : 30,
+    price: svc ? svc.price : 0,
+    status: 'confirmed',
+    intakeNotes: notes,
+    createdAt: new Date().toISOString()
+  };
+  const bookings = getBookings();
+  bookings.push(booking);
+  saveBookings(bookings);
+  autoCreateClient(booking);
+  sendConfirmationEmail(booking);
+  const el = document.getElementById('booking-public-view');
+  renderPublicBookingStep(el, 'confirm', { serviceId, date, time, email });
+}
+
+// load integration settings into settings page fields
+function loadIntegrationSettingsUI() {
+  const s = getData('integrationSettings') || {};
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  setVal('resend-api-key', s.resendApiKey);
+  setVal('resend-sender-name', s.resendSenderName);
+  setVal('resend-sender-email', s.resendSenderEmail);
+  setVal('docuseal-url', s.docusealUrl);
+  setVal('docuseal-token', s.docusealToken);
+  setVal('docuseal-template-id', s.docusealTemplateId);
+}
+
+// init booking data on startup
+(function initBooking() {
+  getBookingSettings();
+  getBookingServices();
+  getAvailability();
+})();
+
+// ══════════════════════════════════════════════════════════════════════════════
 
   </script>
 

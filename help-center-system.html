@@ -6725,6 +6725,10 @@ function bookTab(tabId, btn) {
   const el = document.getElementById('booking-tab-' + tabId);
   if (el) el.classList.add('active');
   if (btn) btn.classList.add('active');
+  if (tabId === 'bk-settings') loadBookingSettingsUI();
+  if (tabId === 'services') renderServicesList();
+  if (tabId === 'availability') renderAvailabilityUI();
+  if (tabId === 'documents') renderDocumentsTab();
 }
 
 function renderBookingStats() {

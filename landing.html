@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>H.E.L.P. Center Business System — The All-In-One Dashboard for Coaches & Consultants</title>
+  <meta name="description" content="Manage clients, bookings, revenue, documents, and AI coaching — all in one place. No complexity. No bloat. Just results." />
+  <style>
+    /* ── Reset & Base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:   #0F172A;
+      --navy2:  #1E293B;
+      --navy3:  #334155;
+      --blue:   #4267B2;
+      --blue-l: #5b7fd4;
+      --gold:   #C9A84C;
+      --gold-l: #e0bc68;
+      --gold-d: #a8863a;
+      --white:  #F8FAFC;
+      --muted:  #94A3B8;
+      --card:   #1E293B;
+      --border: #2D3F5A;
+      --shadow: 0 4px 24px rgba(0,0,0,0.35);
+      --radius: 14px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: var(--navy);
+      color: var(--white);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { max-width: 100%; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 6vw;
+      height: 68px;
+      background: rgba(15,23,42,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1rem;
+      letter-spacing: 0.02em;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--blue);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.15rem;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+      font-size: 0.9rem;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--white); }
+
+    .nav-cta {
+      background: var(--gold);
+      color: var(--navy) !important;
+      font-weight: 700;
+      padding: 9px 22px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      transition: background .2s, box-shadow .2s;
+    }
+    .nav-cta:hover {
+      background: var(--gold-l);
+      box-shadow: 0 0 18px rgba(201,168,76,.45);
+    }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 92vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 6vw 60px;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(66,103,178,.22) 0%, transparent 70%),
+        var(--navy);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 20% 80%, rgba(201,168,76,.06) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(66,103,178,.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(66,103,178,.18);
+      border: 1px solid rgba(66,103,178,.35);
+      color: var(--blue-l);
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      margin-bottom: 28px;
+    }
+
+    .hero-logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .hero-logo-icon {
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, var(--blue) 0%, #3254a0 100%);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 2.2rem;
+      color: #fff;
+      box-shadow: 0 8px 32px rgba(66,103,178,.4);
+    }
+
+    .hero-logo-text {
+      text-align: left;
+    }
+
+    .hero-logo-text .brand {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      line-height: 1.2;
+    }
+
+    .hero-logo-text .brand span { color: var(--gold); }
+
+    .hero-logo-text .sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.4rem);
+      font-weight: 800;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      max-width: 780px;
+      margin-bottom: 22px;
+    }
+
+    h1 span { color: var(--gold); }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.2rem);
+      color: var(--muted);
+      max-width: 600px;
+      margin-bottom: 42px;
+      line-height: 1.7;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 28px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-d) 100%);
+      color: var(--navy);
+      font-weight: 800;
+      padding: 16px 36px;
+      border-radius: 10px;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+      transition: box-shadow .25s, transform .15s;
+      letter-spacing: 0.01em;
+      display: inline-block;
+    }
+    .btn-primary:hover {
+      box-shadow: 0 0 28px rgba(201,168,76,.55), 0 4px 16px rgba(0,0,0,.3);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--white);
+      font-weight: 700;
+      padding: 16px 36px;
+      border-radius: 10px;
+      font-size: 1rem;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      display: inline-block;
+    }
+    .btn-outline:hover {
+      border-color: var(--blue-l);
+      background: rgba(66,103,178,.1);
+    }
+
+    .trust-line {
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    .trust-line span { margin: 0 8px; opacity: .4; }
+
+    /* ── SECTION WRAPPER ── */
+    section {
+      padding: 96px 6vw;
+    }
+
+    .section-label {
+      text-align: center;
+      color: var(--blue-l);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: clamp(1.6rem, 3.5vw, 2.5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .section-sub {
+      text-align: center;
+      color: var(--muted);
+      font-size: 1.05rem;
+      max-width: 560px;
+      margin: 0 auto 56px;
+    }
+
+    /* ── PROBLEM ── */
+    #problem {
+      background: var(--navy2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .problem-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .problem-card {
+      background: var(--navy);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 30px 28px;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      transition: border-color .2s, transform .2s;
+    }
+    .problem-card:hover {
+      border-color: var(--blue);
+      transform: translateY(-3px);
+    }
+
+    .problem-icon {
+      font-size: 1.5rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .problem-card p {
+      color: #CBD5E1;
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+
+    /* ── FEATURES ── */
+    #features { background: var(--navy); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      transition: transform .22s, border-color .22s, box-shadow .22s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--gold));
+      opacity: 0;
+      transition: opacity .22s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--blue);
+      box-shadow: 0 12px 40px rgba(66,103,178,.18);
+    }
+    .feature-card:hover::before { opacity: 1; }
+
+    .feat-icon {
+      font-size: 2rem;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .feat-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--white);
+    }
+
+    .feat-desc {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    /* ── PRICING ── */
+    #pricing {
+      background: var(--navy2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pricing-card {
+      max-width: 460px;
+      margin: 0 auto;
+      background: var(--navy);
+      border: 2px solid var(--gold);
+      border-radius: 20px;
+      padding: 48px 40px;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(201,168,76,.12), var(--shadow);
+      position: relative;
+    }
+
+    .pricing-badge {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--gold);
+      color: var(--navy);
+      font-weight: 800;
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 5px 18px;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+
+    .plan-name {
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .plan-price {
+      font-size: 3.5rem;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: var(--white);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .plan-price span {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .plan-desc {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 32px;
+      margin-top: 8px;
+    }
+
+    .plan-features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 36px;
+    }
+
+    .plan-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.95rem;
+      color: #CBD5E1;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+    }
+    .plan-features li:last-child { border-bottom: none; }
+
+    .check {
+      color: var(--gold);
+      font-weight: 900;
+      font-size: 1rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .btn-primary-lg {
+      display: block;
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-d) 100%);
+      color: var(--navy);
+      font-weight: 800;
+      padding: 18px;
+      border-radius: 10px;
+      font-size: 1.08rem;
+      border: none;
+      cursor: pointer;
+      transition: box-shadow .25s, transform .15s;
+      text-align: center;
+    }
+    .btn-primary-lg:hover {
+      box-shadow: 0 0 32px rgba(201,168,76,.6), 0 4px 16px rgba(0,0,0,.3);
+      transform: translateY(-2px);
+    }
+
+    .plan-note {
+      color: var(--muted);
+      font-size: 0.82rem;
+      margin-top: 14px;
+    }
+
+    /* ── HOW IT WORKS ── */
+    #how {
+      background: var(--navy);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 32px;
+      max-width: 860px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .step {
+      text-align: center;
+      padding: 36px 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      transition: transform .2s, border-color .2s;
+    }
+    .step:hover {
+      transform: translateY(-4px);
+      border-color: var(--blue);
+    }
+
+    .step-num {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--blue) 0%, #3254a0 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.2rem;
+      margin: 0 auto 18px;
+      box-shadow: 0 4px 16px rgba(66,103,178,.4);
+    }
+
+    .step-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .step-desc {
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    /* ── FINAL CTA ── */
+    #cta-bottom {
+      background: linear-gradient(135deg, #162034 0%, #0F172A 100%);
+      text-align: center;
+      border-top: 1px solid var(--border);
+    }
+
+    #cta-bottom h2 {
+      font-size: clamp(1.6rem, 3.5vw, 2.6rem);
+      font-weight: 800;
+      margin-bottom: 14px;
+      letter-spacing: -0.02em;
+    }
+
+    #cta-bottom p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin-bottom: 38px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy2);
+      border-top: 1px solid var(--border);
+      padding: 40px 6vw;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .footer-brand .brand-name {
+      font-weight: 800;
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .footer-brand .brand-sub {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--muted);
+      font-size: 0.85rem;
+      transition: color .2s;
+    }
+    .footer-links a:hover { color: var(--white); }
+
+    .footer-copy {
+      color: var(--muted);
+      font-size: 0.82rem;
+      width: 100%;
+      text-align: center;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      margin-top: 10px;
+    }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--navy2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      max-width: 440px;
+      width: 100%;
+      position: relative;
+      box-shadow: 0 24px 80px rgba(0,0,0,.5);
+      animation: modalIn .2s ease;
+    }
+
+    @keyframes modalIn {
+      from { opacity: 0; transform: scale(.95) translateY(10px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px; right: 20px;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: color .15s, background .15s;
+    }
+    .modal-close:hover { color: var(--white); background: var(--navy3); }
+
+    .modal h2 {
+      font-size: 1.5rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .modal p.modal-sub {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 28px;
+    }
+
+    .modal-trial-badge {
+      display: inline-block;
+      background: rgba(201,168,76,.15);
+      border: 1px solid rgba(201,168,76,.35);
+      color: var(--gold);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 4px 12px;
+      border-radius: 100px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #CBD5E1;
+      margin-bottom: 7px;
+    }
+
+    .form-group input {
+      width: 100%;
+      background: var(--navy);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--white);
+      font-size: 0.95rem;
+      padding: 12px 14px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .form-group input:focus { border-color: var(--blue-l); }
+    .form-group input::placeholder { color: var(--navy3); }
+
+    .modal-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-d) 100%);
+      color: var(--navy);
+      font-weight: 800;
+      padding: 16px;
+      border-radius: 10px;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
+      transition: box-shadow .25s, transform .15s;
+      margin-top: 4px;
+    }
+    .modal-submit:hover {
+      box-shadow: 0 0 28px rgba(201,168,76,.55);
+      transform: translateY(-1px);
+    }
+
+    .modal-note {
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-align: center;
+      margin-top: 14px;
+    }
+
+    .modal-success {
+      display: none;
+      text-align: center;
+      padding: 20px 0;
+    }
+    .modal-success .success-icon {
+      font-size: 3rem;
+      margin-bottom: 16px;
+    }
+    .modal-success h3 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    .modal-success p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 640px) {
+      nav { padding: 0 20px; }
+      .nav-links { display: none; }
+      section { padding: 64px 20px; }
+      #hero { padding: 60px 20px 50px; }
+      .hero-logo { flex-direction: column; gap: 12px; text-align: center; }
+      .hero-logo-text { text-align: center; }
+      .hero-buttons { flex-direction: column; align-items: stretch; }
+      .btn-primary, .btn-outline { text-align: center; }
+      .pricing-card { padding: 40px 24px; }
+      .modal { padding: 36px 24px; }
+      footer { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="nav-logo">
+    <div class="logo-icon">H</div>
+    <span>H.E.L.P. Center</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#" class="nav-cta" onclick="openModal(); return false;">Start Free Trial</a></li>
+  </ul>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="hero-badge">✦ Built for coaches, consultants &amp; entrepreneurs</div>
+
+  <div class="hero-logo">
+    <div class="hero-logo-icon">H</div>
+    <div class="hero-logo-text">
+      <div class="brand"><span>H.E.L.P.</span> Center Business System</div>
+      <div class="sub">Your complete business operating system</div>
+    </div>
+  </div>
+
+  <h1>The all-in-one business dashboard for <span>coaches, consultants &amp; entrepreneurs</span></h1>
+
+  <p class="hero-sub">Manage clients, bookings, revenue, documents, and AI coaching — all in one place. No complexity. No bloat. Just results.</p>
+
+  <div class="hero-buttons">
+    <a href="#"
+       class="btn-primary"
+       data-stripe-link="YOUR_STRIPE_PAYMENT_LINK_HERE"
+       onclick="openModal(); return false;">
+      Start Free Trial — $29/mo
+    </a>
+    <a href="#features" class="btn-outline">See It In Action</a>
+  </div>
+
+  <p class="trust-line">
+    No setup fees <span>·</span> Cancel anytime <span>·</span> Your data, your brand
+  </p>
+</section>
+
+<!-- ══ PROBLEM ══ -->
+<section id="problem">
+  <p class="section-label">The Problem</p>
+  <h2 class="section-title">You're running a business across 6 different tools.<br>It shouldn't be this hard.</h2>
+  <p class="section-sub">Every hour spent switching apps is an hour not spent on clients. There's a better way.</p>
+
+  <div class="problem-cards">
+    <div class="problem-card">
+      <div class="problem-icon">📱</div>
+      <p>Clients scattered across your phone, email, and notes apps — with no single source of truth.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">🔗</div>
+      <p>Booking links that don't match your brand and cost $16/month just to exist.</p>
+    </div>
+    <div class="problem-card">
+      <div class="problem-icon">📂</div>
+      <p>Documents, contracts, and follow-ups slipping through the cracks — and clients noticing.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FEATURES ══ -->
+<section id="features">
+  <p class="section-label">Features</p>
+  <h2 class="section-title">Everything you need. Nothing you don't.</h2>
+  <p class="section-sub">Six powerful modules. One clean dashboard. Zero learning curve.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <span class="feat-icon">📋</span>
+      <div class="feat-title">Client Manager</div>
+      <p class="feat-desc">Full CRM. Track every client, project status, deliverables, and messages in one place.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feat-icon">📅</span>
+      <div class="feat-title">Smart Booking</div>
+      <p class="feat-desc">Native appointment scheduling. Public booking page, intake forms, Stripe payments at booking.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feat-icon">🤖</span>
+      <div class="feat-title">AI Business Coach</div>
+      <p class="feat-desc">Powered by Claude, GPT-4, or Groq. Personalized coaching, business plans, client reply drafts.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feat-icon">📄</span>
+      <div class="feat-title">Document Signing</div>
+      <p class="feat-desc">Send contracts for signature automatically after every booking. Powered by DocuSeal.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feat-icon">💰</span>
+      <div class="feat-title">Revenue Tracker</div>
+      <p class="feat-desc">Track every dollar in. Invoices, payment status, revenue reports — always current.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feat-icon">✉️</span>
+      <div class="feat-title">Branded Emails</div>
+      <p class="feat-desc">Automated confirmations, reminders, and follow-ups — all sent under YOUR brand.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ PRICING ══ -->
+<section id="pricing">
+  <p class="section-label">Pricing</p>
+  <h2 class="section-title">Simple pricing. Serious value.</h2>
+  <p class="section-sub">One plan. Everything included. Start free.</p>
+
+  <div class="pricing-card">
+    <div class="pricing-badge">Most Popular</div>
+    <div class="plan-name">Starter</div>
+    <div class="plan-price">$29<span>/mo</span></div>
+    <p class="plan-desc">Everything you need to run a professional business</p>
+
+    <ul class="plan-features">
+      <li><span class="check">✓</span> Full client CRM &amp; project tracking</li>
+      <li><span class="check">✓</span> Native booking system (unlimited appointments)</li>
+      <li><span class="check">✓</span> AI Business Coach (bring your own API key)</li>
+      <li><span class="check">✓</span> DocuSeal document signing</li>
+      <li><span class="check">✓</span> Branded email automation via Resend</li>
+      <li><span class="check">✓</span> Revenue tracking &amp; reports</li>
+      <li><span class="check">✓</span> Business document generator</li>
+      <li><span class="check">✓</span> Your own branded workspace</li>
+      <li><span class="check">✓</span> Cancel anytime</li>
+    </ul>
+
+    <a href="#"
+       class="btn-primary-lg"
+       data-stripe-link="YOUR_STRIPE_PAYMENT_LINK_HERE"
+       onclick="openModal(); return false;">
+      Get Started — $29/mo
+    </a>
+    <p class="plan-note">14-day free trial · No credit card required to start</p>
+  </div>
+</section>
+
+<!-- ══ HOW IT WORKS ══ -->
+<section id="how">
+  <p class="section-label">How It Works</p>
+  <h2 class="section-title">Up and running in minutes.</h2>
+  <p class="section-sub">No technical setup required. If you can open a browser, you can use this.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-title">Sign up &amp; pay</div>
+      <p class="step-desc">Secure checkout via Stripe. Takes 2 minutes. Your 14-day free trial starts immediately.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-title">Set up your workspace</div>
+      <p class="step-desc">Add your business name, logo, and services. It's your brand from day one.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-title">Start working</div>
+      <p class="step-desc">Clients, bookings, AI, documents — all ready to go. Start getting results today.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ══ BOTTOM CTA ══ -->
+<section id="cta-bottom">
+  <h2>Ready to simplify your business?</h2>
+  <p>Join coaches and consultants who've replaced 6 tools with one.</p>
+  <a href="#"
+     class="btn-primary"
+     data-stripe-link="YOUR_STRIPE_PAYMENT_LINK_HERE"
+     onclick="openModal(); return false;"
+     style="font-size:1.05rem; padding: 18px 44px;">
+    Start Your Free Trial
+  </a>
+  <p style="color: var(--muted); font-size: 0.85rem; margin-top: 16px;">No credit card required · $29/mo after trial</p>
+</section>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="footer-brand">
+    <div class="brand-name">H.E.L.P. Center Business System</div>
+    <div class="brand-sub">Built for coaches, consultants &amp; entrepreneurs who mean business.</div>
+  </div>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms</a>
+    <a href="mailto:j.l.foreman14@gmail.com">Contact</a>
+  </div>
+  <div class="footer-copy">© 2026 H.E.L.P. Center. All rights reserved.</div>
+</footer>
+
+<!-- ══ SIGNUP MODAL ══ -->
+<div class="modal-overlay" id="signupModal" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+
+    <div id="modalForm">
+      <div class="modal-trial-badge">✦ 14-Day Free Trial</div>
+      <h2>Create Your Account</h2>
+      <p class="modal-sub">Get started in 2 minutes. No credit card required.</p>
+
+      <form onsubmit="handleSignup(event)">
+        <div class="form-group">
+          <label for="signup-name">Your Name</label>
+          <input type="text" id="signup-name" placeholder="Joy Watford" required autocomplete="name" />
+        </div>
+        <div class="form-group">
+          <label for="signup-email">Email Address</label>
+          <input type="email" id="signup-email" placeholder="you@yourbusiness.com" required autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" placeholder="Create a strong password" required minlength="8" />
+        </div>
+        <button type="submit" class="modal-submit">Create My Account →</button>
+        <p class="modal-note">By signing up you agree to our Terms &amp; Privacy Policy.<br>Cancel anytime — no questions asked.</p>
+      </form>
+    </div>
+
+    <div class="modal-success" id="modalSuccess">
+      <div class="success-icon">🎉</div>
+      <h3>You're on the list!</h3>
+      <p>Coming soon — you'll be first to know when your workspace is ready.<br><br>
+      We'll email you at <strong id="successEmail"></strong> with your access link.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openModal() {
+    document.getElementById('signupModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    setTimeout(() => document.getElementById('signup-name').focus(), 100);
+  }
+
+  function closeModal() {
+    document.getElementById('signupModal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function handleOverlayClick(e) {
+    if (e.target === document.getElementById('signupModal')) closeModal();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  function handleSignup(e) {
+    e.preventDefault();
+    const email = document.getElementById('signup-email').value;
+    document.getElementById('successEmail').textContent = email;
+    document.getElementById('modalForm').style.display = 'none';
+    document.getElementById('modalSuccess').style.display = 'block';
+
+    // TODO: Wire up Stripe payment link
+    // const stripeLink = document.querySelector('[data-stripe-link]').dataset.stripeLink;
+    // if (stripeLink && stripeLink !== 'YOUR_STRIPE_PAYMENT_LINK_HERE') {
+    //   window.location.href = stripeLink + '?prefilled_email=' + encodeURIComponent(email);
+    // }
+  }
+</script>
+
+</body>
+</html>

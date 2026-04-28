@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>H.E.L.P. Center — Helping Everyday Leaders Prosper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #0F172A;
+      --accent: #4267B2;
+      --accent-light: #5B8DD6;
+      --accent-dim: rgba(66,103,178,0.12);
+      --white: #FFFFFF;
+      --gray-50: #F8FAFC;
+      --gray-100: #F1F5F9;
+      --gray-200: #E2E8F0;
+      --gray-400: #94A3B8;
+      --gray-500: #64748B;
+      --gray-600: #475569;
+      --gray-900: #0F172A;
+      --success: #10B981;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      color: var(--gray-900);
+      background: var(--white);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── NAV ─────────────────────────────────────────────────────── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(15,23,42,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      transition: background 0.3s;
+    }
+    .nav-inner {
+      max-width: 1180px; margin: 0 auto;
+      padding: 0 24px;
+      display: flex; align-items: center; height: 64px; gap: 32px;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; flex-shrink: 0;
+    }
+    .nav-logo-mark {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: 900; color: white; letter-spacing: -1px;
+    }
+    .nav-logo-text { font-size: 15px; font-weight: 700; color: white; }
+    .nav-links { display: flex; gap: 28px; flex: 1; }
+    .nav-links a {
+      text-decoration: none; color: rgba(255,255,255,0.65);
+      font-size: 14px; font-weight: 500;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: white; }
+    .nav-actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+    .nav-login {
+      color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 500;
+      text-decoration: none; transition: color 0.15s;
+    }
+    .nav-login:hover { color: white; }
+    .btn-nav {
+      background: var(--accent); color: white;
+      padding: 9px 20px; border-radius: 8px;
+      font-size: 14px; font-weight: 600;
+      text-decoration: none; transition: background 0.2s;
+      white-space: nowrap;
+    }
+    .btn-nav:hover { background: #2d4fa0; }
+    .nav-hamburger {
+      display: none; background: none; border: none;
+      color: white; font-size: 22px; cursor: pointer;
+      padding: 4px; margin-left: auto;
+    }
+
+    /* ── HERO ─────────────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0A0F1E 0%, #0F172A 40%, #1a2540 70%, #0d1a3a 100%);
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      padding: 100px 24px 80px;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 50% at 50% -10%, rgba(66,103,178,0.35) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 80% 80%, rgba(91,141,214,0.15) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-grid {
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(66,103,178,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(66,103,178,0.07) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      max-width: 780px; text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(66,103,178,0.18);
+      border: 1px solid rgba(66,103,178,0.35);
+      border-radius: 100px; padding: 6px 16px;
+      font-size: 12px; font-weight: 700;
+      color: #7BA7E8; letter-spacing: 0.6px;
+      text-transform: uppercase; margin-bottom: 28px;
+    }
+    .hero-badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent-light);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+    .hero h1 {
+      font-size: clamp(38px, 6vw, 68px);
+      font-weight: 900; line-height: 1.08;
+      color: white; letter-spacing: -2px;
+      margin-bottom: 24px;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg, #4267B2 0%, #7BA7E8 50%, #5B8DD6 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: clamp(17px, 2.2vw, 21px);
+      color: rgba(255,255,255,0.6);
+      max-width: 560px; margin: 0 auto 40px;
+      line-height: 1.6; font-weight: 400;
+    }
+    .hero-ctas { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+    .btn-hero-primary {
+      background: var(--accent); color: white;
+      padding: 16px 32px; border-radius: 10px;
+      font-size: 16px; font-weight: 700;
+      text-decoration: none; transition: all 0.2s;
+      box-shadow: 0 4px 24px rgba(66,103,178,0.4);
+    }
+    .btn-hero-primary:hover {
+      background: #2d4fa0; transform: translateY(-1px);
+      box-shadow: 0 8px 32px rgba(66,103,178,0.5);
+    }
+    .btn-hero-secondary {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: white; padding: 16px 32px; border-radius: 10px;
+      font-size: 16px; font-weight: 600;
+      text-decoration: none; transition: all 0.2s;
+    }
+    .btn-hero-secondary:hover {
+      background: rgba(255,255,255,0.13);
+      transform: translateY(-1px);
+    }
+    .hero-proof {
+      margin-top: 56px;
+      display: flex; align-items: center; justify-content: center; gap: 20px;
+      flex-wrap: wrap;
+    }
+    .hero-proof-text {
+      color: rgba(255,255,255,0.4); font-size: 13px; font-weight: 500;
+    }
+    .hero-stars { color: #F59E0B; font-size: 14px; letter-spacing: 1px; }
+
+    /* ── STATS BAR ─────────────────────────────────────────────────── */
+    .stats-bar {
+      background: var(--accent);
+      padding: 0;
+    }
+    .stats-bar-inner {
+      max-width: 1180px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(3, 1fr);
+    }
+    .stat-item {
+      padding: 28px 32px; text-align: center;
+      border-right: 1px solid rgba(255,255,255,0.15);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-size: 32px; font-weight: 900; color: white;
+      letter-spacing: -1px; line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-label-text {
+      font-size: 14px; font-weight: 500;
+      color: rgba(255,255,255,0.75);
+    }
+
+    /* ── SECTIONS ──────────────────────────────────────────────────── */
+    .section { padding: 96px 24px; }
+    .section-alt { background: var(--gray-50); }
+    .section-inner { max-width: 1180px; margin: 0 auto; }
+    .section-label {
+      font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.2px;
+      color: var(--accent); margin-bottom: 12px;
+    }
+    .section-title {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800; color: var(--primary);
+      letter-spacing: -1.2px; line-height: 1.15;
+      margin-bottom: 16px;
+    }
+    .section-sub {
+      font-size: 18px; color: var(--gray-500);
+      max-width: 560px; line-height: 1.6;
+    }
+    .section-header { margin-bottom: 60px; }
+
+    /* ── FEATURES GRID ─────────────────────────────────────────────── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+    .feature-card {
+      background: white;
+      border: 1px solid var(--gray-200);
+      border-radius: 14px; padding: 28px;
+      transition: all 0.25s ease;
+      position: relative; overflow: hidden;
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-light));
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .feature-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 40px rgba(15,23,42,0.1);
+      border-color: rgba(66,103,178,0.3);
+    }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-icon {
+      width: 48px; height: 48px;
+      background: var(--accent-dim);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 18px;
+    }
+    .feature-title {
+      font-size: 17px; font-weight: 700; color: var(--primary);
+      margin-bottom: 10px; letter-spacing: -0.3px;
+    }
+    .feature-desc {
+      font-size: 14px; color: var(--gray-500); line-height: 1.7;
+    }
+
+    /* ── HOW IT WORKS ─────────────────────────────────────────────── */
+    .steps-grid {
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 40px; position: relative;
+    }
+    .steps-grid::before {
+      content: '';
+      position: absolute; top: 28px; left: calc(16.66% + 20px); right: calc(16.66% + 20px);
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-light));
+      opacity: 0.3;
+    }
+    .step-card { text-align: center; padding: 0 16px; }
+    .step-num {
+      width: 56px; height: 56px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 800; color: white;
+      margin: 0 auto 20px;
+      position: relative; z-index: 1;
+      box-shadow: 0 4px 20px rgba(66,103,178,0.35);
+    }
+    .step-title {
+      font-size: 18px; font-weight: 700; color: var(--primary);
+      margin-bottom: 10px; letter-spacing: -0.3px;
+    }
+    .step-desc { font-size: 14px; color: var(--gray-500); line-height: 1.7; }
+
+    /* ── PRICING ─────────────────────────────────────────────────── */
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px; align-items: start;
+    }
+    .pricing-card {
+      background: white; border: 2px solid var(--gray-200);
+      border-radius: 16px; padding: 32px;
+      position: relative; transition: all 0.25s;
+    }
+    .pricing-card:hover {
+      box-shadow: 0 16px 40px rgba(15,23,42,0.1);
+      transform: translateY(-2px);
+    }
+    .pricing-card.popular {
+      border-color: var(--accent);
+      background: linear-gradient(160deg, #fafbff 0%, white 100%);
+      box-shadow: 0 8px 40px rgba(66,103,178,0.15);
+    }
+    .popular-badge {
+      position: absolute; top: -1px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: white;
+      font-size: 11px; font-weight: 700;
+      padding: 5px 16px; border-radius: 0 0 10px 10px;
+      letter-spacing: 0.8px; text-transform: uppercase;
+    }
+    .pricing-tier {
+      font-size: 13px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--accent); margin-bottom: 12px;
+    }
+    .pricing-price {
+      display: flex; align-items: flex-end; gap: 4px;
+      margin-bottom: 6px;
+    }
+    .price-num {
+      font-size: 48px; font-weight: 900; color: var(--primary);
+      letter-spacing: -2px; line-height: 1;
+    }
+    .price-period { font-size: 14px; color: var(--gray-400); font-weight: 500; padding-bottom: 8px; }
+    .pricing-desc {
+      font-size: 14px; color: var(--gray-500); margin-bottom: 24px; line-height: 1.6;
+    }
+    .pricing-divider { height: 1px; background: var(--gray-100); margin-bottom: 24px; }
+    .pricing-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+    .pricing-features li {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: 14px; color: var(--gray-600);
+    }
+    .check { color: var(--success); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+    .btn-pricing {
+      display: block; width: 100%;
+      padding: 14px; border-radius: 10px;
+      font-size: 15px; font-weight: 700;
+      text-align: center; text-decoration: none;
+      transition: all 0.2s; cursor: pointer; border: none;
+    }
+    .btn-pricing-primary {
+      background: var(--accent); color: white;
+      box-shadow: 0 4px 16px rgba(66,103,178,0.3);
+    }
+    .btn-pricing-primary:hover { background: #2d4fa0; transform: translateY(-1px); }
+    .btn-pricing-outline {
+      background: transparent; color: var(--accent);
+      border: 2px solid var(--accent);
+    }
+    .btn-pricing-outline:hover { background: var(--accent-dim); }
+
+    /* ── SIGNUP ──────────────────────────────────────────────────── */
+    .signup-section {
+      background: linear-gradient(135deg, #0A0F1E 0%, #0F172A 60%, #1a2540 100%);
+      padding: 96px 24px;
+      position: relative; overflow: hidden;
+    }
+    .signup-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(66,103,178,0.2) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .signup-card {
+      position: relative; z-index: 1;
+      background: white; border-radius: 20px;
+      max-width: 560px; margin: 0 auto;
+      padding: 40px 44px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.35);
+    }
+    .signup-title {
+      font-size: 26px; font-weight: 800; color: var(--primary);
+      letter-spacing: -0.5px; margin-bottom: 6px;
+    }
+    .signup-sub {
+      font-size: 14px; color: var(--gray-500); margin-bottom: 28px;
+    }
+    .plan-selector { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+    .plan-option {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 18px; border: 2px solid var(--gray-200);
+      border-radius: 10px; cursor: pointer; transition: all 0.15s;
+    }
+    .plan-option:has(input:checked) {
+      border-color: var(--accent); background: var(--accent-dim);
+    }
+    .plan-option input[type=radio] { accent-color: var(--accent); width: 17px; height: 17px; }
+    .plan-option-info { flex: 1; }
+    .plan-option-name { font-size: 14px; font-weight: 700; color: var(--primary); }
+    .plan-option-desc { font-size: 12px; color: var(--gray-500); margin-top: 2px; }
+    .plan-option-price { font-size: 18px; font-weight: 800; color: var(--accent); }
+    .signup-form-group { margin-bottom: 14px; }
+    .signup-label {
+      display: block; font-size: 12px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--gray-600); margin-bottom: 6px;
+    }
+    .signup-input {
+      width: 100%; padding: 12px 16px;
+      border: 1.5px solid var(--gray-200); border-radius: 8px;
+      font-size: 15px; font-family: inherit;
+      transition: border-color 0.15s; outline: none;
+    }
+    .signup-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(66,103,178,0.1);
+    }
+    .btn-signup {
+      width: 100%; padding: 15px;
+      background: var(--accent); color: white;
+      border: none; border-radius: 10px;
+      font-size: 16px; font-weight: 700;
+      cursor: pointer; transition: all 0.2s;
+      margin-top: 8px;
+      box-shadow: 0 4px 20px rgba(66,103,178,0.35);
+    }
+    .btn-signup:hover { background: #2d4fa0; transform: translateY(-1px); }
+    .signup-note {
+      text-align: center; font-size: 12px;
+      color: var(--gray-400); margin-top: 14px;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .signup-section-header {
+      text-align: center; margin-bottom: 48px;
+      position: relative; z-index: 1;
+    }
+    .signup-section-header .section-title { color: white; }
+    .signup-section-header .section-sub { color: rgba(255,255,255,0.6); margin: 0 auto; }
+
+    /* ── FOOTER ─────────────────────────────────────────────────── */
+    .footer {
+      background: var(--primary); padding: 40px 24px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .footer-inner {
+      max-width: 1180px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 20px;
+    }
+    .footer-brand {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .footer-brand-mark {
+      width: 32px; height: 32px; background: var(--accent);
+      border-radius: 7px; display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 900; color: white;
+    }
+    .footer-brand-name { font-size: 14px; font-weight: 700; color: rgba(255,255,255,0.8); }
+    .footer-copy { font-size: 12px; color: rgba(255,255,255,0.35); }
+    .footer-links { display: flex; gap: 24px; }
+    .footer-links a {
+      font-size: 13px; font-weight: 500;
+      color: rgba(255,255,255,0.5); text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-links a:hover { color: white; }
+
+    /* ── RESPONSIVE ─────────────────────────────────────────────── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-hamburger { display: block; }
+      .nav-login { display: none; }
+      .stats-bar-inner { grid-template-columns: 1fr; }
+      .stat-item { border-right: none; border-bottom: 1px solid rgba(255,255,255,0.15); }
+      .stat-item:last-child { border-bottom: none; }
+      .steps-grid { grid-template-columns: 1fr; gap: 32px; }
+      .steps-grid::before { display: none; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 420px; margin: 0 auto; }
+      .signup-card { padding: 28px 24px; }
+      .footer-inner { flex-direction: column; align-items: flex-start; }
+    }
+    @media (max-width: 560px) {
+      .hero-ctas { flex-direction: column; align-items: center; }
+      .btn-hero-primary, .btn-hero-secondary { width: 100%; max-width: 320px; text-align: center; }
+    }
+
+    /* Mobile nav menu */
+    .mobile-nav-menu {
+      display: none; position: fixed; inset: 0; z-index: 200;
+      background: var(--primary); padding: 80px 32px 40px;
+      flex-direction: column; gap: 24px;
+    }
+    .mobile-nav-menu.open { display: flex; }
+    .mobile-nav-close {
+      position: absolute; top: 20px; right: 20px;
+      background: none; border: none; color: white; font-size: 28px; cursor: pointer;
+    }
+    .mobile-nav-menu a {
+      color: rgba(255,255,255,0.8); font-size: 20px; font-weight: 600;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-mark">H</div>
+      <span class="nav-logo-text" id="nav-brand-name">H.E.L.P. Center</span>
+    </a>
+    <div class="nav-links">
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How It Works</a>
+      <a href="#pricing">Pricing</a>
+    </div>
+    <div class="nav-actions">
+      <a href="#" class="nav-login" id="nav-login-link">Log In</a>
+      <a href="#signup" class="btn-nav">Get Started</a>
+    </div>
+    <button class="nav-hamburger" onclick="document.getElementById('mobile-menu').classList.toggle('open')" aria-label="Open menu">☰</button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mobile-nav-menu" id="mobile-menu">
+  <button class="mobile-nav-close" onclick="document.getElementById('mobile-menu').classList.remove('open')">✕</button>
+  <a href="#features" onclick="document.getElementById('mobile-menu').classList.remove('open')">Features</a>
+  <a href="#how-it-works" onclick="document.getElementById('mobile-menu').classList.remove('open')">How It Works</a>
+  <a href="#pricing" onclick="document.getElementById('mobile-menu').classList.remove('open')">Pricing</a>
+  <a href="#" id="mobile-login-link" onclick="document.getElementById('mobile-menu').classList.remove('open')">Log In →</a>
+  <a href="#signup" onclick="document.getElementById('mobile-menu').classList.remove('open')" style="color:var(--accent-light)">Get Started →</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Now with AI Business Coaching
+    </div>
+    <h1>Run Your Entire Business<br>from <span>One Dashboard</span></h1>
+    <p class="hero-sub" id="hero-description">The all-in-one platform for coaches, consultants, and entrepreneurs to manage clients, automate bookings, sign contracts, and grow with AI.</p>
+    <div class="hero-ctas">
+      <a href="#pricing" class="btn-hero-primary">Get Started — Free Trial</a>
+      <a href="#features" class="btn-hero-secondary">See All Features →</a>
+    </div>
+    <div class="hero-proof">
+      <span class="hero-stars">★★★★★</span>
+      <span class="hero-proof-text">Trusted by coaches &amp; entrepreneurs</span>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stats-bar-inner">
+    <div class="stat-item">
+      <div class="stat-num">10+ hrs</div>
+      <div class="stat-label-text">Saved every week on admin work</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">All-in-one</div>
+      <div class="stat-label-text">Dashboard — no tool juggling</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">AI-powered</div>
+      <div class="stat-label-text">Business coaching built right in</div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-inner">
+    <div class="section-header">
+      <div class="section-label">Everything you need</div>
+      <h2 class="section-title">Six powerful tools.<br>One unified platform.</h2>
+      <p class="section-sub">Stop duct-taping eight different apps together. H.E.L.P. Center gives you every tool you need to run a professional service business.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">👥</div>
+        <div class="feature-title">Client Management</div>
+        <p class="feature-desc">Track every client relationship from lead to loyal customer. View messages, service history, status, and share client portal links — all from one clean interface.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title">AI Business Coach</div>
+        <p class="feature-desc">Get on-demand business strategy, marketing advice, and growth coaching powered by your choice of Groq, OpenAI, or Claude AI. Your own advisor, available 24/7.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <div class="feature-title">Smart Booking</div>
+        <p class="feature-desc">Share a public booking page and let clients schedule appointments on their own time. New bookings automatically create client records — zero manual entry required.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">✍️</div>
+        <div class="feature-title">Document Signing</div>
+        <p class="feature-desc">Send contracts and agreements digitally and get them signed in minutes. Integrated with DocuSeal for a seamless, legally compliant signing workflow.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">💰</div>
+        <div class="feature-title">Revenue Tracking</div>
+        <p class="feature-desc">Create invoices, track payments, and view your income reports in a clean dashboard. Always know where your business stands financially.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📚</div>
+        <div class="feature-title">Business Library</div>
+        <p class="feature-desc">Access curated guides, resources, and learning pathways designed to help you grow. From credit building to marketing — the knowledge you need, when you need it.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="section section-alt" id="how-it-works">
+  <div class="section-inner">
+    <div class="section-header" style="text-align:center">
+      <div class="section-label">Simple setup</div>
+      <h2 class="section-title">Up and running in minutes</h2>
+      <p class="section-sub" style="margin: 0 auto;">No technical skills required. No IT department needed. Just sign up and start running your business like a pro.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-title">Sign up &amp; pay</div>
+        <p class="step-desc">Choose your plan and complete checkout in under 60 seconds. Your workspace is created instantly — no waiting for approvals or setup calls.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-title">Set up your workspace</div>
+        <p class="step-desc">Our guided onboarding wizard walks you through adding your business details, first service offering, and preferences — takes about 3 minutes.</p>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-title">Share with clients</div>
+        <p class="step-desc">Send your booking link, onboard clients into your portal, and let the platform do the heavy lifting while you focus on delivering results.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="section-inner">
+    <div class="section-header" style="text-align:center">
+      <div class="section-label">Simple pricing</div>
+      <h2 class="section-title">Invest in your business growth</h2>
+      <p class="section-sub" style="margin: 0 auto;">No hidden fees. No per-user nonsense. Cancel anytime. Start with the plan that fits where you are today.</p>
+    </div>
+    <div class="pricing-grid">
+
+      <!-- STARTER -->
+      <div class="pricing-card">
+        <div class="pricing-tier">Starter</div>
+        <div class="pricing-price">
+          <span class="price-num">$29</span>
+          <span class="price-period">/month</span>
+        </div>
+        <p class="pricing-desc">Everything you need to launch and manage your client business professionally.</p>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="check">✓</span> Full business dashboard</li>
+          <li><span class="check">✓</span> Client management &amp; portal links</li>
+          <li><span class="check">✓</span> Smart booking page</li>
+          <li><span class="check">✓</span> AI Business Coach (Groq, OpenAI, Claude)</li>
+          <li><span class="check">✓</span> Revenue tracking &amp; invoices</li>
+          <li><span class="check">✓</span> Business Library access</li>
+        </ul>
+        <a href="#signup" class="btn-pricing btn-pricing-outline" onclick="preselectPlan('starter')">Get Started</a>
+      </div>
+
+      <!-- PRO (POPULAR) -->
+      <div class="pricing-card popular">
+        <div class="popular-badge">Most Popular</div>
+        <div class="pricing-tier">Pro</div>
+        <div class="pricing-price">
+          <span class="price-num">$59</span>
+          <span class="price-period">/month</span>
+        </div>
+        <p class="pricing-desc">For established coaches who want professional email delivery and digital contracts.</p>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="check">✓</span> Everything in Starter</li>
+          <li><span class="check">✓</span> Resend email integration (branded emails)</li>
+          <li><span class="check">✓</span> DocuSeal digital contracts &amp; signing</li>
+          <li><span class="check">✓</span> Automated email notifications</li>
+          <li><span class="check">✓</span> Priority support</li>
+          <li><span class="check">✓</span> Advanced reporting</li>
+        </ul>
+        <a href="#signup" class="btn-pricing btn-pricing-primary" onclick="preselectPlan('pro')">Get Started</a>
+      </div>
+
+      <!-- AGENCY -->
+      <div class="pricing-card">
+        <div class="pricing-tier">Agency</div>
+        <div class="pricing-price">
+          <span class="price-num">$99</span>
+          <span class="price-period">/month</span>
+        </div>
+        <p class="pricing-desc">For agencies and teams who need multi-user access and white-label branding.</p>
+        <div class="pricing-divider"></div>
+        <ul class="pricing-features">
+          <li><span class="check">✓</span> Everything in Pro</li>
+          <li><span class="check">✓</span> Multiple team members</li>
+          <li><span class="check">✓</span> White-label branding</li>
+          <li><span class="check">✓</span> Admin panel access</li>
+          <li><span class="check">✓</span> Custom domain support</li>
+          <li><span class="check">✓</span> Dedicated account manager</li>
+        </ul>
+        <a href="#signup" class="btn-pricing btn-pricing-outline" onclick="preselectPlan('agency')">Get Started</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SIGNUP / CHECKOUT -->
+<section class="signup-section" id="signup">
+  <div class="signup-section-header">
+    <div class="section-label" style="color:#7BA7E8">Start today</div>
+    <h2 class="section-title">Create your account</h2>
+    <p class="section-sub">Pick a plan and pay securely via Stripe. Your workspace is ready in minutes.</p>
+  </div>
+  <div class="signup-card">
+    <h3 class="signup-title">Get started with <span id="signup-brand-name">H.E.L.P. Center</span></h3>
+    <p class="signup-sub">Choose your plan below, then continue to secure checkout.</p>
+
+    <!-- PLAN SELECTOR -->
+    <div class="plan-selector" id="plan-selector">
+      <label class="plan-option">
+        <input type="radio" name="plan" value="starter">
+        <div class="plan-option-info">
+          <div class="plan-option-name">Starter</div>
+          <div class="plan-option-desc">Dashboard, booking, AI coach, client management</div>
+        </div>
+        <div class="plan-option-price">$29/mo</div>
+      </label>
+      <label class="plan-option">
+        <input type="radio" name="plan" value="pro" checked>
+        <div class="plan-option-info">
+          <div class="plan-option-name">Pro</div>
+          <div class="plan-option-desc">Everything in Starter + email &amp; contracts</div>
+        </div>
+        <div class="plan-option-price">$59/mo</div>
+      </label>
+      <label class="plan-option">
+        <input type="radio" name="plan" value="agency">
+        <div class="plan-option-info">
+          <div class="plan-option-name">Agency</div>
+          <div class="plan-option-desc">Everything in Pro + team &amp; white-label</div>
+        </div>
+        <div class="plan-option-price">$99/mo</div>
+      </label>
+    </div>
+
+    <div class="signup-form-group">
+      <label class="signup-label" for="signup-name">Your Name</label>
+      <input type="text" id="signup-name" class="signup-input" placeholder="Jane Smith">
+    </div>
+    <div class="signup-form-group">
+      <label class="signup-label" for="signup-email">Email Address</label>
+      <input type="email" id="signup-email" class="signup-input" placeholder="jane@yourcompany.com">
+    </div>
+
+    <button class="btn-signup" onclick="continueToPayment()">Continue to Payment →</button>
+
+    <div class="signup-note">
+      🔒 Secure payment via Stripe. Cancel anytime.
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-brand-mark">H</div>
+      <div>
+        <div class="footer-brand-name" id="footer-brand-name">H.E.L.P. Center</div>
+        <div class="footer-copy" id="footer-tagline">Helping Everyday Leaders Prosper</div>
+      </div>
+    </div>
+    <div class="footer-links">
+      <a href="mailto:joy@helpcenter.com" id="footer-contact-link">Contact</a>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+    </div>
+    <div class="footer-copy" id="footer-copy">© 2025 H.E.L.P. Center. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+  // ── CONFIG ────────────────────────────────────────────────────────────────────
+  const SAAS_CONFIG = {
+    name: 'H.E.L.P. Center',
+    tagline: 'Helping Everyday Leaders Prosper',
+    description: 'The all-in-one business management system for coaches, consultants, and entrepreneurs.',
+    email: 'joy@helpcenter.com',
+    stripeStarter: 'https://buy.stripe.com/PLACEHOLDER_STARTER',
+    stripePro: 'https://buy.stripe.com/PLACEHOLDER_PRO',
+    stripeAgency: 'https://buy.stripe.com/PLACEHOLDER_AGENCY',
+    appUrl: 'http://187.124.146.184:8090/help-center-system.html',
+    loginUrl: 'http://187.124.146.184:8090/help-center-system.html'
+  };
+
+  // ── APPLY CONFIG ──────────────────────────────────────────────────────────────
+  (function applyConfig() {
+    const c = SAAS_CONFIG;
+    // Nav
+    const navBrand = document.getElementById('nav-brand-name');
+    if (navBrand) navBrand.textContent = c.name;
+    // Login links
+    ['nav-login-link', 'mobile-login-link'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.href = c.loginUrl;
+    });
+    // Hero
+    const heroDesc = document.getElementById('hero-description');
+    if (heroDesc) heroDesc.textContent = c.description;
+    // Signup card
+    const signupBrand = document.getElementById('signup-brand-name');
+    if (signupBrand) signupBrand.textContent = c.name;
+    // Footer
+    const footerBrand = document.getElementById('footer-brand-name');
+    if (footerBrand) footerBrand.textContent = c.name;
+    const footerTag = document.getElementById('footer-tagline');
+    if (footerTag) footerTag.textContent = c.tagline;
+    const footerContact = document.getElementById('footer-contact-link');
+    if (footerContact) footerContact.href = 'mailto:' + c.email;
+    const footerCopy = document.getElementById('footer-copy');
+    if (footerCopy) footerCopy.textContent = '© ' + new Date().getFullYear() + ' ' + c.name + '. All rights reserved.';
+  })();
+
+  // ── PLAN PRESELECT ────────────────────────────────────────────────────────────
+  function preselectPlan(plan) {
+    const radios = document.querySelectorAll('input[name="plan"]');
+    radios.forEach(r => { if (r.value === plan) r.checked = true; });
+  }
+
+  // ── CONTINUE TO PAYMENT ───────────────────────────────────────────────────────
+  function continueToPayment() {
+    const name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const plan = (document.querySelector('input[name="plan"]:checked') || {}).value || 'pro';
+
+    if (!name) {
+      alert('Please enter your name.');
+      document.getElementById('signup-name').focus();
+      return;
+    }
+    if (!email || !email.includes('@')) {
+      alert('Please enter a valid email address.');
+      document.getElementById('signup-email').focus();
+      return;
+    }
+
+    // Save to sessionStorage so post-payment onboarding can use it
+    sessionStorage.setItem('signup_name', name);
+    sessionStorage.setItem('signup_email', email);
+    sessionStorage.setItem('signup_plan', plan);
+
+    // Determine Stripe link
+    const stripeLinks = {
+      starter: SAAS_CONFIG.stripeStarter,
+      pro: SAAS_CONFIG.stripePro,
+      agency: SAAS_CONFIG.stripeAgency
+    };
+    const url = stripeLinks[plan] || SAAS_CONFIG.stripePro;
+
+    // Append prefill params (Stripe supports ?prefilled_email=)
+    const fullUrl = url + (url.includes('?') ? '&' : '?') + 'prefilled_email=' + encodeURIComponent(email);
+    window.location.href = fullUrl;
+  }
+
+  // ── SMOOTH NAV HIGHLIGHT ──────────────────────────────────────────────────────
+  window.addEventListener('scroll', function() {
+    const nav = document.querySelector('.nav');
+    if (window.scrollY > 50) {
+      nav.style.background = 'rgba(15,23,42,0.98)';
+    } else {
+      nav.style.background = 'rgba(15,23,42,0.92)';
+    }
+  });
+</script>
+</body>
+</html>

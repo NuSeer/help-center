@@ -2115,6 +2115,129 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
       </div>
     </div>
     </main>
+
+    <!-- ── ONBOARDING OVERLAY ── -->
+    <div id="onboarding-overlay" style="display:none;position:fixed;inset:0;background:rgba(255,255,255,0.98);z-index:1000;overflow-y:auto;padding:40px 20px;">
+      <div style="max-width:540px;margin:0 auto;">
+        <!-- Step dots -->
+        <div style="display:flex;gap:8px;justify-content:center;margin-bottom:40px;" id="ob-dots"></div>
+
+        <!-- STEP 1: Welcome -->
+        <div class="ob-step" id="ob-step-1">
+          <div style="text-align:center;padding:40px 20px;">
+            <div style="font-size:56px;margin-bottom:20px;">👋</div>
+            <h2 style="font-size:32px;font-weight:800;color:#0F172A;letter-spacing:-1px;margin-bottom:12px;">Welcome to <span id="ob-biz-name-1">H.E.L.P. Center</span></h2>
+            <p style="font-size:17px;color:#64748B;margin-bottom:36px;line-height:1.6;">Let's set up your workspace in 3 minutes so you can start serving clients like a pro.</p>
+            <button onclick="onboardNext(2)" style="background:#4267B2;color:white;padding:16px 48px;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(66,103,178,0.35);transition:background 0.2s;" onmouseover="this.style.background='#2d4fa0'" onmouseout="this.style.background='#4267B2'">Get Started →</button>
+          </div>
+        </div>
+
+        <!-- STEP 2: Business Info -->
+        <div class="ob-step" id="ob-step-2" style="display:none;">
+          <h2 style="font-size:24px;font-weight:800;color:#0F172A;margin-bottom:6px;">Your Business</h2>
+          <p style="font-size:14px;color:#64748B;margin-bottom:28px;">Tell us about your business so we can personalize your dashboard.</p>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#475569;margin-bottom:6px;">Business Name <span style="color:#EF4444">*</span></label>
+              <input id="ob-business-name" type="text" placeholder="e.g. Prosper Coaching Co." style="width:100%;padding:12px 16px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:15px;outline:none;font-family:inherit;" onfocus="this.style.borderColor='#4267B2'" onblur="this.style.borderColor='#E2E8F0'">
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#475569;margin-bottom:6px;">Your Name <span style="color:#EF4444">*</span></label>
+              <input id="ob-owner-name" type="text" placeholder="e.g. Jane Smith" style="width:100%;padding:12px 16px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:15px;outline:none;font-family:inherit;" onfocus="this.style.borderColor='#4267B2'" onblur="this.style.borderColor='#E2E8F0'">
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#475569;margin-bottom:6px;">Your Email <span style="color:#EF4444">*</span></label>
+              <input id="ob-email" type="email" placeholder="you@yourbusiness.com" style="width:100%;padding:12px 16px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:15px;outline:none;font-family:inherit;" onfocus="this.style.borderColor='#4267B2'" onblur="this.style.borderColor='#E2E8F0'">
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#475569;margin-bottom:6px;">Tagline <span style="color:#94A3B8;font-weight:500;text-transform:none;">(optional)</span></label>
+              <input id="ob-tagline" type="text" placeholder="e.g. Helping entrepreneurs build wealth" style="width:100%;padding:12px 16px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:15px;outline:none;font-family:inherit;" onfocus="this.style.borderColor='#4267B2'" onblur="this.style.borderColor='#E2E8F0'">
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#475569;margin-bottom:6px;">Location <span style="color:#94A3B8;font-weight:500;text-transform:none;">(optional)</span></label>
+              <input id="ob-location" type="text" placeholder="e.g. Atlanta, GA" style="width:100%;padding:12px 16px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:15px;outline:none;font-family:inherit;" onfocus="this.style.borderColor='#4267B2'" onblur="this.style.borderColor='#E2E8F0'">
+            </div>
+          </div>
+          <button onclick="onboardNext(3)" style="margin-top:28px;background:#4267B2;color:white;padding:14px 40px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#2d4fa0'" onmouseout="this.style.background='#4267B2'">Next →</button>
+        </div>
+
+        <!-- STEP 3: First Service -->
+        <div class="ob-step" id="ob-step-3" style="display:none;">
+          <h2 style="font-size:24px;font-weight:800;color:#0F172A;margin-bottom:6px;">Your First Service</h2>
+          <p style="font-size:14px;color:#64748B;margin-bottom:28px;">Add a bookable service so clients can schedule with you right away.</p>
+          <div style="display:flex;flex-direction:column;gap:16px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#475569;margin-bottom:6px;">Service Name</label>
+              <input id="ob-service-name" type="text" value="Discovery Call" style="width:100%;padding:12px 16px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:15px;outline:none;font-family:inherit;" onfocus="this.style.borderColor='#4267B2'" onblur="this.style.borderColor='#E2E8F0'">
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#475569;margin-bottom:10px;">Duration</label>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 18px;border:1.5px solid #E2E8F0;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;transition:all 0.15s;" id="ob-dur-30-label">
+                  <input type="radio" name="ob-duration" value="30" checked onchange="obSelectDuration(this)" style="accent-color:#4267B2;"> 30 min
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 18px;border:1.5px solid #E2E8F0;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;" id="ob-dur-45-label">
+                  <input type="radio" name="ob-duration" value="45" onchange="obSelectDuration(this)" style="accent-color:#4267B2;"> 45 min
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 18px;border:1.5px solid #E2E8F0;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;" id="ob-dur-60-label">
+                  <input type="radio" name="ob-duration" value="60" onchange="obSelectDuration(this)" style="accent-color:#4267B2;"> 60 min
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 18px;border:1.5px solid #E2E8F0;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;" id="ob-dur-90-label">
+                  <input type="radio" name="ob-duration" value="90" onchange="obSelectDuration(this)" style="accent-color:#4267B2;"> 90 min
+                </label>
+              </div>
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#475569;margin-bottom:10px;">Pricing</label>
+              <div style="display:flex;gap:10px;margin-bottom:12px;">
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 20px;border:1.5px solid #E2E8F0;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;" id="ob-price-free-label">
+                  <input type="radio" name="ob-price-type" value="free" checked onchange="obTogglePrice(this)" style="accent-color:#4267B2;"> Free
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;padding:10px 20px;border:1.5px solid #E2E8F0;border-radius:8px;cursor:pointer;font-size:14px;font-weight:600;" id="ob-price-paid-label">
+                  <input type="radio" name="ob-price-type" value="paid" onchange="obTogglePrice(this)" style="accent-color:#4267B2;"> Paid
+                </label>
+              </div>
+              <div id="ob-price-input-wrap" style="display:none;">
+                <input id="ob-price-amount" type="number" placeholder="e.g. 150" min="0" style="width:100%;padding:12px 16px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:15px;outline:none;font-family:inherit;" onfocus="this.style.borderColor='#4267B2'" onblur="this.style.borderColor='#E2E8F0'">
+              </div>
+            </div>
+          </div>
+          <button onclick="onboardNext(4)" style="margin-top:28px;background:#4267B2;color:white;padding:14px 40px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#2d4fa0'" onmouseout="this.style.background='#4267B2'">Next →</button>
+        </div>
+
+        <!-- STEP 4: Password -->
+        <div class="ob-step" id="ob-step-4" style="display:none;">
+          <h2 style="font-size:24px;font-weight:800;color:#0F172A;margin-bottom:6px;">Set Your Password</h2>
+          <p style="font-size:14px;color:#64748B;margin-bottom:28px;">Choose a strong password to protect your dashboard.</p>
+          <div style="display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#475569;margin-bottom:6px;">New Password</label>
+              <input id="ob-password" type="password" placeholder="At least 8 characters" style="width:100%;padding:12px 16px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:15px;outline:none;font-family:inherit;" onfocus="this.style.borderColor='#4267B2'" onblur="this.style.borderColor='#E2E8F0'">
+            </div>
+            <div>
+              <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#475569;margin-bottom:6px;">Confirm Password</label>
+              <input id="ob-password-confirm" type="password" placeholder="Repeat your password" style="width:100%;padding:12px 16px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:15px;outline:none;font-family:inherit;" onfocus="this.style.borderColor='#4267B2'" onblur="this.style.borderColor='#E2E8F0'">
+            </div>
+            <div id="ob-password-error" style="display:none;color:#EF4444;font-size:13px;font-weight:600;"></div>
+          </div>
+          <button onclick="onboardNext(5)" style="margin-top:28px;background:#4267B2;color:white;padding:14px 40px;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#2d4fa0'" onmouseout="this.style.background='#4267B2'">Next →</button>
+        </div>
+
+        <!-- STEP 5: Done! -->
+        <div class="ob-step" id="ob-step-5" style="display:none;">
+          <div style="text-align:center;padding:30px 20px;">
+            <div style="font-size:60px;margin-bottom:20px;">🎉</div>
+            <h2 style="font-size:30px;font-weight:800;color:#0F172A;letter-spacing:-0.5px;margin-bottom:12px;">Your workspace is ready!</h2>
+            <div id="ob-summary" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:20px 24px;margin:24px 0;text-align:left;font-size:14px;color:#475569;line-height:2;"></div>
+            <button onclick="completeOnboarding()" style="background:#4267B2;color:white;padding:16px 48px;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 4px 20px rgba(66,103,178,0.35);transition:background 0.2s;" onmouseover="this.style.background='#2d4fa0'" onmouseout="this.style.background='#4267B2'">Go to Dashboard →</button>
+          </div>
+          <!-- Confetti canvas -->
+          <canvas id="ob-confetti" style="position:fixed;inset:0;pointer-events:none;z-index:9999;width:100%;height:100%;"></canvas>
+        </div>
+      </div>
+    </div>
+    <!-- ── END ONBOARDING OVERLAY ── -->
+
   </div>
 
   <!-- ── AI COACH CHAT PANEL ── -->
@@ -2295,6 +2418,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
         document.getElementById('login-page').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
         if (typeof updateDashboard === 'function') updateDashboard();
+        if (typeof checkOnboarding === 'function') checkOnboarding();
       }
     }
 
@@ -2323,6 +2447,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
         document.getElementById('app').classList.remove('hidden');
         pbPull();
         if (typeof updateDashboard === 'function') updateDashboard();
+        if (typeof checkOnboarding === 'function') checkOnboarding();
       } else {
         errEl.textContent = 'Incorrect password. Default password is help2024';
         errEl.style.display = 'block';
@@ -7465,6 +7590,213 @@ function loadIntegrationSettingsUI() {
 })();
 
 // ══════════════════════════════════════════════════════════════════════════════
+
+  // ── ONBOARDING WIZARD ──────────────────────────────────────────────────────
+  let _obCurrentStep = 1;
+  const OB_TOTAL_STEPS = 5;
+
+  function checkOnboarding() {
+    if (localStorage.getItem('onboardingComplete') === 'true') return;
+    showOnboarding();
+  }
+
+  function showOnboarding() {
+    _obCurrentStep = 1;
+    const overlay = document.getElementById('onboarding-overlay');
+    if (!overlay) return;
+    overlay.style.display = 'block';
+    _obRenderDots(1);
+    _obShowStep(1);
+    // Pre-fill from sessionStorage if came from signup
+    const ssName = sessionStorage.getItem('signup_name');
+    const ssEmail = sessionStorage.getItem('signup_email');
+    if (ssName) { const el = document.getElementById('ob-owner-name'); if (el) el.value = ssName; }
+    if (ssEmail) { const el = document.getElementById('ob-email'); if (el) el.value = ssEmail; }
+    // Set business name label
+    const s = getData('settings') || {};
+    const bizEl = document.getElementById('ob-biz-name-1');
+    if (bizEl && s.businessName) bizEl.textContent = s.businessName;
+    // Kick off confetti when on step 5
+  }
+
+  function _obShowStep(n) {
+    for (let i = 1; i <= OB_TOTAL_STEPS; i++) {
+      const el = document.getElementById('ob-step-' + i);
+      if (el) el.style.display = (i === n) ? 'block' : 'none';
+    }
+    _obRenderDots(n);
+    _obCurrentStep = n;
+  }
+
+  function _obRenderDots(active) {
+    const container = document.getElementById('ob-dots');
+    if (!container) return;
+    container.innerHTML = '';
+    for (let i = 1; i <= OB_TOTAL_STEPS; i++) {
+      const dot = document.createElement('div');
+      dot.style.cssText = 'width:10px;height:10px;border-radius:50%;transition:all 0.2s;';
+      dot.style.background = (i === active) ? '#4267B2' : (i < active ? '#10B981' : '#E2E8F0');
+      dot.style.transform = (i === active) ? 'scale(1.3)' : 'scale(1)';
+      container.appendChild(dot);
+    }
+  }
+
+  function onboardNext(nextStep) {
+    // Validate current step before advancing
+    if (_obCurrentStep === 2) {
+      const bizName = (document.getElementById('ob-business-name') || {}).value || '';
+      const ownerName = (document.getElementById('ob-owner-name') || {}).value || '';
+      const email = (document.getElementById('ob-email') || {}).value || '';
+      if (!bizName.trim()) { alert('Please enter your business name.'); document.getElementById('ob-business-name').focus(); return; }
+      if (!ownerName.trim()) { alert('Please enter your name.'); document.getElementById('ob-owner-name').focus(); return; }
+      if (!email.trim() || !email.includes('@')) { alert('Please enter a valid email address.'); document.getElementById('ob-email').focus(); return; }
+    }
+    if (_obCurrentStep === 4) {
+      const pw = (document.getElementById('ob-password') || {}).value || '';
+      const pw2 = (document.getElementById('ob-password-confirm') || {}).value || '';
+      const errEl = document.getElementById('ob-password-error');
+      if (pw.length < 6) { if(errEl){errEl.textContent='Password must be at least 6 characters.';errEl.style.display='block';} return; }
+      if (pw !== pw2) { if(errEl){errEl.textContent='Passwords do not match.';errEl.style.display='block';} return; }
+      if (errEl) errEl.style.display = 'none';
+    }
+    if (nextStep === 5) {
+      // Build summary
+      const bizName = (document.getElementById('ob-business-name') || {}).value || '';
+      const ownerName = (document.getElementById('ob-owner-name') || {}).value || '';
+      const serviceName = (document.getElementById('ob-service-name') || {}).value || 'Discovery Call';
+      const durationEl = document.querySelector('input[name="ob-duration"]:checked');
+      const duration = durationEl ? durationEl.value : '30';
+      const priceTypeEl = document.querySelector('input[name="ob-price-type"]:checked');
+      const priceType = priceTypeEl ? priceTypeEl.value : 'free';
+      const priceAmt = (document.getElementById('ob-price-amount') || {}).value || '0';
+      const summaryEl = document.getElementById('ob-summary');
+      if (summaryEl) {
+        summaryEl.innerHTML =
+          '<strong>✅ Business:</strong> ' + (bizName || '—') + '<br>' +
+          '<strong>✅ Owner:</strong> ' + (ownerName || '—') + '<br>' +
+          '<strong>✅ First Service:</strong> ' + serviceName + ' · ' + duration + ' min · ' + (priceType === 'free' ? 'Free' : '$' + priceAmt) + '<br>' +
+          '<strong>✅ Password:</strong> Set and saved securely';
+      }
+      _obShowStep(5);
+      _obStartConfetti();
+      return;
+    }
+    _obShowStep(nextStep);
+  }
+
+  function obSelectDuration(radio) {
+    ['30','45','60','90'].forEach(d => {
+      const lbl = document.getElementById('ob-dur-' + d + '-label');
+      if (lbl) lbl.style.borderColor = (radio.value === d) ? '#4267B2' : '#E2E8F0';
+    });
+  }
+
+  function obTogglePrice(radio) {
+    const wrap = document.getElementById('ob-price-input-wrap');
+    if (wrap) wrap.style.display = radio.value === 'paid' ? 'block' : 'none';
+    ['free','paid'].forEach(v => {
+      const lbl = document.getElementById('ob-price-' + v + '-label');
+      if (lbl) lbl.style.borderColor = (radio.value === v) ? '#4267B2' : '#E2E8F0';
+    });
+  }
+
+  function completeOnboarding() {
+    // Save settings
+    const existing = getData('settings') || {};
+    const bizName = (document.getElementById('ob-business-name') || {}).value || existing.businessName || '';
+    const ownerName = (document.getElementById('ob-owner-name') || {}).value || existing.ownerName || '';
+    const email = (document.getElementById('ob-email') || {}).value || existing.email || '';
+    const tagline = (document.getElementById('ob-tagline') || {}).value || existing.tagline || '';
+    const location = (document.getElementById('ob-location') || {}).value || existing.location || '';
+    const pw = (document.getElementById('ob-password') || {}).value || '';
+
+    const newSettings = Object.assign({}, existing, {
+      businessName: bizName || existing.businessName,
+      ownerName: ownerName || existing.ownerName,
+      email: email || existing.email,
+      tagline: tagline || existing.tagline,
+      location: location || existing.location,
+    });
+    if (pw && pw.length >= 6) newSettings.password = pw;
+    saveData('settings', newSettings);
+
+    // Create first service in booking services
+    const serviceName = (document.getElementById('ob-service-name') || {}).value || 'Discovery Call';
+    const durationEl = document.querySelector('input[name="ob-duration"]:checked');
+    const duration = durationEl ? parseInt(durationEl.value) : 30;
+    const priceTypeEl = document.querySelector('input[name="ob-price-type"]:checked');
+    const priceType = priceTypeEl ? priceTypeEl.value : 'free';
+    const priceAmt = parseFloat((document.getElementById('ob-price-amount') || {}).value || '0') || 0;
+
+    const services = getData('bookingServices') || [];
+    const alreadyExists = services.some(s => s.name === serviceName);
+    if (!alreadyExists) {
+      services.push({
+        id: 'svc-ob-' + Date.now(),
+        name: serviceName,
+        duration: duration,
+        price: priceType === 'free' ? 0 : priceAmt,
+        active: true,
+        description: 'Added during setup'
+      });
+      saveData('bookingServices', services);
+    }
+
+    // Mark onboarding complete
+    localStorage.setItem('onboardingComplete', 'true');
+
+    // Close overlay & refresh UI
+    const overlay = document.getElementById('onboarding-overlay');
+    if (overlay) overlay.style.display = 'none';
+    if (typeof updateBrandUI === 'function') updateBrandUI();
+    if (typeof updateDashboard === 'function') updateDashboard();
+  }
+
+  function _obStartConfetti() {
+    const canvas = document.getElementById('ob-confetti');
+    if (!canvas) return;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    const ctx = canvas.getContext('2d');
+    const pieces = [];
+    const colors = ['#4267B2','#10B981','#F59E0B','#EF4444','#8B5CF6','#5B8DD6'];
+    for (let i = 0; i < 140; i++) {
+      pieces.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height - canvas.height,
+        r: Math.random() * 8 + 4,
+        d: Math.random() * 3 + 1,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        tilt: Math.random() * 10 - 10,
+        tiltAngle: 0,
+        tiltAngleInc: (Math.random() * 0.07) + 0.05
+      });
+    }
+    let animId;
+    function drawConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      pieces.forEach(p => {
+        p.tiltAngle += p.tiltAngleInc;
+        p.y += (Math.cos(p.d) + 1.2);
+        p.x += Math.sin(p.tiltAngle) * 1.5;
+        p.tilt = Math.sin(p.tiltAngle - (p.d / 3)) * 12;
+        ctx.beginPath();
+        ctx.lineWidth = p.r / 2;
+        ctx.strokeStyle = p.color;
+        ctx.moveTo(p.x + p.tilt + p.r / 4, p.y);
+        ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r / 4);
+        ctx.stroke();
+      });
+      // Reset pieces that fall off screen
+      pieces.forEach(p => { if (p.y > canvas.height + 20) { p.y = -10; p.x = Math.random() * canvas.width; } });
+      animId = requestAnimationFrame(drawConfetti);
+    }
+    drawConfetti();
+    // Stop after 4 seconds
+    setTimeout(() => { cancelAnimationFrame(animId); ctx.clearRect(0,0,canvas.width,canvas.height); }, 4000);
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════════
 
   </script>
 

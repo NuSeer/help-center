@@ -474,6 +474,16 @@
             <span class="nav-icon" style="font-size:13px">▸</span><span>Settings</span>
           </a>
         </div>
+
+        <div class="nav-section">
+          <div class="nav-section-title">AI Tools</div>
+          <a class="nav-link" onclick="showPage('ai-projects', event)">
+            <span class="nav-icon">🤖</span><span>AI Projects</span>
+          </a>
+          <a class="nav-link" onclick="showPage('my-profile', event)">
+            <span class="nav-icon">🌟</span><span>My Profile</span>
+          </a>
+        </div>
       </nav>
 
       <div class="sidebar-footer">
@@ -530,6 +540,19 @@
               <div class="stat-value" id="stat-ideas">0</div>
               <div class="stat-change">Not yet launched</div>
             </div>
+          </div>
+
+          <!-- SMART ROUTER -->
+          <div id="smart-router" style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);border-radius:16px;padding:28px 32px;margin-bottom:var(--space-6);border:1px solid #C9A84C;">
+            <h2 style="color:#fff;font-size:20px;font-weight:700;margin-bottom:6px;">What do you need help with today?</h2>
+            <p style="color:#94a3b8;font-size:14px;margin-bottom:18px;">Describe your situation and I'll route you to the right AI tool instantly.</p>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+              <input type="text" id="routing-input" placeholder="e.g. 'I want to start a YouTube channel' or 'fix my credit' or 'write a grant'"
+                style="flex:1;min-width:220px;padding:13px 16px;background:rgba(255,255,255,0.08);border:1px solid rgba(201,168,76,0.4);border-radius:10px;color:#fff;font-size:15px;outline:none;font-family:inherit;"
+                onkeypress="if(event.key==='Enter') routeUser()"/>
+              <button onclick="routeUser()" style="padding:13px 24px;background:#C9A84C;color:#1a1a2e;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap;">Find My Tool →</button>
+            </div>
+            <div id="routing-result" style="display:none;margin-top:18px;"></div>
           </div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-6);margin-bottom:var(--space-6);">
@@ -2111,6 +2134,150 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
         </div>
       </div>
     </div>
+      <!-- ── AI PROJECTS PAGE ── -->
+      <div id="ai-projects-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">Your AI Project Suite</h1>
+          <p class="page-subtitle">7 specialized Claude AI tools — each one powers a H.E.L.P. program area</p>
+        </div>
+        <div class="content">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;">
+
+            <!-- BUSINESS STRATEGY -->
+            <div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;border-top:4px solid #C9A84C;padding:20px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+              <div style="font-size:32px;margin-bottom:12px;">💼</div>
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;font-weight:600;margin-bottom:6px;">Business Development</div>
+              <h3 style="font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Business Strategy Team</h3>
+              <p style="font-size:14px;color:#6b7280;margin-bottom:12px;line-height:1.5;">Your CEO, CFO, CMO, Legal, HR, and Sales team in one — business plans, brand strategies, and 300+ page strategy documents.</p>
+              <div id="skills-business-strategy" style="margin-bottom:14px;"></div>
+              <button onclick="launchProject('business-strategy')" style="width:100%;padding:10px;background:#1a1a2e;color:#C9A84C;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;transition:background 0.2s;" onmouseover="this.style.background='#C9A84C';this.style.color='#1a1a2e'" onmouseout="this.style.background='#1a1a2e';this.style.color='#C9A84C'">Launch Project →</button>
+            </div>
+
+            <!-- SMART CREDIT REPAIR -->
+            <div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;border-top:4px solid #2E7D32;padding:20px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+              <div style="font-size:32px;margin-bottom:12px;">💳</div>
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;font-weight:600;margin-bottom:6px;">Credit &amp; Financial Stability</div>
+              <h3 style="font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Smart Credit Repair</h3>
+              <p style="font-size:14px;color:#6b7280;margin-bottom:12px;line-height:1.5;">FCRA/FDCPA forensic credit analyst — 3-bureau analysis, Metro 2 compliance, dispute strategy generation, and progress tracking.</p>
+              <div id="skills-smart-credit" style="margin-bottom:14px;"></div>
+              <button onclick="launchProject('smart-credit')" style="width:100%;padding:10px;background:#2E7D32;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Launch Project →</button>
+            </div>
+
+            <!-- CAREER CHANNEL -->
+            <div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;border-top:4px solid #7B1FA2;padding:20px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+              <div style="font-size:32px;margin-bottom:12px;">🎯</div>
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;font-weight:600;margin-bottom:6px;">Career Advancement</div>
+              <h3 style="font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Career Channel</h3>
+              <p style="font-size:14px;color:#6b7280;margin-bottom:12px;line-height:1.5;">Myers-Briggs career counselor — personality-matched career paths, business ideas, 300+ page workbooks, and employment-to-entrepreneurship guidance.</p>
+              <div id="skills-career-channel" style="margin-bottom:14px;"></div>
+              <button onclick="launchProject('career-channel')" style="width:100%;padding:10px;background:#7B1FA2;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Launch Project →</button>
+            </div>
+
+            <!-- LET'S GO VIRAL -->
+            <div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;border-top:4px solid #E65100;padding:20px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+              <div style="font-size:32px;margin-bottom:12px;">🚀</div>
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;font-weight:600;margin-bottom:6px;">Income Growth</div>
+              <h3 style="font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Let's Go Viral</h3>
+              <p style="font-size:14px;color:#6b7280;margin-bottom:12px;line-height:1.5;">Multi-platform content creation engine — YouTube, TikTok, Instagram scripts, content calendars, income strategies, and trend guidance for all creator types.</p>
+              <div id="skills-lets-go-viral" style="margin-bottom:14px;"></div>
+              <button onclick="launchProject('lets-go-viral')" style="width:100%;padding:10px;background:#E65100;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Launch Project →</button>
+            </div>
+
+            <!-- PROGRAM PLANNER PRO -->
+            <div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;border-top:4px solid #0288D1;padding:20px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+              <div style="font-size:32px;margin-bottom:12px;">📋</div>
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;font-weight:600;margin-bottom:6px;">Youth Leadership</div>
+              <h3 style="font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Program Planner Pro</h3>
+              <p style="font-size:14px;color:#6b7280;margin-bottom:12px;line-height:1.5;">Program design and implementation engine — needs assessment, 10+ page manuals, grant guidance, SOP creation, and marketing strategy for nonprofits, schools, and churches.</p>
+              <div id="skills-program-planner" style="margin-bottom:14px;"></div>
+              <button onclick="launchProject('program-planner')" style="width:100%;padding:10px;background:#0288D1;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Launch Project →</button>
+            </div>
+
+            <!-- OUTREACH COMMS PRO -->
+            <div style="background:#fff;border-radius:12px;border:1px solid #e5e7eb;border-top:4px solid #00695C;padding:20px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+              <div style="font-size:32px;margin-bottom:12px;">✉️</div>
+              <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#6b7280;font-weight:600;margin-bottom:6px;">Community Outreach</div>
+              <h3 style="font-size:18px;font-weight:700;color:#1a1a2e;margin-bottom:8px;">Outreach Communication Pro</h3>
+              <p style="font-size:14px;color:#6b7280;margin-bottom:12px;line-height:1.5;">Professional communications engine — press pitches, fundraising appeals, sponsorship proposals, community engagement, and multi-touch email sequences.</p>
+              <div id="skills-outreach-comms" style="margin-bottom:14px;"></div>
+              <button onclick="launchProject('outreach-comms')" style="width:100%;padding:10px;background:#00695C;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:14px;cursor:pointer;">Launch Project →</button>
+            </div>
+
+            <!-- LIMITLESS VISION STUDIO — full width -->
+            <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);border-radius:12px;border:2px solid #C9A84C;padding:24px;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;grid-column:1/-1;" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 32px rgba(201,168,76,0.3)'" onmouseout="this.style.transform='translateY(0)';this.style.boxShadow='none'">
+              <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+                <div style="font-size:48px;">🌌</div>
+                <div style="flex:1;">
+                  <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#C9A84C;font-weight:600;margin-bottom:4px;">Confidence &amp; Leadership — Master Intelligence Engine</div>
+                  <h3 style="font-size:22px;font-weight:700;color:#fff;margin-bottom:8px;">Limitless Vision Studio</h3>
+                  <p style="font-size:14px;color:#94a3b8;line-height:1.6;">50 modules of creative intelligence drawing from all human knowledge — ancient wisdom, modern science, African &amp; diaspora knowledge, ancestral healing, invention, world-building, and more. The knowledge engine powering the entire ecosystem.</p>
+                </div>
+                <button onclick="launchProject('lvs')" style="padding:14px 28px;background:#C9A84C;color:#1a1a2e;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;white-space:nowrap;">Launch Studio →</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MY PROFILE PAGE ── -->
+      <div id="my-profile-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">Your Visionary Profile</h1>
+          <p class="page-subtitle">This profile personalizes every AI tool in your ecosystem to YOUR vision, background, and goals</p>
+        </div>
+        <div class="content">
+          <div style="max-width:700px;">
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Preferred Name</label>
+                <input type="text" id="vp-name" class="form-input" style="margin:0;" placeholder="What should I call you?"/>
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Your Big Mission</label>
+                <textarea id="vp-mission" class="form-input" style="margin:0;min-height:80px;resize:vertical;" placeholder="In 1-2 sentences — what are you building, creating, or changing in the world?"></textarea>
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Communication Style</label>
+                <select id="vp-style" class="form-input" style="margin:0;">
+                  <option value="direct">🔥 Give it to me straight — short and actionable</option>
+                  <option value="walkthrough">📖 Walk me through it — thorough and step-by-step</option>
+                  <option value="picture_first">🎨 Paint the picture — context first, then details</option>
+                  <option value="evidence">🔬 Show me the evidence — data and proof</option>
+                  <option value="connect_dots">🌀 Connect the dots — how does this relate to everything?</option>
+                  <option value="build_together">🏗️ Build as we go — start simple, keep going deeper</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Where Are You Right Now?</label>
+                <select id="vp-stage" class="form-input" style="margin:0;">
+                  <option value="starting">🌱 Just starting — ideas forming</option>
+                  <option value="in_motion">🔥 In motion — actively building</option>
+                  <option value="scaling">🌊 Scaling — something exists, growing it</option>
+                  <option value="rebuilding">🔄 Rebuilding — pivoting or redirecting</option>
+                  <option value="mastery">🏔️ Mastery — deep in expertise</option>
+                  <option value="searching">🔍 Searching — still finding the path</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">5-Year Vision</label>
+                <textarea id="vp-vision" class="form-input" style="margin:0;min-height:80px;resize:vertical;" placeholder="What does success look like for you in 5 years? Be honest, not aspirational."></textarea>
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Cultural Context &amp; Background (Optional)</label>
+                <textarea id="vp-cultural" class="form-input" style="margin:0;min-height:60px;resize:vertical;" placeholder="Anything about your background, community, or values that shapes how you approach business?"></textarea>
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Sacred Preferences (Optional)</label>
+                <textarea id="vp-sacred" class="form-input" style="margin:0;min-height:60px;resize:vertical;" placeholder="Anything I should NEVER assume, say, or do when working with you?"></textarea>
+              </div>
+              <button onclick="saveProfileFromForm()" style="padding:14px;background:#1a1a2e;color:#C9A84C;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;">Save My Profile →</button>
+              <div id="profile-save-msg" style="display:none;color:#10B981;font-size:14px;font-weight:600;text-align:center;">✅ Profile saved successfully!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
 
     <!-- ── ONBOARDING OVERLAY ── -->
@@ -2601,7 +2768,9 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
   pricing: () => { renderPricingPage(); updateProposalPreview(); },
   strategy: () => { renderStrategyPage(); },
   reports: () => {},
-  booking: () => { renderBookingDashboard(); }
+  booking: () => { renderBookingDashboard(); },
+  'ai-projects': () => { renderAIProjectSkills(); },
+  'my-profile': () => { loadProfileForm(); }
 };
       if (renders[pageId] && typeof renders[pageId] === 'function') renders[pageId]();
       if (typeof setAiContext === 'function') setAiContext(pageId);
@@ -7775,6 +7944,276 @@ function loadIntegrationSettingsUI() {
     drawConfetti();
     // Stop after 4 seconds
     setTimeout(() => { cancelAnimationFrame(animId); ctx.clearRect(0,0,canvas.width,canvas.height); }, 4000);
+  }
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // ── AI INTEGRATION: 5-LAYER SYSTEM ───────────────────────────────────────────
+
+  // LAYER 1 — PROJECT REGISTRY
+  const PROJECTS = {
+    'business-strategy': {
+      name: 'Business Strategy Team',
+      claudeUrl: 'https://claude.ai/project/019dc6c9-e8d5-72bc-a410-cc83f0a0af0b',
+      programArea: 'Business Development',
+      handoffTriggers: ['credit','financial','career','hr','employee'],
+      handoffTargets: { credit:'smart-credit', career:'career-channel', press:'outreach-comms', funding:'outreach-comms' }
+    },
+    'smart-credit': {
+      name: 'Smart Credit Repair',
+      claudeUrl: 'https://claude.ai/project/019dc6e2-3241-73b0-9d01-cb402092248d',
+      programArea: 'Credit & Financial Stability',
+      handoffTriggers: ['business','launch','career','job'],
+      handoffTargets: { business:'business-strategy', career:'career-channel' }
+    },
+    'career-channel': {
+      name: 'Career Channel',
+      claudeUrl: 'https://claude.ai/project/019dc6dd-0608-72f5-aaa7-e53f7cdfc00f',
+      programArea: 'Career Advancement',
+      handoffTriggers: ['business','start a business','entrepreneurship'],
+      handoffTargets: { business:'business-strategy' }
+    },
+    'lets-go-viral': {
+      name: "Let's Go Viral",
+      claudeUrl: 'https://claude.ai/project/019dc6de-f982-71c4-9875-51ad640b25f5',
+      programArea: 'Income Growth',
+      handoffTriggers: ['sponsorship','brand deal','pitch','business'],
+      handoffTargets: { sponsorship:'outreach-comms', business:'business-strategy' }
+    },
+    'program-planner': {
+      name: 'Program Planner Pro',
+      claudeUrl: 'https://claude.ai/project/019d2f8a-346b-7630-b2c4-588c96aacccb',
+      programArea: 'Youth Leadership',
+      handoffTriggers: ['press','announcement','email','letter','funding'],
+      handoffTargets: { press:'outreach-comms', funding:'outreach-comms' }
+    },
+    'outreach-comms': {
+      name: 'Outreach Communication Pro',
+      claudeUrl: 'https://claude.ai/project/019dd11d-8f2c-73c8-a70e-39b241904937',
+      programArea: 'Community Outreach',
+      handoffTriggers: ['program','plan','design','business strategy'],
+      handoffTargets: { program:'program-planner', business:'business-strategy' }
+    },
+    'lvs': {
+      name: 'Limitless Vision Studio',
+      claudeUrl: 'https://claude.ai/project/019dc6d6-430b-76f0-9bd1-b57b25708abf',
+      programArea: 'Confidence & Leadership',
+      handoffTriggers: [],
+      handoffTargets: {}
+    }
+  };
+
+  function launchProject(projectKey) {
+    const project = PROJECTS[projectKey];
+    if (!project) return;
+    logProjectLaunch(projectKey);
+    window.open(project.claudeUrl, '_blank');
+    setTimeout(() => showHandoffSuggestion(projectKey), 2000);
+  }
+
+  async function logProjectLaunch(projectKey) {
+    try {
+      await fetch('http://187.124.146.184:8090/api/collections/project_sessions/records', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project_name: projectKey,
+          launched_at: new Date().toISOString(),
+          user_id: 'joy-watford'
+        })
+      });
+    } catch(e) { /* fail silently */ }
+  }
+
+  // LAYER 2 — SMART ROUTING ENGINE
+  const ROUTING_RULES = [
+    { project:'smart-credit', keywords:['credit','score','dispute','collection','debt','equifax','experian','transunion','bureau','derogatory','late payment','charged off','bankruptcy','foreclosure','eviction','judgment'], weight:3 },
+    { project:'business-strategy', keywords:['business','startup','company','revenue','profit','brand','marketing plan','business plan','franchise','llc','corporation','entrepreneur','small business','launch','investor','funding'], weight:3 },
+    { project:'career-channel', keywords:['career','job','resume','interview','promotion','salary','profession','occupation','work','employment','hire','hired','personality type','myers briggs','mbti','what career','career change'], weight:3 },
+    { project:'lets-go-viral', keywords:['youtube','tiktok','instagram','content','viral','channel','subscribers','followers','views','creator','influencer','social media','monetize','stream','streaming','podcast','animation','faceless','vlog'], weight:3 },
+    { project:'program-planner', keywords:['program','nonprofit','church','school','community','grant','workshop','event','youth program','after school','curriculum','training program','outreach program','manual','sop'], weight:3 },
+    { project:'outreach-comms', keywords:['email','letter','press','media','fundraising','donation','sponsorship','pitch','outreach','announcement','newsletter','press release','donor','fundraiser','campaign'], weight:3 },
+    { project:'lvs', keywords:['idea','create','build','imagine','vision','invent','dream','creative','innovation','knowledge','research','learn','understand','explore','discover','ancient','history'], weight:1 }
+  ];
+
+  function routeUser() {
+    const input = document.getElementById('routing-input').value.toLowerCase().trim();
+    if (!input) return;
+    const scores = {};
+    ROUTING_RULES.forEach(rule => {
+      let score = 0;
+      rule.keywords.forEach(kw => {
+        if (input.includes(kw)) { score += rule.weight; if (input === kw) score += 5; }
+      });
+      if (score > 0) scores[rule.project] = (scores[rule.project] || 0) + score;
+    });
+    const sorted = Object.entries(scores).sort((a,b) => b[1]-a[1]);
+    const resultDiv = document.getElementById('routing-result');
+    resultDiv.style.display = 'block';
+    if (sorted.length === 0) {
+      resultDiv.innerHTML = renderRouteResult('lvs', input, 60, []);
+      return;
+    }
+    const [topProject, topScore] = sorted[0];
+    const confidence = Math.min(95, 50 + (topScore * 10));
+    const alternatives = sorted.slice(1,3).map(([p]) => p);
+    resultDiv.innerHTML = renderRouteResult(topProject, input, confidence, alternatives);
+  }
+
+  function renderRouteResult(projectKey, query, confidence, alternatives) {
+    const project = PROJECTS[projectKey];
+    const confidenceColor = confidence >= 80 ? '#2E7D32' : confidence >= 60 ? '#E65100' : '#888';
+    const altHTML = alternatives.length ? `
+      <div style="margin-top:12px;font-size:13px;color:#94a3b8;">Also consider:
+        ${alternatives.map(p => `<button onclick="launchProject('${p}')" style="background:transparent;border:1px solid #94a3b8;color:#94a3b8;padding:4px 12px;border-radius:20px;cursor:pointer;font-size:12px;margin:2px;">${PROJECTS[p].name}</button>`).join('')}
+      </div>` : '';
+    return `
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(201,168,76,0.3);border-radius:12px;padding:20px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+          <div>
+            <div style="font-size:12px;color:#94a3b8;margin-bottom:4px;">Best match for: "<em style="color:#C9A84C">${query}</em>"</div>
+            <div style="font-size:20px;font-weight:700;color:#fff;">${project.name}</div>
+            <div style="font-size:13px;color:#94a3b8;margin-top:4px;">${project.programArea}</div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:28px;font-weight:700;color:${confidenceColor}">${confidence}%</div>
+            <div style="font-size:11px;color:#94a3b8;">match</div>
+          </div>
+        </div>
+        <button onclick="launchProject('${projectKey}')" style="width:100%;margin-top:16px;padding:12px;background:#C9A84C;color:#1a1a2e;border:none;border-radius:8px;font-weight:700;font-size:15px;cursor:pointer;">Launch ${project.name} →</button>
+        ${altHTML}
+      </div>`;
+  }
+
+  // LAYER 3 — VISIONARY PROFILE SYSTEM
+  const PB_URL = 'http://187.124.146.184:8090';
+
+  async function saveVisionaryProfile(profileData) {
+    const payload = { user_id: 'joy-watford', ...profileData, updated: new Date().toISOString() };
+    // Save to localStorage as backup
+    localStorage.setItem('visionaryProfile', JSON.stringify(payload));
+    try {
+      const res = await fetch(`${PB_URL}/api/collections/visionary_profiles/records?filter=(user_id="joy-watford")`);
+      const data = await res.json();
+      if (data.items && data.items.length > 0) {
+        await fetch(`${PB_URL}/api/collections/visionary_profiles/records/${data.items[0].id}`, {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        });
+      } else {
+        await fetch(`${PB_URL}/api/collections/visionary_profiles/records`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+        });
+      }
+    } catch(e) { /* saved to localStorage already */ }
+  }
+
+  async function loadVisionaryProfile() {
+    // Try localStorage first (fast)
+    const local = localStorage.getItem('visionaryProfile');
+    if (local) return JSON.parse(local);
+    try {
+      const res = await fetch(`${PB_URL}/api/collections/visionary_profiles/records?filter=(user_id="joy-watford")`);
+      const data = await res.json();
+      if (data.items && data.items.length > 0) return data.items[0];
+    } catch(e) {}
+    return null;
+  }
+
+  async function saveProfileFromForm() {
+    const profileData = {
+      preferred_name: document.getElementById('vp-name').value,
+      core_mission: document.getElementById('vp-mission').value,
+      communication_style: document.getElementById('vp-style').value,
+      journey_stage: document.getElementById('vp-stage').value,
+      five_year_vision: document.getElementById('vp-vision').value,
+      cultural_context: document.getElementById('vp-cultural').value,
+      sacred_boundaries: document.getElementById('vp-sacred').value
+    };
+    await saveVisionaryProfile(profileData);
+    const msg = document.getElementById('profile-save-msg');
+    if (msg) { msg.style.display = 'block'; setTimeout(() => msg.style.display = 'none', 3000); }
+  }
+
+  async function loadProfileForm() {
+    const profile = await loadVisionaryProfile();
+    if (!profile) return;
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+    set('vp-name', profile.preferred_name);
+    set('vp-mission', profile.core_mission);
+    set('vp-style', profile.communication_style);
+    set('vp-stage', profile.journey_stage);
+    set('vp-vision', profile.five_year_vision);
+    set('vp-cultural', profile.cultural_context);
+    set('vp-sacred', profile.sacred_boundaries);
+  }
+
+  // LAYER 4 — CROSS-PROJECT HANDOFF CARDS
+  const HANDOFF_RULES = [
+    { fromProject:'smart-credit', toProject:'business-strategy', message:"Your credit is improving — now let's build something with it.", cta:'Start Business Planning →' },
+    { fromProject:'lets-go-viral', toProject:'outreach-comms', message:"Your audience is growing — time to pitch brands and sponsors professionally.", cta:'Write Sponsorship Pitch →' },
+    { fromProject:'business-strategy', toProject:'outreach-comms', message:"Your business plan is ready — now get it in front of investors and media.", cta:'Write Your Pitch →' },
+    { fromProject:'career-channel', toProject:'business-strategy', message:"You've chosen entrepreneurship — let's build the full business strategy.", cta:'Build Business Strategy →' },
+    { fromProject:'program-planner', toProject:'outreach-comms', message:"Your program is planned — now let's announce it to the world.", cta:'Write Program Announcement →' }
+  ];
+
+  function showHandoffSuggestion(currentProject) {
+    const rule = HANDOFF_RULES.find(r => r.fromProject === currentProject);
+    if (!rule) return;
+    const target = PROJECTS[rule.toProject];
+    // Remove any existing handoff cards
+    document.querySelectorAll('.handoff-card').forEach(c => c.remove());
+    const card = document.createElement('div');
+    card.className = 'handoff-card';
+    card.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:#1a1a2e;border:1px solid #C9A84C;border-radius:16px;padding:24px;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.4);';
+    card.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+        <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#C9A84C;font-weight:600;">Next Step</div>
+        <button onclick="this.closest('.handoff-card').remove()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:20px;line-height:1;padding:0;">×</button>
+      </div>
+      <div style="font-size:15px;color:#fff;font-weight:600;margin-bottom:8px;">${target.name}</div>
+      <div style="font-size:13px;color:#94a3b8;margin-bottom:16px;">${rule.message}</div>
+      <button onclick="launchProject('${rule.toProject}');this.closest('.handoff-card').remove();" style="width:100%;padding:10px;background:#C9A84C;color:#1a1a2e;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;">${rule.cta}</button>`;
+    document.body.appendChild(card);
+    setTimeout(() => { if (card.parentNode) card.remove(); }, 10000);
+  }
+
+  // LAYER 5 — SKILLS LIBRARY
+  const SKILLS_BY_PROJECT = {
+    'business-strategy': [
+      { name:'Finance', icon:'💰' }, { name:'Sales', icon:'📈' }, { name:'Operations', icon:'⚙️' },
+      { name:'HR & People', icon:'👥' }, { name:'Legal', icon:'⚖️' }, { name:'Marketing', icon:'📣' }, { name:'Product & R&D', icon:'🔬' }
+    ],
+    'smart-credit': [
+      { name:'Finance', icon:'💰' }, { name:'Legal', icon:'⚖️' }, { name:'Customer Success', icon:'🤝' }
+    ],
+    'career-channel': [
+      { name:'HR & People', icon:'👥' }, { name:'Student Services', icon:'🎓' }, { name:'Research', icon:'🔬' }
+    ],
+    'lets-go-viral': [
+      { name:'Marketing', icon:'📣' }, { name:'Sales', icon:'📈' }, { name:'Product & R&D', icon:'🔬' }, { name:'Customer Success', icon:'🤝' }
+    ],
+    'program-planner': [
+      { name:'Program Mgmt', icon:'📋' }, { name:'Community', icon:'🌍' }, { name:'Curriculum', icon:'📚' },
+      { name:'Impact', icon:'📊' }, { name:'Public Services', icon:'🏛️' }
+    ],
+    'outreach-comms': [
+      { name:'Fundraising', icon:'🎗️' }, { name:'Marketing', icon:'📣' }, { name:'Community', icon:'🌍' }, { name:'Sales', icon:'📈' }
+    ]
+  };
+
+  function renderSkillBadges(projectKey) {
+    const skills = SKILLS_BY_PROJECT[projectKey];
+    if (!skills) return '';
+    return `<div style="display:flex;gap:6px;flex-wrap:wrap;">
+      ${skills.map(s => `<span style="background:#f0f4ff;color:#0f3460;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;display:flex;align-items:center;gap:4px;"><span>${s.icon}</span><span>${s.name}</span></span>`).join('')}
+      <span style="background:#1a1a2e;color:#C9A84C;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">+ LVS Engine</span>
+    </div>`;
+  }
+
+  function renderAIProjectSkills() {
+    Object.keys(SKILLS_BY_PROJECT).forEach(key => {
+      const el = document.getElementById('skills-' + key);
+      if (el) el.innerHTML = renderSkillBadges(key);
+    });
   }
 
   // ══════════════════════════════════════════════════════════════════════════════

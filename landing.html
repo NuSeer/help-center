@@ -816,7 +816,7 @@
        class="btn-primary"
        data-stripe-link="YOUR_STRIPE_PAYMENT_LINK_HERE"
        onclick="openModal(); return false;">
-      Start Free Trial — $29/mo
+      Start Free Trial — 7 Days Free
     </a>
     <a href="#features" class="btn-outline">See It In Action</a>
   </div>
@@ -892,33 +892,55 @@
 <section id="pricing">
   <p class="section-label">Pricing</p>
   <h2 class="section-title">Simple pricing. Serious value.</h2>
-  <p class="section-sub">One plan. Everything included. Start free.</p>
+  <p class="section-sub">7-day free trial on every plan. No credit card required to start.</p>
 
-  <div class="pricing-card">
-    <div class="pricing-badge">Most Popular</div>
-    <div class="plan-name">Starter</div>
-    <div class="plan-price">$29<span>/mo</span></div>
-    <p class="plan-desc">Everything you need to run a professional business</p>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:28px;max-width:860px;margin:0 auto;">
 
-    <ul class="plan-features">
-      <li><span class="check">✓</span> Full client CRM &amp; project tracking</li>
-      <li><span class="check">✓</span> Native booking system (unlimited appointments)</li>
-      <li><span class="check">✓</span> AI Business Coach (bring your own API key)</li>
-      <li><span class="check">✓</span> DocuSeal document signing</li>
-      <li><span class="check">✓</span> Branded email automation via Resend</li>
-      <li><span class="check">✓</span> Revenue tracking &amp; reports</li>
-      <li><span class="check">✓</span> Business document generator</li>
-      <li><span class="check">✓</span> Your own branded workspace</li>
-      <li><span class="check">✓</span> Cancel anytime</li>
-    </ul>
+    <!-- SOLO PLAN -->
+    <div class="pricing-card" style="max-width:100%;border-color:var(--border);">
+      <div class="plan-name">Solo</div>
+      <div class="plan-price">$29<span style="font-size:1.4rem;">.99</span><span>/mo</span></div>
+      <p class="plan-desc">Everything you need to run your business professionally</p>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Full client CRM &amp; project tracking</li>
+        <li><span class="check">✓</span> Native booking system (unlimited)</li>
+        <li><span class="check">✓</span> AI Business Coach (Groq/Llama powered)</li>
+        <li><span class="check">✓</span> Revenue tracking &amp; reports</li>
+        <li><span class="check">✓</span> Business document generator</li>
+        <li><span class="check">✓</span> Client portal per client</li>
+        <li><span class="check">✓</span> Your own branded workspace</li>
+        <li><span class="check">✓</span> Cancel anytime</li>
+      </ul>
+      <a href="#" class="btn-primary-lg" style="background:linear-gradient(135deg,var(--blue) 0%,#3254a0 100%);color:#fff;"
+         onclick="openModal('solo'); return false;">
+        Start Solo — $29.99/mo
+      </a>
+      <p class="plan-note">7-day free trial · No credit card required</p>
+    </div>
 
-    <a href="#"
-       class="btn-primary-lg"
-       data-stripe-link="YOUR_STRIPE_PAYMENT_LINK_HERE"
-       onclick="openModal(); return false;">
-      Get Started — $29/mo
-    </a>
-    <p class="plan-note">14-day free trial · No credit card required to start</p>
+    <!-- PRO PLAN -->
+    <div class="pricing-card" style="max-width:100%;border-color:var(--gold);box-shadow:0 0 60px rgba(201,168,76,.18);">
+      <div class="pricing-badge">Best Value</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">$59<span style="font-size:1.4rem;">.99</span><span>/mo</span></div>
+      <p class="plan-desc">Full power — automation, signing, and priority support</p>
+      <ul class="plan-features">
+        <li><span class="check">✓</span> Everything in Solo</li>
+        <li><span class="check">✓</span> Branded email automation (Resend)</li>
+        <li><span class="check">✓</span> DocuSeal contract signing</li>
+        <li><span class="check">✓</span> Auto-send contracts after booking</li>
+        <li><span class="check">✓</span> Booking confirmation emails to clients</li>
+        <li><span class="check">✓</span> Advanced revenue reporting</li>
+        <li><span class="check">✓</span> Priority support</li>
+        <li><span class="check">✓</span> Cancel anytime</li>
+      </ul>
+      <a href="#" class="btn-primary-lg"
+         onclick="openModal('pro'); return false;">
+        Start Pro — $59.99/mo
+      </a>
+      <p class="plan-note">7-day free trial · No credit card required</p>
+    </div>
+
   </div>
 </section>
 
@@ -958,7 +980,7 @@
      style="font-size:1.05rem; padding: 18px 44px;">
     Start Your Free Trial
   </a>
-  <p style="color: var(--muted); font-size: 0.85rem; margin-top: 16px;">No credit card required · $29/mo after trial</p>
+  <p style="color: var(--muted); font-size: 0.85rem; margin-top: 16px;">No credit card required · Solo $29.99/mo · Pro $59.99/mo after trial</p>
 </section>
 
 <!-- ══ FOOTER ══ -->
@@ -981,9 +1003,9 @@
     <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
 
     <div id="modalForm">
-      <div class="modal-trial-badge">✦ 14-Day Free Trial</div>
+      <div class="modal-trial-badge">✦ 7-Day Free Trial</div>
       <h2>Create Your Account</h2>
-      <p class="modal-sub">Get started in 2 minutes. No credit card required.</p>
+      <p class="modal-sub" id="modal-plan-desc">Get started in 2 minutes. No credit card required.</p>
 
       <form onsubmit="handleSignup(event)">
         <div class="form-group">
@@ -1013,7 +1035,22 @@
 </div>
 
 <script>
-  function openModal() {
+  // Stripe price links — fill in after creating products in Stripe
+  const STRIPE_LINKS = {
+    solo: 'YOUR_STRIPE_SOLO_LINK_HERE',
+    pro:  'YOUR_STRIPE_PRO_LINK_HERE'
+  };
+
+  let _selectedPlan = 'solo';
+
+  function openModal(plan) {
+    _selectedPlan = plan || 'solo';
+    const desc = _selectedPlan === 'pro'
+      ? 'Pro plan — $59.99/mo after 7-day free trial.'
+      : 'Solo plan — $29.99/mo after 7-day free trial.';
+    document.getElementById('modal-plan-desc').textContent = desc;
+    document.getElementById('modalForm').style.display = 'block';
+    document.getElementById('modalSuccess').style.display = 'none';
     document.getElementById('signupModal').classList.add('open');
     document.body.style.overflow = 'hidden';
     setTimeout(() => document.getElementById('signup-name').focus(), 100);
@@ -1035,15 +1072,18 @@
   function handleSignup(e) {
     e.preventDefault();
     const email = document.getElementById('signup-email').value;
+    const stripeLink = STRIPE_LINKS[_selectedPlan];
+
+    // If Stripe is wired up, redirect to checkout
+    if (stripeLink && !stripeLink.includes('YOUR_STRIPE')) {
+      window.location.href = stripeLink + '?prefilled_email=' + encodeURIComponent(email);
+      return;
+    }
+
+    // Stripe not yet wired — show success holding screen
     document.getElementById('successEmail').textContent = email;
     document.getElementById('modalForm').style.display = 'none';
     document.getElementById('modalSuccess').style.display = 'block';
-
-    // TODO: Wire up Stripe payment link
-    // const stripeLink = document.querySelector('[data-stripe-link]').dataset.stripeLink;
-    // if (stripeLink && stripeLink !== 'YOUR_STRIPE_PAYMENT_LINK_HERE') {
-    //   window.location.href = stripeLink + '?prefilled_email=' + encodeURIComponent(email);
-    // }
   }
 </script>
 

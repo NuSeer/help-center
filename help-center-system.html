@@ -2606,6 +2606,8 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
           localStorage.setItem('settings', JSON.stringify(s));
         }
         sessionStorage.setItem('loggedIn', 'true');
+        // Clear any booking/portal hash so it doesn't interfere on refresh
+        if (window.location.hash) history.replaceState(null, '', window.location.pathname + window.location.search);
         errEl.style.display = 'none';
         document.getElementById('login-page').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');

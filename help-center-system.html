@@ -7751,6 +7751,17 @@ function loadIntegrationSettingsUI() {
 
   function checkOnboarding() {
     if (localStorage.getItem('onboardingComplete') === 'true') return;
+    // Auto-skip if data was already initialized (returning user)
+    if (localStorage.getItem('initialized') === 'true') {
+      localStorage.setItem('onboardingComplete', 'true');
+      return;
+    }
+    // Auto-skip if user already has clients
+    const clients = JSON.parse(localStorage.getItem('clients')) || [];
+    if (clients.length > 0) {
+      localStorage.setItem('onboardingComplete', 'true');
+      return;
+    }
     showOnboarding();
   }
 

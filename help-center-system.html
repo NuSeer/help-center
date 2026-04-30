@@ -2680,6 +2680,8 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
 
     // ── PORTAL ROUTING ─────────────────────────────────────────────────────────
     function checkPortalRoute() {
+      // If already logged in, skip public routes — go to dashboard
+      if (sessionStorage.getItem('loggedIn') === 'true') return false;
       const hash = window.location.hash;
       if (hash.startsWith('#portal?token=')) {
         const token = hash.split('token=')[1];

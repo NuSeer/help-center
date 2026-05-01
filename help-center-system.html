@@ -2132,7 +2132,17 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
                   <div class="form-group"><label class="form-label">Tax Rate (%)</label><input id="inv-tax" type="number" min="0" max="30" step="0.1" class="form-input" style="margin:0" value="0" oninput="calcReceiptTotal()"></div>
-                  <div class="form-group"><label class="form-label">Deposit / Paid</label><input id="inv-deposit" type="number" min="0" step="0.01" class="form-input" style="margin:0" placeholder="0.00"></div>
+                  <div class="form-group"><label class="form-label">Amount Received ($)</label><input id="inv-deposit" type="number" min="0" step="0.01" class="form-input" style="margin:0" placeholder="0.00" oninput="calcReceiptTotal()"></div>
+                </div>
+                <div class="form-group"><label class="form-label">Payment Type</label>
+                  <select id="inv-payment-type" class="form-input" style="margin:0">
+                    <option value="">— None / Not yet paid —</option>
+                    <option value="Deposit Received">Deposit Received</option>
+                    <option value="Partial Payment">Partial Payment Received</option>
+                    <option value="Payment in Full">Payment in Full</option>
+                    <option value="Final Payment">Final Payment Received</option>
+                    <option value="Paid">Paid — Receipt Issued</option>
+                  </select>
                 </div>
                 <div class="form-group"><label class="form-label">Payment Method</label><select id="inv-payment" class="form-input" style="margin:0"><option>Venmo</option><option>CashApp</option><option>Zelle</option><option>PayPal</option><option>Check</option><option>Cash</option><option>Bank Transfer</option><option>Other</option></select></div>
                 <div class="form-group"><label class="form-label">Notes</label><textarea id="inv-notes" class="form-input" style="height:54px;resize:vertical;margin:0" placeholder="Thank you for your business!"></textarea></div>
@@ -6996,10 +7006,11 @@ ${_ownerBiz} | ${_ownerEmail}
     const invNum   = document.getElementById('inv-number')?.value||('INV-'+Date.now().toString().slice(-4));
     const invDate  = document.getElementById('inv-date')?.value ? new Date(document.getElementById('inv-date').value+'T00:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : today;
     const dueDate  = document.getElementById('inv-due')?.value ? new Date(document.getElementById('inv-due').value+'T00:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : 'Upon receipt';
-    const payMethod = document.getElementById('inv-payment')?.value||'';
-    const notes    = document.getElementById('inv-notes')?.value||'Thank you for your business!';
-    const taxRate  = parseFloat(document.getElementById('inv-tax')?.value||'0');
-    const depositPaid = parseFloat(document.getElementById('inv-deposit')?.value||'0');
+    const payMethod  = document.getElementById('inv-payment')?.value||'';
+    const payType    = document.getElementById('inv-payment-type')?.value||'';
+    const notes      = document.getElementById('inv-notes')?.value||'Thank you for your business!';
+    const taxRate    = parseFloat(document.getElementById('inv-tax')?.value||'0');
+    const amtReceived = parseFloat(document.getElementById('inv-deposit')?.value||'0');
     // Collect line items
     const rows = Array.from(document.querySelectorAll('#inv-items-body tr'));
     let subtotal = 0;
@@ -7017,14 +7028,32 @@ ${_ownerBiz} | ${_ownerEmail}
     }).join('\n');
     const taxAmt  = subtotal * (taxRate/100);
     const total   = subtotal + taxAmt;
-    const balDue  = Math.max(0, total - depositPaid);
+    const balDue  = Math.max(0, total - amtReceived);
+    // Payment type label for the summary line
+    const payTypeLabel = payType || (amtReceived > 0 ? 'Payment Received' : '');
+    const paidLine = amtReceived > 0
+      ? '\n'+(payTypeLabel).padEnd(46)+('-$'+amtReceived.toFixed(2)).padStart(11)
+      : '';
+    // Status line
+    const statusLine = balDue <= 0 && amtReceived > 0
+      ? '✅ PAID IN FULL'
+      : balDue > 0 && amtReceived > 0
+        ? '⏳ BALANCE DUE: $'+balDue.toFixed(2)
+        : '';
+    // Pre-compute total row to avoid nested template expressions
+    const totalRow = balDue <= 0 && amtReceived > 0
+      ? ('✅ TOTAL PAID').padEnd(46) + ('$'+amtReceived.toFixed(2)).padStart(12)
+      : ('BALANCE DUE').padEnd(46) + ('$'+balDue.toFixed(2)).padStart(12);
+    const docTitle = balDue <= 0 && amtReceived > 0 ? 'RECEIPT — PAID IN FULL' : 'INVOICE';
+    const dueDateLine = balDue <= 0 ? 'N/A — Paid in Full' : dueDate;
     content = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${_ownerBiz.toUpperCase()}
-INVOICE / RECEIPT
+${docTitle}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Invoice #: ${invNum}
 Date:      ${invDate}
-Due Date:  ${dueDate}
+Due Date:  ${dueDateLine}
+${statusLine ? 'Status:    '+statusLine : ''}
 
 BILLED BY:                          BILLED TO:
 ${_ownerName.padEnd(35).slice(0,35)} ${client}
@@ -7038,15 +7067,16 @@ ${'DESCRIPTION'.padEnd(28)}   QTY        RATE      AMOUNT
 ${'─'.repeat(60)}
 ${itemLines}
 ${'─'.repeat(60)}
-${'SUBTOTAL'.padEnd(46)} ${('$'+subtotal.toFixed(2)).padStart(12)}${taxRate > 0 ? '\n'+('TAX ('+taxRate+'%)').padEnd(46)+(' $'+taxAmt.toFixed(2)).padStart(12) : ''}${depositPaid > 0 ? '\n'+('DEPOSIT PAID').padEnd(46)+('-$'+depositPaid.toFixed(2)).padStart(11) : ''}
+${'SUBTOTAL'.padEnd(46)} ${('$'+subtotal.toFixed(2)).padStart(12)}${taxRate > 0 ? '\n'+('TAX ('+taxRate+'%)').padEnd(46)+(' $'+taxAmt.toFixed(2)).padStart(12) : ''}${paidLine}
 ${'─'.repeat(60)}
-${'BALANCE DUE'.padEnd(46)} ${('$'+balDue.toFixed(2)).padStart(12)}
+${totalRow}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PAYMENT INFORMATION
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Payment Method: ${payMethod}
-Please reference Invoice #${invNum} with your payment.
+${payType ? 'Type:   '+payType : ''}
+Method: ${payMethod}
+${amtReceived > 0 ? 'Amount Received: $'+amtReceived.toFixed(2) : 'Please reference Invoice #'+invNum+' with your payment.'}
 
 ${notes}
 

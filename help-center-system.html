@@ -1995,14 +1995,15 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
     <div id="reports-page" class="page hidden">
       <div class="page-header">
         <h1 class="page-title">📄 Reports &amp; Documents</h1>
-        <p class="page-subtitle">Generate, preview, print, and download business documents</p>
+        <p class="page-subtitle">Select a client, generate, edit, and print professional documents</p>
       </div>
       <div class="content">
         <div class="path-tabs-container">
           <div class="path-tabs-nav">
             <button class="path-tab active" onclick="pTab('reports','proposal',this)">Proposal</button>
-            <button class="path-tab" onclick="pTab('reports','bizplan',this)">Business Plan</button>
             <button class="path-tab" onclick="pTab('reports','contract',this)">Contract</button>
+            <button class="path-tab" onclick="pTab('reports','receipt',this)">Receipt / Invoice</button>
+            <button class="path-tab" onclick="pTab('reports','bizplan',this)">Business Plan</button>
             <button class="path-tab" onclick="pTab('reports','program',this)">Program Plan</button>
             <button class="path-tab" onclick="pTab('reports','revenue',this)">Revenue Report</button>
           </div>
@@ -2012,6 +2013,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
               <div class="card">
                 <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Proposal Details</h3>
+                <div class="form-group"><label class="form-label">Select Client (optional)</label><select id="rp-client-select" class="form-input" style="margin:0" onchange="fillReportClient('rp')"><option value="">— Select a client —</option></select></div>
                 <div class="form-group"><label class="form-label">Client / Organization</label><input id="rp-client" class="form-input" style="margin:0" placeholder="Client name"></div>
                 <div class="form-group"><label class="form-label">Contact Person</label><input id="rp-contact" class="form-input" style="margin:0" placeholder="Contact name"></div>
                 <div class="form-group"><label class="form-label">Service / Package</label><input id="rp-service" class="form-input" style="margin:0" placeholder="e.g. Business Website — $1,500"></div>
@@ -2022,11 +2024,12 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
               </div>
               <div class="card" style="display:flex;flex-direction:column">
                 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-                  <button onclick="printDoc('report-preview')" class="btn btn-outline" style="flex:1;padding:8px">🖸️ Print</button>
+                  <button onclick="printDoc('report-preview')" class="btn btn-outline" style="flex:1;padding:8px">🖨️ Print</button>
                   <button onclick="downloadDoc('report-preview','proposal')" class="btn btn-outline" style="flex:1;padding:8px">⬇️ Download</button>
                   <button onclick="copyDocText('report-preview')" class="btn btn-outline" style="flex:1;padding:8px">📋 Copy</button>
+                  <button onclick="aiImproveDoc('report-preview','Proposal')" class="btn btn-solid" style="flex:1;padding:8px;background:linear-gradient(135deg,#4267B2,#7C3AED)">✨ AI Improve</button>
                 </div>
-                <textarea id="report-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" readonly placeholder="Fill in the form and click Generate..."></textarea>
+                <textarea id="report-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" placeholder="Fill in the form and click Generate..."></textarea>
               </div>
             </div>
           </div>
@@ -2049,11 +2052,12 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
               </div>
               <div class="card" style="display:flex;flex-direction:column">
                 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-                  <button onclick="printDoc('bizplan-preview')" class="btn btn-outline" style="flex:1;padding:8px">🖸️ Print</button>
+                  <button onclick="printDoc('bizplan-preview')" class="btn btn-outline" style="flex:1;padding:8px">🖨️ Print</button>
                   <button onclick="downloadDoc('bizplan-preview','business-plan')" class="btn btn-outline" style="flex:1;padding:8px">⬇️ Download</button>
                   <button onclick="copyDocText('bizplan-preview')" class="btn btn-outline" style="flex:1;padding:8px">📋 Copy</button>
+                  <button onclick="aiImproveDoc('bizplan-preview','Business Plan')" class="btn btn-solid" style="flex:1;padding:8px;background:linear-gradient(135deg,#4267B2,#7C3AED)">✨ AI Improve</button>
                 </div>
-                <textarea id="bizplan-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" readonly placeholder="Fill in the form and click Generate..."></textarea>
+                <textarea id="bizplan-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" placeholder="Fill in the form and click Generate..."></textarea>
               </div>
             </div>
           </div>
@@ -2063,6 +2067,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
               <div class="card">
                 <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Service Agreement Details</h3>
+                <div class="form-group"><label class="form-label">Select Client (optional)</label><select id="ct-client-select" class="form-input" style="margin:0" onchange="fillReportClient('ct')"><option value="">— Select a client —</option></select></div>
                 <div class="form-group"><label class="form-label">Client Full Name</label><input id="ct-client" class="form-input" style="margin:0" placeholder="Client legal name"></div>
                 <div class="form-group"><label class="form-label">Client Business / Org</label><input id="ct-org" class="form-input" style="margin:0" placeholder="Organization name (if applicable)"></div>
                 <div class="form-group"><label class="form-label">Service Description</label><textarea id="ct-service" class="form-input" style="height:70px;resize:vertical;margin:0" placeholder="Describe the exact services being provided..."></textarea></div>
@@ -2075,11 +2080,67 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
               </div>
               <div class="card" style="display:flex;flex-direction:column">
                 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-                  <button onclick="printDoc('contract-preview')" class="btn btn-outline" style="flex:1;padding:8px">🖸️ Print</button>
+                  <button onclick="printDoc('contract-preview')" class="btn btn-outline" style="flex:1;padding:8px">🖨️ Print</button>
                   <button onclick="downloadDoc('contract-preview','contract')" class="btn btn-outline" style="flex:1;padding:8px">⬇️ Download</button>
                   <button onclick="copyDocText('contract-preview')" class="btn btn-outline" style="flex:1;padding:8px">📋 Copy</button>
+                  <button onclick="aiImproveDoc('contract-preview','Service Contract')" class="btn btn-solid" style="flex:1;padding:8px;background:linear-gradient(135deg,#4267B2,#7C3AED)">✨ AI Improve</button>
                 </div>
-                <textarea id="contract-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" readonly placeholder="Fill in the form and click Generate..."></textarea>
+                <textarea id="contract-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" placeholder="Fill in the form and click Generate..."></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- RECEIPT / INVOICE -->
+          <div id="reports-tab-receipt" class="path-tab-content">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+              <div class="card">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Invoice / Receipt Details</h3>
+                <div class="form-group"><label class="form-label">Select Client (optional)</label><select id="inv-client-select" class="form-input" style="margin:0" onchange="fillReportClient('inv')"><option value="">— Select a client —</option></select></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                  <div class="form-group"><label class="form-label">Client Name</label><input id="inv-client" class="form-input" style="margin:0" placeholder="Client name"></div>
+                  <div class="form-group"><label class="form-label">Client Email</label><input id="inv-email" class="form-input" style="margin:0" placeholder="email@example.com"></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                  <div class="form-group"><label class="form-label">Invoice #</label><input id="inv-number" class="form-input" style="margin:0" placeholder="INV-001"></div>
+                  <div class="form-group"><label class="form-label">Invoice Date</label><input id="inv-date" type="date" class="form-input" style="margin:0"></div>
+                </div>
+                <div class="form-group"><label class="form-label">Due Date</label><input id="inv-due" type="date" class="form-input" style="margin:0"></div>
+                <div style="margin:12px 0 6px;font-size:13px;font-weight:700">Line Items</div>
+                <div style="overflow-x:auto">
+                  <table style="width:100%;border-collapse:collapse;font-size:12px">
+                    <thead><tr style="background:var(--gray-100)">
+                      <th style="text-align:left;padding:6px 8px;border:1px solid var(--gray-200)">Description</th>
+                      <th style="text-align:center;padding:6px 8px;border:1px solid var(--gray-200);width:52px">Qty</th>
+                      <th style="text-align:right;padding:6px 8px;border:1px solid var(--gray-200);width:80px">Rate ($)</th>
+                      <th style="text-align:right;padding:6px 8px;border:1px solid var(--gray-200);width:80px">Amount</th>
+                      <th style="padding:4px;width:28px;border:1px solid var(--gray-200)"></th>
+                    </tr></thead>
+                    <tbody id="inv-items-body">
+                      <tr><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-desc" style="margin:0;padding:4px 6px;font-size:12px" value="Webpage Design" oninput="calcReceiptTotal()"></td><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-qty" type="number" min="1" style="margin:0;padding:4px 6px;font-size:12px;text-align:center;width:100%" value="1" oninput="calcReceiptTotal()"></td><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-rate" type="number" min="0" step="0.01" style="margin:0;padding:4px 6px;font-size:12px;text-align:right;width:100%" value="1500" oninput="calcReceiptTotal()"></td><td style="padding:4px 8px;border:1px solid var(--gray-200);text-align:right;font-size:12px;white-space:nowrap" class="inv-amt">$1,500.00</td><td style="padding:4px;border:1px solid var(--gray-200);text-align:center"><button onclick="removeInvRow(this)" style="background:none;border:none;color:var(--error);cursor:pointer;font-size:14px;line-height:1">✕</button></td></tr>
+                      <tr><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-desc" style="margin:0;padding:4px 6px;font-size:12px" value="Domain Purchase" oninput="calcReceiptTotal()"></td><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-qty" type="number" min="1" style="margin:0;padding:4px 6px;font-size:12px;text-align:center;width:100%" value="1" oninput="calcReceiptTotal()"></td><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-rate" type="number" min="0" step="0.01" style="margin:0;padding:4px 6px;font-size:12px;text-align:right;width:100%" value="20" oninput="calcReceiptTotal()"></td><td style="padding:4px 8px;border:1px solid var(--gray-200);text-align:right;font-size:12px;white-space:nowrap" class="inv-amt">$20.00</td><td style="padding:4px;border:1px solid var(--gray-200);text-align:center"><button onclick="removeInvRow(this)" style="background:none;border:none;color:var(--error);cursor:pointer;font-size:14px;line-height:1">✕</button></td></tr>
+                      <tr><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-desc" style="margin:0;padding:4px 6px;font-size:12px" value="Hosting (12 months)" oninput="calcReceiptTotal()"></td><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-qty" type="number" min="1" style="margin:0;padding:4px 6px;font-size:12px;text-align:center;width:100%" value="1" oninput="calcReceiptTotal()"></td><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-rate" type="number" min="0" step="0.01" style="margin:0;padding:4px 6px;font-size:12px;text-align:right;width:100%" value="120" oninput="calcReceiptTotal()"></td><td style="padding:4px 8px;border:1px solid var(--gray-200);text-align:right;font-size:12px;white-space:nowrap" class="inv-amt">$120.00</td><td style="padding:4px;border:1px solid var(--gray-200);text-align:center"><button onclick="removeInvRow(this)" style="background:none;border:none;color:var(--error);cursor:pointer;font-size:14px;line-height:1">✕</button></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+                  <button onclick="addInvRow()" class="btn btn-outline" style="padding:5px 14px;font-size:12px">+ Add Line Item</button>
+                  <div style="font-size:14px;font-weight:700">Total: <span id="inv-total" style="color:var(--accent)">$1,640.00</span></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+                  <div class="form-group"><label class="form-label">Tax Rate (%)</label><input id="inv-tax" type="number" min="0" max="30" step="0.1" class="form-input" style="margin:0" value="0" oninput="calcReceiptTotal()"></div>
+                  <div class="form-group"><label class="form-label">Deposit / Paid</label><input id="inv-deposit" type="number" min="0" step="0.01" class="form-input" style="margin:0" placeholder="0.00"></div>
+                </div>
+                <div class="form-group"><label class="form-label">Payment Method</label><select id="inv-payment" class="form-input" style="margin:0"><option>Venmo</option><option>CashApp</option><option>Zelle</option><option>PayPal</option><option>Check</option><option>Cash</option><option>Bank Transfer</option><option>Other</option></select></div>
+                <div class="form-group"><label class="form-label">Notes</label><textarea id="inv-notes" class="form-input" style="height:54px;resize:vertical;margin:0" placeholder="Thank you for your business!"></textarea></div>
+                <button onclick="generateReportDoc('receipt')" class="btn btn-solid" style="width:100%;margin-top:4px">Generate Invoice / Receipt</button>
+              </div>
+              <div class="card" style="display:flex;flex-direction:column">
+                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                  <button onclick="printDoc('receipt-preview')" class="btn btn-outline" style="flex:1;padding:8px">🖨️ Print</button>
+                  <button onclick="downloadDoc('receipt-preview','invoice')" class="btn btn-outline" style="flex:1;padding:8px">⬇️ Download</button>
+                  <button onclick="copyDocText('receipt-preview')" class="btn btn-outline" style="flex:1;padding:8px">📋 Copy</button>
+                </div>
+                <textarea id="receipt-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" placeholder="Fill in the form and click Generate Invoice / Receipt..."></textarea>
               </div>
             </div>
           </div>
@@ -2101,11 +2162,12 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
               </div>
               <div class="card" style="display:flex;flex-direction:column">
                 <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
-                  <button onclick="printDoc('program-preview')" class="btn btn-outline" style="flex:1;padding:8px">🖸️ Print</button>
+                  <button onclick="printDoc('program-preview')" class="btn btn-outline" style="flex:1;padding:8px">🖨️ Print</button>
                   <button onclick="downloadDoc('program-preview','program-plan')" class="btn btn-outline" style="flex:1;padding:8px">⬇️ Download</button>
                   <button onclick="copyDocText('program-preview')" class="btn btn-outline" style="flex:1;padding:8px">📋 Copy</button>
+                  <button onclick="aiImproveDoc('program-preview','Program Plan')" class="btn btn-solid" style="flex:1;padding:8px;background:linear-gradient(135deg,#4267B2,#7C3AED)">✨ AI Improve</button>
                 </div>
-                <textarea id="program-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" readonly placeholder="Fill in the form and click Generate..."></textarea>
+                <textarea id="program-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" placeholder="Fill in the form and click Generate..."></textarea>
               </div>
             </div>
           </div>
@@ -2128,7 +2190,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
               <button onclick="downloadDoc('revenue-report-preview','revenue-report')" class="btn btn-outline" style="padding:10px 18px">⬇️ Download</button>
             </div>
             <div class="card">
-              <textarea id="revenue-report-preview" class="form-input" style="width:100%;min-height:500px;font-size:13px;font-family:monospace;resize:vertical" readonly placeholder="Select filters and click Generate Report..."></textarea>
+              <textarea id="revenue-report-preview" class="form-input" style="width:100%;min-height:500px;font-size:13px;font-family:monospace;resize:vertical" placeholder="Select filters and click Generate Report..."></textarea>
             </div>
           </div>
         </div>
@@ -2771,7 +2833,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
   'youth-pathway': () => { renderCurriculum(); renderOutreach(); restoreYouthChecks(); loadYouthProgram(); loadYouthPlatform(); },
   pricing: () => { renderPricingPage(); updateProposalPreview(); },
   strategy: () => { renderStrategyPage(); },
-  reports: () => {},
+  reports: () => { populateReportClientDropdowns(); },
   booking: () => { renderBookingDashboard(); },
   'ai-projects': () => { renderAIProjectSkills(); },
   'my-profile': () => { loadProfileForm(); }
@@ -3093,9 +3155,10 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <div style="font-size:18px;font-weight:700;color:var(--gray-900);">$${c.price}<span style="font-size:12px;font-weight:400;color:${c.paid?'var(--success)':'var(--warning)'}"> ${c.paid?'✓ Paid':'⏳ Pending'}</span></div>
-            <div style="display:flex;gap:8px;">
-              <button onclick="openClientDetail('${c.id}')" class="btn btn-outline" style="padding:7px 14px;font-size:13px;">View</button>
-              <button onclick="openEditClientModal('${c.id}')" class="btn btn-solid" style="padding:7px 14px;font-size:13px;">Edit</button>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;">
+              <button onclick="openClientDetail('${c.id}')" class="btn btn-outline" style="padding:6px 12px;font-size:12px;">View</button>
+              <button onclick="openEditClientModal('${c.id}')" class="btn btn-solid" style="padding:6px 12px;font-size:12px;">Edit</button>
+              <button onclick="openClientDocs('${c.id}')" class="btn btn-outline" style="padding:6px 12px;font-size:12px;border-color:var(--accent);color:var(--accent);">📄 Docs</button>
             </div>
           </div>
         </div>`).join('');
@@ -6919,18 +6982,136 @@ ${_ownerBiz} | ${_ownerEmail}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`.trim();
   }
 
+  else if (type === 'receipt') {
+    previewId = 'receipt-preview';
+    const client   = document.getElementById('inv-client')?.value||'[Client Name]';
+    const clientEmail = document.getElementById('inv-email')?.value||'';
+    const invNum   = document.getElementById('inv-number')?.value||('INV-'+Date.now().toString().slice(-4));
+    const invDate  = document.getElementById('inv-date')?.value ? new Date(document.getElementById('inv-date').value+'T00:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : today;
+    const dueDate  = document.getElementById('inv-due')?.value ? new Date(document.getElementById('inv-due').value+'T00:00:00').toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}) : 'Upon receipt';
+    const payMethod = document.getElementById('inv-payment')?.value||'';
+    const notes    = document.getElementById('inv-notes')?.value||'Thank you for your business!';
+    const taxRate  = parseFloat(document.getElementById('inv-tax')?.value||'0');
+    const depositPaid = parseFloat(document.getElementById('inv-deposit')?.value||'0');
+    // Collect line items
+    const rows = Array.from(document.querySelectorAll('#inv-items-body tr'));
+    let subtotal = 0;
+    const itemLines = rows.map(row => {
+      const desc = row.querySelector('.inv-desc')?.value||'';
+      const qty  = parseFloat(row.querySelector('.inv-qty')?.value||'1');
+      const rate = parseFloat(row.querySelector('.inv-rate')?.value||'0');
+      const amt  = qty * rate;
+      subtotal += amt;
+      const descPad = desc.padEnd(28).slice(0,28);
+      const qtyStr  = String(qty).padStart(4);
+      const rateStr = ('$'+rate.toFixed(2)).padStart(10);
+      const amtStr  = ('$'+amt.toFixed(2)).padStart(10);
+      return `${descPad}  ${qtyStr}  ${rateStr}  ${amtStr}`;
+    }).join('\n');
+    const taxAmt  = subtotal * (taxRate/100);
+    const total   = subtotal + taxAmt;
+    const balDue  = Math.max(0, total - depositPaid);
+    content = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${_ownerBiz.toUpperCase()}
+INVOICE / RECEIPT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Invoice #: ${invNum}
+Date:      ${invDate}
+Due Date:  ${dueDate}
+
+BILLED BY:                          BILLED TO:
+${_ownerName.padEnd(35).slice(0,35)} ${client}
+${_ownerBiz.padEnd(35).slice(0,35)} ${clientEmail}
+${_ownerEmail.padEnd(35).slice(0,35)}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LINE ITEMS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${'DESCRIPTION'.padEnd(28)}   QTY        RATE      AMOUNT
+${'─'.repeat(60)}
+${itemLines}
+${'─'.repeat(60)}
+${'SUBTOTAL'.padEnd(46)} ${('$'+subtotal.toFixed(2)).padStart(12)}${taxRate > 0 ? '\n'+('TAX ('+taxRate+'%)').padEnd(46)+(' $'+taxAmt.toFixed(2)).padStart(12) : ''}${depositPaid > 0 ? '\n'+('DEPOSIT PAID').padEnd(46)+('-$'+depositPaid.toFixed(2)).padStart(11) : ''}
+${'─'.repeat(60)}
+${'BALANCE DUE'.padEnd(46)} ${('$'+balDue.toFixed(2)).padStart(12)}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PAYMENT INFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Payment Method: ${payMethod}
+Please reference Invoice #${invNum} with your payment.
+
+${notes}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${_ownerName} | ${_ownerBiz}
+${_ownerEmail}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`.trim();
+  }
+
   const el = document.getElementById(previewId);
   if (el) el.value = content;
 }
 
 function printDoc(previewId) {
-  const content = document.getElementById(previewId)?.value;
+  const el = document.getElementById(previewId);
+  const content = el?.value;
   if (!content) { alert('Generate a document first.'); return; }
+  const cfg = JSON.parse(localStorage.getItem('settings')) || {};
+  const biz  = cfg.businessName || 'H.E.L.P. Center';
+  const owner = cfg.name || '';
+  const email = cfg.email || '';
+  const phone = cfg.phone || '';
+  function escH(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  const lines = content.split('\n');
+  let bodyHtml = '';
+  let prevWasDivider = false;
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^[━─═]{3,}$/.test(line)) {
+      bodyHtml += '<hr>';
+      prevWasDivider = true;
+    } else if (prevWasDivider && line.trim() !== '') {
+      bodyHtml += `<h2 class="sec-head">${escH(line)}</h2>`;
+      prevWasDivider = false;
+    } else if (line.trim() === '') {
+      bodyHtml += '<div class="spacer"></div>';
+      prevWasDivider = false;
+    } else {
+      bodyHtml += `<p class="doc-line">${escH(line)}</p>`;
+      prevWasDivider = false;
+    }
+  }
+  const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>${escH(biz)} — Document</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:13px;line-height:1.75;color:#0F172A;background:#fff}
+.page{max-width:780px;margin:0 auto;padding:54px 50px}
+.letterhead{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:18px;border-bottom:3px solid #4267B2;margin-bottom:28px}
+.lh-biz{font-size:22px;font-weight:700;color:#0F172A;letter-spacing:-0.3px}
+.lh-tag{font-size:10px;font-weight:700;color:#4267B2;letter-spacing:1.5px;margin-top:3px;text-transform:uppercase}
+.lh-right{text-align:right;font-size:12px;color:#64748B;line-height:1.9}
+.sec-head{font-size:11px;font-weight:700;letter-spacing:1.5px;color:#4267B2;text-transform:uppercase;margin:22px 0 6px}
+.doc-line{font-size:13px;margin-bottom:1px;white-space:pre-wrap;font-family:inherit}
+.spacer{height:8px}
+hr{border:none;border-top:1px solid #E2E8F0;margin:10px 0}
+.print-btn{position:fixed;top:16px;right:16px;background:#4267B2;color:#fff;border:none;padding:10px 22px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+@media print{.print-btn{display:none}@page{margin:.75in}body{font-size:12px}.page{padding:0;max-width:100%}}
+</style></head><body>
+<button class="print-btn" onclick="window.print()">🖨️ Print / Save PDF</button>
+<div class="page">
+<div class="letterhead">
+<div><div class="lh-biz">${escH(biz)}</div><div class="lh-tag">Professional Services</div></div>
+<div class="lh-right">${owner?escH(owner)+'<br>':''}${email?escH(email)+'<br>':''}${phone?escH(phone):''}</div>
+</div>
+${bodyHtml}
+</div></body></html>`;
   const win = window.open('','_blank');
-  win.document.write('<html><head><title>H.E.L.P. Center Document</title><style>body{font-family:monospace;font-size:13px;line-height:1.7;padding:40px;white-space:pre-wrap;max-width:800px;margin:0 auto}@media print{body{padding:20px}}</style></head><body>'+content.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</body></html>');
+  win.document.write(html);
   win.document.close();
   win.focus();
-  setTimeout(() => win.print(), 500);
+  setTimeout(() => win.print(), 800);
 }
 
 function downloadDoc(previewId, filename) {
@@ -6949,6 +7130,139 @@ function copyDocText(previewId) {
   if (!content) { alert('Generate a document first.'); return; }
   navigator.clipboard.writeText(content).catch(()=>{});
   showToast('Document copied!','success');
+}
+
+// ── REPORTS: CLIENT DROPDOWNS & AUTO-FILL ──────────────────────────────────
+
+function populateReportClientDropdowns() {
+  const clients = getData('clients') || [];
+  const opts = '<option value="">— Select a client —</option>' +
+    clients.map(c => `<option value="${c.id}">${c.name}${c.businessName?' — '+c.businessName:''}</option>`).join('');
+  ['rp-client-select','ct-client-select','inv-client-select'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = opts;
+  });
+}
+
+function fillReportClient(prefix) {
+  const sel = document.getElementById(prefix+'-client-select');
+  if (!sel || !sel.value) return;
+  const clients = getData('clients') || [];
+  const c = clients.find(cl => cl.id === sel.value);
+  if (!c) return;
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
+  if (prefix === 'rp') {
+    setVal('rp-client', c.name);
+    setVal('rp-contact', c.name);
+    setVal('rp-service', c.service || '');
+  } else if (prefix === 'ct') {
+    setVal('ct-client', c.name);
+    setVal('ct-org', c.businessName || '');
+    if (c.price) setVal('ct-price', '$'+Number(c.price).toFixed(2));
+    if (c.startDate) setVal('ct-start', c.startDate);
+  } else if (prefix === 'inv') {
+    setVal('inv-client', c.name);
+    setVal('inv-email', c.email || '');
+    const invEl = document.getElementById('inv-number');
+    if (invEl && !invEl.value) invEl.value = c.invoiceNumber || 'INV-'+String(Date.now()).slice(-4);
+  }
+  showToast('Client info applied!', 'success');
+}
+
+function openClientDocs(clientId) {
+  showPage('reports', null);
+  setTimeout(() => {
+    populateReportClientDropdowns();
+    ['rp-client-select','ct-client-select','inv-client-select'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value = clientId;
+    });
+    // Switch to Receipt / Invoice tab
+    const receiptBtn = document.querySelector('[onclick*="pTab(\'reports\',\'receipt\'"]');
+    if (receiptBtn) receiptBtn.click();
+    fillReportClient('inv');
+    fillReportClient('rp');
+    fillReportClient('ct');
+  }, 120);
+}
+
+// ── RECEIPT LINE ITEMS ──────────────────────────────────────────────────────
+
+function calcReceiptTotal() {
+  const rows = document.querySelectorAll('#inv-items-body tr');
+  let subtotal = 0;
+  rows.forEach(row => {
+    const qty  = parseFloat(row.querySelector('.inv-qty')?.value || '0') || 0;
+    const rate = parseFloat(row.querySelector('.inv-rate')?.value || '0') || 0;
+    const amt  = qty * rate;
+    subtotal += amt;
+    const amtCell = row.querySelector('.inv-amt');
+    if (amtCell) amtCell.textContent = '$'+amt.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+  });
+  const taxRate  = parseFloat(document.getElementById('inv-tax')?.value || '0') || 0;
+  const taxAmt   = subtotal * (taxRate / 100);
+  const total    = subtotal + taxAmt;
+  const totalEl  = document.getElementById('inv-total');
+  if (totalEl) totalEl.textContent = '$'+total.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g,',');
+}
+
+function addInvRow() {
+  const tbody = document.getElementById('inv-items-body');
+  if (!tbody) return;
+  const tr = document.createElement('tr');
+  tr.innerHTML = `<td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-desc" style="margin:0;padding:4px 6px;font-size:12px" placeholder="Description" oninput="calcReceiptTotal()"></td><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-qty" type="number" min="1" style="margin:0;padding:4px 6px;font-size:12px;text-align:center;width:100%" value="1" oninput="calcReceiptTotal()"></td><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-rate" type="number" min="0" step="0.01" style="margin:0;padding:4px 6px;font-size:12px;text-align:right;width:100%" value="0" oninput="calcReceiptTotal()"></td><td style="padding:4px 8px;border:1px solid var(--gray-200);text-align:right;font-size:12px;white-space:nowrap" class="inv-amt">$0.00</td><td style="padding:4px;border:1px solid var(--gray-200);text-align:center"><button onclick="removeInvRow(this)" style="background:none;border:none;color:var(--error);cursor:pointer;font-size:14px;line-height:1">✕</button></td>`;
+  tbody.appendChild(tr);
+}
+
+function removeInvRow(btn) {
+  const tbody = document.getElementById('inv-items-body');
+  if (!tbody || tbody.rows.length <= 1) { showToast('Need at least one line item','warning'); return; }
+  btn.closest('tr').remove();
+  calcReceiptTotal();
+}
+
+// ── AI DOCUMENT ENHANCEMENT ────────────────────────────────────────────────
+
+async function aiImproveDoc(previewId, docType) {
+  const el = document.getElementById(previewId);
+  if (!el || !el.value.trim()) {
+    showToast('Generate the document first, then click ✨ AI Improve', 'warning');
+    return;
+  }
+  const cfg = JSON.parse(localStorage.getItem('settings')) || {};
+  const biz = cfg.businessName || 'H.E.L.P. Center';
+  const btn = event?.target;
+  const origText = btn?.textContent;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Enhancing…'; }
+
+  const systemPrompt = `You are an elite business document writer for ${biz}. Your writing style matches Claude — clear, authoritative, professional, and compelling. You produce documents that win clients and close deals.
+
+Rules:
+• Keep the EXACT same structure, section headers (━━━ dividers), and overall format
+• Expand thin sections with professional, detailed language
+• Make the tone confident, warm, and trustworthy
+• Add strong value statements in proposals; precise legal language in contracts
+• Return ONLY the improved document — no explanations, no markdown, no code blocks
+• Preserve all placeholder fields like [Client Name] if they exist`;
+
+  const userMsg = `Improve this ${docType} to be more professional, detailed, and compelling:\n\n${el.value}`;
+
+  try {
+    let improved = '';
+    el.style.opacity = '0.5';
+    const result = await callAI(
+      [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMsg }],
+      (delta, full) => { improved = full; el.value = full; }
+    );
+    if (result && !improved) el.value = result;
+    el.style.opacity = '1';
+    showToast('✨ Document enhanced with AI!', 'success');
+  } catch(e) {
+    el.style.opacity = '1';
+    showToast('AI error — check your connection to the H.E.L.P. server', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = origText || '✨ AI Improve'; }
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════

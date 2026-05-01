@@ -8388,24 +8388,156 @@ function loadIntegrationSettingsUI() {
     }
   };
 
+  // ── PROJECT SYSTEM PROMPTS (Groq responds like a specialist) ─────────────
+  const PROJECT_SYSTEM_PROMPTS = {
+    'business-strategy': `You are an expert business strategy consultant for H.E.L.P. Center. You help entrepreneurs start, grow, and scale their businesses. You specialize in business plans, revenue strategies, marketing, branding, LLC formation, pricing strategy, and profitability. Give actionable, specific advice. Be direct, results-oriented, and encouraging — like a premium business coach who has helped hundreds of entrepreneurs succeed.`,
+    'smart-credit': `You are a credit repair and financial stability expert for H.E.L.P. Center. You help clients understand their credit reports, identify and dispute inaccurate negative items, build their credit score, manage and reduce debt, and achieve lasting financial stability. Give step-by-step dispute letter guidance, debt payoff strategies, and credit-building action plans. Be clear, supportive, and empowering.`,
+    'career-channel': `You are a career development and advancement coach for H.E.L.P. Center. You help clients discover their ideal career path, write powerful resumes, prepare for interviews, negotiate salary confidently, and advance professionally. You understand personality types, career transitions, and workforce development. Be encouraging and practical.`,
+    'lets-go-viral': `You are a social media growth and content creation expert for H.E.L.P. Center. You help content creators grow their YouTube channels, TikTok presence, Instagram following, and other platforms. You know monetization strategies, content planning, algorithm optimization, audience growth tactics, and viral content creation. Give specific, tested strategies.`,
+    'program-planner': `You are a nonprofit and community program development specialist for H.E.L.P. Center. You help organizations plan impactful programs, write compelling grant proposals, develop curriculums, coordinate community events, and build measurable impact. You specialize in youth leadership programs, after-school initiatives, church and community outreach, and program documentation.`,
+    'outreach-comms': `You are a professional communications and outreach specialist for H.E.L.P. Center. You write compelling emails, press releases, fundraising appeals, sponsorship pitches, donor letters, and announcements. Your writing is persuasive, warm, professional, and gets results. You help clients communicate their mission powerfully to any audience.`,
+    'lvs': `You are the creative vision coach at Limitless Vision Studio — H.E.L.P. Center's creative hub. You help people brainstorm breakthrough ideas, research any topic deeply, explore unlimited possibilities, and bring their most ambitious visions to life. You inspire confidence, innovative thinking, and fearless self-expression. Be enthusiastic, insightful, and expansive.`
+  };
+
+  const PROJECT_COLORS = {
+    'business-strategy':'#1a1a2e','smart-credit':'#2E7D32','career-channel':'#7B1FA2',
+    'lets-go-viral':'#E65100','program-planner':'#0288D1','outreach-comms':'#00695C','lvs':'#C9A84C'
+  };
+  const PROJECT_EMOJIS = {
+    'business-strategy':'💼','smart-credit':'💳','career-channel':'🎯',
+    'lets-go-viral':'🚀','program-planner':'📋','outreach-comms':'📢','lvs':'✨'
+  };
+
+  let _chatHistory = [];
+  let _chatProjectKey = '';
+
   function launchProject(projectKey) {
     const project = PROJECTS[projectKey];
     if (!project) return;
     logProjectLaunch(projectKey);
-    window.open(project.claudeUrl, '_blank');
-    setTimeout(() => showHandoffSuggestion(projectKey), 2000);
+    openProjectChat(projectKey);
+  }
+
+  function openProjectChat(projectKey) {
+    const project = PROJECTS[projectKey];
+    if (!project) return;
+    _chatProjectKey = projectKey;
+    _chatHistory = [];
+    const existing = document.getElementById('proj-chat-overlay');
+    if (existing) existing.remove();
+    const color = PROJECT_COLORS[projectKey] || '#4267B2';
+    const emoji = PROJECT_EMOJIS[projectKey] || '🤖';
+    const overlay = document.createElement('div');
+    overlay.id = 'proj-chat-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.65);display:flex;align-items:flex-end;justify-content:center';
+    overlay.innerHTML = `
+      <div style="width:100%;max-width:740px;height:84vh;background:#fff;border-radius:20px 20px 0 0;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 -8px 48px rgba(0,0,0,0.3)">
+        <div style="padding:16px 20px;background:${color};display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+          <div><div style="font-size:16px;font-weight:700;color:#fff">${emoji} ${project.name}</div><div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px;letter-spacing:.3px">⚡ Powered by Groq AI · ${project.programArea}</div></div>
+          <button onclick="closeProjectChat()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center">×</button>
+        </div>
+        <div id="proj-chat-msgs" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;background:#F8FAFC">
+          <div style="text-align:center;padding:24px 0 12px">
+            <div style="font-size:40px;margin-bottom:10px">${emoji}</div>
+            <div style="font-size:16px;font-weight:700;color:#0F172A">${project.name}</div>
+            <div style="font-size:13px;color:#64748B;margin-top:6px;max-width:400px;margin-left:auto;margin-right:auto">Your AI specialist is ready. Ask anything about ${project.programArea}.</div>
+          </div>
+        </div>
+        <div style="padding:12px 14px;border-top:1px solid #E2E8F0;display:flex;gap:8px;background:#fff;flex-shrink:0;align-items:flex-end">
+          <textarea id="proj-chat-input" style="flex:1;padding:10px 14px;border:1.5px solid #CBD5E1;border-radius:12px;font-size:14px;font-family:inherit;resize:none;height:44px;max-height:120px;outline:none;line-height:1.5;transition:border .2s;overflow:hidden" placeholder="Type your question and press Enter…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendProjectMsg()}" oninput="this.style.height='44px';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+          <button onclick="sendProjectMsg()" style="background:${color};color:#fff;border:none;padding:0 22px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;height:44px;white-space:nowrap;flex-shrink:0">Send ↑</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    setTimeout(() => document.getElementById('proj-chat-input')?.focus(), 150);
+  }
+
+  function closeProjectChat() {
+    const el = document.getElementById('proj-chat-overlay');
+    if (el) { el.style.opacity='0'; el.style.transition='opacity .2s'; setTimeout(()=>el.remove(),200); }
+    _chatHistory = []; _chatProjectKey = '';
+  }
+
+  function _appendMsg(role, text) {
+    const msgs = document.getElementById('proj-chat-msgs');
+    if (!msgs) return null;
+    const isUser = role === 'user';
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;justify-content:'+(isUser?'flex-end':'flex-start');
+    const bubble = document.createElement('div');
+    bubble.style.cssText = 'max-width:80%;padding:12px 16px;border-radius:'+(isUser?'18px 18px 4px 18px':'18px 18px 18px 4px')+';background:'+(isUser?'#4267B2':'#fff')+';color:'+(isUser?'#fff':'#0F172A')+';font-size:14px;line-height:1.65;box-shadow:0 1px 4px rgba(0,0,0,0.08);white-space:pre-wrap;word-break:break-word';
+    bubble.textContent = text;
+    wrap.appendChild(bubble);
+    msgs.appendChild(wrap);
+    msgs.scrollTop = msgs.scrollHeight;
+    return bubble;
+  }
+
+  async function sendProjectMsg() {
+    const input = document.getElementById('proj-chat-input');
+    const text = input?.value.trim();
+    if (!text || !_chatProjectKey) return;
+    input.value = ''; input.style.height = '44px';
+    _appendMsg('user', text);
+    _chatHistory.push({ role:'user', content:text });
+    const msgs = document.getElementById('proj-chat-msgs');
+    const typing = document.createElement('div');
+    typing.style.cssText = 'display:flex;justify-content:flex-start';
+    typing.innerHTML = '<div style="padding:12px 16px;border-radius:18px 18px 18px 4px;background:#fff;color:#94A3B8;font-size:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">⏳ Thinking…</div>';
+    if (msgs) { msgs.appendChild(typing); msgs.scrollTop = msgs.scrollHeight; }
+    const cfg = JSON.parse(localStorage.getItem('settings')) || {};
+    const groqKey = cfg.groqApiKey || '';
+    const sysPrompt = PROJECT_SYSTEM_PROMPTS[_chatProjectKey] || 'You are a helpful assistant.';
+    try {
+      let reply = '';
+      if (groqKey) {
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
+          body: JSON.stringify({ model:'llama-3.3-70b-versatile', messages:[{role:'system',content:sysPrompt},..._chatHistory], max_tokens:1600, temperature:0.5 })
+        });
+        if (!res.ok) { const e=await res.json(); throw new Error(e.error?.message||'Groq error '+res.status); }
+        const d = await res.json();
+        reply = d.choices?.[0]?.message?.content || 'No response.';
+      } else {
+        reply = await callAI([{role:'system',content:sysPrompt},..._chatHistory]) || 'No response.';
+      }
+      typing.remove();
+      _appendMsg('assistant', reply);
+      _chatHistory.push({role:'assistant',content:reply});
+      // Check handoff
+      const proj = PROJECTS[_chatProjectKey];
+      if (proj?.handoffTriggers?.length) {
+        const low = reply.toLowerCase();
+        for (const t of proj.handoffTriggers) {
+          if (low.includes(t) && proj.handoffTargets[t]) {
+            _showChatHandoff(proj.handoffTargets[t]); break;
+          }
+        }
+      }
+    } catch(e) {
+      typing.remove();
+      const noKey = !((JSON.parse(localStorage.getItem('settings'))||{}).groqApiKey);
+      _appendMsg('assistant', noKey ? '⚠️ Add your free Groq API key in Settings → AI Integration to use this AI chat. Get one free at console.groq.com' : '⚠️ Error: '+e.message);
+    }
+  }
+
+  function _showChatHandoff(targetKey) {
+    const msgs = document.getElementById('proj-chat-msgs');
+    if (!msgs || !PROJECTS[targetKey]) return;
+    const tName = PROJECTS[targetKey].name;
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;justify-content:center;margin:4px 0';
+    div.innerHTML = `<div style="background:rgba(66,103,178,0.07);border:1px solid rgba(66,103,178,0.2);border-radius:12px;padding:9px 16px;font-size:12px;color:#4267B2;text-align:center">💡 This topic also connects to <strong>${tName}</strong> — <button onclick="closeProjectChat();openProjectChat('${targetKey}')" style="background:none;border:none;color:#4267B2;font-weight:700;cursor:pointer;text-decoration:underline;font-size:12px">Switch →</button></div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
   }
 
   async function logProjectLaunch(projectKey) {
     try {
       await fetch('http://187.124.146.184:8090/api/collections/project_sessions/records', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          project_name: projectKey,
-          launched_at: new Date().toISOString(),
-          user_id: 'joy-watford'
-        })
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project_name: projectKey, launched_at: new Date().toISOString(), user_id: 'joy-watford' })
       });
     } catch(e) { /* fail silently */ }
   }

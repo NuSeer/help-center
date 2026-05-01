@@ -3491,17 +3491,35 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
       const ai   = JSON.parse(localStorage.getItem('aiSettings')) || {};
       const custom = (ai.systemPrompt || '').trim();
       if (custom) return custom;
-      return `You are the AI Coach for ${biz}${tag ? ' (' + tag + ')' : ''}, founded by ${name}${loc ? ' in ' + loc : ''}. ${biz} is a growing business consulting and coaching practice.
+      return `You are the expert AI Coach for ${biz}${tag?' ('+tag+')':''}, founded by ${name}${loc?' in '+loc:''}. You are a world-class business consultant, financial strategist, career coach, and life advisor — all in one.
 
-${name}'s clients are action-takers who need specific, strategic coaching — not generic advice.
+## RESPONSE QUALITY STANDARDS — NON-NEGOTIABLE
+- Give DETAILED, comprehensive, expert-level answers. Never cut answers short or give surface-level overviews.
+- Structure every response with clear headers, numbered steps, bullet points, and sub-sections where helpful.
+- Include SPECIFIC details: exact dollar amounts, real platform names, realistic timelines, step-by-step instructions.
+- Write at the level of a $500/hour consultant who has actually built businesses, repaired credit, launched programs, and grown audiences.
+- When asked how to do something — SHOW them exactly how, step by step, with examples.
+- When asked what something means — explain it thoroughly with context, examples, and implications.
+- Never say "it depends" without immediately explaining exactly what it depends on and giving concrete guidance for each scenario.
+- Always complete your full answer. Never truncate. If a topic has 8 steps, give all 8 steps.
 
-Your coaching principles:
-- SPECIFIC not generic — reference real tools, real platforms, real dollar amounts, real timelines
-- ACTION-ORIENTED — every response ends with clear, immediate next steps the client can take today
-- DIRECT — clients are busy. Be powerful and concise, not wordy
-- AFFIRMING — reflect the leader you see in every client. Call out their potential
+## YOUR EXPERTISE AREAS
+1. **Business Development**: LLC/Corp formation, business plans, revenue models, pricing strategy, client acquisition, marketing funnels, brand building, scaling, franchising, passive income, holding companies
+2. **Credit & Finance**: Reading credit reports (Equifax/Experian/TransUnion), dispute letters, debt payoff strategies (avalanche/snowball), business credit (DUNS, net-30 accounts, Tier 1/2/3), funding options, SBA loans, grants
+3. **Career Advancement**: Resume writing with ATS optimization, interview preparation, salary negotiation scripts, career pivots, professional certifications, LinkedIn strategy, networking
+4. **Content & Social Media**: YouTube channel growth, TikTok algorithm, Instagram Reels, content calendars, monetization (AdSense, sponsorships, affiliates), faceless channels, podcast production
+5. **Nonprofit & Programs**: 501(c)(3) formation, grant writing, program curriculum, youth leadership, after-school programs, community outreach, board development, impact measurement
+6. **Communications & Marketing**: Email campaigns, press releases, fundraising appeals, sponsorship decks, donor letters, media pitches, announcement copy
+7. **Mindset & Leadership**: Goal setting, 90-day planning, accountability systems, confidence, vision boarding, overcoming limiting beliefs
 
-When you know the client's name or situation, personalize specifically. Never give one-size-fits-all advice.`;
+## COACHING STYLE
+- **Direct and honest** — say exactly what the client needs to hear, not just what sounds nice
+- **Specific over generic** — "Go to irs.gov/EIN and apply online (free, takes 10 minutes)" not "register your business"
+- **Action-oriented** — every response ends with clear, immediate next steps numbered 1-2-3
+- **Comprehensive** — if a question has multiple parts, answer every part thoroughly
+- **Encouraging** — acknowledge where they are, affirm where they're going, and push them forward
+
+${biz} clients are serious, ambitious people building real businesses and real legacies. Every answer you give should feel like premium, paid coaching that moves them forward TODAY.`;
     }
     const HELPCENTER_SYSTEM_PROMPT = buildSystemPrompt();
 
@@ -3530,46 +3548,77 @@ When you know the client's name or situation, personalize specifically. Never gi
 
     async function callAI(messages, onChunk) {
       const ai = getAiSettings();
-      // Extract system prompt if present in messages array
+      const cfg = JSON.parse(localStorage.getItem('settings')) || {};
+      const groqKey = cfg.groqApiKey || '';
+
+      // ── PRIMARY: Call Groq directly when API key is set ──────────────
+      if (groqKey) {
+        try {
+          const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
+            body: JSON.stringify({
+              model: ai.model || 'llama-3.3-70b-versatile',
+              messages: messages,
+              max_tokens: 4096,
+              temperature: 0.4,
+              stream: true
+            })
+          });
+          if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error?.message || 'Groq '+resp.status); }
+          const reader = resp.body.getReader(), dec = new TextDecoder();
+          let full = '';
+          while (true) {
+            const { done, value } = await reader.read(); if (done) break;
+            for (const line of dec.decode(value).split('\n')) {
+              if (!line.startsWith('data: ')) continue;
+              const d = line.slice(6); if (d === '[DONE]') continue;
+              try {
+                const evt = JSON.parse(d);
+                const delta = evt.choices?.[0]?.delta?.content || '';
+                if (delta) { full += delta; if (onChunk) onChunk(delta, full); }
+              } catch {}
+            }
+          }
+          return full;
+        } catch (e) {
+          console.warn('Groq direct failed, trying VPS:', e.message);
+          // fall through to VPS
+        }
+      }
+
+      // ── FALLBACK: VPS backend ─────────────────────────────────────────
       const sysMsg = messages.find(m => m.role === 'system');
       const chatMsgs = messages.filter(m => m.role !== 'system');
-
       try {
         const resp = await fetch(`${API_BASE}/api/ai`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            provider: ai.provider,
-            model: ai.model,
-            messages: chatMsgs,
-            systemPrompt: sysMsg ? sysMsg.content : undefined,
-          }),
+          body: JSON.stringify({ provider: ai.provider, model: ai.model, messages: chatMsgs, systemPrompt: sysMsg ? sysMsg.content : undefined }),
         });
-
-        if (!resp.ok) {
-          const e = await resp.json().catch(() => ({}));
-          return 'AI Error: ' + (e.error || resp.statusText);
-        }
-
-        // Stream SSE response
+        if (!resp.ok) { const e = await resp.json().catch(()=>({})); return 'AI Error: ' + (e.error || resp.statusText); }
         const reader = resp.body.getReader(), dec = new TextDecoder();
         let full = '';
         while (true) {
           const { done, value } = await reader.read(); if (done) break;
           for (const line of dec.decode(value).split('\n')) {
             if (!line.startsWith('data: ')) continue;
-            const d = line.slice(6);
-            if (d === '[DONE]') continue;
+            const d = line.slice(6); if (d === '[DONE]') continue;
             try {
               const evt = JSON.parse(d);
-              if (evt.error) { full = 'AI Error: ' + evt.error; if (onChunk) onChunk('', full); break; }
+              if (evt.error) { full = 'AI Error: '+evt.error; if (onChunk) onChunk('',full); break; }
               const delta = evt.delta || '';
               if (delta) { full += delta; if (onChunk) onChunk(delta, full); }
             } catch {}
           }
         }
         return full;
-      } catch (e) { return 'Connection error: ' + e.message; }
+      } catch (e) {
+        const noKey = !groqKey;
+        return noKey
+          ? '⚠️ No Groq API key set. Go to Settings → AI Integration and add your free key from console.groq.com'
+          : 'Connection error: ' + e.message;
+      }
     }
 
     // ── AI CHAT PANEL ──────────────────────────────────────────────

@@ -1759,6 +1759,10 @@
               <div class="form-group"><label class="form-label">Model</label><select id="set-ai-model" class="form-select"></select></div>
               <div class="form-group"><label class="form-label">AI Coach Name</label><input type="text" id="set-ai-name" class="form-input" style="margin:0" placeholder="e.g. HELP Coach, Coach V..."></div>
             </div>
+            <div class="form-group" style="margin-top:8px">
+              <label class="form-label">Groq API Key <span style="font-size:11px;color:var(--gray-400);font-weight:400">(for ✨ AI Improve on documents — free at console.groq.com)</span></label>
+              <input type="password" id="set-groq-key" class="form-input" style="margin:0" placeholder="gsk_...">
+            </div>
             <div style="display:flex;justify-content:flex-end;margin-top:12px"><button onclick="saveAiSettings()" class="btn btn-solid">Save AI Settings</button></div>
           </div>
           <div class="card" style="margin-bottom:20px;border:2px solid rgba(16,185,129,0.2)">
@@ -3654,6 +3658,7 @@ When you know the client's name or situation, personalize specifically. Never gi
       const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
       sv('set-name',s.name); sv('set-email',s.email); sv('set-biz',s.businessName); sv('set-tagline',s.tagline); sv('set-portal-url',s.portalBaseUrl||'');
       sv('set-ai-provider',s.aiProvider||'groq'); sv('set-ai-name',s.aiCoachName||'H.E.L.P. AI Coach');
+      if(s.groqApiKey) sv('set-groq-key',s.groqApiKey);
       sv('set-pb-url',s.pbUrl||''); sv('set-pb-email',s.pbEmail||''); sv('set-pb-password',s.pbPassword||'');
       updateAiModelOptions();
       setTimeout(()=>sv('set-ai-model',s.aiModel||'llama-3.3-70b-versatile'),0);
@@ -3718,6 +3723,8 @@ When you know the client's name or situation, personalize specifically. Never gi
       s.aiProvider=document.getElementById('set-ai-provider')?.value||'groq';
       s.aiModel=document.getElementById('set-ai-model')?.value||'llama-3.3-70b-versatile';
       s.aiCoachName=document.getElementById('set-ai-name')?.value.trim()||'H.E.L.P. AI Coach';
+      const gk=document.getElementById('set-groq-key')?.value.trim();
+      if(gk) s.groqApiKey=gk;
       setData('settings',s); logActivity('system','AI settings updated');
       const nameEl=document.getElementById('ai-panel-title'); if(nameEl)nameEl.textContent=s.aiCoachName;
       showToast('AI settings saved!','success');
@@ -7231,37 +7238,57 @@ async function aiImproveDoc(previewId, docType) {
   }
   const cfg = JSON.parse(localStorage.getItem('settings')) || {};
   const biz = cfg.businessName || 'H.E.L.P. Center';
+  const groqKey = cfg.groqApiKey || '';
   const btn = event?.target;
-  const origText = btn?.textContent;
+  const origText = btn?.textContent || '✨ AI Improve';
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Enhancing…'; }
+  el.style.opacity = '0.5';
 
-  const systemPrompt = `You are an elite business document writer for ${biz}. Your writing style matches Claude — clear, authoritative, professional, and compelling. You produce documents that win clients and close deals.
+  const systemPrompt = `You are an elite business document writer for ${biz}. Write exactly like Claude — clear, authoritative, professional, warm, and compelling. You produce documents that win clients and close deals.
 
 Rules:
 • Keep the EXACT same structure, section headers (━━━ dividers), and overall format
-• Expand thin sections with professional, detailed language
+• Expand thin sections with professional, specific, detailed language
 • Make the tone confident, warm, and trustworthy
 • Add strong value statements in proposals; precise legal language in contracts
-• Return ONLY the improved document — no explanations, no markdown, no code blocks
-• Preserve all placeholder fields like [Client Name] if they exist`;
+• Return ONLY the improved document — no explanations, no markdown code blocks
+• Preserve all placeholder fields like [Client Name] if they appear`;
 
   const userMsg = `Improve this ${docType} to be more professional, detailed, and compelling:\n\n${el.value}`;
 
   try {
-    let improved = '';
-    el.style.opacity = '0.5';
-    const result = await callAI(
-      [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMsg }],
-      (delta, full) => { improved = full; el.value = full; }
-    );
-    if (result && !improved) el.value = result;
-    el.style.opacity = '1';
-    showToast('✨ Document enhanced with AI!', 'success');
+    if (groqKey) {
+      // Direct Groq API call
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
+        body: JSON.stringify({
+          model: 'llama-3.3-70b-versatile',
+          messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMsg }],
+          max_tokens: 2500,
+          temperature: 0.3
+        })
+      });
+      if (!res.ok) { const e = await res.json(); throw new Error(e.error?.message || 'Groq error'); }
+      const data = await res.json();
+      const improved = data.choices?.[0]?.message?.content || '';
+      if (improved) { el.value = improved; showToast('✨ Document enhanced with Groq AI!', 'success'); }
+      else throw new Error('Empty response');
+    } else {
+      // Fall back to H.E.L.P. Center VPS backend
+      let improved = '';
+      const result = await callAI(
+        [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMsg }],
+        (delta, full) => { improved = full; el.value = full; }
+      );
+      if (result && !improved) el.value = result;
+      showToast('✨ Document enhanced with AI!', 'success');
+    }
   } catch(e) {
-    el.style.opacity = '1';
-    showToast('AI error — check your connection to the H.E.L.P. server', 'error');
+    showToast('AI error: ' + (e.message || 'Check your Groq key in Settings'), 'error');
   } finally {
-    if (btn) { btn.disabled = false; btn.textContent = origText || '✨ AI Improve'; }
+    el.style.opacity = '1';
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
   }
 }
 

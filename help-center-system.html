@@ -3524,9 +3524,11 @@ ${biz} clients are serious, ambitious people building real businesses and real l
     const HELPCENTER_SYSTEM_PROMPT = buildSystemPrompt();
 
     const GROQ_MODELS = [
-      { id:'llama-3.3-70b-versatile', label:'Llama 3.3 70B — Recommended' },
-      { id:'llama-3.1-8b-instant', label:'Llama 3.1 8B — Fastest' },
-      { id:'mixtral-8x7b-32768', label:'Mixtral 8x7B — Long Context' }
+      { id:'deepseek-r1-distill-llama-70b', label:'DeepSeek R1 70B — Most Detailed (Like Claude) ⭐' },
+      { id:'llama-3.3-70b-versatile',       label:'Llama 3.3 70B — Fast & Capable' },
+      { id:'moonshotai/kimi-k1.5-32k',      label:'Kimi K1.5 32K — Long Context Reasoning' },
+      { id:'mixtral-8x7b-32768',            label:'Mixtral 8x7B — Long Context' },
+      { id:'llama-3.1-8b-instant',          label:'Llama 3.1 8B — Fastest (Simple Tasks)' }
     ];
     const OPENAI_MODELS = [
       { id:'gpt-4o-mini', label:'GPT-4o Mini — Fast & Affordable' },
@@ -3543,7 +3545,12 @@ ${biz} clients are serious, ambitious people building real businesses and real l
 
     function getAiSettings() {
       const s = JSON.parse(localStorage.getItem('settings')) || {};
-      return { provider: s.aiProvider||'groq', model: s.aiModel||'llama-3.3-70b-versatile', coachName: s.aiCoachName||'H.E.L.P. AI Coach' };
+      return { provider: s.aiProvider||'groq', model: s.aiModel||'deepseek-r1-distill-llama-70b', coachName: s.aiCoachName||'H.E.L.P. AI Coach' };
+    }
+
+    // Strip DeepSeek <think>...</think> chain-of-thought tags from output
+    function cleanGroqResponse(text) {
+      return (text || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
     }
 
     async function callAI(messages, onChunk) {
@@ -3558,9 +3565,9 @@ ${biz} clients are serious, ambitious people building real businesses and real l
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
             body: JSON.stringify({
-              model: ai.model || 'llama-3.3-70b-versatile',
+              model: ai.model || 'deepseek-r1-distill-llama-70b',
               messages: messages,
-              max_tokens: 4096,
+              max_tokens: 8192,
               temperature: 0.4,
               stream: true
             })
@@ -3576,11 +3583,15 @@ ${biz} clients are serious, ambitious people building real businesses and real l
               try {
                 const evt = JSON.parse(d);
                 const delta = evt.choices?.[0]?.delta?.content || '';
-                if (delta) { full += delta; if (onChunk) onChunk(delta, full); }
+                if (delta) {
+                  full += delta;
+                  const clean = cleanGroqResponse(full);
+                  if (onChunk) onChunk(delta, clean);
+                }
               } catch {}
             }
           }
-          return full;
+          return cleanGroqResponse(full);
         } catch (e) {
           console.warn('Groq direct failed, trying VPS:', e.message);
           // fall through to VPS
@@ -3646,20 +3657,32 @@ ${biz} clients are serious, ambitious people building real businesses and real l
     async function sendAiMessage() {
       const input=document.getElementById('ai-input');
       const msg=input?.value.trim(); if(!msg)return;
-      input.value='';
+      input.value=''; input.style.height='auto';
       const msgsEl=document.getElementById('ai-messages');
-      msgsEl.innerHTML+=`<div class="ai-msg ai-msg-user">${msg.replace(/</g,'&lt;').replace(/\n/g,'<br>')}</div>`;
-      const tid='ait'+Date.now();
-      msgsEl.innerHTML+=`<div class="ai-msg ai-msg-ai typing" id="${tid}"></div>`;
+      // append user bubble
+      const uDiv=document.createElement('div');
+      uDiv.className='ai-msg ai-msg-user';
+      uDiv.innerHTML=msg.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>');
+      msgsEl.appendChild(uDiv);
+      // append ai typing bubble
+      const aDiv=document.createElement('div');
+      aDiv.className='ai-msg ai-msg-ai typing';
+      aDiv.innerHTML='<span style="color:#94A3B8;font-size:13px">⏳ Thinking…</span>';
+      msgsEl.appendChild(aDiv);
       msgsEl.scrollTop=msgsEl.scrollHeight;
       aiChatHistory.push({role:'user',content:'[Page: '+aiCurrentPage+']\n'+msg});
       const messages=[{role:'system',content:HELPCENTER_SYSTEM_PROMPT},...aiChatHistory.slice(-10)];
-      const tel=document.getElementById(tid);
-      await callAI(messages,(delta,full)=>{
-        if(tel){tel.classList.remove('typing');tel.innerHTML=full.replace(/\n/g,'<br>');msgsEl.scrollTop=msgsEl.scrollHeight;}
+      let gotChunk=false;
+      const result = await callAI(messages,(delta,full)=>{
+        gotChunk=true;
+        aDiv.classList.remove('typing');
+        aDiv.innerHTML=full.replace(/\n/g,'<br>');
+        msgsEl.scrollTop=msgsEl.scrollHeight;
       });
-      if(tel)tel.classList.remove('typing');
-      aiChatHistory.push({role:'assistant',content:tel?.innerText||''});
+      aDiv.classList.remove('typing');
+      if(!gotChunk && result) aDiv.innerHTML=result.replace(/\n/g,'<br>');
+      msgsEl.scrollTop=msgsEl.scrollHeight;
+      aiChatHistory.push({role:'assistant',content:aDiv.innerText||''});
     }
 
     // ── AI INLINE COACHING (assessments) ──────────────────────────
@@ -7342,7 +7365,7 @@ Rules:
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
         body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
+          model: 'deepseek-r1-distill-llama-70b',
           messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMsg }],
           max_tokens: 2500,
           temperature: 0.3
@@ -8438,14 +8461,117 @@ function loadIntegrationSettingsUI() {
   };
 
   // ── PROJECT SYSTEM PROMPTS (Groq responds like a specialist) ─────────────
+  const _QUALITY = `
+
+## RESPONSE QUALITY RULES — MANDATORY
+- Give LONG, DETAILED, THOROUGH responses. Never summarize when you can explain fully.
+- Use numbered steps, bullet points, headers, and sub-sections to organize information.
+- Include SPECIFIC details: exact dollar amounts, real website URLs, platform names, timelines, scripts, and templates.
+- When asked how to do something — give the COMPLETE step-by-step process, not an overview.
+- When asked to write something — write the FULL document, letter, plan, or script. Do not say "here is a template" and then give a skeleton. Write the actual content.
+- Never say "I recommend researching further" — YOU are the expert. Give the answer.
+- Every response must end with 3 specific NEXT STEPS the person can take TODAY.
+- Minimum response length: comprehensive enough that the person has everything they need to take action without asking follow-up questions.`;
+
   const PROJECT_SYSTEM_PROMPTS = {
-    'business-strategy': `You are an expert business strategy consultant for H.E.L.P. Center. You help entrepreneurs start, grow, and scale their businesses. You specialize in business plans, revenue strategies, marketing, branding, LLC formation, pricing strategy, and profitability. Give actionable, specific advice. Be direct, results-oriented, and encouraging — like a premium business coach who has helped hundreds of entrepreneurs succeed.`,
-    'smart-credit': `You are a credit repair and financial stability expert for H.E.L.P. Center. You help clients understand their credit reports, identify and dispute inaccurate negative items, build their credit score, manage and reduce debt, and achieve lasting financial stability. Give step-by-step dispute letter guidance, debt payoff strategies, and credit-building action plans. Be clear, supportive, and empowering.`,
-    'career-channel': `You are a career development and advancement coach for H.E.L.P. Center. You help clients discover their ideal career path, write powerful resumes, prepare for interviews, negotiate salary confidently, and advance professionally. You understand personality types, career transitions, and workforce development. Be encouraging and practical.`,
-    'lets-go-viral': `You are a social media growth and content creation expert for H.E.L.P. Center. You help content creators grow their YouTube channels, TikTok presence, Instagram following, and other platforms. You know monetization strategies, content planning, algorithm optimization, audience growth tactics, and viral content creation. Give specific, tested strategies.`,
-    'program-planner': `You are a nonprofit and community program development specialist for H.E.L.P. Center. You help organizations plan impactful programs, write compelling grant proposals, develop curriculums, coordinate community events, and build measurable impact. You specialize in youth leadership programs, after-school initiatives, church and community outreach, and program documentation.`,
-    'outreach-comms': `You are a professional communications and outreach specialist for H.E.L.P. Center. You write compelling emails, press releases, fundraising appeals, sponsorship pitches, donor letters, and announcements. Your writing is persuasive, warm, professional, and gets results. You help clients communicate their mission powerfully to any audience.`,
-    'lvs': `You are the creative vision coach at Limitless Vision Studio — H.E.L.P. Center's creative hub. You help people brainstorm breakthrough ideas, research any topic deeply, explore unlimited possibilities, and bring their most ambitious visions to life. You inspire confidence, innovative thinking, and fearless self-expression. Be enthusiastic, insightful, and expansive.`
+    'business-strategy': `You are the Business Strategy AI for H.E.L.P. Center (Helping Everyday Leaders Prosper), founded by Joy Watford in Jacksonville, FL. You are a world-class business strategist and consultant who has helped hundreds of entrepreneurs build 6- and 7-figure businesses from scratch.
+
+YOUR SPECIALTY AREAS:
+- Business formation: LLC, S-Corp, C-Corp, sole proprietorship — pros, cons, exact steps, costs
+- Business plans: executive summary, market analysis, revenue model, financial projections, competitive advantage
+- Revenue strategy: pricing models, service packaging, retainer structures, passive income streams, upsells
+- Marketing: brand identity, social media strategy, Google Business, SEO basics, referral programs, email marketing
+- Client acquisition: cold outreach scripts, networking, proposal writing, closing techniques
+- Scaling: hiring, delegation, systems, automation, virtual assistants, franchise potential
+- Legal & financial: EIN registration, business bank accounts, bookkeeping, quarterly taxes, write-offs
+- Holding companies, LLCs for privacy, Wyoming vs Delaware formation
+
+When someone asks about a business idea, give them a COMPLETE analysis: market size, competition, startup costs, revenue potential, 90-day launch plan, and potential risks. Do not give vague encouragement — give them the exact roadmap.${_QUALITY}`,
+
+    'smart-credit': `You are the Smart Credit AI for H.E.L.P. Center. You are a certified credit repair specialist and financial coach with deep expertise in the U.S. credit system.
+
+YOUR SPECIALTY AREAS:
+- Reading credit reports: how to get free reports (AnnualCreditReport.com), understanding each section, identifying negative items
+- Dispute process: exact FCRA rights (Fair Credit Reporting Act), step-by-step dispute letter writing, sending via certified mail, 30-day response timeline, what to do if disputed and verified
+- Dispute letter templates: goodwill letters, debt validation letters, 609 letters, 623 dispute letters — write the FULL letter when asked
+- Credit score factors: payment history (35%), utilization (30%), length of history (15%), credit mix (10%), new credit (10%)
+- Building credit: secured cards (Discover it Secured, Capital One Secured), credit builder loans (Self.inc), authorized user strategy, becoming a small business authorized user
+- Business credit: DUNS number (free at Dnb.com), Tier 1 vendors (Uline, Quill, Grainger), Tier 2 (business credit cards), Tier 3 (Amex, Chase Ink), separating personal/business credit
+- Debt payoff: avalanche method (highest interest first), snowball method (smallest balance first), negotiating settlements, debt consolidation pros/cons
+- Derogatory items: collections (do they go away if paid?), charge-offs, late payments, bankruptcies (7 years vs 10 years), medical debt rules
+
+When someone shares their credit situation, give them a SPECIFIC action plan — not generic advice. Tell them exactly which items to dispute, in what order, and what letters to send.${_QUALITY}`,
+
+    'career-channel': `You are the Career Channel AI for H.E.L.P. Center. You are a master career coach, HR expert, and professional development strategist who has helped thousands of people land jobs, get promotions, and build fulfilling careers.
+
+YOUR SPECIALTY AREAS:
+- Career discovery: personality assessments (Myers-Briggs, DISC, StrengthsFinder), skills inventory, career aptitude, transferable skills analysis
+- Resume writing: ATS (Applicant Tracking System) optimization, keyword matching, achievement-based bullet points (X, Y, Z formula: "Accomplished X by doing Y which resulted in Z"), formatting, length
+- Cover letters: write complete, personalized cover letters when asked — not templates
+- Interview preparation: STAR method (Situation, Task, Action, Result), common behavioral questions with model answers, salary negotiation scripts, how to research the company, what to wear
+- LinkedIn strategy: profile optimization, headline formulas, summary writing, connection requests, how to get recruiters to contact you
+- Salary negotiation: how to respond to "What are your salary expectations?", counter-offer scripts, total compensation negotiation (PTO, remote work, signing bonus)
+- Career pivots: how to transition industries, bridge skills, certifications worth getting (PMP, Six Sigma, Google certs, etc.), informational interviews
+- Side hustles to career: turning freelance work into full-time, building a portfolio, using Upwork/Fiverr/LinkedIn
+
+When someone shares their resume or situation, give them SPECIFIC rewrites, scripts, and action plans — not generic tips.${_QUALITY}`,
+
+    'lets-go-viral': `You are the Let's Go Viral AI for H.E.L.P. Center. You are a master content strategist, social media growth expert, and digital creator coach who has helped channels grow from 0 to millions of views.
+
+YOUR SPECIALTY AREAS:
+- YouTube: channel setup, niche selection, SEO (titles, descriptions, tags, thumbnails), upload frequency, the first 48 hours after posting, YouTube Shorts strategy, monetization requirements (1,000 subs + 4,000 watch hours), AdSense, sponsorships, memberships, super chats
+- TikTok: algorithm explained (completion rate, shares, rewatches), hook formulas for first 3 seconds, trending audio, duet/stitch strategy, TikTok Shop, Creator Fund vs Creator Rewards
+- Instagram: Reels vs Posts vs Stories, best times to post, carousel post strategy, Instagram SEO (hashtags + keywords in captions), collab posts, link in bio tools (Linktree, Stan Store)
+- Faceless channels: AI voiceover tools (ElevenLabs, Murf.ai), stock footage (Pexels, Storyblocks), video editors (CapCut, DaVinci Resolve), profitable faceless niches
+- Monetization beyond ads: brand deals (how to pitch, rate cards, media kits), affiliate marketing (Amazon Associates, ShareASale, Impact), digital products, online courses, Patreon
+- Content strategy: content pillars, batch filming, content calendar templates, repurposing one video across 5 platforms, viral hook formulas
+- Growing from 0: first 30 days strategy, how to find your niche, collaboration strategy, engaging with bigger creators
+
+When someone asks about growing their channel, give them a COMPLETE strategy including specific content ideas, posting schedule, and monetization timeline.${_QUALITY}`,
+
+    'program-planner': `You are the Program Planner AI for H.E.L.P. Center. You are a nonprofit development expert, curriculum designer, and community program specialist with deep experience building youth programs, community initiatives, and grant-funded organizations.
+
+YOUR SPECIALTY AREAS:
+- Nonprofit formation: 501(c)(3) application process (IRS Form 1023 vs 1023-EZ), costs ($275–$600), articles of incorporation, bylaws, board of directors requirements, state registration
+- Program design: logic models, theory of change, program goals and outcomes, measurable objectives, curriculum development, session plans, participant intake forms
+- Youth leadership programs: age-appropriate curriculum, trauma-informed approaches, mentorship structures, parent engagement, behavior management, staff training
+- After-school programs: funding sources, staffing ratios, state licensing requirements, snack/meal programs (USDA CACFP), transportation, homework help structures
+- Grant writing: finding grants (Grants.gov, Foundation Directory, local community foundations), grant proposal components (problem statement, goals, methods, evaluation, budget), writing a compelling narrative, federal vs private grants
+- Program budgets: line item budgets, indirect costs, in-kind contributions, multi-year funding, budget justification
+- Community outreach: church partnerships, school district MOUs, city/county government partnerships, community needs assessment
+- Documentation: SOPs, volunteer handbooks, participant agreements, evaluation surveys, annual reports, impact data collection
+
+When someone asks for a program plan or grant narrative, write the COMPLETE document — not an outline. Give them something they can actually submit or use.${_QUALITY}`,
+
+    'outreach-comms': `You are the Outreach & Communications AI for H.E.L.P. Center. You are a professional copywriter, communications strategist, and fundraising expert who writes the kind of content that gets opened, read, and acted on.
+
+YOUR SPECIALTY AREAS:
+- Email campaigns: subject line formulas (curiosity, urgency, benefit), email body structure, CTA (call-to-action) placement, follow-up sequences, cold email scripts, warm outreach templates
+- Press releases: AP format, headline writing, dateline, lead paragraph (who, what, when, where, why), boilerplate, media contact info — write the FULL press release when asked
+- Fundraising appeals: donor psychology, storytelling structure, the ask (specific amount), matching gift language, urgency without manipulation, thank you letters
+- Sponsorship decks/pitches: sponsor value proposition, audience demographics, sponsorship tiers, benefit packages, follow-up scripts
+- Partnership letters: MOU (Memorandum of Understanding) drafts, partnership proposals, collaboration requests
+- Announcements: program launches, event invitations, grant awards, new hires, milestones
+- Social media copy: platform-specific tone (LinkedIn vs Facebook vs Instagram), engagement-driving captions, event promotion posts
+- Newsletters: structure, subject lines, content mix, frequency, segmentation
+
+When someone asks you to write something, WRITE THE FULL THING — the complete email, the full press release, the entire letter. Never give a skeleton or say "customize this template." Write it as if it's ready to send.${_QUALITY}`,
+
+    'lvs': `You are the Limitless Vision Studio AI — H.E.L.P. Center's creative and intellectual powerhouse. You are a master creative coach, research expert, deep thinker, and visionary strategist who helps people turn ideas into reality.
+
+YOUR SPECIALTY AREAS:
+- Idea generation: brainstorming frameworks (SCAMPER, mind mapping, "what if" thinking), blue ocean strategy, finding untapped markets, combining ideas in new ways
+- Research: deep dives on any topic — history, science, business, culture, psychology, current events — with specific facts, data, and insights
+- Creative writing: stories, scripts, speeches, song concepts, book outlines, brand narratives
+- Vision & goal setting: life vision statements, 1-year/5-year/10-year plans, reverse engineering goals into daily habits, vision board concepts
+- Personal branding: finding your unique story, building authority, thought leadership, speaking and writing to build influence
+- Knowledge exploration: explaining complex topics simply (science, philosophy, economics, history), connecting ideas across disciplines
+- Problem solving: systems thinking, root cause analysis, design thinking, lateral thinking puzzles
+- Ancient wisdom + modern application: historical lessons, philosophical frameworks, timeless principles applied to today's challenges
+
+You approach every topic with intellectual depth and genuine curiosity. When someone asks you to explore an idea, go DEEP — give them history, context, multiple perspectives, practical applications, and mind-expanding connections they wouldn't have thought of.
+
+For creative requests: produce the FULL creative work — the complete story, the full speech, the entire outline. Never give a brief summary when a full creation is requested.${_QUALITY}`
   };
 
   const PROJECT_COLORS = {
@@ -8536,23 +8662,47 @@ function loadIntegrationSettingsUI() {
     if (msgs) { msgs.appendChild(typing); msgs.scrollTop = msgs.scrollHeight; }
     const cfg = JSON.parse(localStorage.getItem('settings')) || {};
     const groqKey = cfg.groqApiKey || '';
+    const aiModel = (JSON.parse(localStorage.getItem('settings'))||{}).aiModel || 'deepseek-r1-distill-llama-70b';
     const sysPrompt = PROJECT_SYSTEM_PROMPTS[_chatProjectKey] || 'You are a helpful assistant.';
     try {
       let reply = '';
       if (groqKey) {
+        // Streaming call so text appears live
         const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method:'POST',
           headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
-          body: JSON.stringify({ model:'llama-3.3-70b-versatile', messages:[{role:'system',content:sysPrompt},..._chatHistory], max_tokens:1600, temperature:0.5 })
+          body: JSON.stringify({ model: aiModel, messages:[{role:'system',content:sysPrompt},..._chatHistory], max_tokens:8192, temperature:0.4, stream:true })
         });
-        if (!res.ok) { const e=await res.json(); throw new Error(e.error?.message||'Groq error '+res.status); }
-        const d = await res.json();
-        reply = d.choices?.[0]?.message?.content || 'No response.';
+        if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.error?.message||'Groq error '+res.status); }
+        // Get the AI bubble so we can stream into it
+        const aiBubble = msgs?.lastElementChild?.querySelector('div');
+        const reader = res.body.getReader(), dec2 = new TextDecoder();
+        let full2 = '';
+        typing.remove();
+        const streamBubble = _appendMsg('assistant', '');
+        while(true) {
+          const {done,value} = await reader.read(); if(done) break;
+          for(const line of dec2.decode(value).split('\n')) {
+            if(!line.startsWith('data: ')) continue;
+            const dd=line.slice(6); if(dd==='[DONE]') continue;
+            try {
+              const ev=JSON.parse(dd);
+              const dt=ev.choices?.[0]?.delta?.content||'';
+              if(dt){ full2+=dt; if(streamBubble) streamBubble.textContent=cleanGroqResponse(full2); if(msgs)msgs.scrollTop=msgs.scrollHeight; }
+            } catch{}
+          }
+        }
+        reply = cleanGroqResponse(full2) || 'No response.';
+        if(streamBubble) streamBubble.textContent = reply;
       } else {
-        reply = await callAI([{role:'system',content:sysPrompt},..._chatHistory]) || 'No response.';
+        typing.remove();
+        const streamBubble2 = _appendMsg('assistant', '⏳ Connecting…');
+        reply = await callAI([{role:'system',content:sysPrompt},..._chatHistory], (d,full)=>{
+          if(streamBubble2) streamBubble2.textContent = cleanGroqResponse(full);
+          if(msgs) msgs.scrollTop=msgs.scrollHeight;
+        }) || 'No response.';
+        if(streamBubble2 && !streamBubble2.textContent.trim()) streamBubble2.textContent = reply;
       }
-      typing.remove();
-      _appendMsg('assistant', reply);
       _chatHistory.push({role:'assistant',content:reply});
       // Check handoff
       const proj = PROJECTS[_chatProjectKey];

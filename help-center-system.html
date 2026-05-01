@@ -316,13 +316,16 @@
     .resource-link .info span { font-size:12px;color:var(--gray-500); }
 
     /* ── AI CHAT PANEL ── */
-    .ai-fab{position:fixed;bottom:24px;right:24px;width:48px;height:48px;background:#0F172A;border:none;border-radius:50%;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;font-size:18px;z-index:999;transition:background 0.2s;}
-    .ai-fab:hover{background:#4267B2;}
-    .ai-panel{position:fixed;bottom:84px;right:24px;width:368px;max-height:540px;background:#fff;border-radius:4px;box-shadow:0 8px 40px rgba(0,0,0,0.15);display:flex;flex-direction:column;z-index:998;overflow:hidden;border:1px solid #E8ECF1;border-top:2px solid #4267B2;}
+    .ai-fab{position:fixed;bottom:80px;right:20px;width:56px;height:56px;background:linear-gradient(135deg,#4267B2,#0F172A);border:none;border-radius:16px;cursor:pointer;box-shadow:0 4px 20px rgba(66,103,178,0.45);display:flex;align-items:center;justify-content:center;font-size:22px;z-index:999;transition:all 0.2s;color:#fff;}
+    .ai-fab:hover{transform:scale(1.08);box-shadow:0 6px 24px rgba(66,103,178,0.6);}
+    .ai-fab-label{position:fixed;bottom:66px;right:80px;background:#0F172A;color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;z-index:999;white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 0.2s;}
+    .ai-fab:hover ~ .ai-fab-label{opacity:1;}
+    .ai-panel{position:fixed;bottom:148px;right:20px;width:380px;max-height:560px;background:#fff;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,0.18);display:flex;flex-direction:column;z-index:998;overflow:hidden;border:1px solid #E8ECF1;border-top:3px solid #4267B2;}
     .ai-panel.hidden{display:none;}
-    .ai-panel-header{padding:14px 18px;background:#fff;border-bottom:1px solid #E8ECF1;display:flex;align-items:center;gap:10px;}
-    .ai-panel-title{font-weight:700;font-size:14px;color:#0F172A;flex:1;}
-    .ai-panel-close{background:none;border:none;color:var(--gray-400);cursor:pointer;font-size:20px;line-height:1;}
+    .ai-panel-header{padding:14px 18px;background:linear-gradient(135deg,#0F172A,#1e3a6e);border-bottom:1px solid #E8ECF1;display:flex;align-items:center;gap:10px;}
+    .ai-panel-title{font-weight:700;font-size:14px;color:#fff;flex:1;}
+    .ai-panel-close{background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:20px;line-height:1;}
+    .ai-panel-close:hover{color:#fff;}
     .ai-context-bar{padding:6px 18px;background:#EEF2FF;font-size:10px;color:#4267B2;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;border-bottom:1px solid #E8ECF1;}
     .ai-messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-height:200px;max-height:340px;}
     .ai-msg{padding:10px 14px;border-radius:4px;font-size:13px;line-height:1.65;max-width:88%;}
@@ -330,6 +333,7 @@
     .ai-msg-ai{background:#F8FAFC;color:#0F172A;align-self:flex-start;border:1px solid #E8ECF1;}
     .ai-msg-ai.typing::after{content:'▋';animation:aibl 1s infinite;}
     @keyframes aibl{0%,100%{opacity:1}50%{opacity:0}}
+    @keyframes slideInLeft{from{transform:translateX(-120px);opacity:0}to{transform:translateX(0);opacity:1}}
     .ai-input-row{padding:10px 12px;border-top:1px solid #E8ECF1;display:flex;gap:8px;}
     .ai-input{flex:1;padding:9px 12px;border:1px solid #CBD5E1;border-radius:4px;font-size:13px;outline:none;resize:none;font-family:inherit;transition:border-color 0.15s;}
     .ai-input:focus{border-color:#4267B2;}
@@ -346,7 +350,7 @@
     .settings-section-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.7px;color:var(--gray-500);margin-bottom:18px;padding-bottom:10px;border-bottom:1px solid #E8ECF1;}
     .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #F1F4F8;gap:16px;}
     .toggle-row:last-child{border-bottom:none;}
-    @media(max-width:768px){.ai-panel{width:calc(100vw - 32px);right:16px;}.ai-fab{bottom:16px;right:16px;}}
+    @media(max-width:768px){.ai-panel{width:calc(100vw - 32px);right:16px;bottom:140px;}.ai-fab{bottom:70px;right:16px;width:52px;height:52px;font-size:20px;}.ai-fab-label{display:none;}}
   </style>
 </head>
 <body>
@@ -612,8 +616,13 @@
       <!-- BUSINESS LIBRARY -->
       <div id="library-page" class="page hidden">
         <div class="page-header">
-          <h1 class="page-title">Business Idea Library</h1>
-          <p class="page-subtitle">Launch-ready business models with execution plans — click View Plan for details, Save Idea to add to My Ideas</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div>
+              <h1 class="page-title">💡 Business Idea Library</h1>
+              <p class="page-subtitle">Launch-ready business models — View Plan, get AI Deep Dive analysis, or Add to My Ideas</p>
+            </div>
+            <button class="btn btn-solid" onclick="showPage('my-ideas',event)" style="white-space:nowrap">➕ Add Custom Idea</button>
+          </div>
         </div>
         <div class="content">
           <div class="ideas-grid" id="library-ideas-grid">
@@ -2481,7 +2490,8 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
   </div>
 
   <!-- ── AI COACH CHAT PANEL ── -->
-  <button class="ai-fab" id="ai-fab" onclick="toggleAiPanel()" title="AI Coach">🤖</button>
+  <button class="ai-fab" id="ai-fab" onclick="toggleAiPanel()" title="AI Coach">✨</button>
+  <div class="ai-fab-label">AI Coach</div>
   <div class="ai-panel hidden" id="ai-panel">
     <div class="ai-panel-header">
       <div style="font-size:20px">✨</div>
@@ -4522,7 +4532,9 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       const grid = document.getElementById('library-ideas-grid');
       if (!grid) return;
       const savedIdeas = getData('ideas').map(i=>i.name);
-      grid.innerHTML = LIBRARY_IDEAS.map(idea => `
+      grid.innerHTML = LIBRARY_IDEAS.map(idea => {
+        const isSaved = savedIdeas.includes(idea.title);
+        return `
         <div class="idea-card">
           <div class="idea-header"><span class="idea-icon">${idea.icon}</span><span class="idea-rating">⭐ ${idea.rating}</span></div>
           <h3 class="idea-title">${idea.title}</h3>
@@ -4534,11 +4546,18 @@ ${biz} clients are serious, ambitious people building real businesses and real l
             <div class="idea-stat"><span class="idea-stat-label">📊 Difficulty</span><span class="idea-stat-value">${idea.difficulty}</span></div>
           </div>
           <div class="idea-tags">${idea.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
-          <div class="idea-actions">
-            <button class="btn btn-outline" style="flex:1" onclick="viewLibraryPlan('${idea.id}')">View Plan</button>
-            <button class="btn btn-solid" style="flex:1" onclick="saveLibraryIdea('${idea.id}')">${savedIdeas.includes(idea.title)?'✓ Saved':'Save Idea'}</button>
+          <div class="idea-actions" style="flex-direction:column;gap:8px">
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline" style="flex:1;font-size:12px" onclick="viewLibraryPlan('${idea.id}')">📋 View Plan</button>
+              <button class="btn btn-outline" style="flex:1;font-size:12px;border-color:var(--accent);color:var(--accent)" onclick="libraryAiDeepDive('${idea.id}')">✨ AI Analysis</button>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn btn-outline" style="flex:1;font-size:12px" onclick="printLibraryIdea('${idea.id}')">🖨️ Print</button>
+              <button class="btn btn-solid" style="flex:1;font-size:12px" onclick="saveLibraryIdea('${idea.id}')" id="lib-save-${idea.id}">${isSaved?'✅ Added':'➕ Add to My Ideas'}</button>
+            </div>
           </div>
-        </div>`).join('');
+        </div>`;
+      }).join('');
     }
 
     function viewLibraryPlan(ideaId) {
@@ -4547,7 +4566,8 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       let modal = document.getElementById('lib-plan-modal');
       if (!modal) { modal = document.createElement('div'); modal.id='lib-plan-modal'; document.body.appendChild(modal); }
       modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto';
-      modal.innerHTML = `<div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto">
+      const isSaved = getData('ideas').some(i=>i.name===idea.title);
+      modal.innerHTML = `<div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:660px;max-height:90vh;overflow-y:auto" id="lib-plan-inner">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px">
           <div><div style="font-size:32px;margin-bottom:6px">${idea.icon}</div><h2 style="font-size:22px;font-weight:800">${idea.title}</h2><p style="font-size:14px;color:var(--gray-500)">${idea.description}</p></div>
           <button onclick="document.getElementById('lib-plan-modal').remove()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--gray-400);flex-shrink:0">×</button>
@@ -4555,10 +4575,12 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px">
           ${[['💰 Revenue',idea.revenue],['🚀 Launch',idea.launch],['💸 Startup Cost',idea.cost],['📊 Difficulty',idea.difficulty]].map(([l,v])=>`<div style="background:var(--gray-50);border-radius:8px;padding:12px"><div style="font-size:11px;font-weight:700;color:var(--gray-500);margin-bottom:2px">${l}</div><div style="font-weight:700">${v}</div></div>`).join('')}
         </div>
-        <div style="font-size:14px;line-height:1.8;color:var(--gray-700)">${idea.plan}</div>
-        <div style="display:flex;gap:10px;margin-top:24px">
-          <button onclick="saveLibraryIdea('${idea.id}');document.getElementById('lib-plan-modal').remove()" class="btn btn-solid" style="flex:1">Save to My Ideas</button>
-          <button onclick="document.getElementById('lib-plan-modal').remove()" class="btn btn-outline" style="flex:1">Close</button>
+        <div style="font-size:14px;line-height:1.8;color:var(--gray-700)" id="lib-plan-body">${idea.plan}</div>
+        <div style="display:flex;gap:10px;margin-top:24px;flex-wrap:wrap">
+          <button onclick="libraryAiDeepDive('${idea.id}')" class="btn btn-outline" style="flex:1;min-width:130px;border-color:var(--accent);color:var(--accent)">✨ AI Deep Dive</button>
+          <button onclick="printLibraryIdeaModal('${idea.id}')" class="btn btn-outline" style="flex:1;min-width:100px">🖨️ Print</button>
+          <button onclick="saveLibraryIdea('${idea.id}');document.getElementById('lib-plan-modal').remove()" class="btn btn-solid" style="flex:1;min-width:130px">${isSaved?'✅ Already Added':'➕ Add to My Ideas'}</button>
+          <button onclick="document.getElementById('lib-plan-modal').remove()" class="btn btn-outline" style="flex:1;min-width:80px">Close</button>
         </div>
       </div>`;
     }
@@ -4576,8 +4598,232 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       };
       ideas.push(newIdea); setData('ideas', ideas);
       logActivity('idea','Saved library idea: '+idea.title);
-      showToast(idea.title+' saved to My Ideas!', 'success');
-      renderLibrary(); // refresh button state
+      showToast(idea.title+' added to My Ideas!', 'success');
+      // Update button immediately without full re-render
+      const btn = document.getElementById('lib-save-'+ideaId);
+      if (btn) { btn.textContent='✅ Added'; btn.disabled=true; }
+    }
+
+    function printLibraryIdea(ideaId) {
+      const idea = LIBRARY_IDEAS.find(i=>i.id===ideaId);
+      if (!idea) return;
+      printLibraryContent(idea);
+    }
+
+    function printLibraryIdeaModal(ideaId) {
+      const idea = LIBRARY_IDEAS.find(i=>i.id===ideaId);
+      if (!idea) return;
+      printLibraryContent(idea);
+    }
+
+    function printLibraryContent(idea) {
+      const cfg = JSON.parse(localStorage.getItem('settings'))||{};
+      const bizName = cfg.businessName||'H.E.L.P. Center';
+      const w = window.open('','_blank');
+      w.document.write(`<!DOCTYPE html><html><head><title>${idea.title} — Business Plan</title>
+      <style>
+        body{font-family:'Georgia',serif;max-width:800px;margin:40px auto;padding:24px;color:#1a1a1a;line-height:1.8}
+        .letterhead{text-align:center;border-bottom:3px solid #4267B2;padding-bottom:20px;margin-bottom:32px}
+        .letterhead h1{font-size:26px;font-weight:900;color:#4267B2;margin:0 0 6px}
+        .letterhead p{font-size:13px;color:#666;margin:2px 0}
+        h2{font-size:22px;font-weight:800;margin-bottom:6px}
+        .subtitle{color:#555;font-size:15px;margin-bottom:24px}
+        .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin:20px 0;background:#f8f9fb;padding:20px;border-radius:8px}
+        .stat-box{background:#fff;padding:14px;border-radius:6px;border:1px solid #e0e4ef}
+        .stat-label{font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px}
+        .stat-val{font-size:15px;font-weight:800;color:#1a1a1a;margin-top:4px}
+        .tags{margin:16px 0;display:flex;flex-wrap:wrap;gap:8px}
+        .tag{background:#EEF2FF;color:#4267B2;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600}
+        .plan-body{font-size:15px;line-height:1.9;color:#333}
+        .plan-body ul{padding-left:20px} .plan-body li{margin-bottom:8px}
+        .print-btn{display:block;margin:32px auto;padding:14px 32px;background:#4267B2;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer}
+        @media print{.print-btn{display:none}body{margin:0;padding:16px}}
+      </style></head><body>
+      <div class="letterhead">
+        <h1>${bizName}</h1>
+        <p>Business Idea Library — Execution Plan</p>
+      </div>
+      <div style="font-size:36px;margin-bottom:8px">${idea.icon}</div>
+      <h2>${idea.title}</h2>
+      <p class="subtitle">${idea.description}</p>
+      <div class="stats-grid">
+        <div class="stat-box"><div class="stat-label">💰 Revenue Potential</div><div class="stat-val">${idea.revenue}</div></div>
+        <div class="stat-box"><div class="stat-label">🚀 Launch Time</div><div class="stat-val">${idea.launch}</div></div>
+        <div class="stat-box"><div class="stat-label">💸 Startup Cost</div><div class="stat-val">${idea.cost}</div></div>
+        <div class="stat-box"><div class="stat-label">📊 Difficulty</div><div class="stat-val">${idea.difficulty}</div></div>
+      </div>
+      <div class="tags">${idea.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+      <hr style="border:1px solid #e0e4ef;margin:24px 0">
+      <div class="plan-body">${idea.plan}</div>
+      <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+      </body></html>`);
+      w.document.close();
+    }
+
+    // ── LIBRARY AI DEEP DIVE ──────────────────────────────────────────────────
+    async function libraryAiDeepDive(ideaId) {
+      const idea = LIBRARY_IDEAS.find(i=>i.id===ideaId);
+      if (!idea) return;
+      const cfg = JSON.parse(localStorage.getItem('settings'))||{};
+      const groqKey = cfg.groqApiKey||'';
+      if (!groqKey) { alert('Add your Groq API key in Settings → AI Settings to use AI Analysis.'); return; }
+
+      // Build or reuse analysis modal
+      let modal = document.getElementById('lib-ai-modal');
+      if (!modal) { modal = document.createElement('div'); modal.id='lib-ai-modal'; document.body.appendChild(modal); }
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1100;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto';
+      modal.innerHTML = `<div style="background:#fff;border-radius:16px;padding:32px;width:100%;max-width:720px;max-height:92vh;overflow-y:auto">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="font-size:28px">${idea.icon}</div>
+            <div>
+              <div style="font-size:18px;font-weight:800">${idea.title}</div>
+              <div style="font-size:12px;color:#4267B2;font-weight:700;text-transform:uppercase;letter-spacing:.5px">✨ AI Deep Dive Analysis</div>
+            </div>
+          </div>
+          <button onclick="document.getElementById('lib-ai-modal').remove()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999">×</button>
+        </div>
+        <div id="lib-ai-output" style="font-size:14px;line-height:1.85;color:#333;min-height:200px;white-space:pre-wrap">
+          <div style="display:flex;align-items:center;gap:10px;color:#4267B2;font-weight:600"><div style="font-size:20px">⏳</div> Running deep analysis with DeepSeek R1… this gives you 20+ pages of actionable detail.</div>
+        </div>
+        <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap" id="lib-ai-btns" style="display:none">
+          <button onclick="printAiAnalysis('${idea.id}')" class="btn btn-outline" style="flex:1;min-width:120px">🖨️ Print Analysis</button>
+          <button onclick="document.getElementById('lib-ai-modal').remove()" class="btn btn-solid" style="flex:1;min-width:100px">Done</button>
+        </div>
+      </div>`;
+
+      const outputEl = document.getElementById('lib-ai-output');
+      const btnEl = document.getElementById('lib-ai-btns');
+
+      const systemPrompt = `You are an expert business strategist, startup consultant, and revenue coach specializing in Black entrepreneurship, service-based businesses, and community impact ventures.
+
+## RESPONSE QUALITY RULES — MANDATORY
+- Give LONG, DETAILED, THOROUGH responses. Aim for 20+ paragraphs of real value.
+- Include SPECIFIC details: exact dollar amounts, real platform names, step-by-step scripts, templates, timelines.
+- Use numbered lists, section headers (##), and bullet points for clarity.
+- Cover EVERY aspect requested with full depth — never summarize or truncate.
+- Every response MUST end with: "## TODAY'S ACTION STEPS" with 5 specific tasks the person can start in the next 24 hours.`;
+
+      const userPrompt = `Give me an EXHAUSTIVE deep-dive business analysis for: **${idea.title}**
+
+DESCRIPTION: ${idea.description}
+REVENUE POTENTIAL: ${idea.revenue}
+STARTUP COST: ${idea.cost}
+LAUNCH TIME: ${idea.launch}
+DIFFICULTY: ${idea.difficulty}
+TAGS: ${idea.tags.join(', ')}
+
+Please analyze in full detail across ALL of these sections:
+
+## 1. BUSINESS MODEL BREAKDOWN
+Explain exactly how this business makes money — every revenue stream, pricing structure, and upsell opportunity with real dollar amounts.
+
+## 2. MARKET OPPORTUNITY
+Who needs this? Size of the market, demographics, underserved communities, and why NOW is the right time to launch.
+
+## 3. 90-DAY LAUNCH ROADMAP
+Week-by-week action plan from Day 1 through Day 90. What to do, in what order, with real deadlines.
+
+## 4. STARTUP COSTS ITEMIZED
+Break down every single startup cost with specific dollar ranges. What's required vs. optional. Where to save money.
+
+## 5. REVENUE PROJECTIONS
+Month 1, Month 3, Month 6, Month 12 realistic projections. What does success look like at each stage?
+
+## 6. CLIENT ACQUISITION STRATEGY
+10 specific ways to get your first 10 paying clients — scripts, platforms, outreach methods, partnerships.
+
+## 7. PRICING STRATEGY
+Exact pricing tiers with justification. What to charge for each service/package. How to raise prices over time.
+
+## 8. TOOLS & PLATFORMS
+Every software, app, and platform needed. Free vs. paid options. Which ones to use first.
+
+## 9. COMPETITION ANALYSIS
+Who are the main competitors? What do they charge? What gap can this business fill that they don't cover?
+
+## 10. RISK & CHALLENGES
+Top 5 challenges you'll face and exactly how to overcome each one. What trips people up.
+
+## 11. SCALE & EXIT STRATEGY
+How to grow from solo to team. What does a $10K/month version look like? $50K/month?
+
+## 12. SYNERGY WITH H.E.L.P. CENTER
+How does this business idea complement the H.E.L.P. Center's mission? Who in the community should know about this?
+
+## TODAY'S ACTION STEPS
+5 specific things to do in the next 24 hours to start this business.`;
+
+      let fullText = '';
+      outputEl.innerHTML = '';
+      try {
+        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
+          body: JSON.stringify({
+            model:'deepseek-r1-distill-llama-70b',
+            messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],
+            max_tokens:8192, temperature:0.4, stream:true
+          })
+        });
+        const reader = resp.body.getReader(), dec = new TextDecoder();
+        while(true) {
+          const {done,value} = await reader.read(); if(done) break;
+          for(const line of dec.decode(value).split('\n')) {
+            if(!line.startsWith('data: ')) continue;
+            const d = line.slice(6); if(d==='[DONE]') continue;
+            try {
+              const evt = JSON.parse(d);
+              const delta = evt.choices?.[0]?.delta?.content||'';
+              if(delta) {
+                fullText += delta;
+                const clean = cleanGroqResponse(fullText);
+                // Format markdown-style headings
+                outputEl.innerHTML = clean
+                  .replace(/## ([^\n]+)/g,'<h3 style="font-size:16px;font-weight:800;color:#4267B2;margin:20px 0 8px;border-bottom:1px solid #EEF2FF;padding-bottom:6px">$1</h3>')
+                  .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+                  .replace(/\n\n/g,'<br><br>')
+                  .replace(/\n- /g,'<br>• ')
+                  .replace(/\n(\d+)\. /g,'<br>$1. ')
+                  .replace(/\n/g,'<br>');
+                modal.querySelector('div[style*="overflow-y:auto"]').scrollTop = 99999;
+              }
+            } catch(e){}
+          }
+        }
+        // Store for printing
+        window._libAiLastAnalysis = { idea, text: cleanGroqResponse(fullText) };
+        if(btnEl) btnEl.style.display='flex';
+      } catch(e) {
+        outputEl.innerHTML = '<div style="color:#dc2626;padding:12px;background:#fef2f2;border-radius:8px"><strong>Error:</strong> ' + e.message + '<br>Check that your Groq API key is saved in Settings.</div>';
+      }
+    }
+
+    function printAiAnalysis(ideaId) {
+      const data = window._libAiLastAnalysis;
+      if (!data) return;
+      const cfg = JSON.parse(localStorage.getItem('settings'))||{};
+      const bizName = cfg.businessName||'H.E.L.P. Center';
+      const w = window.open('','_blank');
+      const htmlContent = data.text
+        .replace(/## ([^\n]+)/g,'<h2 style="color:#4267B2;font-size:18px;margin:24px 0 10px;border-bottom:2px solid #EEF2FF;padding-bottom:6px">$1</h2>')
+        .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+        .replace(/\n\n/g,'<br><br>').replace(/\n- /g,'<br>• ').replace(/\n(\d+)\. /g,'<br>$1. ').replace(/\n/g,'<br>');
+      w.document.write(`<!DOCTYPE html><html><head><title>${data.idea.title} — AI Analysis</title>
+      <style>body{font-family:Georgia,serif;max-width:800px;margin:40px auto;padding:24px;color:#1a1a1a;line-height:1.85}
+      .lh{text-align:center;border-bottom:3px solid #4267B2;padding-bottom:20px;margin-bottom:32px}
+      .lh h1{font-size:26px;font-weight:900;color:#4267B2;margin:0 0 4px}.lh p{font-size:13px;color:#666}
+      .print-btn{display:block;margin:32px auto;padding:14px 32px;background:#4267B2;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer}
+      @media print{.print-btn{display:none}}</style></head><body>
+      <div class="lh"><h1>${bizName}</h1><p>AI Deep Dive Business Analysis</p></div>
+      <div style="font-size:36px;margin-bottom:8px">${data.idea.icon}</div>
+      <h2 style="font-size:24px;font-weight:900;margin-bottom:6px">${data.idea.title}</h2>
+      <p style="color:#666;margin-bottom:24px">${data.idea.description}</p>
+      <hr style="border:1px solid #e0e4ef;margin:24px 0">
+      <div style="font-size:15px;line-height:1.9">${htmlContent}</div>
+      <button class="print-btn" onclick="window.print()">🖨️ Print / Save as PDF</button>
+      </body></html>`);
+      w.document.close();
     }
 
     // ── BUSINESS BUILDER TOOLS ─────────────────────────────────────────────────
@@ -8630,7 +8876,11 @@ For creative requests: produce the FULL creative work — the complete story, th
   function closeProjectChat() {
     const el = document.getElementById('proj-chat-overlay');
     if (el) { el.style.opacity='0'; el.style.transition='opacity .2s'; setTimeout(()=>el.remove(),200); }
+    // Show next-step handoff suggestion if they had a real conversation (3+ messages)
+    const key = _chatProjectKey;
+    const hadConvo = _chatHistory.length >= 3;
     _chatHistory = []; _chatProjectKey = '';
+    if (hadConvo && key) setTimeout(() => showHandoffSuggestion(key), 400);
   }
 
   function _appendMsg(role, text) {
@@ -8880,7 +9130,7 @@ For creative requests: produce the FULL creative work — the complete story, th
     document.querySelectorAll('.handoff-card').forEach(c => c.remove());
     const card = document.createElement('div');
     card.className = 'handoff-card';
-    card.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;background:#1a1a2e;border:1px solid #C9A84C;border-radius:16px;padding:24px;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.4);';
+    card.style.cssText = 'position:fixed;bottom:24px;left:24px;z-index:9999;background:#1a1a2e;border:1px solid #C9A84C;border-radius:16px;padding:24px;max-width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.4);animation:slideInLeft 0.3s ease;';
     card.innerHTML = `
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
         <div style="font-size:12px;text-transform:uppercase;letter-spacing:0.08em;color:#C9A84C;font-weight:600;">Next Step</div>

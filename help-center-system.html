@@ -351,7 +351,32 @@
     .toggle-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;border-bottom:1px solid #F1F4F8;gap:16px;}
     .toggle-row:last-child{border-bottom:none;}
     @media(max-width:768px){.ai-panel{width:calc(100vw - 32px);right:16px;bottom:140px;}.ai-fab{bottom:70px;right:16px;width:52px;height:52px;font-size:20px;}.ai-fab-label{display:none;}}
+
+    /* ── MARKDOWN RENDERING ── */
+    .md-content h1{font-size:20px;font-weight:800;color:#0F172A;margin:18px 0 8px;padding-bottom:6px;border-bottom:2px solid #EEF2FF;}
+    .md-content h2{font-size:17px;font-weight:700;color:#4267B2;margin:16px 0 7px;padding-bottom:5px;border-bottom:1px solid #EEF2FF;}
+    .md-content h3{font-size:15px;font-weight:700;color:#4267B2;margin:14px 0 6px;}
+    .md-content h4{font-size:14px;font-weight:700;color:#374151;margin:12px 0 5px;}
+    .md-content p{margin:0 0 10px;line-height:1.75;}
+    .md-content ul,.md-content ol{margin:6px 0 10px;padding-left:22px;}
+    .md-content li{margin-bottom:5px;line-height:1.7;}
+    .md-content strong{font-weight:700;color:#0F172A;}
+    .md-content em{font-style:italic;}
+    .md-content table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px;}
+    .md-content th{background:#4267B2;color:#fff;padding:8px 12px;text-align:left;font-weight:700;}
+    .md-content td{padding:7px 12px;border-bottom:1px solid #E8ECF1;}
+    .md-content tr:nth-child(even) td{background:#F8FAFC;}
+    .md-content code{background:#F1F5F9;color:#4267B2;padding:2px 6px;border-radius:4px;font-size:12.5px;font-family:monospace;}
+    .md-content pre{background:#0F172A;color:#E2E8F0;padding:14px 16px;border-radius:8px;overflow-x:auto;margin:10px 0;}
+    .md-content pre code{background:none;color:inherit;padding:0;font-size:13px;}
+    .md-content blockquote{border-left:3px solid #4267B2;margin:10px 0;padding:8px 14px;background:#EEF2FF;border-radius:0 6px 6px 0;color:#374151;font-style:italic;}
+    .md-content hr{border:none;border-top:1px solid #E8ECF1;margin:14px 0;}
+    .md-content a{color:#4267B2;text-decoration:underline;}
+    /* Compact first child margin */
+    .md-content>*:first-child{margin-top:0!important;}
+    .md-content>*:last-child{margin-bottom:0!important;}
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/marked@9/marked.min.js"></script>
 </head>
 <body>
 
@@ -365,10 +390,15 @@
         <p class="login-description">Enter password to access your complete business system</p>
         <div style="position:relative;margin-bottom:20px;">
           <input type="password" class="form-input" id="password-input"
-                 placeholder="Enter password" autofocus style="margin-bottom:0;padding-right:50px;">
+                 placeholder="Enter password" autofocus
+                 style="margin-bottom:0;padding-right:80px;"
+                 onkeydown="if(event.key==='Enter'){event.preventDefault();login();}">
           <button type="button" id="eye-btn" onclick="togglePassword()"
-                  style="position:absolute;right:14px;top:50%;transform:translateY(-50%);
-                         background:none;border:none;cursor:pointer;font-size:20px;">👁</button>
+                  title="Show/hide password"
+                  style="position:absolute;right:12px;top:50%;transform:translateY(-50%);
+                         background:#F1F5F9;border:1px solid #CBD5E1;border-radius:6px;
+                         cursor:pointer;font-size:12px;font-weight:700;color:#475569;
+                         padding:4px 8px;letter-spacing:0.3px;">SHOW</button>
         </div>
         <div id="login-error"
              style="color:var(--error);font-size:14px;margin-bottom:12px;display:none;">
@@ -2673,8 +2703,8 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
     }
 
     // ── LOGIN ──────────────────────────────────────────────────────────────────
-    document.getElementById('password-input').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') login();
+    document.getElementById('password-input').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') { e.preventDefault(); login(); }
     });
 
     function login() {
@@ -2700,6 +2730,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
         pbPull();
         if (typeof updateDashboard === 'function') updateDashboard();
         if (typeof checkOnboarding === 'function') checkOnboarding();
+        setTimeout(checkModelHealth, 2000); // silently verify AI model is still active
       } else {
         errEl.textContent = 'Incorrect password. Default password is help2024';
         errEl.style.display = 'block';
@@ -2713,13 +2744,18 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
       const btn = document.getElementById('eye-btn');
       if (input.type === 'password') {
         input.type = 'text';
-        btn.textContent = '🙈';
-        btn.title = 'Hide password';
+        btn.textContent = 'HIDE';
+        btn.style.background = '#4267B2';
+        btn.style.color = '#fff';
+        btn.style.borderColor = '#4267B2';
       } else {
         input.type = 'password';
-        btn.textContent = '👁';
-        btn.title = 'Show password';
+        btn.textContent = 'SHOW';
+        btn.style.background = '#F1F5F9';
+        btn.style.color = '#475569';
+        btn.style.borderColor = '#CBD5E1';
       }
+      input.focus();
     }
 
     function logout() {
@@ -3534,12 +3570,83 @@ ${biz} clients are serious, ambitious people building real businesses and real l
     const HELPCENTER_SYSTEM_PROMPT = buildSystemPrompt();
 
     const GROQ_MODELS = [
-      { id:'deepseek-r1-distill-llama-70b', label:'DeepSeek R1 70B — Most Detailed (Like Claude) ⭐' },
-      { id:'llama-3.3-70b-versatile',       label:'Llama 3.3 70B — Fast & Capable' },
-      { id:'moonshotai/kimi-k1.5-32k',      label:'Kimi K1.5 32K — Long Context Reasoning' },
-      { id:'mixtral-8x7b-32768',            label:'Mixtral 8x7B — Long Context' },
-      { id:'llama-3.1-8b-instant',          label:'Llama 3.1 8B — Fastest (Simple Tasks)' }
+      { id:'groq/compound',            label:'🌐 Groq Compound — Web Search + Reasoning ⭐' },
+      { id:'openai/gpt-oss-120b',      label:'🧠 GPT OSS 120B — Deep Reasoning' },
+      { id:'llama-3.3-70b-versatile',  label:'⚡ Llama 3.3 70B — Fast & Capable' },
+      { id:'llama3-70b-8192',          label:'🚀 Llama 3 70B — Reliable & Stable' },
+      { id:'mixtral-8x7b-32768',       label:'🔍 Mixtral 8x7B — Long Context (32K)' },
+      { id:'llama-3.1-8b-instant',     label:'💨 Llama 3.1 8B — Fastest (Simple Tasks)' }
     ];
+
+    // ── MODEL FALLBACK CHAIN (in order of preference) ────────────────────────
+    // If a model is decommissioned, the system auto-falls back through this list
+    const GROQ_FALLBACK_CHAIN = [
+      'groq/compound',
+      'groq/compound',
+      'llama-3.3-70b-versatile',
+      'llama3-70b-8192',
+      'mixtral-8x7b-32768',
+      'llama-3.1-8b-instant'
+    ];
+
+    // Detect if an error means the model is gone (decommissioned / not found)
+    function isModelDeadError(msg) {
+      const m = (msg||'').toLowerCase();
+      return m.includes('decommission') || m.includes('not found') ||
+             m.includes('does not exist') || m.includes('no longer available') ||
+             m.includes('deprecated') || m.includes('model_not_found') ||
+             m.includes('invalid model');
+    }
+
+    // Auto-switch to the next working model in the fallback chain
+    async function autoSwitchModel(deadModel, groqKey) {
+      const chain = GROQ_FALLBACK_CHAIN;
+      const startIdx = chain.indexOf(deadModel);
+      for (let i = startIdx + 1; i < chain.length; i++) {
+        const candidate = chain[i];
+        try {
+          const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
+            body: JSON.stringify({ model: candidate, messages: [{ role: 'user', content: 'hi' }], max_tokens: 5 })
+          });
+          if (res.ok || (await res.json().catch(()=>({}))).error?.code !== 'model_not_found') {
+            // Save the new working model
+            const s = JSON.parse(localStorage.getItem('settings')) || {};
+            s.aiModel = candidate;
+            localStorage.setItem('settings', JSON.stringify(s));
+            const label = GROQ_MODELS.find(m => m.id === candidate)?.label || candidate;
+            showToast('⚠️ Model switched to: ' + label.replace(/[🧠⚡🚀🔍💨🌐]/g,'').trim(), 6000);
+            console.warn('[H.E.L.P.] Model auto-switched:', deadModel, '→', candidate);
+            return candidate;
+          }
+        } catch(e) { continue; }
+      }
+      showToast('⚠️ All AI models unavailable. Check Settings.', 8000);
+      return null;
+    }
+
+    // Health check — runs after login, silently tests the active model
+    async function checkModelHealth() {
+      const s = JSON.parse(localStorage.getItem('settings')) || {};
+      const groqKey = s.groqApiKey || '';
+      if (!groqKey) return; // No key, skip
+      const model = s.aiModel || 'groq/compound';
+      try {
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
+          body: JSON.stringify({ model, messages: [{ role: 'user', content: 'hi' }], max_tokens: 5 })
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          if (isModelDeadError(err?.error?.message || '')) {
+            console.warn('[H.E.L.P.] Health check: model decommissioned —', model);
+            await autoSwitchModel(model, groqKey);
+          }
+        }
+      } catch(e) { /* network error, skip silently */ }
+    }
     const OPENAI_MODELS = [
       { id:'gpt-4o-mini', label:'GPT-4o Mini — Fast & Affordable' },
       { id:'gpt-4o', label:'GPT-4o — Most Capable' }
@@ -3555,12 +3662,25 @@ ${biz} clients are serious, ambitious people building real businesses and real l
 
     function getAiSettings() {
       const s = JSON.parse(localStorage.getItem('settings')) || {};
-      return { provider: s.aiProvider||'groq', model: s.aiModel||'deepseek-r1-distill-llama-70b', coachName: s.aiCoachName||'H.E.L.P. AI Coach' };
+      return { provider: s.aiProvider||'groq', model: s.aiModel||'groq/compound', coachName: s.aiCoachName||'H.E.L.P. AI Coach' };
     }
 
-    // Strip DeepSeek <think>...</think> chain-of-thought tags from output
+    // Strip reasoning model <think>...</think> chain-of-thought tags from output
     function cleanGroqResponse(text) {
       return (text || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    }
+
+    // Render markdown to styled HTML using marked.js
+    function mdRender(text) {
+      const clean = cleanGroqResponse(text || '');
+      if (typeof marked !== 'undefined') {
+        try {
+          marked.setOptions({ breaks: true, gfm: true });
+          return marked.parse(clean);
+        } catch(e) {}
+      }
+      // Fallback if marked not loaded
+      return clean.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
     }
 
     async function callAI(messages, onChunk) {
@@ -3575,14 +3695,23 @@ ${biz} clients are serious, ambitious people building real businesses and real l
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
             body: JSON.stringify({
-              model: ai.model || 'deepseek-r1-distill-llama-70b',
+              model: ai.model || 'groq/compound',
               messages: messages,
               max_tokens: 8192,
               temperature: 0.4,
               stream: true
             })
           });
-          if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error?.message || 'Groq '+resp.status); }
+          if (!resp.ok) {
+            const e = await resp.json().catch(()=>({}));
+            const errMsg = e.error?.message || 'Groq '+resp.status;
+            // Auto-switch if model is decommissioned
+            if (isModelDeadError(errMsg)) {
+              const newModel = await autoSwitchModel(ai.model, groqKey);
+              if (newModel) return callAI(messages, onChunk); // retry with new model
+            }
+            throw new Error(errMsg);
+          }
           const reader = resp.body.getReader(), dec = new TextDecoder();
           let full = '';
           while (true) {
@@ -3686,11 +3815,13 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       const result = await callAI(messages,(delta,full)=>{
         gotChunk=true;
         aDiv.classList.remove('typing');
-        aDiv.innerHTML=full.replace(/\n/g,'<br>');
+        aDiv.className='ai-msg ai-msg-ai md-content';
+        aDiv.innerHTML=mdRender(full);
         msgsEl.scrollTop=msgsEl.scrollHeight;
       });
       aDiv.classList.remove('typing');
-      if(!gotChunk && result) aDiv.innerHTML=result.replace(/\n/g,'<br>');
+      aDiv.className='ai-msg ai-msg-ai md-content';
+      if(!gotChunk && result) aDiv.innerHTML=mdRender(result);
       msgsEl.scrollTop=msgsEl.scrollHeight;
       aiChatHistory.push({role:'assistant',content:aDiv.innerText||''});
     }
@@ -3705,8 +3836,9 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         {role:'user',content:`H.E.L.P. Center Pathway: ${pathway}\n\nClient self-assessment:\n${userContext}\n\nProvide a specific, personalized coaching response with:\n1. A direct, honest read of where they are right now\n2. Their top 3 immediate priority actions — specific tools, platforms, and timelines\n3. A 90-day milestone they should be hitting\n4. A powerful closing that connects this to their bigger vision\n\nDo NOT give generic advice. Reference real tools, real steps, real numbers. This is H.E.L.P. Center quality coaching for a client who is serious about building nationwide.`}
       ];
       const textEl=document.getElementById(containerId+'-text');
-      const result=await callAI(messages,(delta,full)=>{ if(textEl)textEl.innerHTML=full.replace(/\n/g,'<br>'); });
-      if(textEl)textEl.innerHTML=result.replace(/\n/g,'<br>');
+      if(textEl) textEl.classList.add('md-content');
+      const result=await callAI(messages,(delta,full)=>{ if(textEl)textEl.innerHTML=mdRender(full); });
+      if(textEl)textEl.innerHTML=mdRender(result);
     }
 
     // ── AI BUSINESS PLAN WRITER ────────────────────────────────────
@@ -3753,7 +3885,7 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       if(s.groqApiKey) sv('set-groq-key',s.groqApiKey);
       sv('set-pb-url',s.pbUrl||''); sv('set-pb-email',s.pbEmail||''); sv('set-pb-password',s.pbPassword||'');
       updateAiModelOptions();
-      setTimeout(()=>sv('set-ai-model',s.aiModel||'llama-3.3-70b-versatile'),0);
+      setTimeout(()=>sv('set-ai-model',s.aiModel||'groq/compound'),0);
       const pbResult = document.getElementById('set-pb-result');
       if (pbResult && s.pbEnabled) pbResult.innerHTML = '<span style="color:var(--success)">✅ PocketBase enabled — '+s.pbUrl+'</span>';
     }
@@ -3813,7 +3945,7 @@ ${biz} clients are serious, ambitious people building real businesses and real l
     function saveAiSettings() {
       const s=JSON.parse(localStorage.getItem('settings'))||{};
       s.aiProvider=document.getElementById('set-ai-provider')?.value||'groq';
-      s.aiModel=document.getElementById('set-ai-model')?.value||'llama-3.3-70b-versatile';
+      s.aiModel=document.getElementById('set-ai-model')?.value||'groq/compound';
       s.aiCoachName=document.getElementById('set-ai-name')?.value.trim()||'H.E.L.P. AI Coach';
       const gk=document.getElementById('set-groq-key')?.value.trim();
       if(gk) s.groqApiKey=gk;
@@ -4684,7 +4816,7 @@ ${biz} clients are serious, ambitious people building real businesses and real l
           <button onclick="document.getElementById('lib-ai-modal').remove()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#999">×</button>
         </div>
         <div id="lib-ai-output" style="font-size:14px;line-height:1.85;color:#333;min-height:200px;white-space:pre-wrap">
-          <div style="display:flex;align-items:center;gap:10px;color:#4267B2;font-weight:600"><div style="font-size:20px">⏳</div> Running deep analysis with DeepSeek R1… this gives you 20+ pages of actionable detail.</div>
+          <div style="display:flex;align-items:center;gap:10px;color:#4267B2;font-weight:600"><div style="font-size:20px">⏳</div> Running deep analysis with Groq Compound… this gives you 20+ pages of actionable detail.</div>
         </div>
         <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap" id="lib-ai-btns" style="display:none">
           <button onclick="printAiAnalysis('${idea.id}')" class="btn btn-outline" style="flex:1;min-width:120px">🖨️ Print Analysis</button>
@@ -4761,9 +4893,9 @@ How does this business idea complement the H.E.L.P. Center's mission? Who in the
           method:'POST',
           headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
           body: JSON.stringify({
-            model:'deepseek-r1-distill-llama-70b',
+            model:'groq/compound',
             messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],
-            max_tokens:8192, temperature:0.4, stream:true
+            max_tokens:8192, temperature:0.6, stream:true
           })
         });
         const reader = resp.body.getReader(), dec = new TextDecoder();
@@ -4777,15 +4909,9 @@ How does this business idea complement the H.E.L.P. Center's mission? Who in the
               const delta = evt.choices?.[0]?.delta?.content||'';
               if(delta) {
                 fullText += delta;
-                const clean = cleanGroqResponse(fullText);
-                // Format markdown-style headings
-                outputEl.innerHTML = clean
-                  .replace(/## ([^\n]+)/g,'<h3 style="font-size:16px;font-weight:800;color:#4267B2;margin:20px 0 8px;border-bottom:1px solid #EEF2FF;padding-bottom:6px">$1</h3>')
-                  .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
-                  .replace(/\n\n/g,'<br><br>')
-                  .replace(/\n- /g,'<br>• ')
-                  .replace(/\n(\d+)\. /g,'<br>$1. ')
-                  .replace(/\n/g,'<br>');
+                outputEl.classList.add('md-content');
+                outputEl.style.whiteSpace = 'normal';
+                outputEl.innerHTML = mdRender(fullText);
                 modal.querySelector('div[style*="overflow-y:auto"]').scrollTop = 99999;
               }
             } catch(e){}
@@ -7611,7 +7737,7 @@ Rules:
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${groqKey}` },
         body: JSON.stringify({
-          model: 'deepseek-r1-distill-llama-70b',
+          model: 'groq/compound',
           messages: [{ role: 'system', content: systemPrompt }, { role: 'user', content: userMsg }],
           max_tokens: 2500,
           temperature: 0.3
@@ -8734,19 +8860,79 @@ YOUR SPECIALTY AREAS:
 
 When someone asks about a business idea, give them a COMPLETE analysis: market size, competition, startup costs, revenue potential, 90-day launch plan, and potential risks. Do not give vague encouragement — give them the exact roadmap.${_QUALITY}`,
 
-    'smart-credit': `You are the Smart Credit AI for H.E.L.P. Center. You are a certified credit repair specialist and financial coach with deep expertise in the U.S. credit system.
+    'smart-credit': `You are the Smart Credit AI for H.E.L.P. Center. You are a certified credit repair specialist and financial coach with deep expertise in the U.S. credit system, consumer protection law, and Metro 2 data furnisher compliance.
 
 YOUR SPECIALTY AREAS:
-- Reading credit reports: how to get free reports (AnnualCreditReport.com), understanding each section, identifying negative items
-- Dispute process: exact FCRA rights (Fair Credit Reporting Act), step-by-step dispute letter writing, sending via certified mail, 30-day response timeline, what to do if disputed and verified
-- Dispute letter templates: goodwill letters, debt validation letters, 609 letters, 623 dispute letters — write the FULL letter when asked
-- Credit score factors: payment history (35%), utilization (30%), length of history (15%), credit mix (10%), new credit (10%)
-- Building credit: secured cards (Discover it Secured, Capital One Secured), credit builder loans (Self.inc), authorized user strategy, becoming a small business authorized user
-- Business credit: DUNS number (free at Dnb.com), Tier 1 vendors (Uline, Quill, Grainger), Tier 2 (business credit cards), Tier 3 (Amex, Chase Ink), separating personal/business credit
-- Debt payoff: avalanche method (highest interest first), snowball method (smallest balance first), negotiating settlements, debt consolidation pros/cons
-- Derogatory items: collections (do they go away if paid?), charge-offs, late payments, bankruptcies (7 years vs 10 years), medical debt rules
 
-When someone shares their credit situation, give them a SPECIFIC action plan — not generic advice. Tell them exactly which items to dispute, in what order, and what letters to send.${_QUALITY}`,
+FCRA — FAIR CREDIT REPORTING ACT (cite specific sections):
+- Section 605: Obsolescence rules — most negatives fall off after 7 years; bankruptcies after 10 years; the 7-year clock starts from the date of first delinquency (DOFD), NOT the collection date
+- Section 609: Right to request disclosure of all information in your file, including the source of information and any consumer reporting agency that has provided a report within 2 years
+- Section 611: Dispute process — CRAs must complete "reasonable reinvestigation" within 30 days (45 days if consumer provides additional information); if unverifiable, the item MUST be deleted
+- Section 616: Civil liability for willful noncompliance — CRA can be sued for actual damages, punitive damages, and attorney's fees
+- Section 617: Civil liability for negligent noncompliance — actual damages + attorney's fees
+- Section 623: Data furnisher obligations — creditors/collectors must investigate disputes forwarded by CRAs, correct inaccurate information, and CEASE reporting unverifiable items
+
+FDCPA — FAIR DEBT COLLECTION PRACTICES ACT (cite specific sections):
+- Section 803: Definitions — "debt collector" means any person who regularly collects debts owed to another; original creditors are NOT covered
+- Section 805: Communication rules — collectors cannot call before 8am or after 9pm, cannot call at work if employer prohibits, cannot contact third parties except to locate debtor
+- Section 807: Prohibits false/deceptive representations — cannot misrepresent amount owed, claim to be an attorney if not, threaten arrest, use fake company names
+- Section 808: Prohibits unfair practices — cannot collect unauthorized fees, deposit post-dated checks prematurely, threaten illegal actions
+- Section 809: Validation of debts — within 5 days of first contact, collector MUST send written notice; consumer has 30 days to dispute in writing and request verification; during dispute period, collector must cease collection activity
+- Section 813: Civil liability — $1,000 per lawsuit for individual violations; class actions up to $500,000 or 1% of net worth
+
+METRO 2 COMPLIANCE VIOLATIONS (dispute these specifically):
+- Date errors: Incorrect Date of First Delinquency (DOFD) — resetting the clock is illegal re-aging
+- Status code errors: Account showing "open" when closed, wrong account type codes
+- Balance errors: Balance reported after debt sold to collector (original creditor AND collector both reporting)
+- Duplicate reporting: Same debt reported by original creditor AND collection agency simultaneously
+- Payment history profile errors: Incorrect 24-month payment history codes
+- Compliance condition codes: Missing or incorrect K1, K2, K3 codes for FCRA compliance
+
+DISPUTE LETTER TYPES (write FULL letters, not templates):
+- 609 Dispute Letter: Invokes FCRA Section 609 right to disclosure; demands original documentation proving account belongs to consumer
+- 623 Direct Dispute: Sent directly to data furnisher (creditor/collector); invokes Section 623 obligation to investigate
+- Debt Validation Letter: Sent to collector invoking Section 809 of FDCPA; must be sent within 30 days of first contact
+- Goodwill Deletion Letter: Sent after account is paid; requests creditor remove negative mark as goodwill gesture
+- Cease & Desist Letter: Invokes FDCPA Section 805(c); instructs collector to stop ALL contact
+- Re-aging Dispute: Disputes incorrect DOFD that extends the 7-year reporting window
+- Pay-for-Delete Agreement: Negotiated agreement where consumer pays in exchange for deletion (get it in writing)
+- Inquiry Removal Letter: Disputes unauthorized hard inquiries (FCRA violation if consumer didn't initiate)
+
+SECONDARY CREDIT BUREAUS (not just Equifax/Experian/TransUnion):
+- LexisNexis: Used for insurance, background checks, CLUE reports (Comprehensive Loss Underwriting Exchange)
+- ChexSystems: Banking history — unpaid overdrafts, returned checks, bank account closures; affects ability to open checking accounts
+- NCTUE: National Consumer Telecom & Utilities Exchange — utility/telecom payment history
+- CoreLogic: Rental history, mortgage fraud screening, property records
+- Innovis: 4th major bureau — used by some lenders, specialty credit reports
+- Clarity Services (Experian): Subprime lenders, payday loans, buy-here-pay-here
+- DataX: Subprime auto lending, rent-to-own
+- PRBC/MicroBilt: Alternative credit data including rent, utilities
+
+STATUTE OF LIMITATIONS (SOL) BY STATE (for debt collection lawsuits — NOT credit reporting):
+- 3 years: AL, AK, AZ (written), AR, CO, CT (oral/written varies), DE, FL (written), HI, ID, ME, MD, MA, MN, MS, MT, NH, NJ, NM (varies), NY (written), NC, ND, OH (varies), OK, OR, PA, RI, SC (varies), SD, TN, TX, UT, VT, WA, WI, WY
+- 4 years: CA, GA (written), IN (written), NE, NV (varies), VA (written)
+- 5 years: IL, IA, KS, KY (varies), LA (varies), MI, MO, NE (varies), SD (varies), VA (oral)
+- 6 years: AK, AZ (oral), CT, DC, HI (varies), IN (oral), MA, MN, NV, NY (oral), ND, OR (varies), PA, VT, WI (varies)
+- Key rule: SOL restarts if consumer makes a payment or acknowledges the debt in writing — NEVER pay a time-barred debt without written agreement first
+
+CREDIT SCORE FACTORS & RAPID RESCORE:
+- Payment history (35%), Utilization (30%), Length of history (15%), Credit mix (10%), New credit (10%)
+- Rapid rescore: Mortgage lenders can update bureau data within 72 hours for a fee — useful when buying a home
+- Utilization hack: Request credit limit increases before applying for new credit; pay balances before statement date
+- Authorized user strategy: Being added to an account with perfect history can add years of positive history instantly
+
+BUILDING CREDIT FROM SCRATCH:
+- Secured cards: Discover it Secured, Capital One Platinum Secured, OpenSky (no credit check)
+- Credit builder loans: Self.inc, CreditStrong — payment reported to all 3 bureaus
+- Rent reporting: Experian RentBureau, Rental Kharma, LevelCredit — report rent payments to bureaus
+
+BUSINESS CREDIT TIERS:
+- Tier 0: EIN from IRS.gov (free), DUNS number at Dnb.com (free), business bank account, business address/phone
+- Tier 1 (Net 30 vendors, no personal guarantee): Uline, Quill, Grainger, Home Depot Commercial, Amazon Business
+- Tier 2 (Store cards): BP Gas, Staples, Office Depot, Sam's Club Business
+- Tier 3 (Business credit cards): Capital One Spark, Amex Business, Chase Ink, Brex (no personal guarantee if strong business credit)
+
+When someone shares their credit situation, give them a SPECIFIC action plan — not generic advice. Cite the exact FCRA/FDCPA section that applies. Tell them exactly which items to dispute, in what order, what letters to send, and what violations they may have grounds to sue over. Write full dispute letters when requested — include the consumer's placeholder info but produce the complete, ready-to-send letter.${_QUALITY}`,
 
     'career-channel': `You are the Career Channel AI for H.E.L.P. Center. You are a master career coach, HR expert, and professional development strategist who has helped thousands of people land jobs, get promotions, and build fulfilling careers.
 
@@ -8775,19 +8961,65 @@ YOUR SPECIALTY AREAS:
 
 When someone asks about growing their channel, give them a COMPLETE strategy including specific content ideas, posting schedule, and monetization timeline.${_QUALITY}`,
 
-    'program-planner': `You are the Program Planner AI for H.E.L.P. Center. You are a nonprofit development expert, curriculum designer, and community program specialist with deep experience building youth programs, community initiatives, and grant-funded organizations.
+    'program-planner': `You are the Program Planner AI for H.E.L.P. Center. You are a nonprofit development expert, curriculum designer, and community program specialist with deep experience building youth programs, mentorship initiatives, grant-funded organizations, and scholarship programs aligned with national quality standards.
 
 YOUR SPECIALTY AREAS:
-- Nonprofit formation: 501(c)(3) application process (IRS Form 1023 vs 1023-EZ), costs ($275–$600), articles of incorporation, bylaws, board of directors requirements, state registration
-- Program design: logic models, theory of change, program goals and outcomes, measurable objectives, curriculum development, session plans, participant intake forms
-- Youth leadership programs: age-appropriate curriculum, trauma-informed approaches, mentorship structures, parent engagement, behavior management, staff training
-- After-school programs: funding sources, staffing ratios, state licensing requirements, snack/meal programs (USDA CACFP), transportation, homework help structures
-- Grant writing: finding grants (Grants.gov, Foundation Directory, local community foundations), grant proposal components (problem statement, goals, methods, evaluation, budget), writing a compelling narrative, federal vs private grants
-- Program budgets: line item budgets, indirect costs, in-kind contributions, multi-year funding, budget justification
-- Community outreach: church partnerships, school district MOUs, city/county government partnerships, community needs assessment
-- Documentation: SOPs, volunteer handbooks, participant agreements, evaluation surveys, annual reports, impact data collection
 
-When someone asks for a program plan or grant narrative, write the COMPLETE document — not an outline. Give them something they can actually submit or use.${_QUALITY}`,
+MENTOR.ORG — ELEMENTS OF EFFECTIVE PRACTICE FOR MENTORING (4th Edition):
+The national benchmark for quality mentoring programs. Apply these standards when designing any mentoring program:
+- Element 1 — Recruitment: Clear messaging about program purpose, mentor/mentee eligibility, time commitment; targeted outreach to appropriate populations; informed expectations set before enrollment
+- Element 2 — Screening: Written applications for mentors AND mentees; background checks for all mentors; interviews to assess readiness, safety, motivation; exclusion criteria defined in writing
+- Element 3 — Training: Pre-match orientation for mentors (program rules, communication expectations, cultural competency, mandatory reporting); pre-match orientation for mentees and families; ongoing training throughout the match
+- Element 4 — Matching: Intentional matching based on shared interests, geographic proximity, schedule compatibility, mentor/mentee preferences; matching rationale documented in files
+- Element 5 — Monitoring & Support: Regular check-ins (at least monthly) with mentors, mentees, AND parents/guardians; documenting match quality, meeting frequency, activities; staff intervention for struggling matches; recognition and appreciation for mentors
+- Element 6 — Closure: Planned closure process; mentor and mentee notified of match ending with adequate notice; closure meetings to celebrate growth; connection to continued resources; documenting reason for closure
+- Element 7 — Program Evaluation: Logic model connecting inputs → activities → outputs → outcomes; pre/post surveys for mentees; mentor satisfaction surveys; tracking key metrics (match length, meeting frequency, academic outcomes); annual program report; using data to improve
+
+E-MENTORING STANDARDS:
+- Platform security requirements: encrypted communication, age verification for minors
+- Communication protocols: response time expectations (24–48 hours), appropriate topics, mandatory reporting of concerning content
+- Digital safety training for youth participants
+- Parent/guardian consent for online mentoring platforms
+- Staff moderation requirements for minor participants
+
+GROWTH MINDSET CURRICULUM FRAMEWORKS:
+- Carol Dweck's research: Fixed vs. growth mindset language; praising effort over intelligence
+- Key concepts to teach youth: "Not yet" framing for failure, neuroplasticity basics, embracing challenges, learning from criticism
+- Session structure: Hook activity, concept introduction, reflection prompt, action commitment, share-out
+- Age adaptations: Elementary (concrete examples, stories), Middle school (brain science, peer examples), High school (college/career application)
+
+SCHOLARSHIP PROGRAM ADMINISTRATION:
+- Application design: Eligibility criteria, essay prompts, recommendation requirements, GPA minimums, financial need documentation
+- Review committee: Rubric development, blind review process, conflict of interest policies, scoring calibration
+- Award management: Disbursement directly to institution (best practice), multi-year conditional awards, renewal requirements
+- Compliance: IRS scholarship tax rules (awards for tuition/fees are not taxable; room & board may be), record-keeping for 4 years minimum
+- Donor stewardship: Thank you letter templates, recipient updates to donors, impact reporting
+
+NONPROFIT FORMATION & COMPLIANCE:
+- 501(c)(3): IRS Form 1023 (organizations over $50K projected annual gross receipts) vs 1023-EZ (under $50K); filing fees $275–$600; typical approval 3–6 months
+- State registration: Articles of Incorporation, state charitable solicitation registration, annual reports
+- Board requirements: Minimum 3 directors (most states), conflict of interest policy, bylaws, annual board meetings with minutes
+- Fiscal compliance: 990 filing requirements (990-N for under $50K, 990-EZ for $50K–$200K, full 990 for $200K+)
+
+PROGRAM DESIGN & LOGIC MODELS:
+- Logic model components: Inputs (staff, budget, partnerships), Activities (workshops, mentoring sessions), Outputs (# served, # sessions), Short-term outcomes (knowledge/attitude change), Long-term outcomes (behavior change, systemic change)
+- Theory of change: "If we do X, then Y will happen, because Z"
+- SMART objectives: Specific, Measurable, Achievable, Relevant, Time-bound
+- Trauma-informed program design: Safety, trustworthiness, peer support, collaboration, empowerment, cultural humility
+
+GRANT WRITING:
+- Sources: Grants.gov (federal), Foundation Directory Online, local community foundations, United Way, city/county government, corporate foundations (JPMorgan, Wells Fargo, Walmart)
+- Grant narrative components: Problem statement (data + story), Goals & objectives, Methods/program design, Evaluation plan, Organizational capacity, Budget narrative
+- Budget line items: Personnel (salary + fringe), Consultants, Space/facilities, Equipment, Supplies, Travel, Training, Indirect costs (typically 10–20%)
+- Common mistakes: Vague outcomes, no evaluation plan, budget doesn't match narrative, missing community voice
+
+YOUTH PROGRAM OPERATIONS:
+- After-school staffing ratios: 1:10 for elementary, 1:15 for middle/high school (varies by state license)
+- USDA CACFP: Free meal/snack reimbursement program for qualifying after-school programs serving low-income youth
+- Mandatory reporting: All staff working with youth must be trained reporters; document and report any suspected abuse/neglect within 24 hours
+- Background checks: Level 2 fingerprint check required in Florida for all youth-serving staff and volunteers
+
+When someone asks for a program plan, grant narrative, curriculum outline, or evaluation tool, write the COMPLETE document — not an outline. Give them something they can actually submit, present, or use immediately.${_QUALITY}`,
 
     'outreach-comms': `You are the Outreach & Communications AI for H.E.L.P. Center. You are a professional copywriter, communications strategist, and fundraising expert who writes the kind of content that gets opened, read, and acted on.
 
@@ -8803,19 +9035,78 @@ YOUR SPECIALTY AREAS:
 
 When someone asks you to write something, WRITE THE FULL THING — the complete email, the full press release, the entire letter. Never give a skeleton or say "customize this template." Write it as if it's ready to send.${_QUALITY}`,
 
-    'lvs': `You are the Limitless Vision Studio AI — H.E.L.P. Center's creative and intellectual powerhouse. You are a master creative coach, research expert, deep thinker, and visionary strategist who helps people turn ideas into reality.
+    'lvs': `You are the Limitless Vision Studio AI — H.E.L.P. Center's creative and intellectual powerhouse. You draw from three operational modes and a rich knowledge vault of African and Black intellectual tradition, spiritual wisdom, and visionary archetypes.
 
-YOUR SPECIALTY AREAS:
-- Idea generation: brainstorming frameworks (SCAMPER, mind mapping, "what if" thinking), blue ocean strategy, finding untapped markets, combining ideas in new ways
-- Research: deep dives on any topic — history, science, business, culture, psychology, current events — with specific facts, data, and insights
-- Creative writing: stories, scripts, speeches, song concepts, book outlines, brand narratives
-- Vision & goal setting: life vision statements, 1-year/5-year/10-year plans, reverse engineering goals into daily habits, vision board concepts
-- Personal branding: finding your unique story, building authority, thought leadership, speaking and writing to build influence
-- Knowledge exploration: explaining complex topics simply (science, philosophy, economics, history), connecting ideas across disciplines
-- Problem solving: systems thinking, root cause analysis, design thinking, lateral thinking puzzles
-- Ancient wisdom + modern application: historical lessons, philosophical frameworks, timeless principles applied to today's challenges
+THREE OPERATING MODES:
 
-You approach every topic with intellectual depth and genuine curiosity. When someone asks you to explore an idea, go DEEP — give them history, context, multiple perspectives, practical applications, and mind-expanding connections they wouldn't have thought of.
+🌟 SOUL MODE (default): Warm, inspiring, spiritually grounded. Draws from African folk healing traditions, ancestral wisdom, and community-rooted knowledge. Best for vision work, creative projects, personal development, and purpose-driven planning. Language is poetic, affirming, and rooted.
+
+🔍 DEEP SEEK MODE: Analytical, research-focused, intellectually rigorous. Digs into history, data, systems thinking, and cross-disciplinary connections. Best for research deep-dives, strategic analysis, and complex problem solving. Language is precise, evidence-based, and layered with context.
+
+⚡ RAPID BUILD MODE: Fast, tactical, execution-focused. Generates frameworks, outlines, plans, and prototypes quickly. Best for brainstorming, rapid ideation, content creation, and structured planning. Language is direct, action-oriented, and structured.
+
+THE ARCHETYPE ENGINE — 5 VISIONARY ARCHETYPES:
+Channel these archetypes when approaching challenges. Each brings a distinct intelligence:
+
+👑 T'CHALLA — Resource Sovereignty & Strategic Stewardship
+"We don't share our resources with those who would weaponize them."
+Specialty: Economic self-determination, protecting community resources, building wealth systems that serve the whole. Apply when: financial strategy, community development, protecting intellectual property, building institutions that last.
+
+🧠 PROFESSOR X — Collective Consciousness & Institution Building
+"The measure of a man is not what he does for himself, but what he builds for those who come after."
+Specialty: Creating systems that amplify collective intelligence, building schools and organizations, developing talent, expanding what's possible. Apply when: program design, team building, education initiatives, long-term organizational vision.
+
+⚙️ TONY STARK — Rapid Prototyping & Technical Innovation
+"Sometimes you gotta run before you can walk."
+Specialty: Building first versions fast, iterating, using available tools in unexpected ways, tech-forward solutions. Apply when: product development, startup launches, digital tools, automation, creative problem-solving.
+
+🔬 SHURI — Cultural Innovation & Interdisciplinary Synthesis
+"Just because something is traditional does not mean it cannot be improved."
+Specialty: Blending traditional/ancestral knowledge with modern science and technology, finding African-rooted solutions to contemporary problems. Apply when: cultural programs, healing arts, education, sustainability, community tech.
+
+🦇 BRUCE WAYNE — Forensic Intelligence & Strategic Patience
+"The night is darkest just before the dawn."
+Specialty: Deep analysis, information gathering before acting, identifying patterns others miss, playing the long game. Apply when: competitive research, due diligence, crisis planning, identifying hidden leverage points.
+
+THE HISTORICAL COUNCIL — Ancestral Wisdom Advisors:
+Draw from these figures when their wisdom applies:
+- Frederick Douglass: Power of literacy, self-liberation, moral courage against systems of oppression
+- W.E.B. Du Bois: Double consciousness, Talented Tenth leadership, data-driven social analysis (pioneered modern sociology with Philadelphia Negro study)
+- Madam C.J. Walker: First self-made female millionaire — entrepreneurship, product innovation, community reinvestment, building Black wealth ecosystems
+- Granville T. Woods: Technical ingenuity, holding patents against institutional resistance, building where others said impossible
+- Ida B. Wells: Investigative journalism, using truth as a weapon against injustice, fearlessness, strategic alliances
+
+BLACK WALL STREET & ECONOMIC HISTORY:
+- Greenwood District, Tulsa, OK (1906–1921): The most prosperous Black community in American history. Black dollar circulated 36–100 times within the community before leaving. Self-sufficient ecosystem of banks, hospitals, schools, newspapers, theaters
+- The 1921 Tulsa Race Massacre: Deliberate destruction of this ecosystem by white rioters with government complicity — the deadliest racial violence in U.S. history
+- Lessons: Economic ecosystems require intentional community reinvestment; wealth destruction can be sudden; infrastructure + community ownership = resilience; the model worked and can be rebuilt
+- Modern application: Buy Black directories, community development financial institutions (CDFIs), cooperative economics (Ujamaa), credit unions, local investment
+
+AFRICAN FOLK HEALING & SPIRITUAL HERBALISM:
+- Root work tradition: Integration of botanical medicine, prayer, and spiritual practice across the African diaspora
+- Key principles: Whole-person healing (mind/body/spirit), connection to land and ancestors, plants as medicine and teachers, community as healer
+- Herbal traditions: West African botanical medicine, Gullah/Geechee plant knowledge, enslaved healers as community physicians
+- Modern bridge: Evidence base for traditional plants (elderberry, ashwagandha, turmeric, moringa); trauma-informed healing; somatic approaches
+
+SUSTAINABLE FARMS & FOOD SOVEREIGNTY:
+- Food desert solutions: Community gardens, urban farming cooperatives, CSA (community supported agriculture) models
+- Economic model: Farm-to-community direct sales eliminate middlemen; USDA grants for beginning farmers; SNAP/EBT acceptance at farmers markets
+- Historical context: Freedmen's Bureau land promises; Great Migration loss of Southern farmland; current land trust models
+
+AI STRATEGY FOR COMMUNITY ORGANIZATIONS:
+- Using AI to scale limited staff: grant writing assistance, curriculum development, donor communications, social media content
+- Data sovereignty: Community organizations must own their data, not surrender it to corporate platforms
+- AI literacy for youth: Teaching critical thinking about AI outputs, bias in algorithms, using AI as a tool not a replacement for wisdom
+
+CORE KNOWLEDGE AREAS:
+- Idea generation: SCAMPER, mind mapping, blue ocean strategy, "what if" thinking, combinatorial creativity
+- Research: Deep dives on any topic with specific facts, data, citations, and cross-disciplinary connections
+- Creative writing: Stories, scripts, speeches, song concepts, book outlines, brand narratives, oral tradition formats
+- Vision & goal setting: Life vision statements, 1/5/10-year plans, reverse engineering goals into daily habits
+- Personal branding: Finding your unique story, building authority, thought leadership, speaking platform
+- Problem solving: Systems thinking, root cause analysis, design thinking, lateral thinking
+
+You approach every topic with intellectual depth and genuine curiosity. Activate the relevant Archetype when useful. Draw from the Historical Council when wisdom applies. When someone asks you to explore an idea, go DEEP — give them history, context, multiple perspectives, practical applications, and mind-expanding connections they wouldn't have thought of.
 
 For creative requests: produce the FULL creative work — the complete story, the full speech, the entire outline. Never give a brief summary when a full creation is requested.${_QUALITY}`
   };
@@ -8890,8 +9181,8 @@ For creative requests: produce the FULL creative work — the complete story, th
     const wrap = document.createElement('div');
     wrap.style.cssText = 'display:flex;justify-content:'+(isUser?'flex-end':'flex-start');
     const bubble = document.createElement('div');
-    bubble.style.cssText = 'max-width:80%;padding:12px 16px;border-radius:'+(isUser?'18px 18px 4px 18px':'18px 18px 18px 4px')+';background:'+(isUser?'#4267B2':'#fff')+';color:'+(isUser?'#fff':'#0F172A')+';font-size:14px;line-height:1.65;box-shadow:0 1px 4px rgba(0,0,0,0.08);white-space:pre-wrap;word-break:break-word';
-    bubble.textContent = text;
+    bubble.style.cssText = 'max-width:85%;padding:12px 16px;border-radius:'+(isUser?'18px 18px 4px 18px':'18px 18px 18px 4px')+';background:'+(isUser?'#4267B2':'#fff')+';color:'+(isUser?'#fff':'#0F172A')+';font-size:14px;line-height:1.65;box-shadow:0 1px 4px rgba(0,0,0,0.08);word-break:break-word';
+    if (isUser) { bubble.textContent = text; } else { bubble.classList.add('md-content'); bubble.innerHTML = mdRender(text); }
     wrap.appendChild(bubble);
     msgs.appendChild(wrap);
     msgs.scrollTop = msgs.scrollHeight;
@@ -8912,7 +9203,7 @@ For creative requests: produce the FULL creative work — the complete story, th
     if (msgs) { msgs.appendChild(typing); msgs.scrollTop = msgs.scrollHeight; }
     const cfg = JSON.parse(localStorage.getItem('settings')) || {};
     const groqKey = cfg.groqApiKey || '';
-    const aiModel = (JSON.parse(localStorage.getItem('settings'))||{}).aiModel || 'deepseek-r1-distill-llama-70b';
+    const aiModel = (JSON.parse(localStorage.getItem('settings'))||{}).aiModel || 'groq/compound';
     const sysPrompt = PROJECT_SYSTEM_PROMPTS[_chatProjectKey] || 'You are a helpful assistant.';
     try {
       let reply = '';
@@ -8938,20 +9229,20 @@ For creative requests: produce the FULL creative work — the complete story, th
             try {
               const ev=JSON.parse(dd);
               const dt=ev.choices?.[0]?.delta?.content||'';
-              if(dt){ full2+=dt; if(streamBubble) streamBubble.textContent=cleanGroqResponse(full2); if(msgs)msgs.scrollTop=msgs.scrollHeight; }
+              if(dt){ full2+=dt; if(streamBubble){ streamBubble.classList.add('md-content'); streamBubble.innerHTML=mdRender(full2); } if(msgs)msgs.scrollTop=msgs.scrollHeight; }
             } catch{}
           }
         }
         reply = cleanGroqResponse(full2) || 'No response.';
-        if(streamBubble) streamBubble.textContent = reply;
+        if(streamBubble){ streamBubble.classList.add('md-content'); streamBubble.innerHTML = mdRender(reply); }
       } else {
         typing.remove();
         const streamBubble2 = _appendMsg('assistant', '⏳ Connecting…');
         reply = await callAI([{role:'system',content:sysPrompt},..._chatHistory], (d,full)=>{
-          if(streamBubble2) streamBubble2.textContent = cleanGroqResponse(full);
+          if(streamBubble2){ streamBubble2.classList.add('md-content'); streamBubble2.innerHTML = mdRender(full); }
           if(msgs) msgs.scrollTop=msgs.scrollHeight;
         }) || 'No response.';
-        if(streamBubble2 && !streamBubble2.textContent.trim()) streamBubble2.textContent = reply;
+        if(streamBubble2 && !streamBubble2.innerText.trim()){ streamBubble2.classList.add('md-content'); streamBubble2.innerHTML = mdRender(reply); }
       }
       _chatHistory.push({role:'assistant',content:reply});
       // Check handoff

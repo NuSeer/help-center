@@ -3402,10 +3402,69 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
       document.body.appendChild(buildModal('edit-client-modal', 'Edit Client', clientFormHTML(client)));
     }
 
+    const CLIENT_SERVICES = ['Website Design','Ecommerce Website','Business Dashboard & Page','Church Website Maintenance','Monthly Website Maintenance','SEO & Digital Marketing','Social Media Management','Consulting','Business Formation','Credit Repair Coaching','Grant Writing','Program Development','Nonprofit Formation','Bookkeeping','Other (custom)'];
+
+    function cfServiceRowHTML(svc, price, idx) {
+      return `<div class="cf-svc-row" id="cf-svc-row-${idx}" style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:start;margin-bottom:8px">
+        <div>
+          <select class="form-select cf-svc-select" data-idx="${idx}" onchange="cfSvcChange(this,${idx})">
+            ${CLIENT_SERVICES.map(s=>`<option${s===svc?' selected':''}>${s}</option>`).join('')}
+          </select>
+          <input type="text" class="form-input cf-svc-custom" data-idx="${idx}" style="margin-top:4px;margin-bottom:0;${svc&&!CLIENT_SERVICES.includes(svc)?'':'display:none'}" placeholder="Describe service..." value="${svc&&!CLIENT_SERVICES.includes(svc)?svc:''}">
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <label style="font-size:11px;font-weight:600;color:var(--gray-500);white-space:nowrap">Price ($)</label>
+          <input type="number" class="form-input cf-svc-price" data-idx="${idx}" style="margin:0;width:100px" value="${price||0}" min="0">
+        </div>
+        <button type="button" onclick="cfRemoveSvc(${idx})" style="margin-top:22px;background:none;border:none;cursor:pointer;color:var(--gray-400);font-size:18px;line-height:1" title="Remove">×</button>
+      </div>`;
+    }
+
+    function cfSvcChange(sel, idx) {
+      const customEl = document.querySelector(`.cf-svc-custom[data-idx="${idx}"]`);
+      if (customEl) customEl.style.display = sel.value === 'Other (custom)' ? 'block' : 'none';
+    }
+
+    function cfAddSvc() {
+      const container = document.getElementById('cf-services-list');
+      if (!container) return;
+      const idx = Date.now();
+      const div = document.createElement('div');
+      div.innerHTML = cfServiceRowHTML('Website Design', 0, idx);
+      container.appendChild(div.firstChild);
+    }
+
+    function cfRemoveSvc(idx) {
+      const row = document.getElementById('cf-svc-row-' + idx);
+      const container = document.getElementById('cf-services-list');
+      if (row && container && container.children.length > 1) row.remove();
+      else showToast('At least one service is required');
+      cfUpdateTotal();
+    }
+
+    function cfUpdateTotal() {
+      const prices = [...document.querySelectorAll('.cf-svc-price')].map(i=>parseFloat(i.value)||0);
+      const total = prices.reduce((a,b)=>a+b,0);
+      const el = document.getElementById('cf-total-display');
+      if (el) el.textContent = '$' + total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+    }
+
+    function cfGetServices() {
+      return [...document.querySelectorAll('.cf-svc-row')].map(row => {
+        const idx = row.id.replace('cf-svc-row-','');
+        const sel = row.querySelector('.cf-svc-select');
+        const custom = row.querySelector('.cf-svc-custom');
+        const price = parseFloat(row.querySelector('.cf-svc-price')?.value)||0;
+        const name = sel?.value === 'Other (custom)' ? (custom?.value.trim()||'Other') : (sel?.value||'');
+        return { name, price };
+      }).filter(s=>s.name);
+    }
+
     function clientFormHTML(client) {
       const id = client?.id||'';
-      const svc = ['Website Design','Ecommerce Website','Business Dashboard & Page','Church Website Maintenance','Monthly Website Maintenance','SEO & Digital Marketing','Social Media Management','Consulting','Business Formation','Credit Repair Coaching','Grant Writing','Program Development','Nonprofit Formation','Bookkeeping','Other (custom)'];
       const sta = ['Lead','Active','Completed','On Hold'];
+      // Support legacy single-service OR new services array
+      const existingServices = client?.services?.length ? client.services : (client?.service ? [{ name: client.service, price: client?.price||0 }] : [{ name:'Website Design', price:250 }]);
       return `
         <div class="form-row">
           <div class="form-group"><label class="form-label">Full Name *</label>
@@ -3420,21 +3479,25 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
             <input type="tel" id="cf-phone" class="form-input" style="margin:0" value="${client?.phone||''}" placeholder="(000) 000-0000"></div>
         </div>
         <div class="form-row">
-          <div class="form-group"><label class="form-label">Service</label>
-            <select id="cf-service" class="form-select" onchange="const ci=document.getElementById('cf-service-custom');if(ci)ci.style.display=this.value==='Other (custom)'?'block':'none'">
-              ${svc.map(s=>`<option${(s===(client?.service||'Website Design')||(!svc.includes(client?.service)&&s==='Other (custom)'))?' selected':''}>${s}</option>`).join('')}
-            </select>
-            <input type="text" id="cf-service-custom" class="form-input" style="margin-top:6px;margin-bottom:0;${(!client?.service||svc.includes(client?.service))&&client?.service!=='Other (custom)'?'display:none':''}" placeholder="Describe the service..." value="${client?.service&&!svc.includes(client.service)?client.service:''}">
-          </div>
           <div class="form-group"><label class="form-label">Status</label>
             <select id="cf-status" class="form-select">${sta.map(s=>`<option${s===(client?.status||'Lead')?' selected':''}>${s}</option>`).join('')}</select></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Price ($)</label>
-            <input type="number" id="cf-price" class="form-input" style="margin:0" value="${client?.price||250}"></div>
           <div class="form-group"><label class="form-label">Start Date</label>
             <input type="date" id="cf-start" class="form-input" style="margin:0" value="${client?.startDate||''}"></div>
         </div>
+
+        <div class="form-group" style="margin-bottom:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <label class="form-label" style="margin:0">Services & Pricing</label>
+            <button type="button" onclick="cfAddSvc()" style="background:none;border:1px solid #4267B2;color:#4267B2;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer">+ Add Service</button>
+          </div>
+          <div id="cf-services-list" oninput="cfUpdateTotal()">
+            ${existingServices.map((s,i) => cfServiceRowHTML(s.name, s.price, i)).join('')}
+          </div>
+          <div style="text-align:right;font-size:13px;font-weight:700;color:#0F172A;margin-top:8px;padding-top:8px;border-top:1px solid #E2E8F0">
+            Total: <span id="cf-total-display">$${existingServices.reduce((a,s)=>a+(s.price||0),0).toLocaleString('en-US',{minimumFractionDigits:2})}</span>
+          </div>
+        </div>
+
         <div class="form-group"><label class="form-label">Notes</label>
           <textarea id="cf-notes" class="form-textarea">${client?.notes||''}</textarea></div>
         <input type="hidden" id="cf-id" value="${id}">
@@ -3449,18 +3512,23 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
       const id = document.getElementById('cf-id').value;
       const name = document.getElementById('cf-name').value.trim();
       if (!name) { alert('Client name is required.'); return; }
-      const clients = getData('clients');
-      const revenue = getData('revenue');
+      const services = cfGetServices();
+      if (!services.length) { alert('Add at least one service.'); return; }
+      const totalPrice = services.reduce((a,s)=>a+s.price, 0);
+      // Legacy compat: keep service/price fields for existing code that reads them
       const data = {
         name, businessName: document.getElementById('cf-biz').value.trim(),
         email: document.getElementById('cf-email').value.trim(),
         phone: document.getElementById('cf-phone').value.trim(),
-        service: (document.getElementById('cf-service').value === 'Other (custom)' ? (document.getElementById('cf-service-custom')?.value.trim() || 'Other') : document.getElementById('cf-service').value),
+        services,                                    // new: array of {name, price}
+        service: services.map(s=>s.name).join(', '), // legacy: comma-joined string
+        price: totalPrice,                           // legacy: total
         status: document.getElementById('cf-status').value,
-        price: parseFloat(document.getElementById('cf-price').value)||0,
         startDate: document.getElementById('cf-start').value,
         notes: document.getElementById('cf-notes').value.trim()
       };
+      const clients = getData('clients');
+      const revenue = getData('revenue');
       if (id) {
         const idx = clients.findIndex(c => c.id === id);
         if (idx > -1) Object.assign(clients[idx], data);
@@ -3470,7 +3538,10 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
         const inv = 'INV-' + String(clients.length + 1).padStart(3,'0');
         const nc = { ...data, id: generateId(), completedDate:'', paid:false, paidDate:'', portalToken: generateToken(), deliverables:[], messages:[], intakeForm:{completed:false,answers:{}}, projectStatus:0, invoiceNumber: inv };
         clients.push(nc);
-        revenue.push({ id: generateId(), clientId: nc.id, clientName: nc.name, amount: nc.price, date: nc.startDate||new Date().toISOString().split('T')[0], status:'Pending', serviceType: nc.service, invoiceNumber: inv });
+        // Create one revenue entry per service
+        services.forEach((s,i) => {
+          revenue.push({ id: generateId(), clientId: nc.id, clientName: nc.name, amount: s.price, date: nc.startDate||new Date().toISOString().split('T')[0], status:'Pending', serviceType: s.name, invoiceNumber: i===0?inv:inv+'-'+(i+1) });
+        });
         setData('revenue', revenue);
         logActivity('client', 'New client added: ' + name);
         closeModal('add-client-modal');

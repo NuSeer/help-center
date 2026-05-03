@@ -701,42 +701,92 @@
           </div>
 
           <div id="branding-tab" class="tab-content">
-            <div class="builder-grid">
-              <div class="tool-card">
-                <h4 class="tool-header">🎨 Brand Voice Generator</h4>
-                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Describe your business and select a tone — AI writes your full brand voice guide.</p>
-                <input type="text" id="bv-biz" class="form-input" placeholder="Business name & what you do...">
-                <div class="tool-options" style="margin:10px 0" id="bv-tone-opts">
-                  <div class="tool-option" onclick="selectBbOption(this,'bv-tone')" data-val="Professional & Authoritative">💼 Professional</div>
-                  <div class="tool-option" onclick="selectBbOption(this,'bv-tone')" data-val="Casual & Friendly">😊 Casual & Friendly</div>
-                  <div class="tool-option" onclick="selectBbOption(this,'bv-tone')" data-val="Technical & Expert">🔧 Technical & Expert</div>
-                  <div class="tool-option" onclick="selectBbOption(this,'bv-tone')" data-val="Luxury & Premium">✨ Luxury & Premium</div>
-                  <div class="tool-option" onclick="selectBbOption(this,'bv-tone')" data-val="Bold & Empowering">🔥 Bold & Empowering</div>
+            <!-- BRAND WIZARD -->
+            <div style="max-width:720px;margin:0 auto">
+              <!-- Progress bar -->
+              <div style="display:flex;gap:6px;margin-bottom:24px;align-items:center">
+                <div id="bw-prog-1" style="flex:1;height:4px;border-radius:4px;background:#4267B2;transition:all .3s"></div>
+                <div id="bw-prog-2" style="flex:1;height:4px;border-radius:4px;background:#E2E8F0;transition:all .3s"></div>
+                <div id="bw-prog-3" style="flex:1;height:4px;border-radius:4px;background:#E2E8F0;transition:all .3s"></div>
+                <div id="bw-prog-4" style="flex:1;height:4px;border-radius:4px;background:#E2E8F0;transition:all .3s"></div>
+                <span id="bw-step-label" style="font-size:12px;color:var(--gray-500);white-space:nowrap;margin-left:8px">Step 1 of 4</span>
+              </div>
+
+              <!-- Step 1: Business Basics -->
+              <div id="bw-step-1" class="card" style="padding:28px">
+                <h3 style="font-size:18px;font-weight:800;margin-bottom:4px">Tell us about your business</h3>
+                <p style="font-size:14px;color:var(--gray-500);margin-bottom:20px">We'll use this to build everything — tagline, colors, voice, and more.</p>
+                <div class="form-group"><label class="form-label">Business Name (or leave blank for suggestions)</label>
+                  <input type="text" id="bw-name" class="form-input" placeholder="e.g. H.E.L.P. Center"></div>
+                <div class="form-group"><label class="form-label">What does your business do? *</label>
+                  <textarea id="bw-what" class="form-textarea" style="min-height:70px" placeholder="e.g. We help Black entrepreneurs build credit, form LLCs, and launch their businesses through 1-on-1 coaching and online resources."></textarea></div>
+                <div class="form-group"><label class="form-label">Who do you serve? *</label>
+                  <input type="text" id="bw-who" class="form-input" placeholder="e.g. Black women entrepreneurs in Jacksonville, FL ages 25–45"></div>
+                <div class="form-group"><label class="form-label">What makes you different from competitors?</label>
+                  <input type="text" id="bw-diff" class="form-input" placeholder="e.g. We combine spiritual community with real business strategy"></div>
+                <button class="btn btn-solid" style="width:100%;margin-top:8px" onclick="bwNext(2)">Next: Your Brand Personality →</button>
+              </div>
+
+              <!-- Step 2: Personality -->
+              <div id="bw-step-2" class="card" style="padding:28px;display:none">
+                <h3 style="font-size:18px;font-weight:800;margin-bottom:4px">Choose your brand personality</h3>
+                <p style="font-size:14px;color:var(--gray-500);margin-bottom:20px">Pick up to 3 words that describe how you want your brand to feel.</p>
+                <div class="tool-options" style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="bw-personality-opts">
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Bold & Confident">🔥 Bold & Confident</div>
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Warm & Nurturing">🤗 Warm & Nurturing</div>
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Professional & Authoritative">💼 Professional & Authoritative</div>
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Creative & Innovative">💡 Creative & Innovative</div>
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Community-Focused & Inclusive">🤝 Community-Focused</div>
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Spiritual & Purpose-Driven">🙏 Spiritual & Purpose-Driven</div>
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Luxury & Premium">✨ Luxury & Premium</div>
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Educational & Empowering">📚 Educational & Empowering</div>
                 </div>
-                <input type="hidden" id="bv-tone" value="">
-                <button class="btn btn-solid" style="width:100%;margin-top:8px" onclick="bbGenerate('brand-voice')">✨ Generate Brand Voice</button>
-                <div id="bb-brand-voice-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+                <input type="hidden" id="bw-personality" value="">
+                <div style="display:flex;gap:10px;margin-top:20px">
+                  <button class="btn btn-outline" style="flex:1" onclick="bwNext(1)">← Back</button>
+                  <button class="btn btn-solid" style="flex:2" onclick="bwNext(3)">Next: Visual Style →</button>
+                </div>
               </div>
-              <div class="tool-card">
-                <h4 class="tool-header">🎨 Color Palette Generator</h4>
-                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Describe your brand vibe — AI recommends a full color palette with hex codes and usage guide.</p>
-                <input type="text" id="cp-desc" class="form-input" placeholder="e.g. trustworthy, modern, Black-owned wellness brand...">
-                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('color-palette')">🎨 Generate Palette</button>
-                <div id="bb-color-palette-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+
+              <!-- Step 3: Visual Style & Colors -->
+              <div id="bw-step-3" class="card" style="padding:28px;display:none">
+                <h3 style="font-size:18px;font-weight:800;margin-bottom:4px">Choose your visual direction</h3>
+                <p style="font-size:14px;color:var(--gray-500);margin-bottom:16px">What style feels right for your brand?</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px" id="bw-style-opts">
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-style')" data-val="Modern & Clean">⚡ Modern & Clean</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-style')" data-val="Classic & Traditional">🏛 Classic & Traditional</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-style')" data-val="Bold & Vibrant">🎨 Bold & Vibrant</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-style')" data-val="Minimal & Elegant">🤍 Minimal & Elegant</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-style')" data-val="Earthy & Natural">🌿 Earthy & Natural</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-style')" data-val="Afrocentric & Cultural">🌍 Afrocentric & Cultural</div>
+                </div>
+                <input type="hidden" id="bw-style" value="">
+                <p style="font-size:14px;font-weight:600;margin-bottom:10px">Color vibe</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="bw-color-opts">
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-color')" data-val="Blues & Navy (Trust, Professional)" style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:50%;background:#1e3a6e;display:inline-block"></span>Blues & Navy</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-color')" data-val="Greens (Growth, Wealth, Natural)" style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:50%;background:#2E7D32;display:inline-block"></span>Greens</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-color')" data-val="Golds & Warm Tones (Luxury, Power, Legacy)" style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:50%;background:#C9A84C;display:inline-block"></span>Golds & Warm Tones</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-color')" data-val="Purples (Creativity, Royalty, Spirituality)" style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:50%;background:#7B1FA2;display:inline-block"></span>Purples</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-color')" data-val="Reds & Oranges (Energy, Bold, Passion)" style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:50%;background:#E65100;display:inline-block"></span>Reds & Oranges</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-color')" data-val="Black, White & Gold (Timeless, Premium)" style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:50%;background:#111;display:inline-block"></span>Black, White & Gold</div>
+                </div>
+                <input type="hidden" id="bw-color" value="">
+                <div style="display:flex;gap:10px;margin-top:20px">
+                  <button class="btn btn-outline" style="flex:1" onclick="bwNext(2)">← Back</button>
+                  <button class="btn btn-solid" style="flex:2" onclick="bwNext(4)">Next: Generate My Brand →</button>
+                </div>
               </div>
-              <div class="tool-card">
-                <h4 class="tool-header">🖋 Font & Typography Guide</h4>
-                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI recommends font pairings that match your brand personality — with where to get them free.</p>
-                <input type="text" id="font-desc" class="form-input" placeholder="e.g. professional nonprofit, bold coaching brand...">
-                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('typography')">🖋 Get Font Pairings</button>
-                <div id="bb-typography-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
-              </div>
-              <div class="tool-card">
-                <h4 class="tool-header">📋 Logo Brief Generator</h4>
-                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Can't design a logo? AI writes a complete creative brief you can send to a designer on Fiverr or 99designs.</p>
-                <input type="text" id="logo-biz" class="form-input" placeholder="Business name & industry...">
-                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('logo-brief')">📋 Generate Logo Brief</button>
-                <div id="bb-logo-brief-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+
+              <!-- Step 4: Generate -->
+              <div id="bw-step-4" class="card" style="padding:28px;display:none">
+                <h3 style="font-size:18px;font-weight:800;margin-bottom:4px">🎨 Your Brand Package</h3>
+                <p style="font-size:14px;color:var(--gray-500);margin-bottom:20px">AI is building your complete brand — tagline, colors, fonts, voice guide, logo brief, and social bios.</p>
+                <div style="display:flex;gap:10px;margin-bottom:20px">
+                  <button class="btn btn-outline" onclick="bwNext(3)">← Edit Choices</button>
+                  <button class="btn btn-solid" style="background:linear-gradient(135deg,#4267B2,#7C3AED)" onclick="bwGenerate()">✨ Build My Brand</button>
+                  <button class="btn btn-outline" onclick="bwPrint()" style="margin-left:auto">🖨️ Print / Save</button>
+                </div>
+                <div id="bw-result" class="md-content" style="font-size:14px;line-height:1.85;min-height:100px"></div>
               </div>
             </div>
           </div>
@@ -4983,11 +5033,141 @@ How does this business idea complement the H.E.L.P. Center's mission? Who in the
     // ── BUSINESS BUILDER TOOLS ─────────────────────────────────────────────────
 
     function selectBbOption(el, hiddenId) {
-      // Toggle selected style within the same options group
-      el.closest('.tool-options').querySelectorAll('.tool-option').forEach(o => o.classList.remove('selected'));
+      el.closest('[id$="-opts"]')?.querySelectorAll('.tool-option').forEach(o => o.classList.remove('selected'));
       el.classList.add('selected');
       const h = document.getElementById(hiddenId);
       if (h) h.value = el.dataset.val || el.textContent.trim();
+    }
+
+    // Multi-select toggle (for personality — up to 3)
+    function bwToggle(el, hiddenId) {
+      const selected = el.classList.contains('selected');
+      const h = document.getElementById(hiddenId);
+      const current = h ? h.value.split(',').filter(v=>v.trim()) : [];
+      if (selected) {
+        el.classList.remove('selected');
+        const idx = current.indexOf(el.dataset.val);
+        if (idx > -1) current.splice(idx, 1);
+      } else {
+        if (current.length >= 3) { showToast('Pick up to 3 personality traits'); return; }
+        el.classList.add('selected');
+        current.push(el.dataset.val);
+      }
+      if (h) h.value = current.join(', ');
+    }
+
+    function bwNext(step) {
+      [1,2,3,4].forEach(i => {
+        const el = document.getElementById('bw-step-' + i);
+        if (el) el.style.display = i === step ? 'block' : 'none';
+        const prog = document.getElementById('bw-prog-' + i);
+        if (prog) prog.style.background = i <= step ? '#4267B2' : '#E2E8F0';
+      });
+      const lbl = document.getElementById('bw-step-label');
+      if (lbl) lbl.textContent = 'Step ' + step + ' of 4';
+      document.getElementById('branding-tab')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    async function bwGenerate() {
+      const cfg = JSON.parse(localStorage.getItem('settings')) || {};
+      const groqKey = cfg.groqApiKey || '';
+      const resultEl = document.getElementById('bw-result');
+      if (!groqKey) { if(resultEl) resultEl.innerHTML='<div style="color:#dc2626;padding:12px;background:#fef2f2;border-radius:8px">⚠️ Add your Groq API key in Settings to generate your brand.</div>'; return; }
+
+      const name = document.getElementById('bw-name')?.value.trim() || '(no name yet)';
+      const what = document.getElementById('bw-what')?.value.trim() || '';
+      const who  = document.getElementById('bw-who')?.value.trim() || '';
+      const diff = document.getElementById('bw-diff')?.value.trim() || '';
+      const personality = document.getElementById('bw-personality')?.value || '';
+      const style = document.getElementById('bw-style')?.value || '';
+      const color = document.getElementById('bw-color')?.value || '';
+
+      if (!what) { showToast('Fill in Step 1 first — what does your business do?'); bwNext(1); return; }
+
+      resultEl.innerHTML = '<div style="color:#4267B2;font-weight:600;padding:12px">✨ Building your complete brand package — this takes about 30 seconds…</div>';
+
+      const prompt = `You are building a COMPLETE BRAND PACKAGE for this business. Output every section — do not skip any.
+
+BUSINESS INFO:
+- Name: ${name}
+- What we do: ${what}
+- Who we serve: ${who}
+- What makes us different: ${diff}
+- Brand personality: ${personality || 'Bold, Professional, Community-Focused'}
+- Visual style: ${style || 'Modern & Clean'}
+- Color direction: ${color || 'Blues & Navy'}
+
+Generate ALL of the following sections with headers:
+
+## 🏷️ Tagline Options
+Write 5 tagline options (short, punchy, memorable). Bold the recommended one.
+
+## 📖 Brand Story
+Write a 3-sentence brand story they can use on their About page and social media bio.
+
+## 🎨 Color Palette
+Provide exactly 5 colors with: color name, hex code, and where/how to use it. Include: Primary, Secondary, Accent, Background, Text.
+
+## 🖋️ Typography
+Recommend 2 Google Fonts (heading + body). Include the Google Fonts import link and CSS snippet ready to paste.
+
+## 🗣️ Brand Voice Guide
+- Tone in 3 words
+- 5 things we always say / how we say it (examples)
+- 5 things we never say (examples)
+- Sample Instagram caption
+- Sample email subject line (3 options)
+
+## 📋 Logo Design Brief
+Write a complete brief they can send to a Fiverr designer: style, colors, must-haves, must-avoids, symbol ideas, deliverables to request.
+
+## 📱 Social Media Bios
+- Instagram bio (150 chars max, include emoji)
+- LinkedIn summary (3 sentences, professional)
+- Facebook page description (2 sentences)
+
+## 🏆 Brand Pillars
+3 content pillars with 5 post ideas each for social media.`;
+
+      let fullText = '';
+      try {
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
+          body: JSON.stringify({ model: cfg.aiModel||'groq/compound', messages:[{role:'system',content:'You are a world-class brand strategist. Produce the complete brand package as instructed. Never skip sections. Be specific with hex codes, real font names, and actual copy — not placeholders.'},{role:'user',content:prompt}], max_tokens:6000, temperature:0.7, stream:true })
+        });
+        if (!res.ok) throw new Error('AI error ' + res.status);
+        const reader = res.body.getReader(), dec = new TextDecoder();
+        while(true){
+          const {done,value}=await reader.read(); if(done)break;
+          for(const line of dec.decode(value).split('\n')){
+            if(!line.startsWith('data: '))continue;
+            const d=line.slice(6); if(d==='[DONE]')continue;
+            try{ const dt=JSON.parse(d).choices?.[0]?.delta?.content||''; if(dt){fullText+=dt; resultEl.innerHTML=mdRender(fullText);} }catch(e){}
+          }
+        }
+        resultEl.innerHTML = mdRender(cleanGroqResponse(fullText));
+        window._bwLastBrand = { name, what, who, text: cleanGroqResponse(fullText) };
+      } catch(e) {
+        resultEl.innerHTML = '<div style="color:#dc2626;padding:12px;background:#fef2f2;border-radius:8px"><strong>Error:</strong> '+e.message+'</div>';
+      }
+    }
+
+    function bwPrint() {
+      const data = window._bwLastBrand;
+      if (!data?.text) { showToast('Generate your brand first, then print.'); return; }
+      const w = window.open('','_blank');
+      w.document.write(`<!DOCTYPE html><html><head><title>${data.name} — Brand Package</title>
+      <style>body{font-family:Georgia,serif;max-width:800px;margin:40px auto;padding:0 24px;color:#111}
+      h1{font-size:28px;border-bottom:3px solid #4267B2;padding-bottom:12px}
+      h2{font-size:18px;color:#4267B2;margin-top:32px}
+      table{width:100%;border-collapse:collapse}th{background:#4267B2;color:#fff;padding:8px}td{padding:7px;border-bottom:1px solid #eee}
+      code{background:#f1f5f9;padding:2px 6px;border-radius:4px}
+      @media print{button{display:none}}</style></head><body>
+      <div style="text-align:right;margin-bottom:20px"><button onclick="window.print()" style="padding:10px 20px;background:#4267B2;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨️ Print</button></div>
+      <h1>Brand Package — ${data.name}</h1>
+      ${mdRender(data.text)}
+      </body></html>`);
+      w.document.close();
     }
 
     const BB_PROMPTS = {
@@ -5067,11 +5247,13 @@ How does this business idea complement the H.E.L.P. Center's mission? Who in the
         {role:'user',content:`Generate 8 creative, memorable business names based on these keywords: "${keywords}". For each: the business name (bold or numbered), a one-line tagline, and a note on domain availability likelihood. Focus on names that are professional, brandable, and would resonate with a Black entrepreneur building a premium brand. Be specific — no generic names.`}
       ];
       let accumulated = '';
-      await callAI(messages, chunk => {
-        accumulated = chunk;
-        result.innerHTML = '<div style="font-size:14px;line-height:1.9;white-space:pre-wrap">'+accumulated+'</div>';
+      await callAI(messages, (delta, full) => {
+        accumulated = full;
+        result.classList.add('md-content');
+        result.innerHTML = mdRender(full);
       });
       if (!accumulated) result.innerHTML = '<div style="font-size:14px;color:var(--error)">Could not generate names — check your AI settings.</div>';
+      else { result.classList.add('md-content'); result.innerHTML = mdRender(cleanGroqResponse(accumulated)); }
       if (btn) { btn.disabled=false; btn.textContent='✨ Regenerate Names'; }
     }
 

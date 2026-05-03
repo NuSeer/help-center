@@ -163,6 +163,7 @@
     .tool-options { display: flex; flex-direction: column; gap: 8px; }
     .tool-option { padding: 10px 14px; border: 1px solid #E8ECF1; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; color: var(--gray-700); transition: all 0.15s; background: var(--white); }
     .tool-option:hover { border-color: #4267B2; color: #4267B2; background: rgba(66,103,178,0.04); }
+    .tool-option.selected { border-color: #4267B2; color: #4267B2; background: rgba(66,103,178,0.1); font-weight: 700; }
 
     /* GUIDES */
     .guide-card { background: var(--white); border: 1px solid #E8ECF1; border-radius: 6px; padding: 20px; margin-bottom: 12px; transition: box-shadow 0.2s; cursor: pointer; }
@@ -702,44 +703,40 @@
           <div id="branding-tab" class="tab-content">
             <div class="builder-grid">
               <div class="tool-card">
-                <h4 class="tool-header">Logo Creator</h4>
-                <div class="tool-options">
-                  <div class="tool-option">📤 Upload Image</div>
-                  <div class="tool-option">🤖 AI Generation</div>
-                  <div class="tool-option">📋 Use Template</div>
+                <h4 class="tool-header">🎨 Brand Voice Generator</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Describe your business and select a tone — AI writes your full brand voice guide.</p>
+                <input type="text" id="bv-biz" class="form-input" placeholder="Business name & what you do...">
+                <div class="tool-options" style="margin:10px 0" id="bv-tone-opts">
+                  <div class="tool-option" onclick="selectBbOption(this,'bv-tone')" data-val="Professional & Authoritative">💼 Professional</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bv-tone')" data-val="Casual & Friendly">😊 Casual & Friendly</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bv-tone')" data-val="Technical & Expert">🔧 Technical & Expert</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bv-tone')" data-val="Luxury & Premium">✨ Luxury & Premium</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bv-tone')" data-val="Bold & Empowering">🔥 Bold & Empowering</div>
                 </div>
-                <button class="btn btn-solid" style="width: 100%; margin-top: 12px;">Create Logo →</button>
+                <input type="hidden" id="bv-tone" value="">
+                <button class="btn btn-solid" style="width:100%;margin-top:8px" onclick="bbGenerate('brand-voice')">✨ Generate Brand Voice</button>
+                <div id="bb-brand-voice-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
               </div>
               <div class="tool-card">
-                <h4 class="tool-header">Brand Voice</h4>
-                <div class="tool-options">
-                  <div class="tool-option">💼 Professional</div>
-                  <div class="tool-option">😊 Casual & Friendly</div>
-                  <div class="tool-option">🔧 Technical & Expert</div>
-                  <div class="tool-option">✨ Luxury & Premium</div>
-                </div>
+                <h4 class="tool-header">🎨 Color Palette Generator</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Describe your brand vibe — AI recommends a full color palette with hex codes and usage guide.</p>
+                <input type="text" id="cp-desc" class="form-input" placeholder="e.g. trustworthy, modern, Black-owned wellness brand...">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('color-palette')">🎨 Generate Palette</button>
+                <div id="bb-color-palette-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
               </div>
               <div class="tool-card">
-                <h4 class="tool-header">Color Palette</h4>
-                <div style="margin-bottom: 12px;">
-                  <div style="margin-bottom: 8px;">Primary: <strong>#635BFF</strong></div>
-                  <div style="margin-bottom: 8px;">Accent: <strong>#00D924</strong></div>
-                </div>
-                <button class="btn btn-outline" style="width: 100%;">Generate Palette</button>
+                <h4 class="tool-header">🖋 Font & Typography Guide</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI recommends font pairings that match your brand personality — with where to get them free.</p>
+                <input type="text" id="font-desc" class="form-input" placeholder="e.g. professional nonprofit, bold coaching brand...">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('typography')">🖋 Get Font Pairings</button>
+                <div id="bb-typography-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
               </div>
               <div class="tool-card">
-                <h4 class="tool-header">Typography</h4>
-                <div style="margin-bottom: 12px;">
-                  <div style="margin-bottom: 8px;">Headers: <strong>Inter Bold</strong></div>
-                  <div style="margin-bottom: 8px;">Body: <strong>Inter Regular</strong></div>
-                </div>
-                <button class="btn btn-outline" style="width: 100%;">Font Pairings</button>
-              </div>
-            </div>
-            <div class="card" style="margin-top: var(--space-6);">
-              <div class="card-header">
-                <h3 class="card-title">Brand Guidelines Document</h3>
-                <button class="btn btn-solid">Download PDF →</button>
+                <h4 class="tool-header">📋 Logo Brief Generator</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Can't design a logo? AI writes a complete creative brief you can send to a designer on Fiverr or 99designs.</p>
+                <input type="text" id="logo-biz" class="form-input" placeholder="Business name & industry...">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('logo-brief')">📋 Generate Logo Brief</button>
+                <div id="bb-logo-brief-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
               </div>
             </div>
           </div>
@@ -747,17 +744,27 @@
           <div id="operations-tab" class="tab-content">
             <div class="builder-grid">
               <div class="tool-card">
-                <h4 class="tool-header">Process Templates</h4>
-                <div class="tool-options">
-                  <div class="tool-option">Client Onboarding</div>
-                  <div class="tool-option">Project Management</div>
-                  <div class="tool-option">Invoice & Payments</div>
+                <h4 class="tool-header">📋 Process Template Generator</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Select a process — AI writes the full step-by-step SOP you can use immediately.</p>
+                <div class="tool-options" id="proc-opts">
+                  <div class="tool-option" onclick="selectBbOption(this,'proc-type')" data-val="Client Onboarding Process">Client Onboarding</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'proc-type')" data-val="Project Management Workflow">Project Management</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'proc-type')" data-val="Invoice & Payment Collection">Invoice & Payments</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'proc-type')" data-val="Discovery Call Script">Discovery Call Script</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'proc-type')" data-val="Proposal & Contract Process">Proposal & Contract</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'proc-type')" data-val="Social Media Content Process">Content Creation</div>
                 </div>
+                <input type="hidden" id="proc-type" value="">
+                <input type="text" id="proc-biz" class="form-input" style="margin-top:10px" placeholder="Your business type (e.g. web design, coaching)...">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('process-template')">📋 Generate SOP</button>
+                <div id="bb-process-template-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
               </div>
               <div class="tool-card">
-                <h4 class="tool-header">Automation Setup</h4>
-                <p style="font-size: 14px; color: var(--gray-600); margin-bottom: 12px;">Connect your tools and automate workflows</p>
-                <button class="btn btn-solid" style="width: 100%;">Setup Automations</button>
+                <h4 class="tool-header">⚙️ Automation Recommendations</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Tell AI what you do manually — it recommends free/low-cost tools to automate it.</p>
+                <textarea id="auto-tasks" class="form-textarea" style="min-height:90px" placeholder="What tasks take up most of your time? (e.g. sending invoices, scheduling, following up with clients, posting content...)"></textarea>
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('automations')">⚙️ Get Automation Plan</button>
+                <div id="bb-automations-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
               </div>
             </div>
           </div>
@@ -765,17 +772,34 @@
           <div id="marketing-tab" class="tab-content">
             <div class="builder-grid">
               <div class="tool-card">
-                <h4 class="tool-header">Marketing Plan</h4>
-                <div class="tool-options">
-                  <div class="tool-option">Social Media Strategy</div>
-                  <div class="tool-option">Email Campaigns</div>
-                  <div class="tool-option">Content Calendar</div>
+                <h4 class="tool-header">📱 Social Media Strategy</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI builds a 30-day social media plan with post ideas, best times, and platform strategy.</p>
+                <input type="text" id="sm-biz" class="form-input" placeholder="Business name & what you offer...">
+                <div class="tool-options" style="margin:10px 0" id="sm-plat-opts">
+                  <div class="tool-option" onclick="selectBbOption(this,'sm-platform')" data-val="Instagram">📸 Instagram</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'sm-platform')" data-val="Facebook">👥 Facebook</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'sm-platform')" data-val="TikTok">🎵 TikTok</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'sm-platform')" data-val="LinkedIn">💼 LinkedIn</div>
                 </div>
+                <input type="hidden" id="sm-platform" value="">
+                <button class="btn btn-solid" style="width:100%;margin-top:8px" onclick="bbGenerate('social-media')">📱 Build Strategy</button>
+                <div id="bb-social-media-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
               </div>
               <div class="tool-card">
-                <h4 class="tool-header">Ad Copy Generator</h4>
-                <input type="text" class="form-input" placeholder="What are you promoting?">
-                <button class="btn btn-solid" style="width: 100%; margin-top: 12px;">Generate Copy</button>
+                <h4 class="tool-header">✍️ Ad Copy Generator</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI writes high-converting ad copy for Facebook, Instagram, or Google — ready to post.</p>
+                <input type="text" id="ad-product" class="form-input" placeholder="What are you promoting?">
+                <input type="text" id="ad-audience" class="form-input" placeholder="Who is your target audience?">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('ad-copy')">✍️ Generate Ad Copy</button>
+                <div id="bb-ad-copy-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+              </div>
+              <div class="tool-card" style="grid-column:1/-1">
+                <h4 class="tool-header">📧 Email Campaign Builder</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI writes a complete email sequence — welcome, nurture, and sales emails — ready to load into Mailchimp or ConvertKit.</p>
+                <input type="text" id="em-biz" class="form-input" placeholder="Business & offer (e.g. credit repair coaching program)...">
+                <input type="text" id="em-goal" class="form-input" placeholder="Campaign goal (e.g. sell a $297 course, book discovery calls)...">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('email-campaign')">📧 Build Email Sequence</button>
+                <div id="bb-email-campaign-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
               </div>
             </div>
           </div>
@@ -3237,7 +3261,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
 
     function clientFormHTML(client) {
       const id = client?.id||'';
-      const svc = ['Website Design','Ecommerce Website','Business Dashboard & Page','Consulting','Business Formation','Program Development','Other'];
+      const svc = ['Website Design','Ecommerce Website','Business Dashboard & Page','Church Website Maintenance','Monthly Website Maintenance','SEO & Digital Marketing','Social Media Management','Consulting','Business Formation','Credit Repair Coaching','Grant Writing','Program Development','Nonprofit Formation','Bookkeeping','Other (custom)'];
       const sta = ['Lead','Active','Completed','On Hold'];
       return `
         <div class="form-row">
@@ -3254,7 +3278,11 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
         </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Service</label>
-            <select id="cf-service" class="form-select">${svc.map(s=>`<option${s===(client?.service||'Website Design')?' selected':''}>${s}</option>`).join('')}</select></div>
+            <select id="cf-service" class="form-select" onchange="const ci=document.getElementById('cf-service-custom');if(ci)ci.style.display=this.value==='Other (custom)'?'block':'none'">
+              ${svc.map(s=>`<option${(s===(client?.service||'Website Design')||(!svc.includes(client?.service)&&s==='Other (custom)'))?' selected':''}>${s}</option>`).join('')}
+            </select>
+            <input type="text" id="cf-service-custom" class="form-input" style="margin-top:6px;margin-bottom:0;${(!client?.service||svc.includes(client?.service))&&client?.service!=='Other (custom)'?'display:none':''}" placeholder="Describe the service..." value="${client?.service&&!svc.includes(client.service)?client.service:''}">
+          </div>
           <div class="form-group"><label class="form-label">Status</label>
             <select id="cf-status" class="form-select">${sta.map(s=>`<option${s===(client?.status||'Lead')?' selected':''}>${s}</option>`).join('')}</select></div>
         </div>
@@ -3284,7 +3312,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
         name, businessName: document.getElementById('cf-biz').value.trim(),
         email: document.getElementById('cf-email').value.trim(),
         phone: document.getElementById('cf-phone').value.trim(),
-        service: document.getElementById('cf-service').value,
+        service: (document.getElementById('cf-service').value === 'Other (custom)' ? (document.getElementById('cf-service-custom')?.value.trim() || 'Other') : document.getElementById('cf-service').value),
         status: document.getElementById('cf-status').value,
         price: parseFloat(document.getElementById('cf-price').value)||0,
         startDate: document.getElementById('cf-start').value,
@@ -4953,6 +4981,77 @@ How does this business idea complement the H.E.L.P. Center's mission? Who in the
     }
 
     // ── BUSINESS BUILDER TOOLS ─────────────────────────────────────────────────
+
+    function selectBbOption(el, hiddenId) {
+      // Toggle selected style within the same options group
+      el.closest('.tool-options').querySelectorAll('.tool-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      const h = document.getElementById(hiddenId);
+      if (h) h.value = el.dataset.val || el.textContent.trim();
+    }
+
+    const BB_PROMPTS = {
+      'brand-voice': (f) => `Write a complete Brand Voice Guide for "${f.biz}" with tone: ${f.tone||'Professional'}. Include: 1) Brand Personality (5 adjectives), 2) Tone of Voice description, 3) Language Do's (10 examples of how to write), 4) Language Don'ts (5 examples), 5) Sample tagline, 6) Sample Instagram caption, 7) Sample email subject line, 8) Sample cold outreach opener. Format with clear headers.`,
+      'color-palette': (f) => `Generate a complete brand color palette for a business described as: "${f.desc}". Provide: 1) Primary color (hex + name + psychology), 2) Secondary color (hex), 3) Accent color (hex), 4) Neutral/background color (hex), 5) Text color (hex), 6) Where to use each color, 7) Colors to AVOID and why, 8) CSS variables snippet ready to copy-paste. Format as a clear guide.`,
+      'typography': (f) => `Recommend a complete typography system for a brand described as: "${f.desc}". Include: 1) Primary heading font (name + weight + where to get it free), 2) Body font (name + weight), 3) Accent/display font if applicable, 4) Font size scale (h1 through body), 5) Line height recommendations, 6) Letter spacing tips, 7) Google Fonts import code ready to use, 8) Why these fonts work for this brand.`,
+      'logo-brief': (f) => `Write a professional logo design brief for "${f.biz}" to send to a designer on Fiverr or 99designs. Include: 1) Company overview (2-3 sentences), 2) Target audience, 3) Brand personality (5 words), 4) Logo style preference (wordmark/icon/combination), 5) Color direction, 6) Competitors to reference, 7) Competitors to NOT look like, 8) Must-have elements, 9) Must-avoid elements, 10) Deliverables to request, 11) Suggested budget range. Make it detailed enough that a designer can start without a call.`,
+      'process-template': (f) => `Write a complete, ready-to-use Standard Operating Procedure (SOP) for: "${f.type||'Client Onboarding'}" for a ${f.biz||'service-based business'}. Include: step-by-step instructions (numbered), tools/software to use at each step, email templates or scripts where applicable, timeline for each step, who is responsible, what success looks like. Format so it can be immediately handed to a team member or VA.`,
+      'automations': (f) => `I run a service business and spend time on these tasks: "${f.tasks}". Create a complete automation plan: 1) For each task — recommend the best free or low-cost tool ($0-$30/mo) to automate it, 2) Exact setup steps, 3) How much time it saves per week, 4) Priority order (what to automate first), 5) Total estimated time savings per month, 6) A 30-day implementation schedule to set everything up without overwhelm.`,
+      'social-media': (f) => `Create a complete 30-day ${f.platform||'Instagram'} content strategy for: "${f.biz}". Include: 1) Content pillars (4-5 themes), 2) Post frequency & best times to post, 3) 30 specific post ideas with captions (10 educational, 10 engagement, 10 promotional), 4) Hashtag strategy (3 tiers: niche, medium, broad), 5) Story ideas (5), 6) Reel concepts (5), 7) How to grow from 0 followers — first 30 days tactics, 8) Engagement strategy (how to spend 15 min/day building community).`,
+      'ad-copy': (f) => `Write complete ad copy for: "${f.product}" targeting "${f.audience}". Deliver: 1) Facebook/Instagram ad — headline (5 variations), primary text (3 variations: short/medium/long), call-to-action (3 options), 2) Google search ad — 3 headlines (30 char max each), 2 descriptions (90 char max each), 3) One retargeting ad variation, 4) Best image/video direction for each ad, 5) A/B test recommendation — which version to run first and why.`,
+      'email-campaign': (f) => `Write a complete 5-email sequence for "${f.biz}" with the goal: "${f.goal}". Emails: 1) Welcome email (immediate — builds relationship, sets expectations), 2) Value email (Day 2 — share a quick win or insight), 3) Story email (Day 4 — share a transformation story or case study), 4) Offer email (Day 6 — make the ask with urgency), 5) Follow-up email (Day 8 — handle objections, last chance). For each email: subject line (3 options), preview text, full body copy, CTA button text. Write them as if ready to load into Mailchimp.`
+    };
+
+    async function bbGenerate(type) {
+      const cfg = JSON.parse(localStorage.getItem('settings')) || {};
+      const groqKey = cfg.groqApiKey || '';
+      const resultEl = document.getElementById('bb-' + type + '-result');
+      if (!resultEl) return;
+      if (!groqKey) { resultEl.style.display='block'; resultEl.innerHTML='<div style="color:#dc2626;padding:12px;background:#fef2f2;border-radius:8px">⚠️ Add your Groq API key in Settings to use AI tools.</div>'; return; }
+
+      // Gather fields based on type
+      const f = {
+        biz: document.getElementById('bv-biz')?.value || document.getElementById('logo-biz')?.value || document.getElementById('sm-biz')?.value || document.getElementById('em-biz')?.value || document.getElementById('proc-biz')?.value || '',
+        tone: document.getElementById('bv-tone')?.value || '',
+        desc: document.getElementById('cp-desc')?.value || document.getElementById('font-desc')?.value || '',
+        type: document.getElementById('proc-type')?.value || '',
+        tasks: document.getElementById('auto-tasks')?.value || '',
+        platform: document.getElementById('sm-platform')?.value || '',
+        product: document.getElementById('ad-product')?.value || '',
+        audience: document.getElementById('ad-audience')?.value || '',
+        goal: document.getElementById('em-goal')?.value || ''
+      };
+
+      const promptFn = BB_PROMPTS[type];
+      if (!promptFn) return;
+      const userPrompt = promptFn(f);
+
+      resultEl.style.display = 'block';
+      resultEl.innerHTML = '<div style="color:#4267B2;font-weight:600">✨ Generating with AI…</div>';
+
+      let fullText = '';
+      try {
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
+          body: JSON.stringify({ model: cfg.aiModel || 'groq/compound', messages: [{ role: 'system', content: 'You are a world-class business strategist and copywriter for H.E.L.P. Center. Give detailed, specific, ready-to-use output. Never give templates — give the actual finished content.' }, { role: 'user', content: userPrompt }], max_tokens: 4096, temperature: 0.6, stream: true })
+        });
+        if (!res.ok) throw new Error('AI error ' + res.status);
+        const reader = res.body.getReader(), dec = new TextDecoder();
+        while (true) {
+          const { done, value } = await reader.read(); if (done) break;
+          for (const line of dec.decode(value).split('\n')) {
+            if (!line.startsWith('data: ')) continue;
+            const d = line.slice(6); if (d === '[DONE]') continue;
+            try { const dt = JSON.parse(d).choices?.[0]?.delta?.content || ''; if (dt) { fullText += dt; resultEl.innerHTML = mdRender(fullText); resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); } } catch(e) {}
+          }
+        }
+        resultEl.innerHTML = mdRender(cleanGroqResponse(fullText));
+      } catch(e) {
+        resultEl.innerHTML = '<div style="color:#dc2626;padding:12px;background:#fef2f2;border-radius:8px"><strong>Error:</strong> ' + e.message + '</div>';
+      }
+    }
+
     async function generateBizName() {
       const input = document.getElementById('biz-name-keywords');
       const result = document.getElementById('biz-name-results');
@@ -6729,7 +6828,7 @@ Use this guide. Take it step by step. Your financial story is still being writte
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
                   <label class="form-label" style="margin:0">Guide Content</label>
                   <div style="display:flex;gap:8px">
-                    <button onclick="toggleAiPanel()" class="btn btn-outline" style="padding:6px 12px;font-size:12px">✨ Generate with AI</button>
+                    <button onclick="toggleGfAiPanel()" class="btn btn-outline" style="padding:6px 12px;font-size:12px">✨ Generate with AI</button>
                     <label class="btn btn-outline" style="padding:6px 12px;font-size:12px;cursor:pointer">📁 Upload File<input type="file" accept=".txt,.md,.html" style="display:none" onchange="loadGuideFile(event)"></label>
                   </div>
                 </div>
@@ -6751,7 +6850,7 @@ Use this guide. Take it step by step. Your financial story is still being writte
         </div>`;
     }
 
-    function toggleAiPanel() {
+    function toggleGfAiPanel() {
       const p = document.getElementById('gf-ai-panel');
       if (p) p.style.display = p.style.display === 'none' ? 'block' : 'none';
     }

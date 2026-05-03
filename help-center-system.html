@@ -701,8 +701,15 @@
           </div>
 
           <div id="branding-tab" class="tab-content">
-            <!-- BRAND WIZARD -->
             <div style="max-width:720px;margin:0 auto">
+            <div class="card" style="text-align:center;padding:40px 28px">
+              <div style="font-size:48px;margin-bottom:12px">🎨</div>
+              <h3 style="font-size:20px;font-weight:800;margin-bottom:8px">Brand Builder Wizard</h3>
+              <p style="color:var(--gray-500);font-size:14px;margin-bottom:24px;max-width:400px;margin-left:auto;margin-right:auto">The Brand Wizard lives inside the <strong>Business Development</strong> pathway for a better guided experience — right alongside your digital presence checklist.</p>
+              <button class="btn btn-solid" style="font-size:15px;padding:14px 32px;background:linear-gradient(135deg,#4267B2,#7C3AED)" onclick="showPage('biz-dev-pathway',event);setTimeout(()=>{const t=document.querySelector('[onclick*=\'biz\\\',\\\'brand\\\'\']');if(t)t.click();},300)">Go to Brand Builder →</button>
+            </div>
+            </div>
+            <div style="max-width:720px;margin:0 auto;display:none"><!-- original wizard kept as fallback -->
               <!-- Progress bar -->
               <div style="display:flex;gap:6px;margin-bottom:24px;align-items:center">
                 <div id="bw-prog-1" style="flex:1;height:4px;border-radius:4px;background:#4267B2;transition:all .3s"></div>
@@ -1111,19 +1118,105 @@
               </div>
             </div>
             <div id="biz-tab-brand" class="path-tab-content">
-              <div class="card">
-                <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Brand &amp; Digital Presence</h3>
-                <div class="tip-box"><h4>🎨 Brand Identity Essentials</h4><p>Your brand is more than a logo — it's how people feel when they interact with you. Define: (1) Your core transformation (what problem do you solve?), (2) Your ideal client, (3) Your brand voice (professional? warm? bold?), (4) 2–3 brand colors + 1–2 fonts. Keep it consistent everywhere.</p></div>
-                <div class="tip-box"><h4>🌐 Website Minimum Viable Pages</h4><p>A professional website needs: Home (hero + value proposition), About (your story + credentials), Services (clear offerings + pricing or "contact for pricing"), Testimonials, and Contact. Add a booking link (Calendly, Acuity) from day one.</p></div>
-                <div class="tip-box"><h4>📱 Social Media Strategy</h4><p>You don't need to be everywhere. Pick 1–2 platforms where your ideal client spends time. For service businesses, LinkedIn + Instagram work well. Post consistently (3x/week) before quantity matters. Lead with education and transformation, not just promotions.</p></div>
-                <h4 style="font-weight:700;margin:20px 0 12px;">Digital Presence Checklist</h4>
-                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand1',this)"> <span><strong>Claim your domain name</strong> — .com preferred, yourname.com or yourbusiness.com</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand2',this)"> <span><strong>Set up professional email</strong> — yourname@yourbusiness.com (Google Workspace or similar)</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand3',this)"> <span><strong>Launch a website</strong> — even a simple one-pager is better than none</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand4',this)"> <span><strong>Set up Google Business Profile</strong> — free and critical for local visibility</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand5',this)"> <span><strong>Choose and set up 1–2 social platforms</strong> — complete all profile fields</span></div>
+              <!-- DIGITAL PRESENCE CHECKLIST (compact) -->
+              <div class="card" style="margin-bottom:16px">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:14px">✅ Digital Presence Checklist</h3>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand1',this)"> <span><strong>Claim your domain name</strong> — .com preferred (yourname.com or yourbusiness.com)</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand2',this)"> <span><strong>Set up professional email</strong> — yourname@yourbusiness.com via Google Workspace</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand3',this)"> <span><strong>Launch a website</strong> — Home, About, Services, Testimonials, Contact + booking link</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand4',this)"> <span><strong>Set up Google Business Profile</strong> — free, critical for local visibility</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand5',this)"> <span><strong>Choose 1–2 social platforms</strong> — complete all profile fields before posting</span></div>
                 <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand6',this)"> <span><strong>Get a professional headshot</strong> — natural light works fine</span></div>
-                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand7',this)"> <span><strong>Create a simple services menu / rate sheet</strong> — know your pricing before you quote</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand7',this)"> <span><strong>Create a services menu / rate sheet</strong> — know your pricing before you quote</span></div>
+              </div>
+
+              <!-- BRAND WIZARD (embedded) -->
+              <div class="card" style="padding:28px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px">
+                  <h3 style="font-size:18px;font-weight:800;margin:0">🎨 Brand Builder Wizard</h3>
+                  <span style="font-size:12px;color:var(--gray-500)">4 steps → complete brand package</span>
+                </div>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:20px">Answer 4 quick questions — AI builds your taglines, color palette, fonts, brand voice, logo brief, and social media bios.</p>
+
+                <!-- Progress -->
+                <div style="display:flex;gap:6px;margin-bottom:24px;align-items:center">
+                  <div id="bw2-prog-1" style="flex:1;height:4px;border-radius:4px;background:#4267B2;transition:all .3s"></div>
+                  <div id="bw2-prog-2" style="flex:1;height:4px;border-radius:4px;background:#E2E8F0;transition:all .3s"></div>
+                  <div id="bw2-prog-3" style="flex:1;height:4px;border-radius:4px;background:#E2E8F0;transition:all .3s"></div>
+                  <div id="bw2-prog-4" style="flex:1;height:4px;border-radius:4px;background:#E2E8F0;transition:all .3s"></div>
+                  <span id="bw2-step-label" style="font-size:12px;color:var(--gray-500);white-space:nowrap;margin-left:8px">Step 1 of 4</span>
+                </div>
+
+                <!-- Step 1 -->
+                <div id="bw2-step-1">
+                  <div class="form-group"><label class="form-label">Business Name (leave blank for suggestions)</label>
+                    <input type="text" id="bw2-name" class="form-input" placeholder="e.g. H.E.L.P. Center"></div>
+                  <div class="form-group"><label class="form-label">What does your business do? *</label>
+                    <textarea id="bw2-what" class="form-textarea" style="min-height:70px" placeholder="e.g. We help Black entrepreneurs build credit, form LLCs, and launch businesses through 1-on-1 coaching."></textarea></div>
+                  <div class="form-group"><label class="form-label">Who do you serve? *</label>
+                    <input type="text" id="bw2-who" class="form-input" placeholder="e.g. Black women entrepreneurs ages 25–45 in Jacksonville, FL"></div>
+                  <div class="form-group"><label class="form-label">What makes you different?</label>
+                    <input type="text" id="bw2-diff" class="form-input" placeholder="e.g. We combine spiritual community with real business strategy"></div>
+                  <button class="btn btn-solid" style="width:100%" onclick="bwNext2(2)">Next: Brand Personality →</button>
+                </div>
+
+                <!-- Step 2 -->
+                <div id="bw2-step-2" style="display:none">
+                  <p style="font-size:14px;font-weight:600;margin-bottom:12px">Pick up to 3 personality traits</p>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px" id="bw2-personality-opts">
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Bold & Confident">🔥 Bold & Confident</div>
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Warm & Nurturing">🤗 Warm & Nurturing</div>
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Professional & Authoritative">💼 Professional</div>
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Creative & Innovative">💡 Creative & Innovative</div>
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Community-Focused">🤝 Community-Focused</div>
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Spiritual & Purpose-Driven">🙏 Spiritual & Purpose-Driven</div>
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Luxury & Premium">✨ Luxury & Premium</div>
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Educational & Empowering">📚 Educational & Empowering</div>
+                  </div>
+                  <input type="hidden" id="bw2-personality" value="">
+                  <div style="display:flex;gap:10px">
+                    <button class="btn btn-outline" style="flex:1" onclick="bwNext2(1)">← Back</button>
+                    <button class="btn btn-solid" style="flex:2" onclick="bwNext2(3)">Next: Visual Style →</button>
+                  </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div id="bw2-step-3" style="display:none">
+                  <p style="font-size:14px;font-weight:600;margin-bottom:10px">Visual style</p>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px" id="bw2-style-opts">
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-style')" data-val="Modern & Clean">⚡ Modern & Clean</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-style')" data-val="Classic & Traditional">🏛 Classic & Traditional</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-style')" data-val="Bold & Vibrant">🎨 Bold & Vibrant</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-style')" data-val="Minimal & Elegant">🤍 Minimal & Elegant</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-style')" data-val="Earthy & Natural">🌿 Earthy & Natural</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-style')" data-val="Afrocentric & Cultural">🌍 Afrocentric & Cultural</div>
+                  </div>
+                  <input type="hidden" id="bw2-style" value="">
+                  <p style="font-size:14px;font-weight:600;margin-bottom:10px">Color vibe</p>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px" id="bw2-color-opts">
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-color')" data-val="Blues & Navy" style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#1e3a6e;display:inline-block;flex-shrink:0"></span>Blues & Navy</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-color')" data-val="Greens" style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#2E7D32;display:inline-block;flex-shrink:0"></span>Greens</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-color')" data-val="Golds & Warm Tones" style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#C9A84C;display:inline-block;flex-shrink:0"></span>Golds & Warm</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-color')" data-val="Purples" style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#7B1FA2;display:inline-block;flex-shrink:0"></span>Purples</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-color')" data-val="Reds & Oranges" style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#E65100;display:inline-block;flex-shrink:0"></span>Reds & Oranges</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-color')" data-val="Black, White & Gold" style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#111;display:inline-block;flex-shrink:0"></span>Black & Gold</div>
+                  </div>
+                  <input type="hidden" id="bw2-color" value="">
+                  <div style="display:flex;gap:10px">
+                    <button class="btn btn-outline" style="flex:1" onclick="bwNext2(2)">← Back</button>
+                    <button class="btn btn-solid" style="flex:2" onclick="bwNext2(4)">Generate My Brand →</button>
+                  </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div id="bw2-step-4" style="display:none">
+                  <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+                    <button class="btn btn-outline" onclick="bwNext2(3)">← Edit</button>
+                    <button class="btn btn-solid" style="background:linear-gradient(135deg,#4267B2,#7C3AED)" onclick="bwGenerate2()">✨ Build My Brand</button>
+                    <button class="btn btn-outline" onclick="bwPrint2()" style="margin-left:auto">🖨️ Print</button>
+                  </div>
+                  <div id="bw2-result" class="md-content" style="font-size:14px;line-height:1.85;min-height:80px"></div>
+                </div>
               </div>
             </div>
             <div id="biz-tab-resources" class="path-tab-content">
@@ -5054,6 +5147,71 @@ How does this business idea complement the H.E.L.P. Center's mission? Who in the
         current.push(el.dataset.val);
       }
       if (h) h.value = current.join(', ');
+    }
+
+    // bw2 = Brand Wizard embedded in Business Development pathway
+    function bwNext2(step) {
+      [1,2,3,4].forEach(i => {
+        const el = document.getElementById('bw2-step-' + i);
+        if (el) el.style.display = i === step ? 'block' : 'none';
+        const prog = document.getElementById('bw2-prog-' + i);
+        if (prog) prog.style.background = i <= step ? '#4267B2' : '#E2E8F0';
+      });
+      const lbl = document.getElementById('bw2-step-label');
+      if (lbl) lbl.textContent = 'Step ' + step + ' of 4';
+    }
+    function bwToggle2(el, hiddenId) {
+      const selected = el.classList.contains('selected');
+      const h = document.getElementById(hiddenId);
+      const current = h ? h.value.split(',').filter(v=>v.trim()) : [];
+      if (selected) { el.classList.remove('selected'); const idx = current.indexOf(el.dataset.val); if (idx > -1) current.splice(idx, 1); }
+      else { if (current.length >= 3) { showToast('Pick up to 3 personality traits'); return; } el.classList.add('selected'); current.push(el.dataset.val); }
+      if (h) h.value = current.join(', ');
+    }
+    async function bwGenerate2() {
+      const cfg = JSON.parse(localStorage.getItem('settings')) || {};
+      const groqKey = cfg.groqApiKey || '';
+      const resultEl = document.getElementById('bw2-result');
+      if (!groqKey) { if(resultEl) resultEl.innerHTML='<div style="color:#dc2626;padding:12px;background:#fef2f2;border-radius:8px">⚠️ Add your Groq API key in Settings first.</div>'; return; }
+      const name = document.getElementById('bw2-name')?.value.trim() || '(no name yet)';
+      const what = document.getElementById('bw2-what')?.value.trim() || '';
+      const who  = document.getElementById('bw2-who')?.value.trim() || '';
+      const diff = document.getElementById('bw2-diff')?.value.trim() || '';
+      const personality = document.getElementById('bw2-personality')?.value || '';
+      const style = document.getElementById('bw2-style')?.value || '';
+      const color = document.getElementById('bw2-color')?.value || '';
+      if (!what) { showToast('Fill in Step 1 first.'); bwNext2(1); return; }
+      resultEl.innerHTML = '<div style="color:#4267B2;font-weight:600;padding:12px">✨ Building your complete brand package…</div>';
+      const prompt = `Build a COMPLETE BRAND PACKAGE. Business: "${name}" — ${what}. Serves: ${who}. Differentiator: ${diff}. Personality: ${personality||'Bold, Professional'}. Style: ${style||'Modern'}. Colors: ${color||'Blues & Navy'}.
+
+Output ALL sections:
+## 🏷️ Tagline Options — 5 options, bold the recommended one
+## 📖 Brand Story — 3 sentences for About page
+## 🎨 Color Palette — 5 colors (name + hex + how to use)
+## 🖋️ Typography — 2 Google Fonts + import link + CSS snippet
+## 🗣️ Brand Voice — tone in 3 words, 5 dos, 5 don'ts, sample caption, 3 email subject lines
+## 📋 Logo Brief — complete brief to send to a Fiverr designer
+## 📱 Social Bios — Instagram (150 chars), LinkedIn (3 sentences), Facebook (2 sentences)
+## 🏆 Content Pillars — 3 pillars with 5 post ideas each`;
+      let fullText = '';
+      try {
+        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
+          body: JSON.stringify({ model: cfg.aiModel||'groq/compound', messages:[{role:'system',content:'You are a world-class brand strategist. Output every section completely. Use specific hex codes, real font names, and actual copy — never placeholders.'},{role:'user',content:prompt}], max_tokens:6000, temperature:0.7, stream:true })
+        });
+        if (!res.ok) throw new Error('AI error ' + res.status);
+        const reader = res.body.getReader(), dec = new TextDecoder();
+        while(true){ const {done,value}=await reader.read(); if(done)break; for(const line of dec.decode(value).split('\n')){ if(!line.startsWith('data: '))continue; const d=line.slice(6); if(d==='[DONE]')continue; try{ const dt=JSON.parse(d).choices?.[0]?.delta?.content||''; if(dt){fullText+=dt; resultEl.innerHTML=mdRender(fullText);} }catch(e){} } }
+        resultEl.innerHTML = mdRender(cleanGroqResponse(fullText));
+        window._bw2LastBrand = { name, text: cleanGroqResponse(fullText) };
+      } catch(e) { resultEl.innerHTML = '<div style="color:#dc2626;padding:12px;background:#fef2f2;border-radius:8px"><strong>Error:</strong> '+e.message+'</div>'; }
+    }
+    function bwPrint2() {
+      const data = window._bw2LastBrand;
+      if (!data?.text) { showToast('Generate your brand first.'); return; }
+      const w = window.open('','_blank');
+      w.document.write(`<!DOCTYPE html><html><head><title>${data.name} — Brand Package</title><style>body{font-family:Georgia,serif;max-width:800px;margin:40px auto;padding:0 24px;color:#111}h2{color:#4267B2;margin-top:28px}table{width:100%;border-collapse:collapse}th{background:#4267B2;color:#fff;padding:8px}td{padding:7px;border-bottom:1px solid #eee}code{background:#f1f5f9;padding:2px 6px;border-radius:4px}@media print{button{display:none}}</style></head><body><div style="text-align:right;margin-bottom:16px"><button onclick="window.print()" style="padding:10px 20px;background:#4267B2;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨️ Print</button></div><h1>${data.name} — Brand Package</h1>${mdRender(data.text)}</body></html>`);
+      w.document.close();
     }
 
     function bwNext(step) {

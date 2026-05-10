@@ -2019,6 +2019,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
             <button class="path-tab" onclick="pTab('reports','bizplan',this)">Business Plan</button>
             <button class="path-tab" onclick="pTab('reports','program',this)">Program Plan</button>
             <button class="path-tab" onclick="pTab('reports','revenue',this)">Revenue Report</button>
+            <button class="path-tab" onclick="pTab('reports','files',this); renderUserFiles();">📁 My Files</button>
           </div>
 
           <!-- PROPOSAL -->
@@ -2214,6 +2215,25 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
             </div>
             <div class="card">
               <textarea id="revenue-report-preview" class="form-input" style="width:100%;min-height:500px;font-size:13px;font-family:monospace;resize:vertical" placeholder="Select filters and click Generate Report..."></textarea>
+            </div>
+          </div>
+
+          <!-- MY FILES (uploaded documents — Personal or Business) -->
+          <div id="reports-tab-files" class="path-tab-content" style="display:none">
+            <div class="card" style="margin-bottom:16px">
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+                <div>
+                  <div style="font-weight:700;font-size:16px">📁 My Files</div>
+                  <div style="font-size:13px;color:var(--gray-500);margin-top:2px">Upload personal or business documents — resumes, contracts, receipts, IDs, anything.</div>
+                </div>
+                <button class="btn btn-solid" onclick="openUploadFileModal()" style="padding:10px 18px">+ Upload File</button>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+                <button class="path-tab active" onclick="filterUserFiles('all',this)" style="padding:6px 14px;font-size:13px">All</button>
+                <button class="path-tab" onclick="filterUserFiles('personal',this)" style="padding:6px 14px;font-size:13px">👤 Personal</button>
+                <button class="path-tab" onclick="filterUserFiles('business',this)" style="padding:6px 14px;font-size:13px">💼 Business</button>
+              </div>
+              <div id="user-files-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px"></div>
             </div>
           </div>
         </div>
@@ -2907,7 +2927,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
   'youth-pathway': () => { renderCurriculum(); renderOutreach(); restoreYouthChecks(); loadYouthProgram(); loadYouthPlatform(); },
   pricing: () => { renderPricingPage(); updateProposalPreview(); },
   strategy: () => { renderStrategyPage(); },
-  reports: () => { populateReportClientDropdowns(); },
+  reports: () => { populateReportClientDropdowns(); renderUserFiles(); },
   booking: () => { renderBookingDashboard(); },
   'ai-projects': () => { renderAIProjectSkills(); },
   'my-profile': () => { loadProfileForm(); }
@@ -7543,6 +7563,243 @@ function copyDocText(previewId) {
   if (!content) { alert('Generate a document first.'); return; }
   navigator.clipboard.writeText(content).catch(()=>{});
   showToast('Document copied!','success');
+}
+
+// ── MY FILES: USER-UPLOADED DOCUMENTS (PERSONAL OR BUSINESS) ───────────────
+// Files are kept in localStorage as base64 data URLs and synced to PocketBase
+// via setData. Cap each file at 4 MB so we don't blow the localStorage quota.
+
+const MAX_FILE_BYTES = 4 * 1024 * 1024;
+let _userFilesFilter = 'all';
+
+function getUserFiles() {
+  try { return JSON.parse(localStorage.getItem('userFiles')) || []; }
+  catch (e) { return []; }
+}
+
+function fileIcon(mime) {
+  if (!mime) return '📄';
+  if (mime.startsWith('image/')) return '🖼️';
+  if (mime === 'application/pdf') return '📕';
+  if (mime.includes('word')) return '📘';
+  if (mime.includes('sheet') || mime.includes('excel')) return '📗';
+  if (mime.startsWith('video/')) return '🎬';
+  if (mime.startsWith('audio/')) return '🎵';
+  if (mime.startsWith('text/')) return '📃';
+  return '📄';
+}
+
+function formatFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function filterUserFiles(category, btn) {
+  _userFilesFilter = category;
+  if (btn) {
+    const tabs = btn.parentElement.querySelectorAll('.path-tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  renderUserFiles();
+}
+
+function renderUserFiles() {
+  const list = document.getElementById('user-files-list');
+  if (!list) return;
+  const all = getUserFiles();
+  const files = _userFilesFilter === 'all' ? all : all.filter(f => f.category === _userFilesFilter);
+  if (!files.length) {
+    list.innerHTML = `<div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--gray-500);background:var(--gray-50);border-radius:8px">
+      <div style="font-size:32px;margin-bottom:8px">📂</div>
+      <div style="font-weight:600;margin-bottom:4px">No files yet</div>
+      <div style="font-size:13px">Tap "+ Upload File" to add a personal or business document.</div>
+    </div>`;
+    return;
+  }
+  list.innerHTML = files
+    .slice()
+    .sort((a, b) => (b.uploaded || '').localeCompare(a.uploaded || ''))
+    .map(f => {
+      const badge = f.category === 'personal'
+        ? '<span style="background:#DBEAFE;color:#1E40AF;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px">👤 Personal</span>'
+        : '<span style="background:#FEF3C7;color:#92400E;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px">💼 Business</span>';
+      const safeName = (f.name || '').replace(/"/g, '&quot;');
+      return `<div style="border:1px solid var(--gray-200);border-radius:10px;padding:14px;background:#fff;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:flex-start;gap:10px">
+          <div style="font-size:28px;line-height:1">${fileIcon(f.mime)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:14px;word-break:break-word">${safeName}</div>
+            <div style="font-size:11px;color:var(--gray-500);margin-top:2px">${formatFileSize(f.size || 0)} · ${(f.uploaded || '').slice(0, 10)}</div>
+          </div>
+        </div>
+        <div>${badge}</div>
+        <div style="display:flex;gap:6px;margin-top:4px">
+          <button class="btn btn-outline" style="flex:1;padding:6px 10px;font-size:12px" onclick="viewUserFile('${f.id}')">View</button>
+          <button class="btn btn-outline" style="padding:6px 10px;font-size:12px;border-color:#DC2626;color:#DC2626" onclick="deleteUserFile('${f.id}')">Delete</button>
+        </div>
+      </div>`;
+    })
+    .join('');
+}
+
+function openUploadFileModal() {
+  let modal = document.getElementById('upload-file-modal');
+  if (modal) modal.remove();
+  modal = document.createElement('div');
+  modal.id = 'upload-file-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:12px;padding:24px;width:480px;max-width:100%;max-height:90vh;overflow-y:auto;position:relative">
+      <button onclick="document.getElementById('upload-file-modal').remove()" aria-label="Close" style="position:absolute;top:12px;right:12px;width:32px;height:32px;border-radius:50%;border:none;background:var(--gray-100);font-size:18px;cursor:pointer;line-height:1">×</button>
+      <h2 style="margin-bottom:6px;font-size:20px">Upload a file</h2>
+      <p style="color:var(--gray-500);font-size:13px;margin-bottom:18px">Choose any document — PDF, image, Word, etc. Max 4 MB per file.</p>
+
+      <div class="form-group">
+        <label class="form-label">File</label>
+        <input type="file" id="uf-file" class="form-input" style="margin:0;padding:8px" onchange="onUploadFilePicked(event)">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Name</label>
+        <input type="text" id="uf-name" class="form-input" style="margin:0" placeholder="e.g. My Resume 2026">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <div style="display:flex;gap:8px">
+          <label style="flex:1;display:flex;align-items:center;gap:8px;border:1.5px solid var(--gray-300);border-radius:8px;padding:10px 12px;cursor:pointer">
+            <input type="radio" name="uf-category" value="personal" checked> 👤 Personal
+          </label>
+          <label style="flex:1;display:flex;align-items:center;gap:8px;border:1.5px solid var(--gray-300);border-radius:8px;padding:10px 12px;cursor:pointer">
+            <input type="radio" name="uf-category" value="business"> 💼 Business
+          </label>
+        </div>
+      </div>
+
+      <div id="uf-error" style="color:var(--error);font-size:13px;margin-bottom:8px;display:none"></div>
+
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-solid" style="flex:1" onclick="saveUploadedFile()">Save File</button>
+        <button class="btn btn-outline" style="flex:1" onclick="document.getElementById('upload-file-modal').remove()">Cancel</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  // Close on backdrop click
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
+function onUploadFilePicked(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+  const nameEl = document.getElementById('uf-name');
+  if (nameEl && !nameEl.value) nameEl.value = file.name.replace(/\.[^.]+$/, '');
+}
+
+function saveUploadedFile() {
+  const fileInput = document.getElementById('uf-file');
+  const nameEl = document.getElementById('uf-name');
+  const errEl = document.getElementById('uf-error');
+  const showErr = (msg) => { if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; } };
+  if (errEl) errEl.style.display = 'none';
+
+  const file = fileInput?.files?.[0];
+  if (!file) return showErr('Pick a file first.');
+  if (file.size > MAX_FILE_BYTES) return showErr(`File is too large (${formatFileSize(file.size)}). Max is 4 MB.`);
+
+  const category = document.querySelector('input[name="uf-category"]:checked')?.value || 'personal';
+  const name = (nameEl?.value || '').trim() || file.name;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    const files = getUserFiles();
+    files.push({
+      id: generateId(),
+      name,
+      category,
+      mime: file.type || 'application/octet-stream',
+      size: file.size,
+      dataUrl,
+      uploaded: new Date().toISOString()
+    });
+    try {
+      setData('userFiles', files);
+    } catch (err) {
+      // QuotaExceededError on localStorage — roll back the in-memory copy.
+      return showErr('Storage full. Delete a file and try again.');
+    }
+    document.getElementById('upload-file-modal').remove();
+    renderUserFiles();
+    showToast('File saved', 'success');
+    logActivity('system', `Uploaded ${category} file: ${name}`);
+  };
+  reader.onerror = () => showErr('Could not read the file.');
+  reader.readAsDataURL(file);
+}
+
+function viewUserFile(id) {
+  const file = getUserFiles().find(f => f.id === id);
+  if (!file) return;
+  let modal = document.getElementById('view-file-modal');
+  if (modal) modal.remove();
+  modal = document.createElement('div');
+  modal.id = 'view-file-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1100;display:flex;align-items:center;justify-content:center;padding:16px';
+
+  let body;
+  if (file.mime && file.mime.startsWith('image/')) {
+    body = `<img src="${file.dataUrl}" alt="${file.name}" style="max-width:100%;max-height:80vh;display:block;margin:0 auto;border-radius:6px">`;
+  } else if (file.mime === 'application/pdf') {
+    body = `<iframe src="${file.dataUrl}" style="width:100%;height:75vh;border:none;border-radius:6px;background:#fff"></iframe>`;
+  } else if (file.mime && file.mime.startsWith('text/')) {
+    body = `<iframe src="${file.dataUrl}" style="width:100%;height:75vh;border:1px solid var(--gray-200);border-radius:6px;background:#fff"></iframe>`;
+  } else {
+    body = `<div style="padding:40px;text-align:center;color:var(--gray-600);background:var(--gray-50);border-radius:8px">
+      <div style="font-size:48px;margin-bottom:12px">${fileIcon(file.mime)}</div>
+      <div style="font-weight:600;margin-bottom:6px">${file.name}</div>
+      <div style="font-size:13px;color:var(--gray-500);margin-bottom:16px">This file type can't preview in the browser. Download to open it.</div>
+      <a href="${file.dataUrl}" download="${file.name}" class="btn btn-solid" style="display:inline-block;padding:10px 20px">Download</a>
+    </div>`;
+  }
+
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:12px;width:900px;max-width:100%;max-height:92vh;display:flex;flex-direction:column;position:relative;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--gray-200);background:var(--gray-50)">
+        <div style="font-size:22px">${fileIcon(file.mime)}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${file.name}</div>
+          <div style="font-size:11px;color:var(--gray-500)">${file.category === 'personal' ? '👤 Personal' : '💼 Business'} · ${formatFileSize(file.size || 0)}</div>
+        </div>
+        <a href="${file.dataUrl}" download="${file.name}" class="btn btn-outline" style="padding:6px 12px;font-size:12px">⬇ Download</a>
+        <button onclick="closeViewFileModal()" aria-label="Close" title="Close (Esc)" style="width:36px;height:36px;border-radius:50%;border:none;background:var(--gray-200);font-size:20px;cursor:pointer;line-height:1;font-weight:700">×</button>
+      </div>
+      <div style="flex:1;overflow:auto;padding:16px">${body}</div>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeViewFileModal(); });
+  document.addEventListener('keydown', _viewFileEsc);
+}
+
+function _viewFileEsc(e) {
+  if (e.key === 'Escape') closeViewFileModal();
+}
+
+function closeViewFileModal() {
+  const m = document.getElementById('view-file-modal');
+  if (m) m.remove();
+  document.removeEventListener('keydown', _viewFileEsc);
+}
+
+function deleteUserFile(id) {
+  const files = getUserFiles();
+  const file = files.find(f => f.id === id);
+  if (!file) return;
+  if (!confirm(`Delete "${file.name}"? This can't be undone.`)) return;
+  setData('userFiles', files.filter(f => f.id !== id));
+  renderUserFiles();
+  showToast('File deleted');
 }
 
 // ── REPORTS: CLIENT DROPDOWNS & AUTO-FILL ──────────────────────────────────

@@ -282,6 +282,20 @@
     .path-tab-content { display:none; }
     .path-tab-content.active { display:block; }
 
+    /* WEBSITE BUILDER */
+    .wb-tmpl-chip{border:1.5px solid var(--gray-200);border-radius:8px;padding:5px 11px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:var(--gray-600);transition:all .15s;white-space:nowrap}
+    .wb-tmpl-chip:hover{border-color:var(--accent);color:var(--accent)}
+    .wb-tmpl-chip.active{border-color:var(--accent);background:rgba(66,103,178,.08);color:var(--accent)}
+    .wb-page-btn{border:1.5px solid var(--gray-200);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;background:#fff;color:var(--gray-600);transition:all .15s;display:flex;flex-direction:column;align-items:flex-start;gap:2px}
+    .wb-page-btn.active{border-color:var(--accent);background:rgba(66,103,178,.08);color:var(--accent)}
+    .wb-view-btn{border:none;background:#fff;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;color:var(--gray-500);transition:all .15s}
+    .wb-view-btn.active{background:var(--navy);color:#fff}
+    .wb-step{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:13px;color:var(--gray-500)}
+    .wb-step.done{color:var(--green)}
+    .wb-step.active{color:var(--navy);font-weight:700}
+    .wb-hist-item{border:1px solid var(--gray-200);border-radius:8px;padding:12px;cursor:pointer;transition:border-color .15s;margin-bottom:8px}
+    .wb-hist-item:hover{border-color:var(--accent)}
+
     /* WIZARD */
     .wizard-step { display:none; }
     .wizard-step.active { display:block; }
@@ -352,6 +366,7 @@
     .toggle-row:last-child{border-bottom:none;}
     @media(max-width:768px){.ai-panel{width:calc(100vw - 32px);right:16px;bottom:140px;}.ai-fab{bottom:70px;right:16px;width:52px;height:52px;font-size:20px;}.ai-fab-label{display:none;}}
   </style>
+  <script src="webTemplates.js"></script>
 </head>
 <body>
 
@@ -426,6 +441,9 @@
 
         <div class="nav-section">
           <div class="nav-section-title">Resources</div>
+          <a class="nav-link" onclick="showPage('website-builder', event)">
+            <span class="nav-icon">🌐</span><span>Website Builder</span>
+          </a>
           <a class="nav-link" onclick="showPage('builder', event)">
             <span class="nav-icon" style="font-size:13px">▸</span><span>Business Builder</span>
           </a>
@@ -2239,6 +2257,83 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
         </div>
       </div>
     </div>
+      <!-- ── WEBSITE BUILDER PAGE ── -->
+      <div id="website-builder-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">🌐 Website Builder</h1>
+          <p class="page-subtitle">Describe your brand — AI builds a complete, download-ready website in seconds. 60 hand-crafted templates.</p>
+        </div>
+        <div class="content">
+          <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+
+            <div>
+              <!-- Template picker -->
+              <div class="card" style="margin-bottom:16px">
+                <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                  <h3 style="font-size:14px;font-weight:700;margin:0">🎨 Choose a Style</h3>
+                  <span id="wb-tmpl-hint" style="font-size:11px;color:var(--gray-500)">auto-picked from your prompt</span>
+                </div>
+                <div id="wb-templates" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+                <div id="wb-examples" style="margin-top:10px;display:none">
+                  <span style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-500)">Try → </span>
+                  <span id="wb-example-chips"></span>
+                </div>
+              </div>
+
+              <!-- Page count -->
+              <div class="card" style="margin-bottom:16px">
+                <h3 style="font-size:14px;font-weight:700;margin-bottom:10px">📄 Pages</h3>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button class="wb-page-btn active" onclick="wbSetPages(1,this)">1 Page <span style="font-size:10px;opacity:.6">Landing only</span></button>
+                  <button class="wb-page-btn" onclick="wbSetPages(2,this)">2 Pages <span style="font-size:10px;opacity:.6">+ About</span></button>
+                  <button class="wb-page-btn" onclick="wbSetPages(3,this)">3 Pages <span style="font-size:10px;opacity:.6">+ Pricing</span></button>
+                </div>
+              </div>
+
+              <!-- Prompt -->
+              <div class="card" style="margin-bottom:16px">
+                <h3 style="font-size:14px;font-weight:700;margin-bottom:10px">🚀 Describe Your Brand</h3>
+                <div style="display:flex;gap:8px">
+                  <input id="wb-prompt" class="form-input" style="margin:0;flex:1" placeholder='e.g. "Black-owned luxury candle brand for women 25–45…"' onkeydown="if(event.key==='Enter')wbBuild()">
+                  <button id="wb-build-btn" class="btn btn-solid" style="white-space:nowrap;padding:10px 20px" onclick="wbBuild()">⚡ Build It</button>
+                </div>
+                <div id="wb-error" style="display:none;margin-top:8px;font-size:12px;color:var(--error)"></div>
+              </div>
+
+              <!-- Progress -->
+              <div id="wb-progress" class="card" style="display:none;margin-bottom:16px">
+                <h3 style="font-size:14px;font-weight:700;margin-bottom:12px" id="wb-progress-title">Building…</h3>
+                <div id="wb-steps"></div>
+              </div>
+
+              <!-- Preview -->
+              <div id="wb-preview-wrap" class="card" style="display:none;padding:0;overflow:hidden">
+                <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--gray-200);flex-wrap:wrap">
+                  <span style="font-size:13px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="wb-preview-title">Preview</span>
+                  <div style="display:flex;border:1.5px solid var(--gray-200);border-radius:6px;overflow:hidden">
+                    <button id="wb-btn-preview" class="wb-view-btn active" onclick="wbToggleView('preview')">👁 Preview</button>
+                    <button id="wb-btn-code" class="wb-view-btn" onclick="wbToggleView('code')">&lt;/&gt; Code</button>
+                  </div>
+                  <button class="btn btn-outline" style="padding:6px 12px;font-size:12px" onclick="wbDownload()">⬇ Download</button>
+                  <button class="btn btn-outline" style="padding:6px 12px;font-size:12px" onclick="wbCopy()">📋 Copy HTML</button>
+                  <button class="btn btn-outline" style="padding:6px 12px;font-size:12px;border-color:#DC2626;color:#DC2626" onclick="wbClear()">✕</button>
+                </div>
+                <iframe id="wb-iframe" style="width:100%;height:600px;border:none;display:block" sandbox="allow-scripts allow-same-origin"></iframe>
+                <textarea id="wb-code-view" class="form-input" style="display:none;height:600px;font-family:monospace;font-size:12px;resize:vertical;border:none;border-radius:0" readonly></textarea>
+              </div>
+            </div>
+
+            <!-- Right: history -->
+            <div>
+              <div class="card">
+                <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">📁 Recent Builds</h3>
+                <div id="wb-history"><div style="font-size:13px;color:var(--gray-400)">No builds yet.</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- ── AI PROJECTS PAGE ── -->
       <div id="ai-projects-page" class="page hidden">
         <div class="page-header">
@@ -2928,6 +3023,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
   pricing: () => { renderPricingPage(); updateProposalPreview(); },
   strategy: () => { renderStrategyPage(); },
   reports: () => { populateReportClientDropdowns(); renderUserFiles(); },
+  'website-builder': () => { wbInit(); },
   booking: () => { renderBookingDashboard(); },
   'ai-projects': () => { renderAIProjectSkills(); },
   'my-profile': () => { loadProfileForm(); }
@@ -7563,6 +7659,266 @@ function copyDocText(previewId) {
   if (!content) { alert('Generate a document first.'); return; }
   navigator.clipboard.writeText(content).catch(()=>{});
   showToast('Document copied!','success');
+}
+
+// ── WEBSITE BUILDER ─────────────────────────────────────────────────────────
+
+const WB_BUILD_STEPS = [
+  'Parsing brand intent & keywords',
+  'Selecting design aesthetic & template',
+  'Writing hero copy & headlines',
+  'Crafting features, stats & story',
+  'Assembling hand-crafted template',
+  'Finalizing HTML output',
+]
+
+let _wbPageCount = 1
+let _wbSelectedTemplate = null  // template object or null (auto-pick)
+let _wbHtml = ''
+let _wbGenerating = false
+let _wbActiveTemplate = null    // template used in last/current build
+
+function wbInit() {
+  _wbSelectedTemplate = null
+  wbRenderTemplateChips()
+  wbRenderBuilds()
+}
+
+function wbRenderTemplateChips() {
+  const el = document.getElementById('wb-templates')
+  if (!el || typeof TEMPLATES === 'undefined') return
+  el.innerHTML = TEMPLATES.map((t, i) =>
+    `<button class="wb-tmpl-chip${_wbSelectedTemplate && _wbSelectedTemplate.name === t.name ? ' active' : ''}"
+      onclick="wbSelectTemplate(${i})" title="${(t.examples||[]).join(' · ')}">${t.emoji} ${t.name}</button>`
+  ).join('')
+  document.getElementById('wb-tmpl-hint').textContent =
+    _wbSelectedTemplate ? 'selected' : 'auto-picked from your prompt'
+  const examplesEl = document.getElementById('wb-examples')
+  const chipsEl = document.getElementById('wb-example-chips')
+  if (_wbSelectedTemplate && _wbSelectedTemplate.examples && examplesEl && chipsEl) {
+    chipsEl.innerHTML = _wbSelectedTemplate.examples.map(ex =>
+      `<button onclick="document.getElementById('wb-prompt').value='${ex.replace(/'/g,"\\'")}'" style="background:rgba(66,103,178,.08);border:1px solid rgba(66,103,178,.25);border-radius:6px;padding:3px 10px;font-size:11px;color:var(--accent);cursor:pointer;margin:0 4px 4px 0">${ex}</button>`
+    ).join('')
+    examplesEl.style.display = 'block'
+  } else if (examplesEl) {
+    examplesEl.style.display = 'none'
+  }
+}
+
+function wbSelectTemplate(i) {
+  const t = TEMPLATES[i]
+  _wbSelectedTemplate = (_wbSelectedTemplate && _wbSelectedTemplate.name === t.name) ? null : t
+  wbRenderTemplateChips()
+}
+
+function wbSetPages(n, btn) {
+  _wbPageCount = n
+  document.querySelectorAll('.wb-page-btn').forEach(b => b.classList.remove('active'))
+  if (btn) btn.classList.add('active')
+}
+
+function wbPickTemplate(prompt) {
+  if (typeof TEMPLATES === 'undefined') return null
+  const p = prompt.toLowerCase()
+  let best = null, bestScore = -1
+  for (const t of TEMPLATES) {
+    const score = (t.keywords || []).filter(k => p.includes(k)).length
+    if (score > bestScore) { bestScore = score; best = t }
+  }
+  if (bestScore === 0) return TEMPLATES[Math.floor(Math.random() * TEMPLATES.length)]
+  return best
+}
+
+function wbFillTemplate(html, data) {
+  let result = html
+  for (const [key, value] of Object.entries(data)) {
+    result = result.split(`{{${key}}}`).join(value ?? '')
+  }
+  return result
+}
+
+async function wbBuild() {
+  if (_wbGenerating) return
+  const promptEl = document.getElementById('wb-prompt')
+  const errEl = document.getElementById('wb-error')
+  const p = (promptEl?.value || '').trim()
+  if (!p) { if (errEl) { errEl.textContent = 'Describe your brand first.'; errEl.style.display = 'block' } return }
+  if (errEl) errEl.style.display = 'none'
+
+  const s = getData('settings') || {}
+  const key = s.groqKey || localStorage.getItem('groqKey') || ''
+  if (!key) {
+    if (errEl) { errEl.textContent = 'Add your Groq API key in Settings first.'; errEl.style.display = 'block' }
+    return
+  }
+
+  _wbGenerating = true
+  _wbHtml = ''
+  document.getElementById('wb-build-btn').disabled = true
+  document.getElementById('wb-preview-wrap').style.display = 'none'
+
+  const template = _wbSelectedTemplate || wbPickTemplate(p)
+  _wbActiveTemplate = template
+
+  const progressEl = document.getElementById('wb-progress')
+  const titleEl = document.getElementById('wb-progress-title')
+  if (progressEl) progressEl.style.display = 'block'
+  if (titleEl) titleEl.textContent = `${template?.emoji || '⚡'} Building ${template?.name || ''}…`
+
+  let stepIdx = 0
+  const renderSteps = () => {
+    const el = document.getElementById('wb-steps')
+    if (!el) return
+    el.innerHTML = WB_BUILD_STEPS.map((s, i) =>
+      `<div class="wb-step${i < stepIdx ? ' done' : i === stepIdx ? ' active' : ''}">
+        <span>${i < stepIdx ? '✅' : i === stepIdx ? '⏳' : '○'}</span><span>${s}</span>
+      </div>`
+    ).join('')
+  }
+  renderSteps()
+  const ticker = setInterval(() => {
+    if (stepIdx < WB_BUILD_STEPS.length - 2) { stepIdx++; renderSteps() }
+  }, 800)
+
+  try {
+    const maxTokens = _wbPageCount === 1 ? 700 : _wbPageCount === 2 ? 1100 : 1600
+    const promptText = typeof CONTENT_PROMPT === 'function' ? CONTENT_PROMPT(p, _wbPageCount) : p
+
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: 'You are a brand copywriter. Return ONLY valid JSON. No markdown. No explanation.' },
+          { role: 'user', content: promptText }
+        ],
+        max_tokens: maxTokens,
+        temperature: 0.85
+      })
+    })
+    if (!r.ok) throw new Error('Groq API error ' + r.status)
+    const d = await r.json()
+    let raw = (d.choices?.[0]?.message?.content ?? '').trim()
+    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim()
+    let data
+    try { data = JSON.parse(raw) }
+    catch { const m = raw.match(/\{[\s\S]*\}/); if (m) data = JSON.parse(m[0]); else throw new Error('Could not parse JSON from AI. Try again.') }
+
+    clearInterval(ticker)
+    stepIdx = WB_BUILD_STEPS.length - 1
+    renderSteps()
+
+    let finalHtml = wbFillTemplate(template.html, data)
+    if (_wbPageCount > 1 && typeof makeExtendedSections === 'function') {
+      const extra = makeExtendedSections(template, data, _wbPageCount)
+      finalHtml = finalHtml.replace('<footer>', extra + '\n<footer>')
+    }
+    _wbHtml = finalHtml
+
+    // Save to history
+    const builds = (getData('wbBuilds') || [])
+    builds.unshift({ id: Date.now(), name: p, html: finalHtml, date: new Date().toISOString().slice(0, 10), style: template.name, styleEmoji: template.emoji, pages: _wbPageCount })
+    setData('wbBuilds', builds.slice(0, 8))
+
+    setTimeout(() => {
+      if (progressEl) progressEl.style.display = 'none'
+      const pw = document.getElementById('wb-preview-wrap')
+      if (pw) pw.style.display = 'block'
+      const pt = document.getElementById('wb-preview-title')
+      if (pt) pt.textContent = `${template.emoji} ${template.name} · ${_wbPageCount}p · ${p}`
+      wbRenderPreview()
+      wbRenderBuilds()
+    }, 400)
+  } catch (e) {
+    clearInterval(ticker)
+    if (progressEl) progressEl.style.display = 'none'
+    if (errEl) { errEl.textContent = e.message; errEl.style.display = 'block' }
+  }
+  _wbGenerating = false
+  document.getElementById('wb-build-btn').disabled = false
+}
+
+function wbRenderPreview() {
+  const iframe = document.getElementById('wb-iframe')
+  const code = document.getElementById('wb-code-view')
+  if (!iframe || !_wbHtml) return
+  const blob = new Blob([_wbHtml], { type: 'text/html' })
+  iframe.src = URL.createObjectURL(blob)
+  if (code) code.value = _wbHtml
+}
+
+function wbToggleView(mode) {
+  const iframe = document.getElementById('wb-iframe')
+  const code = document.getElementById('wb-code-view')
+  const btnP = document.getElementById('wb-btn-preview')
+  const btnC = document.getElementById('wb-btn-code')
+  if (mode === 'preview') {
+    if (iframe) iframe.style.display = 'block'
+    if (code) code.style.display = 'none'
+    if (btnP) btnP.classList.add('active')
+    if (btnC) btnC.classList.remove('active')
+  } else {
+    if (iframe) iframe.style.display = 'none'
+    if (code) code.style.display = 'block'
+    if (btnP) btnP.classList.remove('active')
+    if (btnC) btnC.classList.add('active')
+  }
+}
+
+function wbDownload() {
+  if (!_wbHtml) return
+  const prompt = (document.getElementById('wb-prompt')?.value || 'website').replace(/[^a-z0-9]/gi, '-').toLowerCase().slice(0, 40)
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(new Blob([_wbHtml], { type: 'text/html' }))
+  a.download = prompt + '.html'
+  a.click()
+}
+
+function wbCopy() {
+  if (!_wbHtml) return
+  navigator.clipboard.writeText(_wbHtml).then(() => showToast('HTML copied!', 'success'))
+}
+
+function wbClear() {
+  _wbHtml = ''
+  _wbActiveTemplate = null
+  const pw = document.getElementById('wb-preview-wrap')
+  if (pw) pw.style.display = 'none'
+}
+
+function wbRenderBuilds() {
+  const el = document.getElementById('wb-history')
+  if (!el) return
+  const builds = getData('wbBuilds') || []
+  if (!builds.length) { el.innerHTML = '<div style="font-size:13px;color:var(--gray-400)">No builds yet.</div>'; return }
+  el.innerHTML = builds.map((b, i) =>
+    `<div class="wb-hist-item" onclick="wbLoadBuild(${i})">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:20px">${b.styleEmoji || '🌐'}</span>
+        <div style="min-width:0">
+          <div style="font-weight:700;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${b.name}</div>
+          <div style="font-size:11px;color:var(--gray-400)">${b.style} · ${b.pages}p · ${b.date}</div>
+        </div>
+      </div>
+    </div>`
+  ).join('')
+}
+
+function wbLoadBuild(i) {
+  const b = (getData('wbBuilds') || [])[i]
+  if (!b) return
+  _wbHtml = b.html
+  _wbPageCount = b.pages || 1
+  _wbActiveTemplate = (typeof TEMPLATES !== 'undefined' && TEMPLATES.find(t => t.name === b.style)) || null
+  const promptEl = document.getElementById('wb-prompt')
+  if (promptEl) promptEl.value = b.name
+  const pw = document.getElementById('wb-preview-wrap')
+  if (pw) pw.style.display = 'block'
+  const pt = document.getElementById('wb-preview-title')
+  if (pt) pt.textContent = `${b.styleEmoji} ${b.style} · ${b.pages}p · ${b.name}`
+  wbRenderPreview()
+  showToast('Loaded: ' + b.name, 'success')
 }
 
 // ── MY FILES: USER-UPLOADED DOCUMENTS (PERSONAL OR BUSINESS) ───────────────

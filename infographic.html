@@ -1,0 +1,532 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>H.E.L.P. Center — A Field Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800;9..144,900&family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0F172A;
+    --ink:#1A1530;
+    --blue:#4267B2;
+    --blue-deep:#2C4982;
+    --green:#10B981;
+    --green-deep:#0B7A57;
+    --orange:#F59E0B;
+    --orange-deep:#B7740A;
+    --gold:#C9A84C;
+    --rose:#D9415A;
+    --cream:#F4EFE5;
+    --paper:#FBF7EE;
+    --paper-deep:#EFE7D5;
+    --rule:#221C3A;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:#2a2535;color:var(--ink);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  .stage{padding:48px 24px;display:flex;justify-content:center}
+  .sheet{
+    width:100%;max-width:1100px;background:var(--paper);
+    background-image:
+      radial-gradient(circle at 18% 12%,rgba(245,158,11,.08),transparent 40%),
+      radial-gradient(circle at 92% 8%,rgba(66,103,178,.10),transparent 38%),
+      radial-gradient(circle at 50% 95%,rgba(16,185,129,.08),transparent 50%);
+    border:1px solid #2a2535;
+    box-shadow:0 30px 80px rgba(0,0,0,.45),0 4px 0 #2a2535,inset 0 0 0 8px var(--paper),inset 0 0 0 9px rgba(34,28,58,.18);
+    padding:56px 56px 40px;
+    position:relative;overflow:hidden;
+  }
+  .grain{position:absolute;inset:0;pointer-events:none;opacity:.35;mix-blend-mode:multiply}
+
+  /* ── HEADER ── */
+  .topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding-bottom:18px;border-bottom:2px solid var(--rule);margin-bottom:24px}
+  .mark{display:flex;align-items:center;gap:14px}
+  .mark-stamp{
+    width:64px;height:64px;border-radius:14px;background:var(--navy);color:var(--gold);
+    display:grid;place-items:center;font-family:'Fraunces',serif;font-weight:900;font-size:38px;line-height:1;
+    box-shadow:0 6px 0 #000,inset 0 0 0 2px rgba(201,168,76,.4);position:relative;
+  }
+  .mark-stamp::after{content:"";position:absolute;inset:6px;border:1px dashed rgba(201,168,76,.5);border-radius:8px}
+  .mark-text .brand{font-family:'Fraunces',serif;font-weight:900;font-size:32px;letter-spacing:-.5px;line-height:1}
+  .mark-text .brand b{color:var(--rose)}
+  .mark-text .sub{font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:#5b5170;margin-top:6px;font-weight:600}
+  .meta{text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:#5b5170;line-height:1.5}
+  .meta .field{display:flex;justify-content:space-between;gap:16px;border-bottom:1px dotted #b9ad94;padding:2px 0}
+  .meta .field b{color:var(--ink)}
+
+  /* ── BANNER ── */
+  .banner{
+    display:grid;grid-template-columns:1.4fr 1fr;gap:0;border:2px solid var(--rule);
+    background:#fff;margin-bottom:28px;position:relative;
+  }
+  .banner-l{padding:22px 24px;border-right:2px solid var(--rule);background:linear-gradient(180deg,#fff 0,#fbf3df 100%)}
+  .eyebrow{display:inline-block;background:var(--rose);color:#fff;font-size:10px;font-weight:800;letter-spacing:.2em;padding:4px 8px;text-transform:uppercase;margin-bottom:10px}
+  .h-title{font-family:'Fraunces',serif;font-weight:900;font-size:54px;line-height:.92;letter-spacing:-1.5px;margin:0 0 8px}
+  .h-title em{font-style:italic;color:var(--blue-deep);text-decoration:underline;text-decoration-color:var(--orange);text-decoration-thickness:5px;text-underline-offset:6px}
+  .h-deck{font-size:14px;line-height:1.5;color:#3b324f;max-width:46ch}
+  .banner-r{padding:22px;background:var(--navy);color:#fff;display:flex;flex-direction:column;justify-content:space-between}
+  .banner-r .lab{font-size:10px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);font-weight:700}
+  .banner-r blockquote{margin:6px 0 0;font-family:'Fraunces',serif;font-style:italic;font-size:20px;line-height:1.25;color:#fff}
+  .banner-r blockquote::before{content:"“";color:var(--gold);font-size:54px;line-height:0;vertical-align:-22px;margin-right:6px;font-family:'Fraunces',serif}
+  .banner-r .sig{margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#cdb87b}
+  .banner-r .sig b{color:#fff}
+
+  /* ── MAIN GRID ── */
+  .row{display:grid;grid-template-columns:240px 1fr 240px;gap:18px;align-items:stretch}
+  .col-stats{display:flex;flex-direction:column;gap:12px}
+  .stat{
+    background:#fff;border:2px solid var(--rule);padding:14px;position:relative;
+    box-shadow:4px 4px 0 var(--rule);
+  }
+  .stat .num{font-family:'Fraunces',serif;font-weight:900;font-size:46px;line-height:.95;letter-spacing:-2px;color:var(--navy)}
+  .stat .num.green{color:var(--green-deep)}
+  .stat .num.orange{color:var(--orange-deep)}
+  .stat .num.blue{color:var(--blue-deep)}
+  .stat .num.rose{color:var(--rose)}
+  .stat .lab{font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:#5b5170;font-weight:700;margin-top:4px}
+  .stat .desc{font-size:12px;color:#3b324f;margin-top:6px;line-height:1.4}
+  .stat .corner{position:absolute;top:6px;right:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#a89c80}
+
+  /* ── COMPASS ── */
+  .col-compass{
+    background:#fff;border:2px solid var(--rule);
+    position:relative;display:flex;align-items:center;justify-content:center;
+    box-shadow:6px 6px 0 var(--rule);min-height:560px;overflow:hidden;
+  }
+  .col-compass::before{
+    content:"PATHWAY COMPASS · 6 ROUTES TO PROSPER";position:absolute;top:10px;left:0;right:0;
+    text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.3em;color:#7a6e54;
+  }
+  .col-compass::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg,transparent 0,transparent 22px,rgba(34,28,58,.04) 22px,rgba(34,28,58,.04) 23px),
+               repeating-linear-gradient(90deg,transparent 0,transparent 22px,rgba(34,28,58,.04) 22px,rgba(34,28,58,.04) 23px);
+  }
+  .compass-wrap{position:relative;width:100%;max-width:520px;aspect-ratio:1;margin:24px 0 0}
+
+  /* ── COL: ORIGIN ── */
+  .col-origin{display:flex;flex-direction:column;gap:12px}
+  .panel{background:#fff;border:2px solid var(--rule);padding:14px;box-shadow:4px 4px 0 var(--rule);position:relative}
+  .panel h4{margin:0 0 6px;font-family:'Fraunces',serif;font-weight:900;font-size:18px;letter-spacing:-.3px}
+  .panel .tag{position:absolute;top:-10px;left:10px;background:var(--orange);color:#1a1530;font-size:10px;font-weight:800;letter-spacing:.18em;padding:3px 8px;text-transform:uppercase}
+  .panel .tag.blue{background:var(--blue);color:#fff}
+  .panel .tag.green{background:var(--green);color:#0a2620}
+  .panel .tag.rose{background:var(--rose);color:#fff}
+  .panel p{margin:0 0 6px;font-size:12.5px;line-height:1.55;color:#3b324f}
+  .timeline{font-family:'JetBrains Mono',monospace;font-size:11px;color:#3b324f;display:grid;grid-template-columns:auto 1fr;gap:6px 10px}
+  .timeline b{color:var(--rose)}
+
+  /* ── TOOLS GRID ── */
+  .tools{margin-top:28px;border-top:2px solid var(--rule);padding-top:20px}
+  .tools-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:14px;gap:12px}
+  .tools-head h3{margin:0;font-family:'Fraunces',serif;font-weight:900;font-size:30px;letter-spacing:-.5px}
+  .tools-head .lead{font-size:12px;color:#5b5170;max-width:60ch;line-height:1.5}
+  .tools-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .tool{background:#fff;border:2px solid var(--rule);padding:14px;position:relative;box-shadow:3px 3px 0 var(--rule);display:flex;flex-direction:column;gap:8px}
+  .tool .ico{width:42px;height:42px;border-radius:10px;display:grid;place-items:center;font-size:22px;background:var(--paper-deep);border:1.5px solid var(--rule)}
+  .tool h5{margin:0;font-size:14px;font-weight:800;letter-spacing:-.2px}
+  .tool p{margin:0;font-size:11.5px;line-height:1.45;color:#3b324f}
+  .tool .num{position:absolute;top:8px;right:10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#a89c80}
+
+  /* ── PALETTE & TYPE STRIP ── */
+  .strip{margin-top:24px;display:grid;grid-template-columns:1.5fr 1fr;gap:18px}
+  .palette{border:2px solid var(--rule);background:#fff;padding:14px;box-shadow:4px 4px 0 var(--rule)}
+  .palette h4{margin:0 0 10px;font-family:'Fraunces',serif;font-weight:900;font-size:16px;letter-spacing:-.2px}
+  .swatches{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .sw{height:80px;border:1.5px solid var(--rule);position:relative;overflow:hidden}
+  .sw .name{position:absolute;left:6px;top:6px;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:rgba(255,255,255,.85);padding:1px 5px}
+  .sw .hex{position:absolute;left:6px;bottom:6px;font-family:'JetBrains Mono',monospace;font-size:10px;background:rgba(0,0,0,.55);color:#fff;padding:2px 5px;border-radius:2px}
+  .sw.dark .hex{background:rgba(255,255,255,.95);color:#000}
+
+  .type{border:2px solid var(--rule);background:var(--navy);color:#fff;padding:14px;box-shadow:4px 4px 0 var(--rule)}
+  .type h4{margin:0 0 10px;font-family:'Fraunces',serif;font-weight:900;font-size:16px;color:var(--gold);letter-spacing:.04em;text-transform:uppercase}
+  .specimen{display:flex;flex-direction:column;gap:10px}
+  .specimen .row1{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px dotted #5a527a;padding-bottom:6px}
+  .specimen .row1 .face{font-family:'Fraunces',serif;font-weight:900;font-size:32px;line-height:1}
+  .specimen .row1 .meta-r{font-family:'JetBrains Mono',monospace;font-size:9px;color:#cdb87b;letter-spacing:.1em}
+  .specimen .row2 .face{font-family:'Inter',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.3px}
+  .specimen .row3 .face{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:14px}
+
+  /* ── FOOTER ── */
+  .foot{margin-top:24px;padding-top:14px;border-top:2px solid var(--rule);display:flex;justify-content:space-between;align-items:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:#5b5170;letter-spacing:.12em;text-transform:uppercase;flex-wrap:wrap;gap:10px}
+  .foot b{color:var(--rose)}
+
+  /* labels overlaid on compass */
+  .pl{position:absolute;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#3b324f;background:#fff;border:1.5px solid var(--rule);padding:3px 7px;font-weight:700;white-space:nowrap}
+  .pl b{color:var(--ink)}
+
+  @media (max-width:980px){
+    .stage{padding:18px 8px}
+    .sheet{padding:24px 18px 22px}
+    .row{grid-template-columns:1fr}
+    .col-compass{order:-1;min-height:420px}
+    .tools-grid{grid-template-columns:repeat(2,1fr)}
+    .strip{grid-template-columns:1fr}
+    .swatches{grid-template-columns:repeat(3,1fr)}
+    .h-title{font-size:38px}
+    .banner{grid-template-columns:1fr}
+    .banner-l{border-right:none;border-bottom:2px solid var(--rule)}
+  }
+
+  @media print{
+    body{background:#fff}
+    .stage{padding:0}
+    .sheet{box-shadow:none;border:none}
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <article class="sheet">
+
+    <!-- subtle paper grain -->
+    <svg class="grain" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+      <filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7"/><feColorMatrix values="0 0 0 0 .15  0 0 0 0 .12  0 0 0 0 .20  0 0 0 .35 0"/></filter>
+      <rect width="100" height="100" filter="url(#n)"/>
+    </svg>
+
+    <!-- ── TOP BAR ── -->
+    <header class="topbar">
+      <div class="mark">
+        <div class="mark-stamp">H</div>
+        <div class="mark-text">
+          <div class="brand">H<b>.</b>E<b>.</b>L<b>.</b>P<b>.</b> Center</div>
+          <div class="sub">Helping · Everyday · Leaders · Prosper</div>
+        </div>
+      </div>
+      <div class="meta">
+        <div class="field"><span>FIELD GUIDE</span><b>VOL. 01 / 2026</b></div>
+        <div class="field"><span>EST.</span><b>JANUARY 2024</b></div>
+        <div class="field"><span>STATUS</span><b>LAUNCHED · ACTIVE</b></div>
+      </div>
+    </header>
+
+    <!-- ── BANNER ── -->
+    <section class="banner">
+      <div class="banner-l">
+        <span class="eyebrow">A Field Guide to the System</span>
+        <h1 class="h-title">A whole<br>business in <em>six</em><br>pathways.</h1>
+        <p class="h-deck">H.E.L.P. Center is a complete consulting &amp; coaching system — part operating platform, part curriculum — built to move everyday people from <i>where they are</i> to <i>where they're going</i>. One dashboard. Six pathways. Real numbers.</p>
+      </div>
+      <div class="banner-r">
+        <div>
+          <div class="lab">Founder's Note</div>
+          <blockquote>Everyday leaders don't need more noise. They need a system that meets them where they are and walks them to where they're going.”</blockquote>
+        </div>
+        <div class="sig">— <b>Joy Watford</b>, Founder · joy@helpcenter.com</div>
+      </div>
+    </section>
+
+    <!-- ── MAIN ROW ── -->
+    <section class="row">
+
+      <!-- LEFT: STATS -->
+      <aside class="col-stats">
+        <div class="stat">
+          <div class="corner">FIG. A</div>
+          <div class="num blue">06</div>
+          <div class="lab">Pathways</div>
+          <div class="desc">Income · Credit · Business · Confidence · Career · Youth</div>
+        </div>
+        <div class="stat">
+          <div class="corner">FIG. B</div>
+          <div class="num green">06</div>
+          <div class="lab">Core Tools</div>
+          <div class="desc">Clients · AI Coach · Booking · Docs · Revenue · Library</div>
+        </div>
+        <div class="stat">
+          <div class="corner">FIG. C</div>
+          <div class="num orange">$19<span style="font-size:18px;color:#5b5170">/mo</span></div>
+          <div class="lab">Spark Plan</div>
+          <div class="desc">Annual save · 14-day free trial included</div>
+        </div>
+        <div class="stat">
+          <div class="corner">FIG. D</div>
+          <div class="num rose">3 min</div>
+          <div class="lab">Onboarding</div>
+          <div class="desc">From signup to a workspace branded as yours</div>
+        </div>
+      </aside>
+
+      <!-- CENTER: COMPASS -->
+      <div class="col-compass">
+        <div class="compass-wrap">
+          <svg viewBox="0 0 520 520" width="100%" height="100%" role="img" aria-label="The H.E.L.P. Center pathway compass">
+            <defs>
+              <radialGradient id="rgCore" cx="50%" cy="45%" r="55%">
+                <stop offset="0%" stop-color="#fff8e0"/>
+                <stop offset="55%" stop-color="#C9A84C"/>
+                <stop offset="100%" stop-color="#7a6225"/>
+              </radialGradient>
+              <radialGradient id="rgRing" cx="50%" cy="50%" r="55%">
+                <stop offset="0%" stop-color="#fff" stop-opacity="0"/>
+                <stop offset="100%" stop-color="#0F172A" stop-opacity=".08"/>
+              </radialGradient>
+              <linearGradient id="lgPetal1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F59E0B"/><stop offset="1" stop-color="#B7740A"/></linearGradient>
+              <linearGradient id="lgPetal2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#10B981"/><stop offset="1" stop-color="#0B7A57"/></linearGradient>
+              <linearGradient id="lgPetal3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4267B2"/><stop offset="1" stop-color="#2C4982"/></linearGradient>
+              <linearGradient id="lgPetal4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#9F4DAA"/><stop offset="1" stop-color="#5E2A6A"/></linearGradient>
+              <linearGradient id="lgPetal5" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#D9415A"/><stop offset="1" stop-color="#8C1B33"/></linearGradient>
+              <linearGradient id="lgPetal6" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0EA5E9"/><stop offset="1" stop-color="#0E5E80"/></linearGradient>
+
+              <filter id="rough" x="-20%" y="-20%" width="140%" height="140%">
+                <feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" seed="3"/>
+                <feDisplacementMap in="SourceGraphic" scale="0.6"/>
+              </filter>
+              <pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                <line x1="0" y1="0" x2="0" y2="6" stroke="#0F172A" stroke-width="1" opacity=".18"/>
+              </pattern>
+            </defs>
+
+            <!-- outer technical rings -->
+            <g transform="translate(260,260)">
+              <circle r="250" fill="url(#rgRing)"/>
+              <circle r="248" fill="none" stroke="#221C3A" stroke-width="1" stroke-dasharray="2 4" opacity=".5"/>
+              <circle r="232" fill="none" stroke="#221C3A" stroke-width=".5" opacity=".4"/>
+              <!-- tick marks every 15° -->
+              <g stroke="#221C3A" stroke-width="1" opacity=".55">
+                <!-- generated ticks -->
+                <g>
+                  <!-- 24 ticks -->
+                  <line x1="0" y1="-248" x2="0" y2="-238"/>
+                  <g transform="rotate(15)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(30)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(45)"><line x1="0" y1="-248" x2="0" y2="-238"/></g>
+                  <g transform="rotate(60)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(75)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(90)"><line x1="0" y1="-248" x2="0" y2="-238"/></g>
+                  <g transform="rotate(105)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(120)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(135)"><line x1="0" y1="-248" x2="0" y2="-238"/></g>
+                  <g transform="rotate(150)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(165)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(180)"><line x1="0" y1="-248" x2="0" y2="-238"/></g>
+                  <g transform="rotate(195)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(210)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(225)"><line x1="0" y1="-248" x2="0" y2="-238"/></g>
+                  <g transform="rotate(240)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(255)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(270)"><line x1="0" y1="-248" x2="0" y2="-238"/></g>
+                  <g transform="rotate(285)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(300)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(315)"><line x1="0" y1="-248" x2="0" y2="-238"/></g>
+                  <g transform="rotate(330)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                  <g transform="rotate(345)"><line x1="0" y1="-248" x2="0" y2="-242"/></g>
+                </g>
+              </g>
+
+              <!-- ring labels (cardinal) -->
+              <g font-family="JetBrains Mono,monospace" font-size="9" fill="#5b5170" font-weight="700" letter-spacing="2">
+                <text x="0" y="-258" text-anchor="middle">N · GROW</text>
+                <text x="262" y="3" text-anchor="start">E · BUILD</text>
+                <text x="0" y="270" text-anchor="middle">S · ROOT</text>
+                <text x="-262" y="3" text-anchor="end">W · LEARN</text>
+              </g>
+
+              <!-- 6 petals (60° each) -->
+              <!-- Each petal: rotated wedge from -30° to +30°, radius ~210 -->
+              <g filter="url(#rough)">
+                <!-- petal helper: M0,0 L sin(30)*r, -cos(30)*r  A r r 0 0 1 -sin(30)*r, -cos(30)*r Z  with r=210 -->
+                <!-- pre-compute: sin30=0.5 cos30=0.866 → 105, -181.86 -->
+                <g transform="rotate(0)">
+                  <path d="M0,0 L105,-181.86 A210 210 0 0 0 -105,-181.86 Z" fill="url(#lgPetal1)" stroke="#221C3A" stroke-width="2"/>
+                  <path d="M0,0 L105,-181.86 A210 210 0 0 0 -105,-181.86 Z" fill="url(#hatch)" opacity=".35"/>
+                </g>
+                <g transform="rotate(60)">
+                  <path d="M0,0 L105,-181.86 A210 210 0 0 0 -105,-181.86 Z" fill="url(#lgPetal2)" stroke="#221C3A" stroke-width="2"/>
+                </g>
+                <g transform="rotate(120)">
+                  <path d="M0,0 L105,-181.86 A210 210 0 0 0 -105,-181.86 Z" fill="url(#lgPetal3)" stroke="#221C3A" stroke-width="2"/>
+                  <path d="M0,0 L105,-181.86 A210 210 0 0 0 -105,-181.86 Z" fill="url(#hatch)" opacity=".35"/>
+                </g>
+                <g transform="rotate(180)">
+                  <path d="M0,0 L105,-181.86 A210 210 0 0 0 -105,-181.86 Z" fill="url(#lgPetal4)" stroke="#221C3A" stroke-width="2"/>
+                </g>
+                <g transform="rotate(240)">
+                  <path d="M0,0 L105,-181.86 A210 210 0 0 0 -105,-181.86 Z" fill="url(#lgPetal5)" stroke="#221C3A" stroke-width="2"/>
+                  <path d="M0,0 L105,-181.86 A210 210 0 0 0 -105,-181.86 Z" fill="url(#hatch)" opacity=".35"/>
+                </g>
+                <g transform="rotate(300)">
+                  <path d="M0,0 L105,-181.86 A210 210 0 0 0 -105,-181.86 Z" fill="url(#lgPetal6)" stroke="#221C3A" stroke-width="2"/>
+                </g>
+              </g>
+
+              <!-- petal icons + text  (centered ~140 from origin along petal axis 0°/60°/...) -->
+              <!-- top (0°) -->
+              <g font-family="Inter,sans-serif" font-weight="800" fill="#fff" text-anchor="middle">
+                <text x="0" y="-150" font-size="26">💰</text>
+                <text x="0" y="-122" font-size="12" letter-spacing="1">INCOME</text>
+                <text x="0" y="-108" font-size="9" font-weight="500" opacity=".9">Growth</text>
+              </g>
+              <!-- 60° -->
+              <g font-family="Inter,sans-serif" font-weight="800" fill="#fff" text-anchor="middle" transform="rotate(60) translate(0,-130) rotate(-60)">
+                <text x="0" y="-12" font-size="26">📈</text>
+                <text x="0" y="14" font-size="12" letter-spacing="1">CREDIT</text>
+                <text x="0" y="28" font-size="9" font-weight="500" opacity=".9">&amp; Finance</text>
+              </g>
+              <!-- 120° -->
+              <g font-family="Inter,sans-serif" font-weight="800" fill="#fff" text-anchor="middle" transform="rotate(120) translate(0,-130) rotate(-120)">
+                <text x="0" y="-12" font-size="26">🎯</text>
+                <text x="0" y="14" font-size="12" letter-spacing="1">BUSINESS</text>
+                <text x="0" y="28" font-size="9" font-weight="500" opacity=".9">Development</text>
+              </g>
+              <!-- 180° -->
+              <g font-family="Inter,sans-serif" font-weight="800" fill="#fff" text-anchor="middle" transform="rotate(180) translate(0,-130) rotate(-180)">
+                <text x="0" y="-12" font-size="26">💪</text>
+                <text x="0" y="14" font-size="12" letter-spacing="1">CONFIDENCE</text>
+                <text x="0" y="28" font-size="9" font-weight="500" opacity=".9">&amp; Leadership</text>
+              </g>
+              <!-- 240° -->
+              <g font-family="Inter,sans-serif" font-weight="800" fill="#fff" text-anchor="middle" transform="rotate(240) translate(0,-130) rotate(-240)">
+                <text x="0" y="-12" font-size="26">🏆</text>
+                <text x="0" y="14" font-size="12" letter-spacing="1">CAREER</text>
+                <text x="0" y="28" font-size="9" font-weight="500" opacity=".9">Advancement</text>
+              </g>
+              <!-- 300° -->
+              <g font-family="Inter,sans-serif" font-weight="800" fill="#fff" text-anchor="middle" transform="rotate(300) translate(0,-130) rotate(-300)">
+                <text x="0" y="-12" font-size="26">🌟</text>
+                <text x="0" y="14" font-size="12" letter-spacing="1">YOUTH</text>
+                <text x="0" y="28" font-size="9" font-weight="500" opacity=".9">Leadership</text>
+              </g>
+
+              <!-- inner divider lines from center -->
+              <g stroke="#221C3A" stroke-width="1.25" opacity=".45">
+                <line x1="0" y1="0" x2="105" y2="-181.86"/>
+                <line x1="0" y1="0" x2="-105" y2="-181.86"/>
+                <line x1="0" y1="0" x2="210" y2="0"/>
+                <line x1="0" y1="0" x2="-210" y2="0"/>
+                <line x1="0" y1="0" x2="105" y2="181.86"/>
+                <line x1="0" y1="0" x2="-105" y2="181.86"/>
+              </g>
+
+              <!-- core medallion -->
+              <circle r="62" fill="url(#rgCore)" stroke="#221C3A" stroke-width="2.5"/>
+              <circle r="56" fill="none" stroke="#221C3A" stroke-width="1" stroke-dasharray="1 3" opacity=".6"/>
+              <text x="0" y="-4" text-anchor="middle" font-family="Fraunces,serif" font-weight="900" font-size="40" fill="#0F172A">H</text>
+              <text x="0" y="20" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" fill="#221C3A" letter-spacing="2">CENTER</text>
+            </g>
+
+            <!-- arrow notes -->
+            <g font-family="JetBrains Mono,monospace" font-size="9" fill="#3b324f">
+              <path d="M40 20 Q 90 60 158 110" stroke="#221C3A" stroke-width="1" fill="none" stroke-dasharray="2 3"/>
+              <text x="14" y="14">six routes ↘</text>
+              <path d="M490 22 Q 460 48 372 100" stroke="#221C3A" stroke-width="1" fill="none" stroke-dasharray="2 3"/>
+              <text x="430" y="14" text-anchor="end">↙ one center</text>
+              <path d="M22 500 Q 70 460 156 410" stroke="#221C3A" stroke-width="1" fill="none" stroke-dasharray="2 3"/>
+              <text x="10" y="514">tactile system, real numbers</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- RIGHT: ORIGIN + WHO + WHAT -->
+      <aside class="col-origin">
+        <div class="panel">
+          <span class="tag">Origin</span>
+          <h4>Built from the work, not the theory.</h4>
+          <p>H.E.L.P. Center began in <b>January 2024</b> as a one-woman consultancy serving Black-owned and women-owned small businesses — credit repair, formation, branding, websites. The system you see today is the playbook that worked, codified.</p>
+        </div>
+        <div class="panel">
+          <span class="tag blue">Who It Serves</span>
+          <h4>Everyday Leaders.</h4>
+          <p>Coaches, consultants, side-hustlers, parents reentering work, entrepreneurs at the kitchen table. People building something real with whatever time and tools they have.</p>
+        </div>
+        <div class="panel">
+          <span class="tag green">What Makes It Different</span>
+          <h4>One dashboard, not seven tabs.</h4>
+          <ul style="margin:0;padding-left:18px;font-size:12.5px;line-height:1.55;color:#3b324f">
+            <li>Coaching curriculum + CRM + invoicing in <b>one</b> place.</li>
+            <li>Six pathways that cross-link — credit feeds business, career feeds confidence.</li>
+            <li>AI coach trained on the H.E.L.P. method, not generic advice.</li>
+            <li>Mobile-first; survives airplane mode and tab suspends.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <span class="tag rose">Timeline</span>
+          <div class="timeline">
+            <span><b>2024</b> · Q1</span><span>Consultancy launches. First clients onboarded.</span>
+            <span><b>2024</b> · Q3</span><span>Internal dashboard prototype.</span>
+            <span><b>2025</b> · Q4</span><span>Six pathways formalized + AI coaching layer.</span>
+            <span><b>2026</b> · Q1</span><span>SaaS release · multi-tenant onboarding.</span>
+            <span><b>2026</b> · Q2</span><span>Mobile-first overhaul, offline sync, document vault.</span>
+          </div>
+        </div>
+      </aside>
+    </section>
+
+    <!-- ── 6 CORE TOOLS ── -->
+    <section class="tools">
+      <div class="tools-head">
+        <h3>The six core tools.</h3>
+        <p class="lead">The dashboard layer. Each tool maps to a daily friction inside a coaching or consulting business — and replaces a piece of subscription bloat.</p>
+      </div>
+      <div class="tools-grid">
+        <article class="tool"><span class="num">01</span>
+          <div class="ico" style="background:#E1ECFF">👥</div>
+          <h5>Client Management</h5>
+          <p>Lead → loyal customer in one record. Messages, history, status, portal links.</p>
+        </article>
+        <article class="tool"><span class="num">02</span>
+          <div class="ico" style="background:#FCE7CC">🤖</div>
+          <h5>AI Business Coach</h5>
+          <p>On-demand strategy &amp; growth coaching. Bring your Groq, OpenAI, or Claude key.</p>
+        </article>
+        <article class="tool"><span class="num">03</span>
+          <div class="ico" style="background:#D6F5E9">📅</div>
+          <h5>Smart Booking</h5>
+          <p>Public booking page that auto-creates client records. Zero manual entry.</p>
+        </article>
+        <article class="tool"><span class="num">04</span>
+          <div class="ico" style="background:#F4DCE3">✍️</div>
+          <h5>Document Signing</h5>
+          <p>Contracts, proposals, receipts — sent and signed in minutes via DocuSeal.</p>
+        </article>
+        <article class="tool"><span class="num">05</span>
+          <div class="ico" style="background:#FBEACB">💰</div>
+          <h5>Revenue Tracking</h5>
+          <p>Invoices, payments, monthly &amp; yearly reports. Always know where you stand.</p>
+        </article>
+        <article class="tool"><span class="num">06</span>
+          <div class="ico" style="background:#DDE6FF">📚</div>
+          <h5>Business Library</h5>
+          <p>Curated guides — credit, marketing, formation, leadership — at the moment you need them.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- ── PALETTE + TYPE ── -->
+    <section class="strip">
+      <div class="palette">
+        <h4>Brand palette · used throughout the system</h4>
+        <div class="swatches">
+          <div class="sw" style="background:#0F172A"><span class="name">Navy</span><span class="hex">#0F172A</span></div>
+          <div class="sw" style="background:#4267B2"><span class="name">Blue</span><span class="hex">#4267B2</span></div>
+          <div class="sw" style="background:#10B981"><span class="name">Green</span><span class="hex">#10B981</span></div>
+          <div class="sw" style="background:#F59E0B"><span class="name">Orange</span><span class="hex">#F59E0B</span></div>
+          <div class="sw dark" style="background:#C9A84C"><span class="name">Gold</span><span class="hex">#C9A84C</span></div>
+        </div>
+        <p style="margin:10px 0 0;font-size:11px;color:#5b5170">Navy grounds, Gold signals authority, Blue carries information, Green confirms action, Orange calls attention.</p>
+      </div>
+      <div class="type">
+        <h4>Type System</h4>
+        <div class="specimen">
+          <div class="row1"><span class="face">Aa</span><span class="meta-r">FRAUNCES · 900</span></div>
+          <div class="row2"><span class="face">Aa</span></div>
+          <div class="row3"><span class="face">Aa 0123 →</span></div>
+        </div>
+        <p style="margin:10px 0 0;font-size:11px;color:#cdb87b;letter-spacing:.06em">Display · Body · Mono — a three-voice system tuned for dense dashboards.</p>
+      </div>
+    </section>
+
+    <!-- ── FOOTER ── -->
+    <footer class="foot">
+      <div>© 2026 H.E.L.P. Center · <b>Helping Everyday Leaders Prosper</b></div>
+      <div>helpcenter.com · joy@helpcenter.com</div>
+      <div>Field Guide v1 · Printed for the people building it</div>
+    </footer>
+  </article>
+</div>
+</body>
+</html>

@@ -2556,7 +2556,11 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
     async function pbAuth() {
       const pb = pbSettings();
       if (!pb.enabled) return null;
-      const cached = sessionStorage.getItem('pb_token');
+      // Cache token in localStorage so it survives mobile tab suspension —
+      // sessionStorage was being cleared by iOS, forcing re-auth on every
+      // write and increasing the chance a fire-and-forget pbWrite never
+      // completed before the tab was killed.
+      const cached = localStorage.getItem('pb_token');
       if (cached) return cached;
       try {
         const r = await fetch(pb.url + '/api/admins/auth-with-password', {
@@ -2565,9 +2569,34 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
         });
         if (!r.ok) return null;
         const d = await r.json();
-        sessionStorage.setItem('pb_token', d.token);
+        localStorage.setItem('pb_token', d.token);
         return d.token;
       } catch(e) { return null; }
+    }
+
+    // Pending writes that couldn't reach PocketBase (offline, auth fail, tab
+    // suspended mid-request). Drained on next successful auth so changes made
+    // on mobile aren't lost when iOS kills the tab.
+    function pbQueueAdd(key, val) {
+      try {
+        const q = JSON.parse(localStorage.getItem('pb_queue')) || [];
+        // Only the latest value per key matters
+        const filtered = q.filter(item => item.key !== key);
+        filtered.push({key, val});
+        localStorage.setItem('pb_queue', JSON.stringify(filtered));
+      } catch(e) {}
+    }
+
+    async function pbDrainQueue() {
+      let q;
+      try { q = JSON.parse(localStorage.getItem('pb_queue')) || []; } catch(e) { q = []; }
+      if (!q.length) return;
+      const remaining = [];
+      for (const item of q) {
+        const ok = await pbWriteOnce(item.key, item.val);
+        if (!ok) remaining.push(item);
+      }
+      localStorage.setItem('pb_queue', JSON.stringify(remaining));
     }
 
     async function pbPull() {
@@ -2576,10 +2605,14 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
       if (!pb.enabled) return;
       const token = await pbAuth();
       if (!token) { showToast('PocketBase: auth failed — using local data', 'warn'); return; }
+      // Push any pending local changes BEFORE pulling, otherwise the pull
+      // would overwrite unsynced edits with stale server data.
+      await pbDrainQueue();
       try {
         const r = await fetch(pb.url + '/api/collections/store/records?perPage=200', {
           headers: {'Authorization': token}
         });
+        if (r.status === 401) { localStorage.removeItem('pb_token'); return; }
         if (!r.ok) return;
         const {items=[]} = await r.json();
         items.forEach(item => {
@@ -2590,27 +2623,40 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
       } catch(e) {}
     }
 
-    async function pbWrite(key, val) {
+    // Single write attempt — returns true on success, false on failure.
+    async function pbWriteOnce(key, val) {
       const pb = pbSettings();
-      if (!pb.enabled) return;
+      if (!pb.enabled) return false;
       const token = await pbAuth();
-      if (!token) return;
+      if (!token) return false;
       try {
         const check = await fetch(`${pb.url}/api/collections/store/records?filter=(key='${key}')&perPage=1`, {
           headers: {'Authorization': token}
         });
+        if (check.status === 401) { localStorage.removeItem('pb_token'); return false; }
+        if (!check.ok) return false;
         const {items=[]} = await check.json();
         const body = JSON.stringify({key, value: val});
+        let res;
         if (items.length) {
-          await fetch(`${pb.url}/api/collections/store/records/${items[0].id}`, {
+          res = await fetch(`${pb.url}/api/collections/store/records/${items[0].id}`, {
             method:'PATCH', headers:{'Content-Type':'application/json','Authorization':token}, body
           });
         } else {
-          await fetch(`${pb.url}/api/collections/store/records`, {
+          res = await fetch(`${pb.url}/api/collections/store/records`, {
             method:'POST', headers:{'Content-Type':'application/json','Authorization':token}, body
           });
         }
-      } catch(e) {}
+        if (res.status === 401) { localStorage.removeItem('pb_token'); return false; }
+        return res.ok;
+      } catch(e) { return false; }
+    }
+
+    async function pbWrite(key, val) {
+      const pb = pbSettings();
+      if (!pb.enabled) return;
+      const ok = await pbWriteOnce(key, val);
+      if (!ok) pbQueueAdd(key, val);
     }
 
     async function pbPushAll() {
@@ -2664,7 +2710,11 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
 
     function checkSession() {
       updateBrandUI();
-      if (sessionStorage.getItem('loggedIn') === 'true') {
+      // Persist login in localStorage so mobile Safari (iOS/iPadOS) doesn't drop
+      // it when the tab is suspended in the background. sessionStorage was being
+      // wiped on every tab unload, forcing re-login + pbPull on every reopen,
+      // which overwrote unsynced local changes.
+      if (localStorage.getItem('loggedIn') === 'true') {
         document.getElementById('login-page').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
         if (typeof updateDashboard === 'function') updateDashboard();
@@ -2691,7 +2741,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
           const s = stored; s.password = DEFAULT_SETTINGS.password;
           localStorage.setItem('settings', JSON.stringify(s));
         }
-        sessionStorage.setItem('loggedIn', 'true');
+        localStorage.setItem('loggedIn', 'true');
         // Clear any booking/portal hash so it doesn't interfere on refresh
         if (window.location.hash) history.replaceState(null, '', window.location.pathname + window.location.search);
         errEl.style.display = 'none';
@@ -2723,7 +2773,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
     }
 
     function logout() {
-      sessionStorage.removeItem('loggedIn');
+      localStorage.removeItem('loggedIn');
       document.getElementById('app').classList.add('hidden');
       document.getElementById('login-page').classList.remove('hidden');
       document.getElementById('password-input').value = '';
@@ -2769,7 +2819,7 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
     // ── PORTAL ROUTING ─────────────────────────────────────────────────────────
     function checkPortalRoute() {
       // If already logged in, skip public routes — go to dashboard
-      if (sessionStorage.getItem('loggedIn') === 'true') return false;
+      if (localStorage.getItem('loggedIn') === 'true') return false;
       const hash = window.location.hash;
       if (hash.startsWith('#portal?token=')) {
         const token = hash.split('token=')[1];
@@ -2889,10 +2939,18 @@ H.E.L.P. Center | joy@helpcenter.com</textarea>
       initializeData();
       if (!checkPortalRoute()) checkSession();
       initThemeBtn();
+      // Flush any writes that were queued in a previous (likely mobile) session
+      // where the tab was suspended before the PocketBase request completed.
+      if (localStorage.getItem('loggedIn') === 'true') pbDrainQueue();
     }
 
     window.addEventListener('hashchange', checkPortalRoute);
     window.addEventListener('load', init);
+    // Mobile tabs often resume from a frozen state rather than a full reload;
+    // retry queued writes when the page becomes visible again.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && localStorage.getItem('loggedIn') === 'true') pbDrainQueue();
+    });
 
     // ══════════════════════════════════════════════════════════════
     // PHASE 2 — DASHBOARD, CLIENTS, MY IDEAS, PORTAL LINKS
@@ -3765,7 +3823,7 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       s.pbPassword=document.getElementById('set-pb-password')?.value||'';
       s.pbEnabled=!!(s.pbUrl && s.pbEmail && s.pbPassword);
       localStorage.setItem('settings', JSON.stringify(s));
-      sessionStorage.removeItem('pb_token'); // force re-auth with new credentials
+      localStorage.removeItem('pb_token'); // force re-auth with new credentials
       const res=document.getElementById('set-pb-result');
       if (!s.pbEnabled) { if(res)res.innerHTML='<span style="color:var(--error)">Enter URL, email, and password to enable PocketBase.</span>'; return; }
       if(res)res.innerHTML='<span style="color:var(--gray-500)">Testing connection...</span>';
@@ -3790,7 +3848,7 @@ ${biz} clients are serious, ambitious people building real businesses and real l
 
     function disablePb() {
       const s=JSON.parse(localStorage.getItem('settings'))||{};
-      s.pbEnabled=false; localStorage.setItem('settings',JSON.stringify(s)); sessionStorage.removeItem('pb_token');
+      s.pbEnabled=false; localStorage.setItem('settings',JSON.stringify(s)); localStorage.removeItem('pb_token');
       const res=document.getElementById('set-pb-result'); if(res)res.innerHTML='<span style="color:var(--gray-500)">PocketBase disabled — using local storage.</span>';
       showToast('Switched to local storage only');
     }

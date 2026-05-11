@@ -2315,7 +2315,7 @@ Requirements:
           </div>
         </div>
         <div class="content" style="padding:0">
-          <div id="vibe-grid" style="display:grid;grid-template-columns:200px 1fr 1fr;grid-template-rows:1fr 38vh;gap:8px;height:calc(100vh - 180px);min-height:500px;padding:0 16px 16px">
+          <div id="vibe-grid" style="display:grid;grid-template-columns:200px 0.7fr 1.5fr;grid-template-rows:1fr 38vh;gap:8px;height:calc(100vh - 180px);min-height:500px;padding:0 16px 16px">
             <!-- File tree -->
             <div style="background:#0F172A;color:#E2E8F0;border-radius:10px;display:flex;flex-direction:column;overflow:hidden;grid-row:1/2">
               <div style="padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#94A3B8;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.06)">
@@ -6507,7 +6507,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
             <input type="text" id="note-tags" class="form-input" style="margin:0" value="${note?.tags || ''}" placeholder="e.g. branding, launch-plan, follow-up"></div>
         </div>
         <div class="form-group"><label class="form-label">Note Content</label>
-          <textarea id="note-body" class="form-textarea" style="min-height:240px;font-family:inherit;line-height:1.6">${note?.body || ''}</textarea></div>
+          <textarea id="note-body" class="form-textarea" style="min-height:500px;font-family:inherit;font-size:16px;line-height:2">${note?.body || ''}</textarea></div>
         <input type="hidden" id="note-id" value="${note?.id || ''}">
         <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
           ${isEdit ? `<button onclick="deleteNote('${note.id}')" style="padding:10px 14px;background:none;border:1px solid var(--error);color:var(--error);border-radius:8px;cursor:pointer;font-weight:600">Delete</button>` : ''}

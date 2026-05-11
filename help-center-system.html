@@ -15490,7 +15490,7 @@ async function wbBuild() {
 
     // Save to history
     const builds = (getData('wbBuilds') || [])
-    builds.unshift({ id: Date.now(), name: p, html: finalHtml, date: new Date().toISOString().slice(0, 10), style: template.name, styleEmoji: template.emoji, pages: _wbPageCount })
+    builds.unshift({ id: Date.now(), name: p, html: _wbHtml, date: new Date().toISOString().slice(0, 10), style: template.name, styleEmoji: template.emoji, pages: _wbPageCount })
     setData('wbBuilds', builds.slice(0, 8))
 
     setTimeout(() => {

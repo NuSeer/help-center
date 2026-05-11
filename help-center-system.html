@@ -15387,7 +15387,7 @@ async function wbBuild() {
   if (errEl) errEl.style.display = 'none'
 
   const s = getData('settings') || {}
-  const key = s.groqKey || localStorage.getItem('groqKey') || ''
+  const key = s.groqApiKey || s.groqApiKey2 || ''
   if (!key) {
     if (errEl) { errEl.textContent = 'Add your Groq API key in Settings first.'; errEl.style.display = 'block' }
     return

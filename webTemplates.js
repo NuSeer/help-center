@@ -4287,8 +4287,50 @@ Return ONLY this exact JSON (no markdown, no explanation):
   "FEAT_3_TITLE": "feature name (2-4 words)",
   "FEAT_3_DESC": "one sentence description, 15-20 words, specific benefit",
   "QUOTE": "a punchy brand mission statement, 10-15 words, no clichés",
-  "FOOTER_TAGLINE": "3-6 word brand tagline"${page2Fields}${page3Fields}
+  "FOOTER_TAGLINE": "3-6 word brand tagline",
+  "IMG_HERO_KW": "2-4 photographic keywords for the hero banner photo, comma-separated, no abstract words (e.g. 'luxury candles, warm glow, dark wood' or 'mountain landscape, sunrise, hiking')"${page2Fields}${page3Fields}
 }`
+}
+
+// ─────────────────────────────────────────────
+// Unsplash Source image injector
+// Adds a real photographic hero background to any rendered template by
+// injecting a <style> override before </head>. Uses Unsplash Source
+// (keyless, free) with AI-emitted keywords + a dark overlay so existing
+// hero text stays readable. Works across all 60 templates because every
+// template has a .hero section.
+// ─────────────────────────────────────────────
+function wbInjectUnsplashImages(html, content, brandPrompt) {
+  const rawKw = (content && content.IMG_HERO_KW) || brandPrompt || 'business modern'
+  const cleaned = String(rawKw)
+    .toLowerCase()
+    .replace(/[^a-z0-9 ,-]/g, ' ')
+    .split(/[\s,]+/)
+    .filter(Boolean)
+    .slice(0, 5)
+    .join(',') || 'business,modern'
+  // Deterministic-ish image per build so reloads don't churn the photo
+  const seed = Math.abs([...cleaned].reduce((a, c) => (a * 33 + c.charCodeAt(0)) | 0, 7))
+  const imgUrl = `https://source.unsplash.com/1920x1080/?${encodeURIComponent(cleaned)}&sig=${seed}`
+  const overlay = `
+<style>
+/* ── Real hero photo (Unsplash Source, keywords: ${cleaned}) ─────────── */
+.hero {
+  background-image: linear-gradient(rgba(0,0,0,.58), rgba(0,0,0,.58)), url('${imgUrl}') !important;
+  background-size: cover !important;
+  background-position: center center !important;
+  background-repeat: no-repeat !important;
+}
+header.hero, section.hero {
+  background-image: linear-gradient(rgba(0,0,0,.58), rgba(0,0,0,.58)), url('${imgUrl}') !important;
+  background-size: cover !important;
+  background-position: center center !important;
+}
+</style>
+</head>`
+  if (html.includes('</head>')) return html.replace('</head>', overlay)
+  // No </head> (rare) — prepend the style block
+  return overlay.replace('</head>', '') + html
 }
 
 // ─────────────────────────────────────────────

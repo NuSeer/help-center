@@ -3586,10 +3586,12 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
               <!-- Prompt -->
               <div class="card" style="margin-bottom:16px">
                 <h3 style="font-size:14px;font-weight:700;margin-bottom:10px">🚀 Describe Your Brand</h3>
-                <div style="display:flex;gap:8px">
-                  <input id="wb-prompt" class="form-input" style="margin:0;flex:1" placeholder='e.g. "Black-owned luxury candle brand for women 25–45…"' onkeydown="if(event.key==='Enter')wbBuild()">
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <input id="wb-prompt" class="form-input" style="margin:0;flex:1;min-width:240px" placeholder='e.g. "Black-owned luxury candle brand for women 25–45…"' onkeydown="if(event.key==='Enter')wbBuild()">
                   <button id="wb-build-btn" class="btn btn-solid" style="white-space:nowrap;padding:10px 20px" onclick="wbBuild()">⚡ Build It</button>
+                  <button id="wb-3styles-btn" class="btn btn-outline" style="white-space:nowrap;padding:10px 16px" onclick="wbBuildVariations()" title="One brand · three different styles">🎲 3 Styles</button>
                 </div>
+                <div style="margin-top:6px;font-size:11px;color:var(--gray-500)">⚡ uses your selected style (or auto-pick) · 🎲 builds the same brand in 3 different styles from one AI call</div>
                 <div id="wb-error" style="display:none;margin-top:8px;font-size:12px;color:var(--error)"></div>
               </div>
 
@@ -15370,6 +15372,39 @@ function wbPickTemplate(prompt) {
   return best
 }
 
+// Pick 3 distinct templates: top-3 by keyword score, or 3 random if no matches
+function wbPickThreeTemplates(prompt) {
+  if (typeof TEMPLATES === 'undefined' || TEMPLATES.length < 3) return []
+  const p = prompt.toLowerCase()
+  const scored = TEMPLATES.map(t => ({
+    t,
+    score: (t.keywords || []).filter(k => p.includes(k)).length
+  }))
+  if (scored.some(s => s.score > 0)) {
+    return scored.sort((a, b) => b.score - a.score).slice(0, 3).map(s => s.t)
+  }
+  // No keyword matches — Fisher-Yates shuffle and take 3
+  const arr = [...TEMPLATES]
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[arr[i], arr[j]] = [arr[j], arr[i]]
+  }
+  return arr.slice(0, 3)
+}
+
+// Assemble a single site: fill template, append extended pages, inject Unsplash hero
+function _wbAssembleSite(template, data, pageCount, brandPrompt) {
+  let html = wbFillTemplate(template.html, data)
+  if (pageCount > 1 && typeof makeExtendedSections === 'function') {
+    const extra = makeExtendedSections(template, data, pageCount)
+    html = html.replace('<footer>', extra + '\n<footer>')
+  }
+  if (typeof wbInjectUnsplashImages === 'function') {
+    html = wbInjectUnsplashImages(html, data, brandPrompt)
+  }
+  return html
+}
+
 function wbFillTemplate(html, data) {
   let result = html
   for (const [key, value] of Object.entries(data)) {
@@ -15396,6 +15431,7 @@ async function wbBuild() {
   _wbGenerating = true
   _wbHtml = ''
   document.getElementById('wb-build-btn').disabled = true
+  const _vb = document.getElementById('wb-3styles-btn'); if (_vb) _vb.disabled = true
   document.getElementById('wb-preview-wrap').style.display = 'none'
 
   const template = _wbSelectedTemplate || wbPickTemplate(p)
@@ -15450,12 +15486,7 @@ async function wbBuild() {
     stepIdx = WB_BUILD_STEPS.length - 1
     renderSteps()
 
-    let finalHtml = wbFillTemplate(template.html, data)
-    if (_wbPageCount > 1 && typeof makeExtendedSections === 'function') {
-      const extra = makeExtendedSections(template, data, _wbPageCount)
-      finalHtml = finalHtml.replace('<footer>', extra + '\n<footer>')
-    }
-    _wbHtml = finalHtml
+    _wbHtml = _wbAssembleSite(template, data, _wbPageCount, p)
 
     // Save to history
     const builds = (getData('wbBuilds') || [])
@@ -15478,6 +15509,133 @@ async function wbBuild() {
   }
   _wbGenerating = false
   document.getElementById('wb-build-btn').disabled = false
+  const v = document.getElementById('wb-3styles-btn'); if (v) v.disabled = false
+}
+
+// Build 3 variations of the same brand using 3 different templates.
+// One Groq call → 3 visual treatments. Saves all to history, shows first.
+async function wbBuildVariations() {
+  if (_wbGenerating) return
+  const promptEl = document.getElementById('wb-prompt')
+  const errEl = document.getElementById('wb-error')
+  const p = (promptEl?.value || '').trim()
+  if (!p) { if (errEl) { errEl.textContent = 'Describe your brand first.'; errEl.style.display = 'block' } return }
+  if (errEl) errEl.style.display = 'none'
+
+  const s = getData('settings') || {}
+  const key = s.groqApiKey || s.groqApiKey2 || ''
+  if (!key) {
+    if (errEl) { errEl.textContent = 'Add your Groq API key in Settings first.'; errEl.style.display = 'block' }
+    return
+  }
+
+  const templates = wbPickThreeTemplates(p)
+  if (templates.length < 3) {
+    if (errEl) { errEl.textContent = 'Not enough templates available.'; errEl.style.display = 'block' }
+    return
+  }
+
+  _wbGenerating = true
+  _wbHtml = ''
+  const b1 = document.getElementById('wb-build-btn'); if (b1) b1.disabled = true
+  const b2 = document.getElementById('wb-3styles-btn'); if (b2) b2.disabled = true
+  document.getElementById('wb-preview-wrap').style.display = 'none'
+
+  const progressEl = document.getElementById('wb-progress')
+  const titleEl = document.getElementById('wb-progress-title')
+  if (progressEl) progressEl.style.display = 'block'
+  if (titleEl) titleEl.textContent = `🎲 Building 3 variations: ${templates.map(t => t.emoji).join(' ')}`
+
+  const steps = [
+    'Parsing brand intent & keywords',
+    'Writing brand content (one AI call, used by all 3 styles)',
+    `Assembling ${templates[0].emoji} ${templates[0].name}`,
+    `Assembling ${templates[1].emoji} ${templates[1].name}`,
+    `Assembling ${templates[2].emoji} ${templates[2].name}`,
+    'Fetching Unsplash photos',
+  ]
+  let stepIdx = 0
+  const renderSteps = () => {
+    const el = document.getElementById('wb-steps')
+    if (!el) return
+    el.innerHTML = steps.map((s, i) =>
+      `<div class="wb-step${i < stepIdx ? ' done' : i === stepIdx ? ' active' : ''}">
+        <span>${i < stepIdx ? '✅' : i === stepIdx ? '⏳' : '○'}</span><span>${s}</span>
+      </div>`
+    ).join('')
+  }
+  renderSteps()
+
+  try {
+    stepIdx = 1; renderSteps()
+    const maxTokens = _wbPageCount === 1 ? 700 : _wbPageCount === 2 ? 1100 : 1600
+    const promptText = typeof CONTENT_PROMPT === 'function' ? CONTENT_PROMPT(p, _wbPageCount) : p
+    const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: 'You are a brand copywriter. Return ONLY valid JSON. No markdown. No explanation.' },
+          { role: 'user', content: promptText }
+        ],
+        max_tokens: maxTokens,
+        temperature: 0.85
+      })
+    })
+    if (!r.ok) throw new Error('Groq API error ' + r.status)
+    const d = await r.json()
+    let raw = (d.choices?.[0]?.message?.content ?? '').trim()
+    raw = raw.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim()
+    let data
+    try { data = JSON.parse(raw) }
+    catch { const m = raw.match(/\{[\s\S]*\}/); if (m) data = JSON.parse(m[0]); else throw new Error('Could not parse JSON from AI. Try again.') }
+
+    const builds = []
+    for (let i = 0; i < 3; i++) {
+      stepIdx = 2 + i; renderSteps()
+      const html = _wbAssembleSite(templates[i], data, _wbPageCount, p)
+      builds.push({ template: templates[i], html })
+    }
+    stepIdx = 5; renderSteps()
+
+    const hist = (getData('wbBuilds') || [])
+    // Push in reverse so #1 ends up at the top of history
+    for (let i = builds.length - 1; i >= 0; i--) {
+      const b = builds[i]
+      hist.unshift({
+        id: Date.now() + i,
+        name: p + ' (variation ' + (i + 1) + ')',
+        html: b.html,
+        date: new Date().toISOString().slice(0, 10),
+        style: b.template.name,
+        styleEmoji: b.template.emoji,
+        pages: _wbPageCount
+      })
+    }
+    setData('wbBuilds', hist.slice(0, 8))
+
+    _wbHtml = builds[0].html
+    _wbActiveTemplate = builds[0].template
+    stepIdx = steps.length; renderSteps()
+
+    setTimeout(() => {
+      if (progressEl) progressEl.style.display = 'none'
+      const pw = document.getElementById('wb-preview-wrap')
+      if (pw) pw.style.display = 'block'
+      const pt = document.getElementById('wb-preview-title')
+      if (pt) pt.textContent = `🎲 ${builds[0].template.emoji} ${builds[0].template.name} · 1 of 3 · click history to see variations 2 & 3`
+      wbRenderPreview()
+      wbRenderBuilds()
+      if (typeof showToast === 'function') showToast('Generated 3 variations — see Recent Builds panel', 'success')
+    }, 400)
+  } catch (e) {
+    if (progressEl) progressEl.style.display = 'none'
+    if (errEl) { errEl.textContent = e.message; errEl.style.display = 'block' }
+  }
+  _wbGenerating = false
+  if (b1) b1.disabled = false
+  if (b2) b2.disabled = false
 }
 
 function wbRenderPreview() {

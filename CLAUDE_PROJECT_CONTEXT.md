@@ -9,7 +9,6 @@
 
 - **Owner:** Joy Watford
 - **Business:** H.E.L.P. Center (Helping Everyday Leaders Prosper)
-- **Location:** Jacksonville, FL
 - **Email:** j.l.foreman14@gmail.com
 - **Website (author page):** jlforemanauthor.com
 
@@ -139,7 +138,7 @@ const DEFAULT_SETTINGS = {
   tagline: 'Helping Everyday Leaders Prosper',
   password: 'help2024',
   phone: '',
-  address: 'Jacksonville, FL'
+  address: ''
 };
 
 // Login: sessionStorage.getItem('loggedIn') === 'true'

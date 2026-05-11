@@ -1,0 +1,207 @@
+# Apply 10x Faster - Help Center Content Script
+
+## Add This to Help Center Chat/Handoff
+
+```
+{
+  "id": "apply-10x-faster",
+  "title": "Apply 10x Faster",
+  "category": "Getting Started",
+  "shortDescription": "AI-powered resume and cover letter optimization for job applications",
+  "icon": "⚡",
+  "content": {
+    "overview": "The 'Apply 10x Faster' feature uses AI to automatically analyze your resume against job descriptions and generate an optimized resume and cover letter tailored to each job posting.",
+    
+    "steps": [
+      {
+        "step": 1,
+        "title": "Analyze Your Resume",
+        "description": "Upload your resume (PDF or document format). The AI scans your resume and extracts key skills, experience, and qualifications, then analyzes how well your background matches the job description.",
+        "details": [
+          "Resume Match Score: A percentage showing how much your resume aligns with the job keywords",
+          "Skills Match Analysis:",
+          "  - ✅ Full Matches: Skills that directly match the job posting",
+          "  - ✅ Partial Matches: Related skills that partially align",
+          "  - ❌ Missing: Important keywords/skills not in your resume"
+        ],
+        "example": "Your resume matches 38% of job keywords\n✓ 3 Full Matches\n✓ 3 Partial Matches\n✗ 6 Missing"
+      },
+      {
+        "step": 2,
+        "title": "Optimize Resume & Cover Letter",
+        "description": "The AI generates an improved resume tailored to the specific job and creates a customized cover letter that highlights your strongest fit for the role.",
+        "details": [
+          "Optimized resume that better targets the job posting",
+          "Compelling cover letter that addresses the job requirements directly",
+          "Both documents ready to submit instantly"
+        ]
+      }
+    ],
+    
+    "features": {
+      "resumeOptimization": {
+        "title": "Resume Optimization",
+        "items": [
+          "Keyword Enhancement: Incorporates relevant job posting keywords naturally",
+          "Experience Reordering: Prioritizes experience most relevant to the job",
+          "Achievement Highlighting: Emphasizes accomplishments that match job requirements",
+          "Format Preservation: Maintains professional structure and readability"
+        ]
+      },
+      "coverLetterGeneration": {
+        "title": "Cover Letter Generation",
+        "items": [
+          "Job-Specific Content: Written specifically for this role and company",
+          "Skill Alignment: Highlights how your skills match job requirements",
+          "Professional Tone: Maintains industry-standard formatting and language",
+          "Ready to Submit: Instantly generated and ready to use"
+        ]
+      }
+    },
+    
+    "instructions": [
+      {
+        "step": 1,
+        "action": "Navigate to the Apply 10x Faster page",
+        "detail": "Select your job posting from RemoteHunter"
+      },
+      {
+        "step": 2,
+        "action": "Upload Your Resume",
+        "detail": "Click 'Add Resume' or drag/drop your file. Supported formats: PDF, DOCX, DOC"
+      },
+      {
+        "step": 3,
+        "action": "Review Your Match Analysis",
+        "detail": "Check your resume match percentage and skills breakdown. Click 'See Skills Match Analysis' for details"
+      },
+      {
+        "step": 4,
+        "action": "Optimize Your Documents",
+        "detail": "Click 'Optimize Resume for Job'. Review the generated resume and cover letter"
+      },
+      {
+        "step": 5,
+        "action": "Submit Your Application",
+        "detail": "Copy or download the optimized documents for your job application"
+      }
+    ],
+    
+    "benefits": [
+      "✅ Save Time: Generate optimized resume and cover letter in seconds",
+      "✅ Better Results: Increase chances of passing resume screening",
+      "✅ Keyword Optimization: Ensure your resume contains job-relevant keywords",
+      "✅ Professional Quality: AI-generated documents maintain high quality",
+      "✅ Multiple Applications: Create tailored documents for each job you apply to"
+    ],
+    
+    "faq": [
+      {
+        "q": "Can I edit the generated resume and cover letter?",
+        "a": "Yes, all generated documents can be edited after generation."
+      },
+      {
+        "q": "How accurate is the resume match percentage?",
+        "a": "The match is based on keywords and skills from both your resume and the job description. A higher percentage indicates better alignment with the role."
+      },
+      {
+        "q": "What if I have multiple versions of my resume?",
+        "a": "You can add multiple resumes and the system will analyze each one separately."
+      },
+      {
+        "q": "Can I use the generated cover letter without changes?",
+        "a": "Yes, the cover letter is ready to use immediately, but you can customize it if desired."
+      },
+      {
+        "q": "How long does optimization take?",
+        "a": "Resume analysis takes about 30-60 seconds. Cover letter generation is instant."
+      },
+      {
+        "q": "Will this guarantee I get the job?",
+        "a": "Optimized documents increase your chances of passing initial resume screening, but hiring decisions depend on many factors beyond document optimization."
+      }
+    ],
+    
+    "tips": [
+      "Keep Your Resume Updated: Ensure your resume reflects your current skills and experience",
+      "Be Specific: Include concrete examples and metrics in your resume",
+      "Review Generated Content: Always review the generated resume and cover letter before submitting",
+      "Customize When Needed: Add personal touches to the cover letter to make it more authentic",
+      "Apply Promptly: Submit your application soon after generation for best results"
+    ],
+    
+    "relatedTopics": [
+      "Resume Writing Tips",
+      "Cover Letter Best Practices",
+      "Job Application Strategy",
+      "Interview Preparation"
+    ],
+    
+    "supportContact": "RemoteHunter Support"
+  }
+}
+```
+
+---
+
+## Integration Instructions
+
+### For Chat-Based Help Center:
+1. Copy the JSON object above
+2. Add to your help center database/CMS
+3. Link from navigation menu as "Apply 10x Faster"
+4. Tag with categories: `jobs`, `applications`, `ai-tools`, `getting-started`
+
+### For Handoff.md:
+1. Copy the entire script above
+2. Paste into your handoff.md file
+3. Mark section as "COMPLETED - Apply 10x Faster Help Article"
+4. Reference ID: `apply-10x-faster`
+
+### Search Keywords:
+- Apply 10x faster
+- Resume optimization
+- Cover letter generation
+- Resume match
+- Job application
+- AI resume
+- Keyword matching
+- Application tools
+
+---
+
+## Chat Integration Example
+
+```javascript
+// Add to your chat help center system
+const helpArticles = {
+  'apply-10x-faster': {
+    title: 'Apply 10x Faster',
+    content: [
+      'Step 1: Analyze Your Resume',
+      'Step 2: Optimize Resume & Cover Letter',
+      'Features: Resume Optimization, Cover Letter Generation',
+      'Tips & FAQ included'
+    ]
+  }
+};
+
+function displayHelpArticle(articleId) {
+  const article = helpArticles[articleId];
+  if (article) {
+    showChatMessage(`📚 Help Article: ${article.title}`);
+    article.content.forEach(line => showChatMessage(line));
+  }
+}
+```
+
+---
+
+## Metadata
+
+- **Created:** 2026-05-03
+- **Feature:** Apply 10x Faster (RemoteHunter)
+- **Status:** Ready for Implementation
+- **Format:** JSON + Markdown
+- **Audience:** Job seekers, applicants
+- **Reading Time:** 3-5 minutes

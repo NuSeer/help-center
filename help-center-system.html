@@ -163,7 +163,22 @@
 
     /* APP LAYOUT */
     .app { display: flex; min-height: 100vh; background: #F4F6F9; }
-    .sidebar { width: 248px; background: #0F172A; border-right: none; display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; }
+    .sidebar { width: 248px; background: #0F172A; border-right: none; display: flex; flex-direction: column; position: fixed; left: 0; top: 0; bottom: 0; z-index: 100; transition: width 0.22s ease; overflow:hidden; }
+    .sidebar.collapsed { width: 54px; }
+    .sidebar.collapsed .nav-section-title,
+    .sidebar.collapsed .nav-link span:not(.nav-icon),
+    .sidebar.collapsed .user-info,
+    .sidebar.collapsed .theme-btn,
+    .sidebar.collapsed .sidebar-email,
+    .sidebar.collapsed #sidebar-logout-btn,
+    .sidebar.collapsed .logo-text { display: none !important; }
+    .sidebar.collapsed .nav-link { justify-content: center; padding: 9px 0; }
+    .sidebar.collapsed .nav-icon { margin: 0; width: auto; opacity: 1; }
+    .sidebar.collapsed .sidebar-footer { padding: 8px 6px; }
+    .sidebar.collapsed .user-profile { justify-content: center; }
+    .main-content.sidebar-collapsed { margin-left: 54px; }
+    .sb-toggle-btn { width:100%; background:rgba(255,255,255,.07); border:none; border-radius:6px; color:rgba(255,255,255,.5); font-size:14px; padding:7px; cursor:pointer; transition:all .15s; margin-bottom:6px; }
+    .sb-toggle-btn:hover { background:rgba(255,255,255,.14); color:#fff; }
     .sidebar-header { padding: 20px var(--space-5); border-bottom: 1px solid rgba(255,255,255,0.08); }
     .logo { display: flex; align-items: center; gap: var(--space-3); font-size: 16px; font-weight: 700; color: #fff; }
     .logo-icon { width: 40px; height: 40px; background: #fff; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--brand-primary); font-size: 16px; font-weight: 800; letter-spacing: -1px; flex-shrink: 0; padding:3px; box-shadow:0 2px 6px rgba(0,0,0,0.18); overflow:hidden; }
@@ -189,7 +204,7 @@
     .user-email { font-size: 11px; color: rgba(255,255,255,0.4); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     /* MAIN CONTENT */
-    .main-content { flex: 1; margin-left: 248px; min-height: 100vh; }
+    .main-content { flex: 1; margin-left: 248px; min-height: 100vh; transition: margin-left 0.22s ease; }
     .page-header { background: var(--white); border-bottom: 0.5px solid rgba(0,0,0,0.09); padding: 18px var(--space-8); position: sticky; top: 0; z-index: 50; }
     .page-title { font-size: 28px; font-weight: 700; color: #0F172A; letter-spacing: -0.022em; line-height: 1.15; }
     .page-subtitle { font-size: 14px; color: #64748B; margin-top: 4px; font-weight: 400; }
@@ -869,7 +884,8 @@
       </nav>
 
       <div class="sidebar-footer">
-        <div style="padding:8px 0 12px">
+        <div style="padding:8px 0 4px">
+          <button class="sb-toggle-btn" id="sb-toggle-btn" onclick="toggleSidebarCollapse()" title="Collapse / expand sidebar">◀ Collapse</button>
           <button class="theme-btn" onclick="toggleTheme()" id="theme-btn" style="width:100%">🌙 Dark Mode</button>
         </div>
         <div class="user-profile">
@@ -5380,6 +5396,16 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
     }
 
     // ── MOBILE SIDEBAR ─────────────────────────────────────────────────────────
+    function toggleSidebarCollapse() {
+      const sb = document.querySelector('.sidebar');
+      const mc = document.querySelector('.main-content');
+      const btn = document.getElementById('sb-toggle-btn');
+      const collapsed = sb.classList.toggle('collapsed');
+      mc.classList.toggle('sidebar-collapsed', collapsed);
+      if (btn) btn.textContent = collapsed ? '▶' : '◀ Collapse';
+      localStorage.setItem('sidebarCollapsed', collapsed ? '1' : '0');
+    }
+
     function toggleSidebar() {
       document.querySelector('.sidebar').classList.toggle('open');
       document.getElementById('sidebar-overlay').classList.toggle('open');
@@ -5758,6 +5784,13 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       initializeData();
       if (!checkPortalRoute()) checkSession();
       initThemeBtn();
+      // Restore sidebar collapsed state
+      if (localStorage.getItem('sidebarCollapsed') === '1') {
+        document.querySelector('.sidebar')?.classList.add('collapsed');
+        document.querySelector('.main-content')?.classList.add('sidebar-collapsed');
+        const btn = document.getElementById('sb-toggle-btn');
+        if (btn) btn.textContent = '▶';
+      }
       // After login render, push any portal snapshots that need the latest
       // schema (ownerEmail, tenant id) — runs once, idle, fire-and-forget.
       // Skipped for tenant copies that haven't logged in yet.

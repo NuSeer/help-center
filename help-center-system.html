@@ -1115,6 +1115,7 @@
           </div>
         </div>
         <div class="content">
+          <div id="bf-folder-bar" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px"></div>
           <div id="bf-filter-bar" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px"></div>
           <div id="bf-list"></div>
         </div>
@@ -2789,6 +2790,7 @@ Requirements:
             <div style="font-size:14px;font-weight:600">Your Files</div>
             <input id="pf-search" oninput="renderPersonalFiles()" class="form-input" style="margin:0;width:240px;font-size:12.5px" placeholder="Search by name…">
           </div>
+          <div id="pf-folder-bar" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px"></div>
           <div id="pf-list" style="border:1px solid var(--gray-200);border-radius:10px;overflow:hidden"></div>
         </div>
       </div>
@@ -6685,13 +6687,31 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       const docs = getData('businessFile') || [];
       const search = (document.getElementById('bf-search')?.value || '').trim().toLowerCase();
       const activeType = window._bfActiveType || '';
+      const activeFolder = window._bfActiveFolder || '';
 
-      // Filter pills
+      // Apply search first so folder/type pill counts reflect post-search items.
+      const afterSearch = search ? docs.filter(d =>
+        (d.title||'').toLowerCase().includes(search) ||
+        (d.clientName||'').toLowerCase().includes(search) ||
+        (d.content||'').toLowerCase().includes(search) ||
+        (d.type||'').toLowerCase().includes(search) ||
+        (d.folder||'').toLowerCase().includes(search)
+      ) : docs;
+
+      // Folder bar (sits above type pills)
+      renderFolderBar('bf', afterSearch);
+
+      // Type filter pills — counts respect search + folder
+      const afterFolder = !activeFolder
+        ? afterSearch
+        : (activeFolder === '__unfiled'
+            ? afterSearch.filter(d => !d.folder)
+            : afterSearch.filter(d => d.folder === activeFolder));
       if (filterBar) {
-        const types = ['All', ...new Set(docs.map(d => d.type).filter(Boolean))];
+        const types = ['All', ...new Set(afterFolder.map(d => d.type).filter(Boolean))];
         filterBar.innerHTML = types.map(t => {
           const active = (t === 'All' && !activeType) || t === activeType;
-          const count = t === 'All' ? docs.length : docs.filter(d => d.type === t).length;
+          const count = t === 'All' ? afterFolder.length : afterFolder.filter(d => d.type === t).length;
           return `<button onclick="bfFilter('${t === 'All' ? '' : t}')"
             style="padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;cursor:pointer;border:0.5px solid ${active?'var(--brand-primary)':'rgba(0,0,0,0.12)'};background:${active?'var(--brand-primary)':'#f9f9f9'};color:${active?'#fff':'#666'};transition:all .15s">
             ${t} <span style="opacity:0.7">(${count})</span>
@@ -6699,15 +6719,9 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         }).join('');
       }
 
-      // Filter docs
-      let filtered = docs;
+      // Final filtered list — search + folder + type
+      let filtered = afterFolder;
       if (activeType) filtered = filtered.filter(d => d.type === activeType);
-      if (search) filtered = filtered.filter(d =>
-        (d.title||'').toLowerCase().includes(search) ||
-        (d.clientName||'').toLowerCase().includes(search) ||
-        (d.content||'').toLowerCase().includes(search) ||
-        (d.type||'').toLowerCase().includes(search)
-      );
 
       if (!filtered.length) {
         list.innerHTML = `<div style="background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;padding:48px 24px;text-align:center;color:#999">
@@ -6741,7 +6755,10 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
             onmouseenter="this.style.background='#fafafa'" onmouseleave="this.style.background='#fff'">
             <td style="padding:12px 14px;font-size:13px;color:#666;white-space:nowrap">${dateStr}</td>
             <td style="padding:12px 14px"><span style="font-size:11px;padding:3px 9px;border-radius:99px;font-weight:600;background:${typeBg[d.type]||'#f1f1f1'};color:${typeColors[d.type]||'#555'}">${d.type}</span></td>
-            <td style="padding:12px 14px;font-size:13px;font-weight:500;color:#1a1a1a">${d.title}</td>
+            <td style="padding:12px 14px;font-size:13px;font-weight:500;color:#1a1a1a">
+              <div>${d.title}</div>
+              <div style="margin-top:5px">${_folderBadgeHTML('bf', d)}</div>
+            </td>
             <td style="padding:12px 14px;font-size:13px;color:#666">${d.clientName || '—'}</td>
             <td style="padding:12px 14px;text-align:right;white-space:nowrap">
               <button onclick="bfView('${d.id}')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:var(--brand-primary);font-weight:500">View</button>
@@ -6759,6 +6776,390 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
 
     function bfFilter(type) { window._bfActiveType = type; renderBusinessFile(); }
 
+    // ── Folders (shared, scope-aware) ────────────────────────────────────────
+    // Groups Business File and Personal Files items into user-defined folders.
+    // Scope is 'bf' (businessFile) or 'pf' (personalFiles). Folders themselves
+    // are stored explicitly so empty folders persist; items reference a folder
+    // by name string. `__unfiled` filter targets items with empty/missing folder.
+    const _FOLDER_CFG = {
+      bf: { folderKey:'businessFileFolders', itemKey:'businessFile', render:() => renderBusinessFile(), label:'Business File' },
+      pf: { folderKey:'personalFileFolders', itemKey:'personalFiles', render:() => renderPersonalFiles(), label:'Personal Files' }
+    };
+    function _foldersGet(scope) {
+      const cfg = _FOLDER_CFG[scope]; if (!cfg) return [];
+      const raw = getData(cfg.folderKey);
+      return Array.isArray(raw) ? raw.slice() : [];
+    }
+    function _foldersSet(scope, list) {
+      const cfg = _FOLDER_CFG[scope]; if (!cfg) return;
+      const uniq = [...new Set(list.filter(Boolean).map(s => String(s).trim()).filter(Boolean))]
+        .sort((a,b) => a.localeCompare(b));
+      setData(cfg.folderKey, uniq);
+    }
+    function _folderNew(scope) {
+      const name = (prompt('New folder name:') || '').trim().slice(0, 60);
+      if (!name) return;
+      const folders = _foldersGet(scope);
+      if (folders.some(f => f.toLowerCase() === name.toLowerCase())) {
+        showToast('Folder "' + name + '" already exists', 'warn'); return;
+      }
+      folders.push(name);
+      _foldersSet(scope, folders);
+      _FOLDER_CFG[scope].render();
+    }
+    function _folderRename(scope, oldName) {
+      const newName = (prompt('Rename folder:', oldName) || '').trim().slice(0, 60);
+      if (!newName || newName === oldName) return;
+      const folders = _foldersGet(scope);
+      if (folders.some(f => f.toLowerCase() === newName.toLowerCase() && f !== oldName)) {
+        showToast('Folder "' + newName + '" already exists', 'warn'); return;
+      }
+      const idx = folders.indexOf(oldName);
+      if (idx > -1) folders[idx] = newName;
+      _foldersSet(scope, folders);
+      const items = getData(_FOLDER_CFG[scope].itemKey) || [];
+      items.forEach(x => { if (x.folder === oldName) x.folder = newName; });
+      setData(_FOLDER_CFG[scope].itemKey, items);
+      // If user was filtering by the renamed folder, follow it.
+      const activeProp = scope === 'bf' ? '_bfActiveFolder' : '_pfActiveFolder';
+      if (window[activeProp] === oldName) window[activeProp] = newName;
+      _FOLDER_CFG[scope].render();
+    }
+    function _folderDelete(scope, name) {
+      const items = getData(_FOLDER_CFG[scope].itemKey) || [];
+      const inFolder = items.filter(x => x.folder === name).length;
+      let msg = 'Delete folder "' + name + '"?';
+      if (inFolder) msg += '\n\nThis folder contains ' + inFolder + ' item' + (inFolder>1?'s':'') + '. They will be moved to Unfiled (the items themselves are kept).';
+      if (!confirm(msg)) return;
+      const folders = _foldersGet(scope).filter(f => f !== name);
+      _foldersSet(scope, folders);
+      items.forEach(x => { if (x.folder === name) x.folder = ''; });
+      setData(_FOLDER_CFG[scope].itemKey, items);
+      const activeProp = scope === 'bf' ? '_bfActiveFolder' : '_pfActiveFolder';
+      if (window[activeProp] === name) window[activeProp] = '';
+      _FOLDER_CFG[scope].render();
+    }
+    function _itemSetFolder(scope, id, folder) {
+      const items = getData(_FOLDER_CFG[scope].itemKey) || [];
+      const idx = items.findIndex(x => x.id === id);
+      if (idx < 0) return;
+      items[idx].folder = folder || '';
+      // If user typed in a folder that doesn't exist yet, register it.
+      if (folder) {
+        const folders = _foldersGet(scope);
+        if (!folders.some(f => f.toLowerCase() === folder.toLowerCase())) {
+          folders.push(folder);
+          _foldersSet(scope, folders);
+        }
+      }
+      setData(_FOLDER_CFG[scope].itemKey, items);
+      _FOLDER_CFG[scope].render();
+    }
+    function _folderSetActive(scope, name) {
+      if (scope === 'bf') window._bfActiveFolder = name;
+      else window._pfActiveFolder = name;
+      _FOLDER_CFG[scope].render();
+    }
+    // Render the folder pill bar for a scope. Counts reflect the items array
+    // passed in (search-filtered but NOT folder-filtered, so each pill's count
+    // shows the items it would contain).
+    function renderFolderBar(scope, items) {
+      const barEl = document.getElementById(scope + '-folder-bar');
+      if (!barEl) return;
+      const active = scope === 'bf' ? (window._bfActiveFolder || '') : (window._pfActiveFolder || '');
+      const folders = _foldersGet(scope);
+      const escAttr = s => String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+      const escHtml = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      const pill = (key, label, count, isActive, isDashed) => `
+        <button onclick="_folderSetActive('${scope}', '${escAttr(key)}')"
+          style="padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;cursor:pointer;border:0.5px ${isDashed?'dashed':'solid'} ${isActive?'var(--brand-primary)':'rgba(0,0,0,0.12)'};background:${isActive?'var(--brand-primary)':'#f9f9f9'};color:${isActive?'#fff':'#666'};transition:all .15s">
+          ${label} ${count != null ? '<span style="opacity:0.7">('+count+')</span>' : ''}
+        </button>`;
+      let html = '';
+      html += pill('', '📁 All', items.length, !active);
+      html += pill('__unfiled', '📂 Unfiled', items.filter(x => !x.folder).length, active === '__unfiled');
+      folders.forEach(f => {
+        html += pill(f, '📂 ' + escHtml(f), items.filter(x => x.folder === f).length, active === f);
+      });
+      html += `<button onclick="_folderNew('${scope}')" style="padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;cursor:pointer;border:0.5px dashed rgba(0,0,0,0.25);background:transparent;color:#666;transition:all .15s">+ New folder</button>`;
+      if (folders.length) {
+        html += `<button onclick="_folderManageOpen('${scope}')" style="padding:5px 12px;border-radius:99px;font-size:12px;font-weight:500;cursor:pointer;border:0.5px solid rgba(0,0,0,0.12);background:#f9f9f9;color:#666;transition:all .15s">⚙ Manage</button>`;
+      }
+      barEl.innerHTML = html;
+    }
+    function _folderManageOpen(scope) {
+      const folders = _foldersGet(scope);
+      if (!folders.length) return;
+      const id = 'folder-manage-modal';
+      document.getElementById(id)?.remove();
+      const items = getData(_FOLDER_CFG[scope].itemKey) || [];
+      const escA = s => String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+      const escH = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const rows = folders.map(f => {
+        const count = items.filter(x => x.folder === f).length;
+        return `<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 14px;border-bottom:1px solid #F1F5F9">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="font-size:20px">📂</span>
+            <div>
+              <div style="font-size:14px;font-weight:600;color:#0F172A">${escH(f)}</div>
+              <div style="font-size:11px;color:#94A3B8">${count} item${count===1?'':'s'}</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button onclick="_folderRename('${scope}','${escA(f)}');setTimeout(()=>_folderManageOpen('${scope}'),0)" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:#666">Rename</button>
+            <button onclick="_folderDelete('${scope}','${escA(f)}');setTimeout(()=>{var m=document.getElementById('${id}');if(m&&_foldersGet('${scope}').length)_folderManageOpen('${scope}');else m&&m.remove()},0)" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:#dc2626">Delete</button>
+          </div>
+        </div>`;
+      }).join('');
+      const overlay = document.createElement('div');
+      overlay.id = id;
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,0.55);display:flex;align-items:center;justify-content:center;padding:20px';
+      overlay.innerHTML = `<div style="background:#fff;border-radius:14px;max-width:480px;width:100%;box-shadow:0 16px 50px rgba(0,0,0,0.25);overflow:hidden">
+        <div style="padding:18px 22px;border-bottom:1px solid #E2E8F0">
+          <h3 style="font-size:17px;font-weight:700;margin:0">Manage folders</h3>
+          <p style="font-size:12.5px;color:#64748B;margin:4px 0 0">${_FOLDER_CFG[scope].label}</p>
+        </div>
+        <div style="max-height:60vh;overflow-y:auto">${rows}</div>
+        <div style="padding:12px 22px;border-top:1px solid #E2E8F0;background:#F8FAFC;display:flex;justify-content:flex-end;gap:8px">
+          <button onclick="document.getElementById('${id}').remove()" class="btn btn-solid" style="padding:8px 16px">Done</button>
+        </div>
+      </div>`;
+      overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+      document.body.appendChild(overlay);
+    }
+    function _folderMoveOpen(scope, id) {
+      const items = getData(_FOLDER_CFG[scope].itemKey) || [];
+      const item = items.find(x => x.id === id);
+      if (!item) return;
+      const folders = _foldersGet(scope);
+      const modalId = 'folder-move-modal';
+      document.getElementById(modalId)?.remove();
+      const escA = s => String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+      const escH = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const current = item.folder || '';
+      const opts = `<option value="">— Unfiled —</option>` +
+        folders.map(f => `<option value="${escA(f)}" ${f===current?'selected':''}>${escH(f)}</option>`).join('');
+      const itemLabel = scope === 'bf' ? (item.title || 'Untitled') : (item.name || 'File');
+      const overlay = document.createElement('div');
+      overlay.id = modalId;
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(15,23,42,0.55);display:flex;align-items:center;justify-content:center;padding:20px';
+      overlay.innerHTML = `<div style="background:#fff;border-radius:14px;max-width:420px;width:100%;box-shadow:0 16px 50px rgba(0,0,0,0.25);overflow:hidden">
+        <div style="padding:18px 22px;border-bottom:1px solid #E2E8F0">
+          <h3 style="font-size:17px;font-weight:700;margin:0">Move to folder</h3>
+          <p style="font-size:12.5px;color:#64748B;margin:4px 0 0">${escH(itemLabel)}</p>
+        </div>
+        <div style="padding:16px 22px">
+          <label class="form-label">Folder</label>
+          <select id="folder-move-select" class="form-input" style="margin:0 0 10px">${opts}</select>
+          <button type="button" onclick="(function(){var v=(prompt('New folder name:')||'').trim();if(!v)return;var s=document.getElementById('folder-move-select');var o=document.createElement('option');o.value=v;o.textContent=v;o.selected=true;s.appendChild(o);})()" class="btn btn-outline" style="padding:6px 12px;font-size:12.5px">+ New folder</button>
+        </div>
+        <div style="padding:12px 22px;border-top:1px solid #E2E8F0;background:#F8FAFC;display:flex;justify-content:flex-end;gap:8px">
+          <button onclick="document.getElementById('${modalId}').remove()" class="btn btn-outline" style="padding:8px 16px">Cancel</button>
+          <button onclick="_folderMoveApply('${scope}','${escA(id)}')" class="btn btn-solid" style="padding:8px 16px">Move</button>
+        </div>
+      </div>`;
+      overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+      document.body.appendChild(overlay);
+    }
+    function _folderMoveApply(scope, id) {
+      const sel = document.getElementById('folder-move-select');
+      if (!sel) return;
+      const folder = (sel.value || '').trim();
+      _itemSetFolder(scope, id, folder);
+      document.getElementById('folder-move-modal')?.remove();
+      showToast(folder ? 'Moved to "' + folder + '"' : 'Moved to Unfiled', 'success');
+    }
+    function _folderBadgeHTML(scope, item) {
+      const f = item.folder || '';
+      const esc = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/'/g,'&#39;');
+      const label = f ? '📂 ' + esc(f) : '+ Folder';
+      const bg = f ? '#EEF2FF' : 'transparent';
+      const color = f ? '#3730A3' : '#94A3B8';
+      const border = f ? '0.5px solid #C7D2FE' : '0.5px dashed rgba(0,0,0,0.18)';
+      return `<button onclick="event.stopPropagation();_folderMoveOpen('${scope}','${esc(item.id)}')" title="${f ? 'Move folder' : 'Add to folder'}" style="padding:3px 9px;font-size:11px;border-radius:99px;border:${border};background:${bg};color:${color};cursor:pointer;font-weight:500;white-space:nowrap">${label}</button>`;
+    }
+
+    // ── Styled long-form report renderer ─────────────────────────────────────
+    // Turns AI-generated markdown-ish content into a polished sectioned report
+    // with auto-numbered headings, tables, callouts, and a per-type palette.
+    // Used by bfView, bfPrint, bfDownload for non-financial doc types.
+    const REPORT_PALETTES = {
+      'Business Plan':         { primary:'#1E3A8A', accent:'#3B82F6', tint:'#EFF6FF', soft:'#DBEAFE' },
+      'Business Strategy':     { primary:'#1E3A8A', accent:'#3B82F6', tint:'#EFF6FF', soft:'#DBEAFE' },
+      'Brand Package':         { primary:'#9A3412', accent:'#F59E0B', tint:'#FFFBEB', soft:'#FEF3C7' },
+      'LVS':                   { primary:'#5B21B6', accent:'#8B5CF6', tint:'#F5F3FF', soft:'#EDE9FE' },
+      'Limitless Vision':      { primary:'#5B21B6', accent:'#8B5CF6', tint:'#F5F3FF', soft:'#EDE9FE' },
+      'Career Channel':        { primary:'#0F766E', accent:'#14B8A6', tint:'#F0FDFA', soft:'#CCFBF1' },
+      'Career Plan':           { primary:'#0F766E', accent:'#14B8A6', tint:'#F0FDFA', soft:'#CCFBF1' },
+      'Smart Credit':          { primary:'#166534', accent:'#22C55E', tint:'#F0FDF4', soft:'#DCFCE7' },
+      'Outreach Comms':        { primary:'#9D174D', accent:'#EC4899', tint:'#FDF2F8', soft:'#FCE7F3' },
+      'Program Plan':          { primary:'#3730A3', accent:'#6366F1', tint:'#EEF2FF', soft:'#E0E7FF' },
+      'Program Planner':       { primary:'#3730A3', accent:'#6366F1', tint:'#EEF2FF', soft:'#E0E7FF' },
+      'AI Coach':              { primary:'#0F172A', accent:'#1E5BC0', tint:'#EFF6FF', soft:'#DBEAFE' },
+      'Document':              { primary:'#0F172A', accent:'#1E5BC0', tint:'#F1F5F9', soft:'#E2E8F0' }
+    };
+    const REPORT_DEFAULT_PALETTE = { primary:'#0F172A', accent:'#1E5BC0', tint:'#F1F5F9', soft:'#E2E8F0' };
+    // Financial / legal docs already render via printDoc's line-item engine.
+    const _financialDocTypes = new Set([
+      'Invoice','Receipt','Proposal','Contract','Service Contract','NDA',
+      'IC','Coaching','Retainer','SOW','Website','Copyright','Release','Speaker'
+    ]);
+    function _isFinancialDoc(t) { return _financialDocTypes.has(t || ''); }
+    function _reportPalette(type) { return REPORT_PALETTES[type] || REPORT_DEFAULT_PALETTE; }
+
+    function _mdInline(s) {
+      s = String(s == null ? '' : s)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      s = s.replace(/`([^`]+)`/g, '<code style="background:rgba(15,23,42,0.06);padding:1px 5px;border-radius:3px;font-family:ui-monospace,Menlo,monospace;font-size:0.92em">$1</code>');
+      s = s.replace(/\*\*([^*\n]+)\*\*/g, '<strong>$1</strong>');
+      s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+      s = s.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, '<a href="$2" style="color:inherit;text-decoration:underline">$1</a>');
+      return s;
+    }
+
+    // Parse markdown-ish text into a block list. Lightweight; only handles the
+    // features AI commonly emits — headings, paragraphs, lists, tables, quotes.
+    function _parseMd(text) {
+      const lines = (text || '').replace(/\r\n/g, '\n').split('\n');
+      const out = [];
+      let i = 0;
+      const isStartOfBlock = ln => /^(#{1,6}\s|>|\||[-*]\s|\d+\.\s|---|===|___)/.test(ln.trim());
+      while (i < lines.length) {
+        const ln = lines[i], t = ln.trim();
+        if (!t) { i++; continue; }
+        if (/^[-=_*]{3,}$/.test(t)) { out.push({ type:'hr' }); i++; continue; }
+        let m;
+        if (m = t.match(/^(#{1,6})\s+(.*)$/)) {
+          out.push({ type:'h', level:m[1].length, text:m[2].trim() }); i++; continue;
+        }
+        if (t.startsWith('>')) {
+          const buf = [];
+          while (i < lines.length && lines[i].trim().startsWith('>')) {
+            buf.push(lines[i].trim().replace(/^>\s?/, '')); i++;
+          }
+          out.push({ type:'quote', text: buf.join('\n') });
+          continue;
+        }
+        // Markdown table: header row with pipes, divider row with --- in pipes
+        if (t.includes('|') && i+1 < lines.length
+            && /^\s*\|?\s*:?-{2,}.*$/.test(lines[i+1])
+            && lines[i+1].includes('-') && lines[i+1].includes('|')) {
+          const head = t.replace(/^\||\|$/g, '').split('|').map(s => s.trim());
+          i += 2;
+          const rows = [];
+          while (i < lines.length && lines[i].includes('|') && lines[i].trim()) {
+            rows.push(lines[i].trim().replace(/^\||\|$/g, '').split('|').map(s => s.trim()));
+            i++;
+          }
+          out.push({ type:'table', head, rows });
+          continue;
+        }
+        if (/^[-*]\s+/.test(t) || /^\d+\.\s+/.test(t)) {
+          const ordered = /^\d+\.\s+/.test(t);
+          const items = [];
+          while (i < lines.length && (ordered ? /^\d+\.\s+/.test(lines[i].trim()) : /^[-*]\s+/.test(lines[i].trim()))) {
+            items.push(lines[i].trim().replace(/^([-*]|\d+\.)\s+/, ''));
+            i++;
+          }
+          out.push({ type:'list', ordered, items });
+          continue;
+        }
+        const buf = [t]; i++;
+        while (i < lines.length && lines[i].trim() && !isStartOfBlock(lines[i])) {
+          buf.push(lines[i].trim()); i++;
+        }
+        out.push({ type:'p', text: buf.join(' ') });
+      }
+      return out;
+    }
+
+    // Build the report HTML. opts.standalone returns a full HTML doc for
+    // print/download windows; otherwise returns an inner fragment for modals.
+    function renderReportHTML(doc, opts) {
+      opts = opts || {};
+      const pal = _reportPalette(doc.type);
+      const blocks = _parseMd(doc.content || '');
+
+      // Auto-number top-level / second-level headings only if not already
+      // numbered. Skips H3+ — those are subsection labels, not chapters.
+      let h1 = 0, h2 = 0;
+      for (const b of blocks) {
+        if (b.type !== 'h') continue;
+        if (b.level === 1) {
+          h1++; h2 = 0;
+          if (!/^\d+\.\s/.test(b.text)) b.text = h1 + '. ' + b.text;
+        } else if (b.level === 2) {
+          h2++;
+          if (!/^\d+\.\d+\s/.test(b.text)) b.text = (h1 || 1) + '.' + h2 + ' ' + b.text;
+        }
+      }
+
+      const isBottomLine = txt => /^bottom line\b/i.test((txt || '').trim());
+      let body = '';
+      for (const b of blocks) {
+        if (b.type === 'hr') {
+          body += `<hr style="border:none;border-top:1px solid ${pal.soft};margin:24px 0">`;
+        } else if (b.type === 'h' && b.level === 1) {
+          body += `<h2 style="font-size:22px;font-weight:700;color:${pal.primary};margin:32px 0 12px;padding-bottom:8px;border-bottom:2px solid ${pal.accent};page-break-after:avoid">${_mdInline(b.text)}</h2>`;
+        } else if (b.type === 'h' && b.level === 2) {
+          body += `<h3 style="font-size:17px;font-weight:600;color:${pal.primary};margin:22px 0 10px;page-break-after:avoid">${_mdInline(b.text)}</h3>`;
+        } else if (b.type === 'h') {
+          body += `<h4 style="font-size:13px;font-weight:700;color:${pal.primary};margin:18px 0 8px;text-transform:uppercase;letter-spacing:0.6px;page-break-after:avoid">${_mdInline(b.text)}</h4>`;
+        } else if (b.type === 'p') {
+          body += `<p style="font-size:14px;line-height:1.75;color:#1F2937;margin:0 0 14px">${_mdInline(b.text)}</p>`;
+        } else if (b.type === 'quote') {
+          const bottom = isBottomLine(b.text);
+          const bg = bottom ? pal.primary : pal.tint;
+          const fg = bottom ? '#fff' : '#1F2937';
+          const bd = bottom ? pal.primary : pal.accent;
+          const label = bottom ? `<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:${bottom?'rgba(255,255,255,0.7)':pal.accent};margin-bottom:6px">Bottom Line</div>` : '';
+          body += `<div style="background:${bg};color:${fg};border-left:4px solid ${bd};padding:18px 22px;margin:18px 0;border-radius:6px;font-size:14px;line-height:1.7;page-break-inside:avoid">${label}${_mdInline(b.text).replace(/\n/g,'<br>')}</div>`;
+        } else if (b.type === 'table') {
+          const hdr = b.head.map(h => `<th style="text-align:left;padding:10px 14px;background:${pal.primary};color:#fff;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.4px">${_mdInline(h)}</th>`).join('');
+          const rowsHtml = b.rows.map((r, idx) => {
+            const cells = r.map(c => `<td style="padding:10px 14px;font-size:13px;border-bottom:1px solid ${pal.soft};color:#1F2937;vertical-align:top">${_mdInline(c)}</td>`).join('');
+            return `<tr style="background:${idx % 2 === 0 ? '#fff' : pal.tint}">${cells}</tr>`;
+          }).join('');
+          body += `<div style="overflow-x:auto;margin:16px 0;page-break-inside:avoid"><table style="width:100%;border-collapse:collapse;border:1px solid ${pal.soft};border-radius:6px;overflow:hidden"><thead><tr>${hdr}</tr></thead><tbody>${rowsHtml}</tbody></table></div>`;
+        } else if (b.type === 'list') {
+          const tag = b.ordered ? 'ol' : 'ul';
+          const items = b.items.map(it => `<li style="font-size:14px;line-height:1.7;color:#1F2937;margin:5px 0">${_mdInline(it)}</li>`).join('');
+          body += `<${tag} style="margin:10px 0 16px;padding-left:24px">${items}</${tag}>`;
+        }
+      }
+
+      const settings = (typeof getData === 'function') ? (getData('settings') || {}) : {};
+      const biz = settings.businessName || 'H.E.L.P. Center';
+      const escH = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const dateStr = new Date(doc.createdAt || Date.now())
+        .toLocaleDateString('en-US', { month:'long', year:'numeric' });
+      const stamp = doc.clientName ? 'Prepared for ' + doc.clientName : 'Confidential';
+
+      const titleBlock = `
+        <div style="border-top:6px solid ${pal.accent};padding:32px 40px 26px;background:${pal.tint};border-radius:6px 6px 0 0">
+          <div style="font-size:11px;font-weight:700;letter-spacing:1.6px;color:${pal.primary};text-transform:uppercase;margin-bottom:6px">${escH(biz)}</div>
+          <div style="font-size:12px;font-weight:600;color:${pal.accent};margin-bottom:18px;letter-spacing:0.5px;text-transform:uppercase">${escH(doc.type || 'Report')}</div>
+          <h1 style="font-size:30px;font-weight:700;color:${pal.primary};margin:0 0 14px;line-height:1.2">${escH(doc.title || 'Untitled')}</h1>
+          <div style="font-size:11px;color:#64748B;letter-spacing:0.4px">Version 1.0 &nbsp;·&nbsp; ${escH(dateStr)} &nbsp;·&nbsp; ${escH(stamp)}</div>
+        </div>`;
+      const inner = `${titleBlock}<div style="padding:8px 40px 40px">${body || '<p style="color:#94A3B8;font-style:italic">No content.</p>'}</div>`;
+
+      if (opts.standalone) {
+        return `<!doctype html><html><head><meta charset="utf-8"><title>${escH(doc.title || 'Report')}</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background:#F8FAFC; margin:0; padding:24px; color:#1F2937; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  .report { max-width: 880px; margin: 0 auto; background:#fff; border-radius:6px; box-shadow:0 4px 24px rgba(15,23,42,0.08); overflow:hidden; }
+  @media print {
+    body { background:#fff; padding:0; }
+    .report { box-shadow:none; max-width:none; border-radius:0; }
+    @page { margin: 0.6in; }
+    table, ul, ol { page-break-inside: auto; }
+  }
+</style></head><body><div class="report">${inner}</div></body></html>`;
+      }
+      return `<div style="background:#fff;border-radius:6px;overflow:hidden;border:1px solid ${pal.soft}">${inner}</div>`;
+    }
+
     function bfView(id) {
       const doc = (getData('businessFile')||[]).find(d => d.id === id);
       if (!doc) return;
@@ -6767,19 +7168,27 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       const modal = document.createElement('div');
       modal.id = modalId;
       modal.className = 'modal-overlay';
+      // Long-form reports use the styled renderer; financial docs (Invoice,
+      // Receipt, Proposal, Contract...) keep the plain <pre> view because their
+      // print flow depends on the raw ASCII line-item layout.
+      const useStyled = !_isFinancialDoc(doc.type);
+      const bodyHtml = useStyled
+        ? renderReportHTML(doc)
+        : `<pre style="white-space:pre-wrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;line-height:1.7;background:#f9f9f9;padding:18px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.08);margin:0;color:#1a1a1a">${(doc.content||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`;
       modal.innerHTML = `
-        <div class="modal-box" style="max-width:780px;max-height:90vh;display:flex;flex-direction:column">
+        <div class="modal-box" style="max-width:920px;max-height:92vh;display:flex;flex-direction:column">
           <div class="modal-header">
             <div class="modal-title">${doc.type} — ${doc.title}</div>
             <button class="modal-close" onclick="closeModal('${modalId}')">×</button>
           </div>
-          <div class="modal-body" style="overflow-y:auto;flex:1">
-            <div style="font-size:12px;color:#999;margin-bottom:12px">
+          <div class="modal-body" style="overflow-y:auto;flex:1;background:#F8FAFC">
+            <div style="font-size:12px;color:#94A3B8;margin-bottom:12px">
               Saved ${new Date(doc.createdAt).toLocaleString()} ${doc.clientName ? '• Client: '+doc.clientName : ''}
             </div>
-            <pre style="white-space:pre-wrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;line-height:1.7;background:#f9f9f9;padding:18px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.08);margin:0;color:#1a1a1a">${(doc.content||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>
+            ${bodyHtml}
             <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap">
               <button onclick="bfCopy('${doc.id}')" class="btn btn-outline" style="padding:8px 14px;font-size:13px"><span class="icon icon-sm" data-icon="clipboard" style="margin-right:6px;vertical-align:-2px"></span>Copy</button>
+              <button onclick="bfDownload('${doc.id}')" class="btn btn-outline" style="padding:8px 14px;font-size:13px"><span class="icon icon-sm" data-icon="download" style="margin-right:6px;vertical-align:-2px"></span>Download</button>
               <button onclick="bfPrint('${doc.id}')" class="btn btn-outline" style="padding:8px 14px;font-size:13px"><span class="icon icon-sm" data-icon="print" style="margin-right:6px;vertical-align:-2px"></span>Print</button>
               <button onclick="closeModal('${modalId}')" class="btn btn-solid" style="padding:8px 14px;font-size:13px">Close</button>
             </div>
@@ -6799,7 +7208,19 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
     function bfPrint(id) {
       const doc = (getData('businessFile')||[]).find(d => d.id === id);
       if (!doc) return;
-      // Stuff content into a hidden textarea so printDoc can use it
+      // Long-form reports (Business Plan, Brand Package, AI Coach, 10x outputs)
+      // open in a styled print window. Invoices, contracts, etc. fall back to
+      // printDoc which knows how to format line-item tables and signatures.
+      if (!_isFinancialDoc(doc.type)) {
+        const html = renderReportHTML(doc, { standalone: true });
+        const w = window.open('', '_blank', 'width=900,height=1000');
+        if (!w) { showToast('Pop-up blocked — allow pop-ups to print', 'warn'); return; }
+        w.document.write(html);
+        w.document.close();
+        // Defer print() until images/fonts settle.
+        setTimeout(() => { try { w.focus(); w.print(); } catch(_) {} }, 350);
+        return;
+      }
       let temp = document.getElementById('bf-print-temp');
       if (!temp) {
         temp = document.createElement('textarea');
@@ -6821,16 +7242,22 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
 
     // Send a Business File doc to a client's portal — opens the same modal used
     // for AI-chat outputs but pre-fills with the doc's title/type/content.
-    // Download a saved Business File doc as a .txt file
+    // Download long-form reports as a styled .html file (opens in any browser
+    // and Word); financial docs (Invoice, Contract, etc.) stay .txt so the
+    // ASCII line-item layout survives the round-trip.
     function bfDownload(id) {
       const doc = (getData('businessFile') || []).find(d => d.id === id);
       if (!doc) { showToast('Document not found'); return; }
       const safeTitle = (doc.title || doc.type || 'document').replace(/[^a-zA-Z0-9_\-]/g, '_').slice(0, 60);
       const dateStr = new Date(doc.createdAt || Date.now()).toISOString().slice(0, 10);
-      const blob = new Blob([doc.content || ''], { type: 'text/plain;charset=utf-8' });
+      const styled = !_isFinancialDoc(doc.type);
+      const payload = styled ? renderReportHTML(doc, { standalone: true }) : (doc.content || '');
+      const mime = styled ? 'text/html;charset=utf-8' : 'text/plain;charset=utf-8';
+      const ext = styled ? 'html' : 'txt';
+      const blob = new Blob([payload], { type: mime });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = safeTitle + '_' + dateStr + '.txt';
+      a.download = safeTitle + '_' + dateStr + '.' + ext;
       a.click();
       setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     }
@@ -11650,11 +12077,25 @@ Write a complete brief they can send to a Fiverr designer: style, colors, must-h
       if (!list) return;
       const files = getData('personalFiles') || [];
       const search = (document.getElementById('pf-search')?.value || '').trim().toLowerCase();
-      const filtered = search ? files.filter(f => (f.name||'').toLowerCase().includes(search)) : files;
+      const activeFolder = window._pfActiveFolder || '';
+
+      const afterSearch = search
+        ? files.filter(f => (f.name||'').toLowerCase().includes(search) || (f.folder||'').toLowerCase().includes(search))
+        : files;
+      renderFolderBar('pf', afterSearch);
+      const filtered = !activeFolder
+        ? afterSearch
+        : (activeFolder === '__unfiled'
+            ? afterSearch.filter(f => !f.folder)
+            : afterSearch.filter(f => f.folder === activeFolder));
+
       if (!filtered.length) {
-        list.innerHTML = '<div style="padding:32px 20px;text-align:center;color:#94A3B8;font-size:13px">' +
-          (files.length ? 'No files match "' + search.replace(/</g,'&lt;') + '"' : 'No files uploaded yet. Drag a file above to get started.') +
-          '</div>';
+        const emptyMsg = files.length
+          ? (activeFolder
+              ? 'No files in this folder.'
+              : 'No files match "' + search.replace(/</g,'&lt;') + '"')
+          : 'No files uploaded yet. Drag a file above to get started.';
+        list.innerHTML = '<div style="padding:32px 20px;text-align:center;color:#94A3B8;font-size:13px">' + emptyMsg + '</div>';
         return;
       }
       const escH = s => (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -11672,7 +12113,8 @@ Write a complete brief they can send to a Fiverr designer: style, colors, must-h
           const sizeKb = Math.round(f.size / 1024);
           const sizeLabel = sizeKb > 1024 ? (sizeKb/1024).toFixed(1) + ' MB' : sizeKb + ' KB';
           return '<tr style="border-bottom:1px solid #F1F5F9">' +
-            '<td style="padding:10px 12px"><span style="margin-right:8px;font-size:18px">' + icon + '</span><strong style="color:#0F172A">' + escH(f.name) + '</strong></td>' +
+            '<td style="padding:10px 12px"><div><span style="margin-right:8px;font-size:18px">' + icon + '</span><strong style="color:#0F172A">' + escH(f.name) + '</strong></div>' +
+              '<div style="margin-top:5px;margin-left:26px">' + _folderBadgeHTML('pf', f) + '</div></td>' +
             '<td style="padding:10px 12px;color:#64748B">' + sizeLabel + '</td>' +
             '<td style="padding:10px 12px;color:#64748B">' + dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</td>' +
             '<td style="padding:10px 12px;text-align:right;white-space:nowrap">' +

@@ -339,6 +339,33 @@
       .main-content { margin-left: 0; }
       .mobile-header { display: flex !important; }
     }
+
+    /* ── Mobile responsiveness for Web Builder & Vibe Coder ── */
+    @media (max-width: 900px) {
+      /* Web Builder: stack columns; show "Recent Builds" history ABOVE the
+         preview so variations 2 & 3 are findable on phones. */
+      #wb-grid { grid-template-columns: 1fr !important; }
+      #wb-grid > div:last-child { order: -1; }
+      #wb-iframe, #wb-code-view { height: 70vh !important; min-height: 380px; }
+      /* Vibe Coder: stack the 4-pane IDE vertically. Files first (small),
+         then editor, preview, then chat at the bottom. */
+      #vibe-grid {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        gap: 12px !important;
+      }
+      #vibe-grid > div {
+        grid-row: auto !important;
+        grid-column: auto !important;
+        min-height: 280px;
+      }
+      #vibe-grid > div:nth-child(1) { min-height: 140px; max-height: 200px; }
+      #vibe-grid > div:nth-child(4) { min-height: 360px; }
+      /* Tap targets: prevent iOS zoom on text inputs */
+      #wb-prompt, #vb-input, #vb-editor { font-size: 16px !important; }
+    }
     /* PWA standalone-mode: respect iOS safe areas (notch, home indicator) */
     @media (display-mode: standalone) {
       body { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
@@ -2031,7 +2058,7 @@
                   <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
                     <span style="font-size:11px;color:#94a3b8;font-weight:600;letter-spacing:0.4px;text-transform:uppercase">Or pick from saved docs</span>
                     <select id="a10x-bf-pick" class="form-input" style="margin:0;flex:1;font-size:12.5px;padding:7px 10px" onchange="_a10xPickFromBusinessFile(this.value)">
-                      <option value="">— select a saved resume from Business File —</option>
+                      <option value="">— pick a resume from your Personal or Business Files —</option>
                     </select>
                   </div>
                   <textarea id="a10x-resume" class="form-textarea" style="min-height:200px;font-size:12px;font-family:monospace" placeholder="...or paste your resume text here" spellcheck="true" lang="en"></textarea>
@@ -3557,7 +3584,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
           <p class="page-subtitle">Describe your brand — AI builds a complete, download-ready website in seconds. 60 hand-crafted templates.</p>
         </div>
         <div class="content">
-          <div style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+          <div id="wb-grid" style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
 
             <div>
               <!-- Template picker -->
@@ -5496,6 +5523,14 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
 
     // ── NAVIGATION ─────────────────────────────────────────────────────────────
     function showPage(pageId, event) {
+      // Exit voice studio fullscreen overlay if navigating elsewhere — the
+      // exit button is appended to document.body and would linger otherwise.
+      if (pageId !== 'voice-studio') {
+        const vsWrap = document.getElementById('voice-studio-frame-wrap');
+        if (vsWrap && vsWrap.dataset.fullscreen === '1' && typeof _voiceStudioFullscreen === 'function') {
+          _voiceStudioFullscreen();
+        }
+      }
       document.querySelectorAll('.page').forEach(p => p.classList.add('hidden'));
       const target = document.getElementById(pageId + '-page');
       if (target) target.classList.remove('hidden');
@@ -5511,6 +5546,11 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
   'voice-studio': () => {
     const f = document.getElementById('voice-studio-frame');
     if (f && (!f.src || f.src === 'about:blank')) f.src = '/pb/voiceforge.html';
+    // Default to full screen — voice studio needs all the room it can get.
+    const wrap = document.getElementById('voice-studio-frame-wrap');
+    if (wrap && wrap.dataset.fullscreen !== '1' && typeof _voiceStudioFullscreen === 'function') {
+      _voiceStudioFullscreen();
+    }
   },
   'saas-clients': renderSaasClientsPage,
   'personal-files': renderPersonalFiles,
@@ -5704,6 +5744,23 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         document.body.appendChild(exit);
       }
     }
+
+    // Voice Studio (voiceforge.html) auto-key handshake.
+    // The iframe posts {type:'voiceforge:ready'} on load; we reply with the
+    // Groq key from settings so the user never sees the setup screen.
+    window.addEventListener('message', function (e) {
+      if (!e || !e.data || e.data.type !== 'voiceforge:ready') return;
+      const f = document.getElementById('voice-studio-frame');
+      if (!f || !f.contentWindow || e.source !== f.contentWindow) return;
+      const s = (typeof getData === 'function' && getData('settings')) || {};
+      const key = s.groqApiKey || s.groqApiKey2 || '';
+      if (!key) return; // no key configured — let the setup screen show
+      f.contentWindow.postMessage({
+        type: 'voiceforge:set-key',
+        key: key,
+        name: s.userName || s.ownerName || s.fullName || ''
+      }, '*');
+    });
 
     // Direct click handler for the Enable Notifications button on the
     // SaaS Clients page header. Always available — no dependency on the
@@ -9397,8 +9454,117 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         const ai=getAiSettings();
         const titleEl=document.getElementById('ai-panel-title');
         if(titleEl)titleEl.textContent=ai.coachName;
+        // Re-clamp into viewport in case the window was resized while hidden.
+        if (typeof _aiCoachClamp === 'function') _aiCoachClamp(panel);
       }
     }
+
+    // ── Draggable AI Coach (FAB + Panel) ──────────────────────────────────────
+    // The coach sits fixed at bottom-right and can cover whatever's behind it.
+    // Drag the FAB to relocate the button; drag the panel by its header to
+    // relocate the chat window. Positions persist via setData (tenant-aware).
+    let _aiCoachClamp;
+    (function initAiCoachDrag(){
+      const PAD = 8, DRAG_THRESHOLD = 5;
+      const fab = document.getElementById('ai-fab');
+      const panel = document.getElementById('ai-panel');
+      const panelHeader = panel && panel.querySelector('.ai-panel-header');
+      const fabLabel = document.querySelector('.ai-fab-label');
+
+      function clamp(el, x, y) {
+        const w = el.offsetWidth, h = el.offsetHeight;
+        return {
+          x: Math.max(PAD, Math.min(window.innerWidth  - w - PAD, x)),
+          y: Math.max(PAD, Math.min(window.innerHeight - h - PAD, y))
+        };
+      }
+      function apply(el, x, y) {
+        const p = clamp(el, x, y);
+        el.style.left = p.x + 'px';
+        el.style.top  = p.y + 'px';
+        el.style.right = 'auto';
+        el.style.bottom = 'auto';
+      }
+      _aiCoachClamp = function(el) {
+        if (!el || !el.style.left) return;
+        if (el.classList.contains('hidden') || el.offsetParent === null) return;
+        apply(el, parseFloat(el.style.left), parseFloat(el.style.top));
+      };
+
+      function loadPos(key, el) {
+        try {
+          const raw = getData(key);
+          if (raw && typeof raw.x === 'number' && typeof raw.y === 'number') {
+            el.style.left = raw.x + 'px';
+            el.style.top  = raw.y + 'px';
+            el.style.right = 'auto';
+            el.style.bottom = 'auto';
+          }
+        } catch (_) {}
+      }
+
+      function makeDraggable(el, handle, storageKey, onDragStart) {
+        let sx, sy, ox, oy, dragging = false, moved = false;
+        function down(e) {
+          const t = e.touches ? e.touches[0] : e;
+          const r = el.getBoundingClientRect();
+          sx = t.clientX; sy = t.clientY; ox = r.left; oy = r.top;
+          dragging = true; moved = false;
+          if (onDragStart) onDragStart();
+          document.addEventListener('mousemove', move);
+          document.addEventListener('mouseup', up);
+          document.addEventListener('touchmove', move, { passive: false });
+          document.addEventListener('touchend', up);
+        }
+        function move(e) {
+          if (!dragging) return;
+          const t = e.touches ? e.touches[0] : e;
+          const dx = t.clientX - sx, dy = t.clientY - sy;
+          if (!moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
+          moved = true;
+          if (e.cancelable) e.preventDefault();
+          apply(el, ox + dx, oy + dy);
+        }
+        function up() {
+          document.removeEventListener('mousemove', move);
+          document.removeEventListener('mouseup', up);
+          document.removeEventListener('touchmove', move);
+          document.removeEventListener('touchend', up);
+          dragging = false;
+          if (moved) {
+            const r = el.getBoundingClientRect();
+            try { setData(storageKey, { x: r.left, y: r.top }); } catch (_) {}
+          }
+          // Keep `moved` true through the trailing click so we can suppress it.
+          setTimeout(() => { moved = false; }, 0);
+        }
+        handle.addEventListener('mousedown', down);
+        handle.addEventListener('touchstart', down, { passive: true });
+        // Capture-phase listener so it runs before the inline onclick handler.
+        el.addEventListener('click', function(e) {
+          if (moved) { e.preventDefault(); e.stopImmediatePropagation(); }
+        }, true);
+      }
+
+      if (fab) {
+        loadPos('aiCoachFabPos', fab);
+        makeDraggable(fab, fab, 'aiCoachFabPos', () => {
+          if (fabLabel) fabLabel.style.display = 'none';
+        });
+      }
+      if (panel && panelHeader) {
+        panelHeader.style.cursor = 'move';
+        panelHeader.style.userSelect = 'none';
+        panelHeader.style.touchAction = 'none';
+        loadPos('aiCoachPanelPos', panel);
+        makeDraggable(panel, panelHeader, 'aiCoachPanelPos');
+      }
+
+      window.addEventListener('resize', () => {
+        _aiCoachClamp(fab);
+        _aiCoachClamp(panel);
+      });
+    })();
 
     function setAiContext(page) {
       aiCurrentPage=page;
@@ -11540,41 +11706,78 @@ Write a complete brief they can send to a Fiverr designer: style, colors, must-h
     // Career Advancement: pick a saved doc from Business File and load its
     // text into the resume textarea. Filters to docs whose type or title
     // hints at "resume" but allows any saved doc as a fallback.
-    function _a10xPickFromBusinessFile(docId) {
-      if (!docId) return;
-      const doc = (getData('businessFile') || []).find(d => d.id === docId);
-      if (!doc) { alert('Doc not found.'); return; }
+    async function _a10xPickFromBusinessFile(val) {
+      if (!val) return;
       const ta = document.getElementById('a10x-resume');
       if (!ta) return;
-      ta.value = doc.content || '';
-      // Trigger any input listeners (auto-save, char counter, etc.)
-      ta.dispatchEvent(new Event('input', { bubbles: true }));
-      // Tiny visual confirmation
       const dropZone = document.getElementById('a10x-drop-zone');
-      if (dropZone) {
+      const flashLoaded = (label, source) => {
+        if (!dropZone) return;
         dropZone.style.borderColor = '#10B981';
-        dropZone.querySelector('div:nth-child(2)').innerHTML = '✓ Loaded "' + (doc.title||'').replace(/</g,'&lt;') + '" from Business File';
+        const line = dropZone.querySelector('div:nth-child(2)');
+        if (line) line.innerHTML = '✓ Loaded "' + (label||'').replace(/</g,'&lt;') + '" from ' + source;
         setTimeout(() => {
           dropZone.style.borderColor = '#cbd5e1';
-          dropZone.querySelector('div:nth-child(2)').innerHTML = '<span style="color:var(--brand-primary);text-decoration:underline">Click to upload</span> or drag & drop';
+          if (line) line.innerHTML = '<span style="color:var(--brand-primary);text-decoration:underline">Click to upload</span> or drag &amp; drop';
         }, 3000);
+      };
+
+      // Prefixed values: bf:<id> = Business File doc, pf:<id> = Personal File.
+      // Bare ids fall back to legacy Business File lookup.
+      if (val.startsWith('pf:')) {
+        const id = val.slice(3);
+        const f = (getData('personalFiles') || []).find(x => x.id === id);
+        if (!f) { alert('File not found.'); return; }
+        if (!f.url) { alert('This personal file has no downloadable URL.'); return; }
+        showToast('Loading "' + (f.name||'file') + '" from Personal Files…', 'info');
+        try {
+          const res = await fetch(f.url);
+          if (!res.ok) throw new Error('HTTP ' + res.status);
+          const blob = await res.blob();
+          const fakeFile = new File([blob], f.name || 'file', { type: blob.type || '' });
+          // Reuse the same parser as the drag-drop upload (handles PDF/DOCX/TXT).
+          if (typeof a10xHandleFile === 'function') await a10xHandleFile(fakeFile);
+          flashLoaded(f.name, 'Personal Files');
+          showToast('Resume loaded from Personal Files', 'success');
+        } catch (e) {
+          alert('Could not load file: ' + (e && e.message || e));
+        }
+        return;
       }
+
+      const id = val.startsWith('bf:') ? val.slice(3) : val;
+      const doc = (getData('businessFile') || []).find(d => d.id === id);
+      if (!doc) { alert('Doc not found.'); return; }
+      ta.value = doc.content || '';
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
+      flashLoaded(doc.title, 'Business File');
       showToast('Resume loaded from Business File', 'success');
     }
 
     // Populate the saved-docs dropdown whenever the Career page is shown.
-    // Prioritize anything that looks like a resume; show all other docs below.
+    // Lists Personal Files (PDF/DOCX/TXT) and Business File docs, with
+    // resumes/cover letters surfaced first.
     function _a10xRefreshBfDropdown() {
       const sel = document.getElementById('a10x-bf-pick');
       if (!sel) return;
-      const all = getData('businessFile') || [];
+      const escAttr = s => (s||'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').slice(0, 90);
+      const bizAll = getData('businessFile') || [];
       const isResume = d => /resume|cv|cover\s*letter/i.test((d.type||'') + ' ' + (d.title||''));
-      const resumes = all.filter(isResume);
-      const others  = all.filter(d => !isResume(d));
-      const optHtml = (d) => '<option value="' + d.id + '">' + ((d.type||'Doc') + ' · ' + (d.title||'')).replace(/"/g,'&quot;').slice(0, 90) + '</option>';
-      sel.innerHTML = '<option value="">— select a saved resume from Business File —</option>' +
-        (resumes.length ? '<optgroup label="Resumes & Cover Letters">' + resumes.map(optHtml).join('') + '</optgroup>' : '') +
-        (others.length  ? '<optgroup label="Other saved docs">' + others.map(optHtml).join('') + '</optgroup>' : '');
+      const bizResumes = bizAll.filter(isResume);
+      const bizOthers  = bizAll.filter(d => !isResume(d));
+      const persAll = getData('personalFiles') || [];
+      const isDocLike = f => /\.(pdf|docx?|txt)$/i.test(f.name||'');
+      const persDocs = persAll.filter(isDocLike);
+      const persResumes = persDocs.filter(f => /resume|cv|cover.?letter/i.test(f.name||''));
+      const persOthers  = persDocs.filter(f => !/resume|cv|cover.?letter/i.test(f.name||''));
+      const bfOpt = (d) => '<option value="bf:' + d.id + '">' + escAttr('💼 ' + (d.type||'Doc') + ' · ' + (d.title||'')) + '</option>';
+      const pfOpt = (f) => '<option value="pf:' + f.id + '">' + escAttr('📎 ' + (f.name||'')) + '</option>';
+      let html = '<option value="">— pick a resume from your Personal or Business Files —</option>';
+      if (persResumes.length) html += '<optgroup label="Personal Files · Resumes & Cover Letters">' + persResumes.map(pfOpt).join('') + '</optgroup>';
+      if (bizResumes.length)  html += '<optgroup label="Business File · Resumes & Cover Letters">' + bizResumes.map(bfOpt).join('') + '</optgroup>';
+      if (persOthers.length)  html += '<optgroup label="Personal Files · Other docs">' + persOthers.map(pfOpt).join('') + '</optgroup>';
+      if (bizOthers.length)   html += '<optgroup label="Business File · Other docs">' + bizOthers.map(bfOpt).join('') + '</optgroup>';
+      sel.innerHTML = html;
     }
 
     async function a10xHandleFile(file) {

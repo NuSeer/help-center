@@ -779,10 +779,11 @@
         </div>
         <div id="login-error"
              style="color:var(--error);font-size:14px;margin-bottom:12px;display:none;">
-          Incorrect password. Please try again.
+          Incorrect password.
         </div>
         <button type="button" class="btn-primary" onclick="login()">Unlock System</button>
-        <a href="#" class="change-password" onclick="showChangePwModal();return false;">Change Password</a>
+        <a href="#" class="change-password" onclick="showForgotPwModal();return false;">Forgot password?</a>
+        <a href="#" class="change-password" onclick="showChangePwModal();return false;" style="display:block;margin-top:6px">Change Password</a>
         <a href="#" class="change-password" onclick="restoreFromCloud();return false;" style="display:block;margin-top:6px;font-size:12px;opacity:0.75">New device? Restore from cloud</a>
       </div>
     </div>
@@ -4436,6 +4437,124 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       t._tid = setTimeout(()=>{ t.style.opacity='0'; },3000);
     }
 
+    // ── Undo toast ───────────────────────────────────────────────────────────
+    // Pops a slate-dark toast at the bottom with the message and an Undo button.
+    // The undoFn runs only if the user clicks Undo before the 6-second timeout.
+    function showUndoToast(msg, undoFn, opts) {
+      opts = opts || {};
+      document.getElementById('help-undo-toast')?.remove();
+      const t = document.createElement('div');
+      t.id = 'help-undo-toast';
+      t.style.cssText = 'position:fixed;bottom:90px;right:24px;z-index:9999;padding:10px 14px 10px 18px;border-radius:10px;font-size:14px;font-weight:500;color:#fff;background:#1E293B;box-shadow:0 8px 28px rgba(0,0,0,0.25);display:flex;align-items:center;gap:12px';
+      const safe = String(msg||'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      t.innerHTML = `<span>${safe}</span><button type="button" id="undo-btn" style="padding:5px 12px;border-radius:6px;border:none;background:#F59E0B;color:#1F2937;font-weight:700;font-size:12px;cursor:pointer">Undo</button>`;
+      document.body.appendChild(t);
+      const ttl = opts.ttl || 6000;
+      const cleanup = () => { if (t.parentNode) t.parentNode.removeChild(t); };
+      const tid = setTimeout(cleanup, ttl);
+      document.getElementById('undo-btn').addEventListener('click', () => {
+        clearTimeout(tid);
+        cleanup();
+        try { undoFn && undoFn(); } catch(e) { console.error('undo failed', e); }
+      });
+    }
+
+    // ── File upload helper (shared) ─────────────────────────────────────────
+    // Uploads a single File to the backend /api/upload endpoint and returns
+    // { name, url, mime, size }. Used by Personal Files, Notes, and Ideas.
+    async function uploadAttachment(file, opts) {
+      opts = opts || {};
+      const clientId = opts.clientId || (typeof _pfId === 'function' ? _pfId() : 'attach-' + (Date.now()));
+      const fd = new FormData();
+      fd.append('clientId', clientId);
+      fd.append('file', file);
+      const r = await fetch(HC_BACKEND + '/api/upload?clientId=' + encodeURIComponent(clientId), { method:'POST', body: fd });
+      if (!r.ok) throw new Error('Upload failed (HTTP ' + r.status + ')');
+      const j = await r.json();
+      return { name: file.name, url: j.url, mime: j.mime || file.type, size: file.size, uploadedAt: new Date().toISOString() };
+    }
+
+    // ── Emoji picker ────────────────────────────────────────────────────────
+    // Curated grid of ~80 common emoji. Click an emoji to insert it into the
+    // target textarea/input at the cursor position. Hidden when clicking away.
+    const EMOJI_SET = [
+      '😀','😃','😄','😁','😆','😅','😂','🤣','😊','😇','🙂','🙃','😉','😌','😍','🥰',
+      '😘','😋','😎','🤩','🥳','🤔','🤨','😐','😑','😶','🙄','😏','😒','😔','😬','🤐',
+      '😢','😭','😤','😠','😡','🤯','😳','🥺','😨','😰','😱','🤗','🤝','👍','👎','👏',
+      '🙌','🙏','💪','✌️','👌','👋','✋','🤞','💯','✨','🌟','⭐','🔥','💥','⚡','🎉',
+      '🎊','💼','📁','📂','📝','📄','📋','📊','📈','📉','💰','💵','💳','📅','⏰','⏳',
+      '🔔','🔒','🔑','🚀','⚙️','💡','🎯','🏆','🎁','💬','❓','❗','⚠️','✅','❌','❤️'
+    ];
+    function openEmojiPicker(targetId, anchorEl) {
+      document.getElementById('emoji-picker-pop')?.remove();
+      const target = document.getElementById(targetId);
+      if (!target) return;
+      const pop = document.createElement('div');
+      pop.id = 'emoji-picker-pop';
+      pop.style.cssText = 'position:fixed;z-index:10000;background:#fff;border:1px solid #E2E8F0;border-radius:10px;box-shadow:0 12px 32px rgba(15,23,42,0.18);padding:8px;width:320px;max-height:240px;overflow-y:auto;display:grid;grid-template-columns:repeat(8,1fr);gap:2px';
+      pop.innerHTML = EMOJI_SET.map(e =>
+        `<button type="button" data-emoji="${e}" style="font-size:20px;padding:6px;background:none;border:none;border-radius:6px;cursor:pointer;transition:background .1s" onmouseenter="this.style.background='#F1F5F9'" onmouseleave="this.style.background='none'">${e}</button>`
+      ).join('');
+      // Anchor below the button that opened it; fallback to viewport center.
+      let top = 100, left = 100;
+      if (anchorEl) {
+        const r = anchorEl.getBoundingClientRect();
+        top = Math.min(r.bottom + 6, window.innerHeight - 250);
+        left = Math.min(r.left, window.innerWidth - 332);
+      }
+      pop.style.top = Math.max(10, top) + 'px';
+      pop.style.left = Math.max(10, left) + 'px';
+      pop.addEventListener('click', e => {
+        const btn = e.target.closest('button[data-emoji]');
+        if (!btn) return;
+        const emoji = btn.dataset.emoji;
+        const start = target.selectionStart || 0;
+        const end = target.selectionEnd || 0;
+        const val = target.value || '';
+        target.value = val.slice(0, start) + emoji + val.slice(end);
+        // Move caret after the inserted emoji.
+        const newPos = start + emoji.length;
+        target.focus();
+        target.setSelectionRange(newPos, newPos);
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      document.body.appendChild(pop);
+      // Close on outside click — defer so the click that opened it doesn't immediately close it.
+      setTimeout(() => {
+        const closeOnAway = e => {
+          if (!pop.contains(e.target) && e.target !== anchorEl) {
+            pop.remove();
+            document.removeEventListener('mousedown', closeOnAway);
+          }
+        };
+        document.addEventListener('mousedown', closeOnAway);
+      }, 0);
+    }
+
+    // ── Attachment grid (shared render for notes & ideas) ────────────────────
+    // Pass an array of { name, url, mime } objects; returns thumbnail+filename
+    // HTML. Used inside note/idea modals to show what's already attached.
+    function renderAttachmentList(attachments, removeHandler) {
+      if (!attachments || !attachments.length) return '';
+      const escH = s => String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      const rows = attachments.map((a, i) => {
+        const isImg = (a.mime||'').startsWith('image/') || /\.(png|jpe?g|gif|webp|svg)$/i.test(a.name||'');
+        const thumb = isImg
+          ? `<img src="${escH(a.url)}" alt="" style="width:48px;height:48px;object-fit:cover;border-radius:6px;border:1px solid #E2E8F0">`
+          : `<div style="width:48px;height:48px;border-radius:6px;background:#F1F5F9;display:flex;align-items:center;justify-content:center;font-size:22px">${/pdf/i.test(a.mime||a.name)?'📄':/docx?/i.test(a.name)?'📝':/xlsx?|csv/i.test(a.name)?'📊':/mp[34]|wav|m4a/i.test(a.name)?'🎵':/mp4|mov|webm/i.test(a.name)?'🎬':'📎'}</div>`;
+        const rm = removeHandler ? `<button type="button" onclick="${removeHandler}(${i})" title="Remove" style="background:none;border:none;color:#94A3B8;font-size:18px;cursor:pointer;padding:2px 8px;line-height:1">×</button>` : '';
+        return `<div style="display:flex;align-items:center;gap:10px;padding:6px 10px;border:1px solid #E2E8F0;border-radius:8px;background:#F8FAFC">
+          ${thumb}
+          <div style="flex:1;min-width:0">
+            <a href="${escH(a.url)}" target="_blank" rel="noopener" style="display:block;font-size:13px;font-weight:500;color:#1F2937;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escH(a.name||'attachment')}</a>
+            <div style="font-size:11px;color:#94A3B8">${a.mime||''}</div>
+          </div>
+          ${rm}
+        </div>`;
+      }).join('');
+      return `<div style="display:flex;flex-direction:column;gap:6px;margin:8px 0">${rows}</div>`;
+    }
+
     function initializeData() {
       if (!localStorage.getItem('initialized')) {
         // Tenants start blank — only the owner gets the legacy Joy seed data.
@@ -4605,11 +4724,73 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         setTimeout(checkModelHealth, 2000);
         if (typeof _initLiveNotifications === 'function') setTimeout(_initLiveNotifications, 1500);
       } else {
-        errEl.textContent = 'Incorrect password. Default password is help2024';
+        // Never reveal the default password here — anyone watching the screen
+        // could read it. Direct them to the recovery flow instead.
+        errEl.innerHTML = 'Incorrect password. <a href="#" onclick="showForgotPwModal();return false;" style="color:var(--brand-primary);text-decoration:underline;font-weight:600">Forgot password?</a>';
         errEl.style.display = 'block';
         document.getElementById('password-input').value = '';
         document.getElementById('password-input').focus();
       }
+    }
+
+    // ── Forgot password recovery ───────────────────────────────────────────
+    // Two-step modal: verify master reset code, then set a new password. The
+    // master code is never echoed back so a shoulder-surfer can't learn it.
+    function showForgotPwModal() {
+      document.getElementById('forgot-pw-modal')?.remove();
+      const modal = document.createElement('div');
+      modal.id = 'forgot-pw-modal';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:1001;display:flex;align-items:center;justify-content:center;padding:20px';
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:14px;padding:28px 30px;width:420px;max-width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.25)">
+          <h2 style="font-size:19px;font-weight:700;margin:0 0 6px">Reset password</h2>
+          <p style="font-size:13px;color:#64748B;margin:0 0 18px;line-height:1.55">Enter the master reset code that was set when this dashboard was configured. You'll then set a new password.</p>
+          <input type="password" id="fp-code" placeholder="Master reset code" class="form-input" style="margin-bottom:10px" autocomplete="off">
+          <div id="fp-new-block" style="display:none">
+            <input type="password" id="fp-new" placeholder="New password" class="form-input" style="margin-bottom:10px" autocomplete="new-password">
+            <input type="password" id="fp-confirm" placeholder="Confirm new password" class="form-input" style="margin-bottom:10px" autocomplete="new-password">
+          </div>
+          <div id="fp-error" style="color:var(--error);font-size:13px;margin-bottom:10px;display:none"></div>
+          <button id="fp-submit" class="btn-primary" onclick="submitForgotPw()" style="width:100%">Verify code</button>
+          <button onclick="document.getElementById('forgot-pw-modal').remove()" style="width:100%;padding:11px;margin-top:8px;background:none;border:1px solid var(--gray-300);border-radius:8px;cursor:pointer;font-size:14px">Cancel</button>
+        </div>`;
+      document.body.appendChild(modal);
+      setTimeout(() => document.getElementById('fp-code')?.focus(), 50);
+      document.getElementById('fp-code').addEventListener('keydown', e => {
+        if (e.key === 'Enter') { e.preventDefault(); submitForgotPw(); }
+      });
+    }
+    function submitForgotPw() {
+      const codeEl = document.getElementById('fp-code');
+      const newBlock = document.getElementById('fp-new-block');
+      const submitBtn = document.getElementById('fp-submit');
+      const errEl = document.getElementById('fp-error');
+      errEl.style.display = 'none';
+      // Step 1 — verify the master code.
+      if (newBlock.style.display === 'none') {
+        if ((codeEl.value || '').trim() !== 'HELPRESET') {
+          errEl.textContent = 'Master reset code is incorrect.';
+          errEl.style.display = 'block';
+          codeEl.value = '';
+          return;
+        }
+        codeEl.disabled = true;
+        newBlock.style.display = 'block';
+        submitBtn.textContent = 'Set new password';
+        setTimeout(() => document.getElementById('fp-new')?.focus(), 50);
+        return;
+      }
+      // Step 2 — capture the new password.
+      const nw = document.getElementById('fp-new').value;
+      const conf = document.getElementById('fp-confirm').value;
+      if (nw.length < 4)  { errEl.textContent = 'New password must be at least 4 characters.'; errEl.style.display = 'block'; return; }
+      if (nw !== conf)    { errEl.textContent = 'Passwords do not match.'; errEl.style.display = 'block'; return; }
+      const stored = JSON.parse(localStorage.getItem('settings')) || DEFAULT_SETTINGS;
+      stored.password = nw;
+      setData('settings', stored);
+      document.getElementById('forgot-pw-modal').remove();
+      const loginErr = document.getElementById('login-error');
+      if (loginErr) { loginErr.style.color = '#10B981'; loginErr.textContent = 'Password reset. Sign in with your new password.'; loginErr.style.display = 'block'; }
     }
 
     // Pull all data from PocketBase into this device's localStorage.
@@ -6233,14 +6414,39 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
 
     function openAddIdeaModal(defaultStage) {
       const ex = document.getElementById('add-idea-modal'); if (ex) ex.remove();
+      window._ideaAttachments = [];
       document.body.appendChild(buildModal('add-idea-modal', '💡 New Business Idea', ideaFormHTML(null, defaultStage||'Idea')));
+      setTimeout(() => _wireDragDrop('if-desc-wrap', 'if-drop-overlay', _ideaAddFile), 50);
     }
     function openIdeaDetail(id) {
       const ideas = getData('ideas');
       const idea = ideas.find(i => i.id === id);
       if (!idea) return;
       const ex = document.getElementById('idea-detail-modal'); if (ex) ex.remove();
+      window._ideaAttachments = (idea.attachments || []).slice();
       document.body.appendChild(buildModal('idea-detail-modal', idea.icon + ' ' + idea.name, ideaDetailHTML(idea)));
+      setTimeout(() => _wireDragDrop('if-desc-wrap', 'if-drop-overlay', _ideaAddFile), 50);
+    }
+    async function _ideaAddFile(file) {
+      const status = document.getElementById('if-upload-status');
+      if (!file) return;
+      if (file.size > 50 * 1024 * 1024) { if (status) status.innerHTML = '<span style="color:var(--error)">File too large (50MB max)</span>'; return; }
+      if (status) status.innerHTML = '⏳ Uploading ' + file.name + '…';
+      try {
+        const att = await uploadAttachment(file);
+        window._ideaAttachments = window._ideaAttachments || [];
+        window._ideaAttachments.push(att);
+        document.getElementById('if-attachments').innerHTML = renderAttachmentList(window._ideaAttachments, '_ideaRemoveAttachment');
+        if (status) status.innerHTML = '<span style="color:#10B981">✓ ' + file.name + ' attached</span>';
+        setTimeout(() => { if (status) status.innerHTML = ''; }, 3000);
+      } catch (e) {
+        if (status) status.innerHTML = '<span style="color:var(--error)">⚠ ' + e.message + '</span>';
+      }
+    }
+    function _ideaRemoveAttachment(idx) {
+      window._ideaAttachments = (window._ideaAttachments || []).filter((_,i) => i !== idx);
+      const el = document.getElementById('if-attachments');
+      if (el) el.innerHTML = renderAttachmentList(window._ideaAttachments, '_ideaRemoveAttachment');
     }
 
     function ideaFormHTML(idea, defaultStage) {
@@ -6251,7 +6457,10 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
           <div class="form-group"><label class="form-label">Business Name *</label>
             <input type="text" id="if-name" class="form-input" style="margin:0" value="${idea?.name||''}" placeholder="e.g. The Green Plate"></div>
           <div class="form-group"><label class="form-label">Icon (emoji)</label>
-            <input type="text" id="if-icon" class="form-input" style="margin:0" value="${idea?.icon||'🏢'}" maxlength="4"></div>
+            <div style="display:flex;gap:6px">
+              <input type="text" id="if-icon" class="form-input" style="margin:0;flex:1" value="${idea?.icon||'🏢'}" maxlength="4">
+              <button type="button" onclick="openEmojiPicker('if-icon', this)" class="btn btn-outline" style="padding:8px 12px;font-size:13px" title="Pick emoji">😀</button>
+            </div></div>
         </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Stage</label>
@@ -6259,8 +6468,23 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
           <div class="form-group"><label class="form-label">Tagline</label>
             <input type="text" id="if-tagline" class="form-input" style="margin:0" value="${idea?.tagline||''}" placeholder="One-line pitch"></div>
         </div>
-        <div class="form-group"><label class="form-label">Description</label>
-          <textarea id="if-desc" class="form-textarea">${idea?.description||''}</textarea></div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            <button type="button" onclick="document.getElementById('if-camera').click()" class="btn btn-outline" style="padding:7px 12px;font-size:12.5px">📷 Take photo</button>
+            <button type="button" onclick="document.getElementById('if-file').click()" class="btn btn-outline" style="padding:7px 12px;font-size:12.5px">📎 Upload file</button>
+            <button type="button" onclick="openEmojiPicker('if-desc', this)" class="btn btn-outline" style="padding:7px 12px;font-size:12.5px">😀 Emoji</button>
+            <span style="font-size:12px;color:#94A3B8;align-self:center">…or drag a file onto the description</span>
+          </div>
+          <input type="file" id="if-camera" accept="image/*" capture="environment" style="display:none" onchange="if(this.files[0])_ideaAddFile(this.files[0]);this.value=''">
+          <input type="file" id="if-file" style="display:none" onchange="if(this.files[0])_ideaAddFile(this.files[0]);this.value=''">
+          <div id="if-desc-wrap" style="position:relative">
+            <textarea id="if-desc" class="form-textarea">${idea?.description||''}</textarea>
+            <div id="if-drop-overlay" style="display:none;position:absolute;inset:0;background:rgba(30,91,192,0.10);border:2px dashed var(--brand-primary);border-radius:8px;align-items:center;justify-content:center;color:var(--brand-primary);font-size:15px;font-weight:600;pointer-events:none">Drop file to attach</div>
+          </div>
+          <div id="if-upload-status" style="font-size:12px;color:var(--gray-500);margin-top:6px;min-height:16px"></div>
+          <div id="if-attachments">${renderAttachmentList(window._ideaAttachments || [], '_ideaRemoveAttachment')}</div>
+        </div>
         <div class="form-row">
           <div class="form-group"><label class="form-label">Startup Cost ($)</label>
             <input type="number" id="if-cost" class="form-input" style="margin:0" value="${idea?.financials?.startupCost||0}"></div>
@@ -6323,12 +6547,14 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       if (!name) { alert('Business name is required.'); return; }
       const ideas = getData('ideas');
       const today = new Date().toISOString().split('T')[0];
+      const attachments = (window._ideaAttachments || []).slice();
       const data = {
         name, icon: document.getElementById('if-icon').value.trim()||'🏢',
         stage: document.getElementById('if-stage').value,
         tagline: document.getElementById('if-tagline').value.trim(),
         description: document.getElementById('if-desc').value.trim(),
         notes: document.getElementById('if-notes').value.trim(),
+        attachments,
         financials: { startupCost: parseFloat(document.getElementById('if-cost').value)||0, projectedRevenue: document.getElementById('if-rev').value.trim(), notes: '' },
         lastUpdated: today
       };
@@ -6343,6 +6569,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         closeModal('add-idea-modal');
       }
       setData('ideas', ideas);
+      window._ideaAttachments = [];
       renderIdeasKanban(); updateDashboard();
     }
     function saveIdeaField(id, field, inputId) {
@@ -6363,14 +6590,22 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       setTimeout(() => btn.textContent = 'Save', 1500);
     }
     function deleteIdea(id) {
-      if (!confirm('Delete this idea? Cannot be undone.')) return;
       let ideas = getData('ideas');
       const idea = ideas.find(i => i.id === id);
-      ideas = ideas.filter(i => i.id !== id);
-      setData('ideas', ideas);
-      if (idea) logActivity('idea', 'Deleted idea: ' + idea.name);
+      if (!idea) return;
+      if (!confirm('Delete this idea?')) return;
+      const idx = ideas.findIndex(i => i.id === id);
+      setData('ideas', ideas.filter(i => i.id !== id));
+      logActivity('idea', 'Deleted idea: ' + idea.name);
       closeModal('idea-detail-modal');
       renderIdeasKanban(); updateDashboard();
+      showUndoToast('Idea deleted', () => {
+        const current = getData('ideas') || [];
+        current.splice(Math.min(idx, current.length), 0, idea);
+        setData('ideas', current);
+        renderIdeasKanban(); updateDashboard();
+        showToast('Idea restored', 'success');
+      });
     }
 
     // ── NOTES ─────────────────────────────────────────────────────
@@ -6491,6 +6726,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
             <h1 style="font-size:28px;font-weight:700;color:#0F172A;margin:6px 0 18px 0;line-height:1.25">${note.subject || '(Untitled)'}</h1>
             ${tagPills?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px">${tagPills}</div>`:''}
             ${bodyHtml}
+            ${(note.attachments && note.attachments.length) ? `<div style="margin-top:28px"><div style="font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px">Attachments (${note.attachments.length})</div>${renderAttachmentList(note.attachments)}</div>` : ''}
           </div>
         </div>`;
       document.body.appendChild(overlay);
@@ -6552,6 +6788,8 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       const isEdit = !!note;
       const today = new Date().toISOString().split('T')[0];
       const modalId = 'note-modal';
+      // Track this modal's attachments separately from the saved note until Save.
+      window._noteAttachments = (note?.attachments || []).slice();
       const html = `
         <div class="form-row">
           <div class="form-group" style="flex:2"><label class="form-label">Subject *</label>
@@ -6567,8 +6805,23 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
           <div class="form-group" style="flex:2"><label class="form-label">Tags <span style="color:#999;font-weight:400">(comma-separated)</span></label>
             <input type="text" id="note-tags" class="form-input" style="margin:0" value="${note?.tags || ''}" placeholder="e.g. branding, launch-plan, follow-up"></div>
         </div>
-        <div class="form-group"><label class="form-label">Note Content</label>
-          <textarea id="note-body" class="form-textarea" style="min-height:500px;font-family:inherit;font-size:16px;line-height:2">${note?.body || ''}</textarea></div>
+        <div class="form-group">
+          <label class="form-label">Note Content</label>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+            <button type="button" onclick="document.getElementById('note-camera').click()" class="btn btn-outline" style="padding:7px 12px;font-size:12.5px">📷 Take photo</button>
+            <button type="button" onclick="document.getElementById('note-file').click()" class="btn btn-outline" style="padding:7px 12px;font-size:12.5px">📎 Upload file</button>
+            <button type="button" id="note-emoji-btn" onclick="openEmojiPicker('note-body', this)" class="btn btn-outline" style="padding:7px 12px;font-size:12.5px">😀 Emoji</button>
+            <span style="font-size:12px;color:#94A3B8;align-self:center">…or drag a file onto the textarea</span>
+          </div>
+          <input type="file" id="note-camera" accept="image/*" capture="environment" style="display:none" onchange="if(this.files[0])_noteAddFile(this.files[0]);this.value=''">
+          <input type="file" id="note-file" style="display:none" onchange="if(this.files[0])_noteAddFile(this.files[0]);this.value=''">
+          <div id="note-body-wrap" style="position:relative">
+            <textarea id="note-body" class="form-textarea" style="min-height:380px;font-family:inherit;font-size:16px;line-height:2">${note?.body || ''}</textarea>
+            <div id="note-drop-overlay" style="display:none;position:absolute;inset:0;background:rgba(30,91,192,0.10);border:2px dashed var(--brand-primary);border-radius:8px;align-items:center;justify-content:center;color:var(--brand-primary);font-size:15px;font-weight:600;pointer-events:none">Drop file to attach</div>
+          </div>
+          <div id="note-upload-status" style="font-size:12px;color:var(--gray-500);margin-top:6px;min-height:16px"></div>
+          <div id="note-attachments">${renderAttachmentList(window._noteAttachments, '_noteRemoveAttachment')}</div>
+        </div>
         <input type="hidden" id="note-id" value="${note?.id || ''}">
         <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px">
           ${isEdit ? `<button onclick="deleteNote('${note.id}')" style="padding:10px 14px;background:none;border:1px solid var(--error);color:var(--error);border-radius:8px;cursor:pointer;font-weight:600">Delete</button>` : ''}
@@ -6578,6 +6831,43 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       const modal = buildModal(modalId, isEdit ? 'Edit Note' : 'New Note', html);
       document.body.appendChild(modal);
       setTimeout(() => document.getElementById('note-subject')?.focus(), 50);
+      _wireDragDrop('note-body-wrap', 'note-drop-overlay', _noteAddFile);
+    }
+    // Hook drag-and-drop on a wrapper so dropped files are added as attachments.
+    function _wireDragDrop(wrapId, overlayId, addFn) {
+      const wrap = document.getElementById(wrapId);
+      const overlay = document.getElementById(overlayId);
+      if (!wrap || !overlay) return;
+      let depth = 0;
+      wrap.addEventListener('dragenter', e => { e.preventDefault(); depth++; overlay.style.display = 'flex'; });
+      wrap.addEventListener('dragover',  e => { e.preventDefault(); });
+      wrap.addEventListener('dragleave', e => { depth--; if (depth <= 0) { depth = 0; overlay.style.display = 'none'; } });
+      wrap.addEventListener('drop', e => {
+        e.preventDefault(); depth = 0; overlay.style.display = 'none';
+        const f = e.dataTransfer?.files?.[0];
+        if (f) addFn(f);
+      });
+    }
+    async function _noteAddFile(file) {
+      const status = document.getElementById('note-upload-status');
+      if (!file) return;
+      if (file.size > 50 * 1024 * 1024) { if (status) status.innerHTML = '<span style="color:var(--error)">File too large (50MB max)</span>'; return; }
+      if (status) status.innerHTML = '⏳ Uploading ' + file.name + '…';
+      try {
+        const att = await uploadAttachment(file);
+        window._noteAttachments = window._noteAttachments || [];
+        window._noteAttachments.push(att);
+        document.getElementById('note-attachments').innerHTML = renderAttachmentList(window._noteAttachments, '_noteRemoveAttachment');
+        if (status) status.innerHTML = '<span style="color:#10B981">✓ ' + file.name + ' attached</span>';
+        setTimeout(() => { if (status) status.innerHTML = ''; }, 3000);
+      } catch (e) {
+        if (status) status.innerHTML = '<span style="color:var(--error)">⚠ ' + e.message + '</span>';
+      }
+    }
+    function _noteRemoveAttachment(idx) {
+      window._noteAttachments = (window._noteAttachments || []).filter((_,i) => i !== idx);
+      const el = document.getElementById('note-attachments');
+      if (el) el.innerHTML = renderAttachmentList(window._noteAttachments, '_noteRemoveAttachment');
     }
 
     function saveNote() {
@@ -6587,29 +6877,41 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       const category = document.getElementById('note-category').value;
       const tags = document.getElementById('note-tags').value.trim();
       const body = document.getElementById('note-body').value.trim();
+      const attachments = (window._noteAttachments || []).slice();
       if (!subject) { alert('Subject is required.'); return; }
       const notes = getData('notes') || [];
       if (id) {
         const idx = notes.findIndex(n => n.id === id);
         if (idx > -1) {
-          notes[idx] = { ...notes[idx], subject, date, category, tags, body, updatedAt: Date.now() };
+          notes[idx] = { ...notes[idx], subject, date, category, tags, body, attachments, updatedAt: Date.now() };
         }
       } else {
-        notes.push({ id: generateId(), subject, date, category, tags, body, createdAt: Date.now(), updatedAt: Date.now() });
+        notes.push({ id: generateId(), subject, date, category, tags, body, attachments, createdAt: Date.now(), updatedAt: Date.now() });
       }
       setData('notes', notes);
+      window._noteAttachments = [];
       closeModal('note-modal');
       renderNotes();
       showToast(id ? 'Note updated' : 'Note saved', 'success');
     }
 
     function deleteNote(id) {
-      if (!confirm('Delete this note? Cannot be undone.')) return;
-      const notes = getData('notes').filter(n => n.id !== id);
-      setData('notes', notes);
+      const notes = getData('notes') || [];
+      const note = notes.find(n => n.id === id);
+      if (!note) return;
+      if (!confirm('Delete this note?')) return;
+      const idx = notes.findIndex(n => n.id === id);
+      setData('notes', notes.filter(n => n.id !== id));
       closeModal('note-modal');
       renderNotes();
-      showToast('Note deleted');
+      // Restore by re-inserting at the original index so order is preserved.
+      showUndoToast('Note deleted', () => {
+        const current = getData('notes') || [];
+        current.splice(Math.min(idx, current.length), 0, note);
+        setData('notes', current);
+        renderNotes();
+        showToast('Note restored', 'success');
+      });
     }
 
     // ── BUSINESS FILE (Audit-ready document archive) ──────────────────
@@ -7233,11 +7535,20 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
     }
 
     function bfDelete(id) {
-      if (!confirm('Delete this document from your Business File? This cannot be undone.')) return;
-      const docs = (getData('businessFile')||[]).filter(d => d.id !== id);
-      setData('businessFile', docs);
+      const docs = getData('businessFile') || [];
+      const doc = docs.find(d => d.id === id);
+      if (!doc) return;
+      if (!confirm('Delete this document from your Business File?')) return;
+      const idx = docs.findIndex(d => d.id === id);
+      setData('businessFile', docs.filter(d => d.id !== id));
       renderBusinessFile();
-      showToast('Document removed');
+      showUndoToast('Document deleted', () => {
+        const current = getData('businessFile') || [];
+        current.splice(Math.min(idx, current.length), 0, doc);
+        setData('businessFile', current);
+        renderBusinessFile();
+        showToast('Document restored', 'success');
+      });
     }
 
     // Send a Business File doc to a client's portal — opens the same modal used
@@ -12137,11 +12448,20 @@ Write a complete brief they can send to a Fiverr designer: style, colors, must-h
       renderPersonalFiles();
     }
     function _pfDelete(id) {
-      if (!confirm('Delete this file? The actual file stays on the server but is removed from your list.')) return;
-      const files = (getData('personalFiles') || []).filter(f => f.id !== id);
-      setData('personalFiles', files);
+      const files = getData('personalFiles') || [];
+      const file = files.find(f => f.id === id);
+      if (!file) return;
+      if (!confirm('Remove this file from your list? (The file itself stays on the server.)')) return;
+      const idx = files.findIndex(f => f.id === id);
+      setData('personalFiles', files.filter(f => f.id !== id));
       renderPersonalFiles();
-      showToast('File removed from list', 'warn');
+      showUndoToast('File removed', () => {
+        const current = getData('personalFiles') || [];
+        current.splice(Math.min(idx, current.length), 0, file);
+        setData('personalFiles', current);
+        renderPersonalFiles();
+        showToast('File restored', 'success');
+      });
     }
     // ── END PERSONAL FILES ────────────────────────────────────────────────────
 

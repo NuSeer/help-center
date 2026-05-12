@@ -7078,6 +7078,42 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
 
     function bfFilter(type) { window._bfActiveType = type; renderBusinessFile(); }
 
+    // ── Styled text-prompt modal (replaces window.prompt) ────────────────────
+    // Returns a Promise that resolves to the entered string, or null on cancel.
+    // Used by folder Create / Rename / Move-modal "+ New folder" so the UX
+    // matches the rest of the app instead of the native browser pop-up.
+    function askText(opts) {
+      opts = opts || {};
+      return new Promise(resolve => {
+        document.getElementById('ask-text-modal')?.remove();
+        const m = document.createElement('div');
+        m.id = 'ask-text-modal';
+        m.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.55);z-index:10002;display:flex;align-items:center;justify-content:center;padding:20px';
+        const escA = s => String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+        m.innerHTML = `
+          <div style="background:#fff;border-radius:14px;padding:24px 26px;width:400px;max-width:100%;box-shadow:0 24px 60px rgba(0,0,0,0.25)">
+            <h2 style="font-size:17px;font-weight:700;margin:0 0 4px">${escA(opts.title || 'Enter a value')}</h2>
+            ${opts.message ? `<p style="font-size:13px;color:#64748B;margin:0 0 14px;line-height:1.5">${escA(opts.message)}</p>` : '<div style="margin-bottom:14px"></div>'}
+            <input type="text" id="ask-text-input" class="form-input" style="margin:0 0 14px;width:100%" placeholder="${escA(opts.placeholder||'')}" value="${escA(opts.value||'')}" maxlength="${opts.maxLength || 60}">
+            <div style="display:flex;gap:8px;justify-content:flex-end">
+              <button type="button" id="ask-text-cancel" class="btn btn-outline" style="padding:8px 14px;font-size:13px">Cancel</button>
+              <button type="button" id="ask-text-ok" class="btn btn-solid" style="padding:8px 14px;font-size:13px">${escA(opts.okLabel || 'OK')}</button>
+            </div>
+          </div>`;
+        document.body.appendChild(m);
+        const input = document.getElementById('ask-text-input');
+        const cleanup = val => { m.remove(); resolve(val); };
+        document.getElementById('ask-text-cancel').onclick = () => cleanup(null);
+        document.getElementById('ask-text-ok').onclick = () => cleanup((input.value || '').trim());
+        m.addEventListener('click', e => { if (e.target === m) cleanup(null); });
+        input.addEventListener('keydown', e => {
+          if (e.key === 'Enter')  { e.preventDefault(); cleanup((input.value || '').trim()); }
+          if (e.key === 'Escape') { e.preventDefault(); cleanup(null); }
+        });
+        setTimeout(() => { input.focus(); input.select(); }, 50);
+      });
+    }
+
     // ── Folders (shared, scope-aware) ────────────────────────────────────────
     // Groups Business File and Personal Files items into user-defined folders.
     // Scope is 'bf' (businessFile) or 'pf' (personalFiles). Folders themselves
@@ -7098,8 +7134,15 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         .sort((a,b) => a.localeCompare(b));
       setData(cfg.folderKey, uniq);
     }
-    function _folderNew(scope) {
-      const name = (prompt('New folder name:') || '').trim().slice(0, 60);
+    async function _folderNew(scope) {
+      const raw = await askText({
+        title: 'New folder',
+        message: 'Group related ' + _FOLDER_CFG[scope].label.toLowerCase() + ' items together.',
+        placeholder: 'e.g. Project Alpha',
+        okLabel: 'Create'
+      });
+      if (raw == null) return;
+      const name = raw.slice(0, 60);
       if (!name) return;
       const folders = _foldersGet(scope);
       if (folders.some(f => f.toLowerCase() === name.toLowerCase())) {
@@ -7109,8 +7152,14 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       _foldersSet(scope, folders);
       _FOLDER_CFG[scope].render();
     }
-    function _folderRename(scope, oldName) {
-      const newName = (prompt('Rename folder:', oldName) || '').trim().slice(0, 60);
+    async function _folderRename(scope, oldName) {
+      const raw = await askText({
+        title: 'Rename folder',
+        value: oldName,
+        okLabel: 'Rename'
+      });
+      if (raw == null) return;
+      const newName = raw.slice(0, 60);
       if (!newName || newName === oldName) return;
       const folders = _foldersGet(scope);
       if (folders.some(f => f.toLowerCase() === newName.toLowerCase() && f !== oldName)) {
@@ -7253,7 +7302,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         <div style="padding:16px 22px">
           <label class="form-label">Folder</label>
           <select id="folder-move-select" class="form-input" style="margin:0 0 10px">${opts}</select>
-          <button type="button" onclick="(function(){var v=(prompt('New folder name:')||'').trim();if(!v)return;var s=document.getElementById('folder-move-select');var o=document.createElement('option');o.value=v;o.textContent=v;o.selected=true;s.appendChild(o);})()" class="btn btn-outline" style="padding:6px 12px;font-size:12.5px">+ New folder</button>
+          <button type="button" onclick="_folderMoveNewFolder()" class="btn btn-outline" style="padding:6px 12px;font-size:12.5px">+ New folder</button>
         </div>
         <div style="padding:12px 22px;border-top:1px solid #E2E8F0;background:#F8FAFC;display:flex;justify-content:flex-end;gap:8px">
           <button onclick="document.getElementById('${modalId}').remove()" class="btn btn-outline" style="padding:8px 16px">Cancel</button>
@@ -7262,6 +7311,24 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       </div>`;
       overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
       document.body.appendChild(overlay);
+    }
+    async function _folderMoveNewFolder() {
+      const raw = await askText({
+        title: 'New folder',
+        placeholder: 'e.g. Project Alpha',
+        okLabel: 'Create'
+      });
+      if (raw == null) return;
+      const v = raw.slice(0, 60);
+      if (!v) return;
+      const sel = document.getElementById('folder-move-select');
+      if (!sel) return;
+      // If a matching option already exists, just select it.
+      const match = Array.from(sel.options).find(o => o.value.toLowerCase() === v.toLowerCase());
+      if (match) { match.selected = true; return; }
+      const o = document.createElement('option');
+      o.value = v; o.textContent = v; o.selected = true;
+      sel.appendChild(o);
     }
     function _folderMoveApply(scope, id) {
       const sel = document.getElementById('folder-move-select');

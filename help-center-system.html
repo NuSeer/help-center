@@ -12824,18 +12824,31 @@ Then provide the full detailed analysis in markdown below that JSON block.`;
       if (!resultEl) return;
       resultEl.style.display = 'block';
       resultEl.innerHTML = '<div style="color:var(--brand-primary);font-weight:600;padding:12px">✨ Optimizing your resume for this role… (this may take 30–60 seconds)</div>';
-      const sysPrompt = `You are an expert resume writer and ATS optimization specialist. Your job is to rewrite a candidate's resume so it:
-1. Naturally incorporates high-impact keywords from the job description
-2. Reorders experience bullets to lead with the most relevant accomplishments
-3. Quantifies achievements wherever possible
-4. Preserves all truthful information — never fabricate experience
-5. Maintains a clean, professional format using markdown
-6. Is optimized to pass ATS (Applicant Tracking System) screening
+      const sysPrompt = `You are an expert resume writer and ATS optimization specialist. ONE RULE OVERRIDES EVERYTHING ELSE: never add a skill, tool, system, certification, responsibility, or experience that is not already in the candidate's resume. If the job description requires something the candidate doesn't have, you do NOT add it — full stop.
 
-Rewrite the FULL resume — do not abbreviate or skip sections. Present it ready to copy and use.`;
+WHAT YOU MAY DO (rewriting only):
+- Reword existing bullets with stronger action verbs and clearer impact
+- Reorder bullets and sections so the most relevant existing items appear first
+- Mirror the job description's keyword phrasing ONLY when the resume already shows the same underlying skill (e.g. resume says "answered customer questions about billing" + JD says "claims inquiries" → fine to use "billing inquiries"; resume never mentions billing → NOT fine)
+- Quantify achievements that are already on the resume (numbers, %, scale) only if the number is stated or is a faithful interpretation of what's truly there
+- Tighten language, fix grammar, fix formatting
+
+WHAT YOU MUST NOT DO (no exceptions):
+- Add a skill, technology, tool, software, or system not on the resume (e.g. don't write "processed insurance claims" if the resume never mentions billing/claims)
+- Invent metrics, dollar amounts, team sizes, or timeframes that aren't supported
+- Translate a vaguely related task into a specific JD requirement (don't reword "answered phones" as "managed multi-line PBX system" unless the resume actually says so)
+- Add new bullets, new responsibilities, or new job functions
+- Add years of experience, education, certifications, or credentials not on the resume
+- Stretch the meaning of an existing bullet to cover a JD keyword that isn't really represented
+
+If the job requires meaningful things the resume lacks, end the response with a clearly labeled separate section:
+## Skills to Consider Adding (NOT in the resume above)
+- list the gaps here so the candidate knows what to work on — never weave them into the resume body.
+
+Output the FULL optimized resume in clean markdown (don't abbreviate sections), then the optional Skills-to-Consider section if relevant.`;
       const messages = [
         { role: 'system', content: sysPrompt },
-        { role: 'user', content: `Please optimize my resume for this job.\n\nMY RESUME:\n${resume}\n\n---\n\nJOB DESCRIPTION:\n${job}\n\n---\n\nProvide the full optimized resume in clean markdown format.` }
+        { role: 'user', content: `Please optimize my resume for this job. CRITICAL: do not add anything that isn't already in my resume — only rephrase, reorder, and quantify what's truly there. If the job needs something I don't have, list those gaps separately at the end; never fold them into the resume body.\n\nMY RESUME:\n${resume}\n\n---\n\nJOB DESCRIPTION:\n${job}\n\n---\n\nProvide the full optimized resume in clean markdown format, followed by a "Skills to Consider Adding" list only if there are real gaps.` }
       ];
       try {
         let acc = '';
@@ -12860,17 +12873,19 @@ Rewrite the FULL resume — do not abbreviate or skip sections. Present it ready
       if (!resultEl) return;
       resultEl.style.display = 'block';
       resultEl.innerHTML = '<div style="color:var(--brand-primary);font-weight:600;padding:12px">📝 Writing your cover letter…</div>';
-      const sysPrompt = `You are an expert cover letter writer. Write a compelling, personalized cover letter that:
-1. Opens with a strong hook that shows genuine interest in the specific role and company
-2. Highlights 2–3 of the candidate's strongest qualifications that match the job requirements
-3. Uses specific examples and metrics from the resume where possible
-4. Addresses the key requirements from the job description directly
+      const sysPrompt = `You are an expert cover letter writer. ONE RULE OVERRIDES EVERYTHING ELSE: never claim a skill, experience, tool, or accomplishment that is not on the candidate's resume. Only use examples and metrics that are truly there.
+
+Write a compelling, personalized cover letter that:
+1. Opens with a strong hook showing genuine interest in the specific role and company
+2. Highlights 2–3 of the candidate's strongest ACTUAL qualifications that match the job (drawn from the resume only)
+3. Uses specific examples and metrics that come from the resume — never invent numbers, durations, or duties
+4. Addresses key requirements from the job description ONLY when the resume actually supports them; if the resume doesn't support a requirement, focus on related transferable strengths instead of fabricating
 5. Closes with a confident, professional call to action
-6. Is 3–4 paragraphs, concise, and ready to send
-7. Maintains a professional yet personable tone
+6. Is 3–4 paragraphs, concise, ready to send
+7. Professional yet personable tone
 8. Does NOT start with "I am writing to apply for..."
 
-Format: Write the letter in clean markdown, ready to copy directly into an application.`;
+Format: clean markdown, ready to copy directly into an application.`;
       const messages = [
         { role: 'system', content: sysPrompt },
         { role: 'user', content: `Write a cover letter for this job application.\n\nMY RESUME:\n${resume}\n\n---\n\nJOB DESCRIPTION:\n${job}\n\n---\n\nWrite a compelling, job-specific cover letter I can use immediately.` }

@@ -1,0 +1,39 @@
+# ── Secrets — NEVER commit ───────────────────────────────────────────
+.env
+.env.*
+!.env.example
+*.env
+API-Keys-Inventory.doc
+*credential*
+*secret*
+*api-key*
+*api_key*
+
+# ── Local editor / agent ─────────────────────────────────────────────
+.claude/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── OS noise ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Dependencies ─────────────────────────────────────────────────────
+node_modules/
+
+# ── Backup snapshots — keep locally, never push ──────────────────────
+*.bak
+*.bak-*
+*.backup
+*.backup-*
+*.pre-refactor-*
+*.html.backup-*
+
+# ── Logs / scrapes ───────────────────────────────────────────────────
+*.log
+hts-log.txt
+hts-cache/
+web.goodnotes.com/

@@ -14706,6 +14706,68 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       return (text || '').replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
     }
 
+    // Stream Gemini 2.5 Flash for any AI generator. Shared by every callsite
+    // that previously hit Groq directly (deep dives, brand wizard, business
+    // tools, 10x apply, etc.) so they all benefit from Gemini's higher daily
+    // cap + 1M-token context. Returns the final text on success, or null when
+    // there's no Gemini key configured / call failed — caller falls back to
+    // Groq in that case.
+    async function _aiStreamGeminiOrNull(messages, onTextChunk, opts) {
+      opts = opts || {};
+      const cfg = JSON.parse(localStorage.getItem('settings') || '{}');
+      const geminiKey = cfg.geminiApiKey || '';
+      if (!geminiKey) return null;
+      try {
+        let systemInstruction = null;
+        const contents = [];
+        for (const m of (messages || [])) {
+          if (m.role === 'system') { systemInstruction = { parts: [{ text: m.content }] }; continue; }
+          contents.push({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: String(m.content || '') }] });
+        }
+        const body = {
+          contents,
+          generationConfig: {
+            temperature: opts.temperature == null ? 0.4 : opts.temperature,
+            maxOutputTokens: opts.maxTokens || 4096
+          }
+        };
+        if (systemInstruction) body.systemInstruction = systemInstruction;
+        const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': geminiKey },
+          body: JSON.stringify(body)
+        });
+        if (!r.ok) {
+          const t = await r.text().catch(() => '');
+          console.warn('[aiStreamGemini] HTTP ' + r.status + ': ' + t.slice(0, 200) + ' — falling back to Groq');
+          return null;
+        }
+        const reader = r.body.getReader(), dec = new TextDecoder();
+        let full = '', sseBuffer = '';
+        const handle = (line) => {
+          if (!line.startsWith('data: ')) return;
+          const d = line.slice(6);
+          try {
+            const ev = JSON.parse(d);
+            const dt = ev.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
+            if (dt) { full += dt; if (onTextChunk) onTextChunk(dt, full); }
+          } catch {}
+        };
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) { if (sseBuffer) handle(sseBuffer); break; }
+          sseBuffer += dec.decode(value, { stream: true });
+          const lines = sseBuffer.split('\n');
+          sseBuffer = lines.pop() || '';
+          for (const line of lines) handle(line);
+        }
+        return full || null;
+      } catch (e) {
+        console.warn('[aiStreamGemini] error — falling back to Groq:', e.message);
+        return null;
+      }
+    }
+
     // Render markdown to styled HTML using marked.js
     function mdRender(text) {
       const clean = cleanGroqResponse(text || '');
@@ -16542,29 +16604,36 @@ What partnerships, complementary businesses, or growth angles could expand this 
       let fullText = '';
       outputEl.innerHTML = '';
       try {
-        const modelToUse = cfg.aiModel || GROQ_DEFAULT_MODEL;
-        console.log('[libraryAiDeepDive] requesting (non-streaming) model=' + modelToUse);
-        const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method:'POST',
-          headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
-          body: JSON.stringify({
-            model: modelToUse,
-            messages:[{role:'system',content:systemPrompt},{role:'user',content:userPrompt}],
-            max_tokens:4096, temperature:0.6
-          })
-        });
-        if (!resp.ok) {
-          const errText = await resp.text();
-          let detail = errText.slice(0,400);
-          try { detail = JSON.parse(errText).error?.message || detail; } catch {}
-          console.error('[libraryAiDeepDive] API error:', resp.status, errText);
-          throw new Error('Groq ' + resp.status + ': ' + detail);
-        }
-        const data = await resp.json();
-        fullText = data?.choices?.[0]?.message?.content || '';
+        const messages = [{role:'system',content:systemPrompt},{role:'user',content:userPrompt}];
+
+        // Try Gemini 2.5 Flash first (higher daily cap than Groq).
+        fullText = await _aiStreamGeminiOrNull(messages, null, { temperature: 0.6, maxTokens: 4096 });
+
+        // Fall back to Groq if Gemini unavailable or empty.
         if (!fullText) {
-          console.error('[libraryAiDeepDive] empty response payload:', data);
-          throw new Error('Groq returned an empty response. Check the model in Settings.');
+          const modelToUse = cfg.aiModel || GROQ_DEFAULT_MODEL;
+          console.log('[libraryAiDeepDive] Gemini unavailable — using Groq model=' + modelToUse);
+          const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method:'POST',
+            headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
+            body: JSON.stringify({
+              model: modelToUse,
+              messages,
+              max_tokens:4096, temperature:0.6
+            })
+          });
+          if (!resp.ok) {
+            const errText = await resp.text();
+            let detail = errText.slice(0,400);
+            try { detail = JSON.parse(errText).error?.message || detail; } catch {}
+            console.error('[libraryAiDeepDive] API error:', resp.status, errText);
+            throw new Error('Groq ' + resp.status + ': ' + detail);
+          }
+          const data = await resp.json();
+          fullText = data?.choices?.[0]?.message?.content || '';
+        }
+        if (!fullText) {
+          throw new Error('AI returned an empty response. Check your Gemini/Groq keys in Settings.');
         }
         outputEl.classList.add('md-content');
         outputEl.style.whiteSpace = 'normal';
@@ -16690,34 +16759,44 @@ Output ALL sections:
 ## 🏆 Content Pillars — 3 pillars with 5 post ideas each`;
       let fullText = '';
       try {
-        const modelToUse = cfg.aiModel || GROQ_DEFAULT_MODEL;
-        console.log('[bwGenerate2] model:', modelToUse);
-        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
-          body: JSON.stringify({ model: modelToUse, messages:[{role:'system',content:'You are a world-class brand strategist. Output every section completely. Use specific hex codes, real font names, and actual copy — never placeholders. Tailor to the audience the user describes; do not default to any specific demographic.'},{role:'user',content:prompt}], max_tokens:6000, temperature:0.7, stream:true })
-        });
-        if (!res.ok) {
-          const errBody = await res.text();
-          console.error('[bwGenerate2] API error:', res.status, errBody);
-          let detail = errBody.slice(0, 300);
-          try { detail = JSON.parse(errBody).error?.message || detail; } catch {}
-          throw new Error(`Groq ${res.status}: ${detail}`);
-        }
-        // Buffered SSE parser — handles partial lines across chunk boundaries
-        const reader = res.body.getReader(), dec = new TextDecoder();
-        let sseBuffer = '';
-        const processLine = (line) => {
-          if (!line.startsWith('data: ')) return;
-          const d = line.slice(6); if (d === '[DONE]') return;
-          try { const dt = JSON.parse(d).choices?.[0]?.delta?.content || ''; if (dt) { fullText += dt; resultEl.innerHTML = mdRender(fullText); } } catch(e) {}
-        };
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) { if (sseBuffer) processLine(sseBuffer); break; }
-          sseBuffer += dec.decode(value, { stream: true });
-          const lines = sseBuffer.split('\n');
-          sseBuffer = lines.pop() || '';
-          for (const line of lines) processLine(line);
+        const messages = [{role:'system',content:'You are a world-class brand strategist. Output every section completely. Use specific hex codes, real font names, and actual copy — never placeholders. Tailor to the audience the user describes; do not default to any specific demographic.'},{role:'user',content:prompt}];
+
+        // Try Gemini 2.5 Flash first (streaming, higher daily cap than Groq).
+        fullText = await _aiStreamGeminiOrNull(messages, (chunk, full) => {
+          resultEl.innerHTML = mdRender(full);
+        }, { temperature: 0.7, maxTokens: 6000 });
+
+        // Fall back to Groq if Gemini failed.
+        if (!fullText) {
+          const modelToUse = cfg.aiModel || GROQ_DEFAULT_MODEL;
+          console.log('[bwGenerate2] Gemini unavailable — using Groq model:', modelToUse);
+          const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
+            body: JSON.stringify({ model: modelToUse, messages, max_tokens:6000, temperature:0.7, stream:true })
+          });
+          if (!res.ok) {
+            const errBody = await res.text();
+            console.error('[bwGenerate2] API error:', res.status, errBody);
+            let detail = errBody.slice(0, 300);
+            try { detail = JSON.parse(errBody).error?.message || detail; } catch {}
+            throw new Error(`Groq ${res.status}: ${detail}`);
+          }
+          // Buffered SSE parser — handles partial lines across chunk boundaries
+          const reader = res.body.getReader(), dec = new TextDecoder();
+          let sseBuffer = '';
+          const processLine = (line) => {
+            if (!line.startsWith('data: ')) return;
+            const d = line.slice(6); if (d === '[DONE]') return;
+            try { const dt = JSON.parse(d).choices?.[0]?.delta?.content || ''; if (dt) { fullText += dt; resultEl.innerHTML = mdRender(fullText); } } catch(e) {}
+          };
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) { if (sseBuffer) processLine(sseBuffer); break; }
+            sseBuffer += dec.decode(value, { stream: true });
+            const lines = sseBuffer.split('\n');
+            sseBuffer = lines.pop() || '';
+            for (const line of lines) processLine(line);
+          }
         }
         const cleaned = cleanGroqResponse(fullText);
         resultEl.innerHTML = mdRender(cleaned) +
@@ -16829,34 +16908,44 @@ Write a complete brief they can send to a Fiverr designer: style, colors, must-h
 
       let fullText = '';
       try {
-        const modelToUse = cfg.aiModel || GROQ_DEFAULT_MODEL;
-        console.log('[bwGenerate] Using model:', modelToUse);
-        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
-          body: JSON.stringify({ model: modelToUse, messages:[{role:'system',content:'You are a world-class brand strategist. Produce the complete brand package as instructed. Never skip sections. Be specific with hex codes, real font names, and actual copy — not placeholders.'},{role:'user',content:prompt}], max_tokens:6000, temperature:0.7, stream:true })
-        });
-        if (!res.ok) {
-          const errBody = await res.text();
-          console.error('[bwGenerate] API error:', res.status, errBody);
-          let detail = '';
-          try { detail = JSON.parse(errBody).error?.message || errBody.slice(0,300); } catch { detail = errBody.slice(0,300); }
-          throw new Error(`Groq API ${res.status}: ${detail}`);
-        }
-        // Buffered SSE parser
-        const reader = res.body.getReader(), dec = new TextDecoder();
-        let sseBuffer = '';
-        const processLine = (line) => {
-          if (!line.startsWith('data: ')) return;
-          const d = line.slice(6); if (d === '[DONE]') return;
-          try { const dt = JSON.parse(d).choices?.[0]?.delta?.content || ''; if (dt) { fullText += dt; resultEl.innerHTML = mdRender(fullText); } } catch(e) {}
-        };
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) { if (sseBuffer) processLine(sseBuffer); break; }
-          sseBuffer += dec.decode(value, { stream: true });
-          const lines = sseBuffer.split('\n');
-          sseBuffer = lines.pop() || '';
-          for (const line of lines) processLine(line);
+        const messages = [{role:'system',content:'You are a world-class brand strategist. Produce the complete brand package as instructed. Never skip sections. Be specific with hex codes, real font names, and actual copy — not placeholders.'},{role:'user',content:prompt}];
+
+        // Try Gemini 2.5 Flash first (streaming, higher daily cap than Groq).
+        fullText = await _aiStreamGeminiOrNull(messages, (chunk, full) => {
+          resultEl.innerHTML = mdRender(full);
+        }, { temperature: 0.7, maxTokens: 6000 });
+
+        // Fall back to Groq if Gemini failed.
+        if (!fullText) {
+          const modelToUse = cfg.aiModel || GROQ_DEFAULT_MODEL;
+          console.log('[bwGenerate] Gemini unavailable — using Groq model:', modelToUse);
+          const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+groqKey},
+            body: JSON.stringify({ model: modelToUse, messages, max_tokens:6000, temperature:0.7, stream:true })
+          });
+          if (!res.ok) {
+            const errBody = await res.text();
+            console.error('[bwGenerate] API error:', res.status, errBody);
+            let detail = '';
+            try { detail = JSON.parse(errBody).error?.message || errBody.slice(0,300); } catch { detail = errBody.slice(0,300); }
+            throw new Error(`Groq API ${res.status}: ${detail}`);
+          }
+          // Buffered SSE parser
+          const reader = res.body.getReader(), dec = new TextDecoder();
+          let sseBuffer = '';
+          const processLine = (line) => {
+            if (!line.startsWith('data: ')) return;
+            const d = line.slice(6); if (d === '[DONE]') return;
+            try { const dt = JSON.parse(d).choices?.[0]?.delta?.content || ''; if (dt) { fullText += dt; resultEl.innerHTML = mdRender(fullText); } } catch(e) {}
+          };
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) { if (sseBuffer) processLine(sseBuffer); break; }
+            sseBuffer += dec.decode(value, { stream: true });
+            const lines = sseBuffer.split('\n');
+            sseBuffer = lines.pop() || '';
+            for (const line of lines) processLine(line);
+          }
         }
         const cleaned = cleanGroqResponse(fullText);
         resultEl.innerHTML = mdRender(cleaned) +
@@ -16990,34 +17079,45 @@ Write a complete brief they can send to a Fiverr designer: style, colors, must-h
 
       let fullText = '';
       try {
-        const modelToUse = cfg.aiModel || GROQ_DEFAULT_MODEL;
-        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
-          body: JSON.stringify({ model: modelToUse, messages: [{ role: 'system', content: 'You are a world-class business strategist and copywriter. Give detailed, specific, ready-to-use output. Never give templates — give the actual finished content. Tailor output to the user\'s specific business and audience; do not default to any specific demographic.' }, { role: 'user', content: userPrompt }], max_tokens: 4096, temperature: 0.6, stream: true })
-        });
-        if (!res.ok) {
-          const errBody = await res.text();
-          let detail = errBody.slice(0, 300);
-          try { detail = JSON.parse(errBody).error?.message || detail; } catch {}
-          console.error('[bbGenerate] API error:', res.status, errBody);
-          throw new Error(`Groq ${res.status}: ${detail}`);
-        }
-        // Buffered SSE parser
-        const reader = res.body.getReader(), dec = new TextDecoder();
-        let sseBuffer = '';
-        const processLine = (line) => {
-          if (!line.startsWith('data: ')) return;
-          const d = line.slice(6); if (d === '[DONE]') return;
-          try { const dt = JSON.parse(d).choices?.[0]?.delta?.content || ''; if (dt) { fullText += dt; resultEl.innerHTML = mdRender(fullText); } } catch(e) {}
-        };
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) { if (sseBuffer) processLine(sseBuffer); break; }
-          sseBuffer += dec.decode(value, { stream: true });
-          const lines = sseBuffer.split('\n');
-          sseBuffer = lines.pop() || '';
-          for (const line of lines) processLine(line);
+        const messages = [{ role: 'system', content: 'You are a world-class business strategist and copywriter. Give detailed, specific, ready-to-use output. Never give templates — give the actual finished content. Tailor output to the user\'s specific business and audience; do not default to any specific demographic.' }, { role: 'user', content: userPrompt }];
+
+        // Try Gemini 2.5 Flash first (streaming, higher daily cap than Groq).
+        fullText = await _aiStreamGeminiOrNull(messages, (chunk, full) => {
+          resultEl.innerHTML = mdRender(full);
+        }, { temperature: 0.6, maxTokens: 4096 });
+
+        // Fall back to Groq if Gemini failed.
+        if (!fullText) {
+          const modelToUse = cfg.aiModel || GROQ_DEFAULT_MODEL;
+          console.log('[bbGenerate] Gemini unavailable — using Groq model:', modelToUse);
+          const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
+            body: JSON.stringify({ model: modelToUse, messages, max_tokens: 4096, temperature: 0.6, stream: true })
+          });
+          if (!res.ok) {
+            const errBody = await res.text();
+            let detail = errBody.slice(0, 300);
+            try { detail = JSON.parse(errBody).error?.message || detail; } catch {}
+            console.error('[bbGenerate] API error:', res.status, errBody);
+            throw new Error(`Groq ${res.status}: ${detail}`);
+          }
+          // Buffered SSE parser
+          const reader = res.body.getReader(), dec = new TextDecoder();
+          let sseBuffer = '';
+          const processLine = (line) => {
+            if (!line.startsWith('data: ')) return;
+            const d = line.slice(6); if (d === '[DONE]') return;
+            try { const dt = JSON.parse(d).choices?.[0]?.delta?.content || ''; if (dt) { fullText += dt; resultEl.innerHTML = mdRender(fullText); } } catch(e) {}
+          };
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) { if (sseBuffer) processLine(sseBuffer); break; }
+            sseBuffer += dec.decode(value, { stream: true });
+            const lines = sseBuffer.split('\n');
+            sseBuffer = lines.pop() || '';
+            for (const line of lines) processLine(line);
+          }
         }
         const cleaned = cleanGroqResponse(fullText);
         const bizName = (f.biz || cfg.businessName || 'Business').trim();
@@ -17058,34 +17158,39 @@ Write a complete brief they can send to a Fiverr designer: style, colors, must-h
       const cfg = JSON.parse(localStorage.getItem('settings') || '{}');
       return cfg.groqApiKey || '';
     }
-    function a10xStreamFetch(messages, onChunk, maxTokens) {
+    async function a10xStreamFetch(messages, onChunk, maxTokens) {
+      // Try Gemini 2.5 Flash first (higher daily cap than Groq).
+      // Adapter: caller's onChunk expects (full), our helper passes (chunk, full).
+      const geminiFull = await _aiStreamGeminiOrNull(messages, (chunk, full) => { if (onChunk) onChunk(full); }, { temperature: 0.4, maxTokens: maxTokens || 4096 });
+      if (geminiFull) return geminiFull;
+
+      // Fall back to Groq.
       const key = a10xGetKey();
       const cfg = JSON.parse(localStorage.getItem('settings') || '{}');
-      return fetch('https://api.groq.com/openai/v1/chat/completions', {
+      const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
         body: JSON.stringify({ model: cfg.aiModel || GROQ_DEFAULT_MODEL, messages, max_tokens: maxTokens || 4096, temperature: 0.4, stream: true })
-      }).then(async resp => {
-        if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error?.message || 'API error ' + resp.status); }
-        // Buffered SSE parser
-        const reader = resp.body.getReader(), dec = new TextDecoder();
-        let full = '';
-        let sseBuffer = '';
-        const processLine = (line) => {
-          if (!line.startsWith('data: ')) return;
-          const d = line.slice(6); if (d === '[DONE]') return;
-          try { const dt = JSON.parse(d).choices?.[0]?.delta?.content || ''; if (dt) { full += dt; onChunk(full); } } catch(e) {}
-        };
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) { if (sseBuffer) processLine(sseBuffer); break; }
-          sseBuffer += dec.decode(value, { stream: true });
-          const lines = sseBuffer.split('\n');
-          sseBuffer = lines.pop() || '';
-          for (const line of lines) processLine(line);
-        }
-        return full;
       });
+      if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error?.message || 'API error ' + resp.status); }
+      // Buffered SSE parser
+      const reader = resp.body.getReader(), dec = new TextDecoder();
+      let full = '';
+      let sseBuffer = '';
+      const processLine = (line) => {
+        if (!line.startsWith('data: ')) return;
+        const d = line.slice(6); if (d === '[DONE]') return;
+        try { const dt = JSON.parse(d).choices?.[0]?.delta?.content || ''; if (dt) { full += dt; if (onChunk) onChunk(full); } } catch(e) {}
+      };
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) { if (sseBuffer) processLine(sseBuffer); break; }
+        sseBuffer += dec.decode(value, { stream: true });
+        const lines = sseBuffer.split('\n');
+        sseBuffer = lines.pop() || '';
+        for (const line of lines) processLine(line);
+      }
+      return full;
     }
     // Handle file upload / drag-drop for resume
     // ── PERSONAL FILES ────────────────────────────────────────────────────────

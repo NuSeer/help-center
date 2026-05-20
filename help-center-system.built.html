@@ -20678,6 +20678,26 @@ ${_ownerBiz} | ${_ownerEmail}
     const notes      = document.getElementById('inv-notes')?.value||'Thank you for your business!';
     const taxRate    = parseFloat(document.getElementById('inv-tax')?.value||'0');
     const amtReceived = parseFloat(document.getElementById('inv-deposit')?.value||'0');
+    // Word-wrap description text at word boundaries so essential words like
+    // "(monthly)" or "(Client Paid)" don't get hard-truncated mid-word.
+    // Hard-breaks any single word longer than the column width as a fallback.
+    const wrapText = (text, width) => {
+      const words = (text || '').split(/\s+/).filter(Boolean);
+      const lines = [];
+      let line = '';
+      for (let word of words) {
+        while (word.length > width) {
+          if (line) { lines.push(line); line = ''; }
+          lines.push(word.slice(0, width));
+          word = word.slice(width);
+        }
+        if (!line) line = word;
+        else if ((line + ' ' + word).length <= width) line += ' ' + word;
+        else { lines.push(line); line = word; }
+      }
+      if (line) lines.push(line);
+      return lines.length ? lines : [''];
+    };
     // Collect line items — keep all amounts POSITIVE; track client-paid items separately
     const rows = Array.from(document.querySelectorAll('#inv-items-body tr'));
     let subtotal = 0;
@@ -20691,11 +20711,14 @@ ${_ownerBiz} | ${_ownerEmail}
       const isClientPaid = row.dataset.clientPaid === '1' || /\(Client Paid\)/i.test(desc);
       subtotal += amt;
       if (isClientPaid) clientPaidTotal += amt;
-      const descPad = desc.padEnd(28).slice(0,28);
+      const descLines = wrapText(desc, 28);
       const qtyStr  = String(qty).padStart(4);
       const rateStr = ('$'+rate.toFixed(2)).padStart(10);
       const amtStr  = ('$'+amt.toFixed(2)).padStart(10);
-      return `${descPad}  ${qtyStr}  ${rateStr}  ${amtStr}`;
+      // First line carries qty/rate/amount; continuation lines just show wrapped description.
+      const firstLine = `${descLines[0].padEnd(28)}  ${qtyStr}  ${rateStr}  ${amtStr}`;
+      const contLines = descLines.slice(1).map(l => l.padEnd(28));
+      return [firstLine, ...contLines].join('\n');
     }).join('\n');
     const taxAmt  = subtotal * (taxRate/100);
     const total   = subtotal + taxAmt;

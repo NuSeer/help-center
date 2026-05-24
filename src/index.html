@@ -447,27 +447,27 @@
       <!-- INCLUDE: pages/dashboard.html -->
         <div class="content">
           <div class="stats-grid">
-            <div class="stat-card stat-paid">
+            <div class="stat-card stat-paid" role="button" tabindex="0" style="cursor:pointer" onclick="dashStatJump('revenue','Paid')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();dashStatJump('revenue','Paid')}" title="Review paid invoices">
               <div class="stat-header"><span class="stat-icon icon" data-icon="dollar"></span><span class="stat-label">Paid Revenue</span></div>
               <div class="stat-value" id="stat-revenue">$0</div>
               <div class="stat-change" id="stat-revenue-sub">All paid invoices</div>
             </div>
-            <div class="stat-card stat-pending">
+            <div class="stat-card stat-pending" role="button" tabindex="0" style="cursor:pointer" onclick="dashStatJump('revenue','Pending')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();dashStatJump('revenue','Pending')}" title="Review pending invoices">
               <div class="stat-header"><span class="stat-icon icon" data-icon="clock"></span><span class="stat-label">Pending Revenue</span></div>
               <div class="stat-value" id="stat-pending">$0</div>
               <div class="stat-change" id="stat-pending-sub">Awaiting payment</div>
             </div>
-            <div class="stat-card stat-info">
+            <div class="stat-card stat-info" role="button" tabindex="0" style="cursor:pointer" onclick="dashStatJump('clients','Active')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();dashStatJump('clients','Active')}" title="Review active clients">
               <div class="stat-header"><span class="stat-icon">◉</span><span class="stat-label">Active Clients</span></div>
               <div class="stat-value" id="stat-active">0</div>
               <div class="stat-change">Currently in progress</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" role="button" tabindex="0" style="cursor:pointer" onclick="dashStatJump('clients','Completed')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();dashStatJump('clients','Completed')}" title="Review completed clients">
               <div class="stat-header"><span class="stat-icon">✓</span><span class="stat-label">Completed</span></div>
               <div class="stat-value" id="stat-completed">0</div>
               <div class="stat-change">Projects delivered</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" role="button" tabindex="0" style="cursor:pointer" onclick="dashStatJump('my-ideas',null)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();dashStatJump('my-ideas',null)}" title="Review pipeline ideas">
               <div class="stat-header"><span class="stat-icon">◈</span><span class="stat-label">Pipeline</span></div>
               <div class="stat-value" id="stat-ideas">0</div>
               <div class="stat-change">Ideas not yet launched</div>

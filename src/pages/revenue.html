@@ -1,0 +1,43 @@
+      <div id="revenue-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">Revenue Tracker</h1>
+          <p class="page-subtitle">Track every dollar — income, payments, and outstanding balances</p>
+        </div>
+        <div class="content">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:24px" id="rev-stats"></div>
+          <div class="card" style="margin-bottom:20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+              <div style="font-weight:700;font-size:16px">All Revenue</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <select id="rev-filter-status" class="form-select" style="margin:0;padding:8px 12px;font-size:13px" onchange="renderRevenue()">
+                  <option value="">All Status</option>
+                  <option value="Paid">Paid</option>
+                  <option value="Pending">Pending</option>
+                </select>
+                <select id="rev-filter-year" class="form-select" style="margin:0;padding:8px 12px;font-size:13px" onchange="renderRevenue()">
+                  <option value="">All Years</option>
+                  <option value="2025">2025</option>
+                  <option value="2024">2024</option>
+                  <option value="2023">2023</option>
+                </select>
+                <button onclick="openAddRevenueModal()" class="btn btn-solid" style="padding:8px 16px;font-size:13px">+ Add Revenue</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto">
+              <table style="width:100%;border-collapse:collapse;font-size:14px">
+                <thead><tr style="background:var(--gray-50);border-bottom:2px solid var(--gray-200)">
+                  <th style="padding:10px 12px;text-align:left;font-weight:700;white-space:nowrap">Date</th>
+                  <th style="padding:10px 12px;text-align:left;font-weight:700">Client</th>
+                  <th style="padding:10px 12px;text-align:left;font-weight:700">Service</th>
+                  <th style="padding:10px 12px;text-align:left;font-weight:700">Invoice</th>
+                  <th style="padding:10px 12px;text-align:right;font-weight:700">Amount</th>
+                  <th style="padding:10px 12px;text-align:center;font-weight:700">Status</th>
+                  <th style="padding:10px 12px;text-align:center;font-weight:700">Actions</th>
+                </tr></thead>
+                <tbody id="rev-table-body"></tbody>
+                <tfoot id="rev-table-foot"></tfoot>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>

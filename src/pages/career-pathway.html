@@ -1,0 +1,228 @@
+      <div id="career-pathway-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">Career Advancement</h1>
+          <p class="page-subtitle">Accelerate your career growth with a clear strategy</p>
+        </div>
+        <div class="content">
+          <div class="path-tabs-container">
+            <div class="path-tabs-nav">
+              <button class="path-tab active" onclick="pTab('career','assessment',this)">Assessment</button>
+              <button class="path-tab" onclick="pTab('career','goals',this)">Goal Framework</button>
+              <button class="path-tab" onclick="pTab('career','toolkit',this)">Job Search Toolkit</button>
+              <button class="path-tab" onclick="pTab('career','apply10x',this)" style="background:linear-gradient(135deg,var(--brand-primary),#7C3AED);color:#fff;border-radius:6px;font-weight:700">⚡ Apply 10x Faster</button>
+              <button class="path-tab" onclick="pTab('career','resources',this)">Resources</button>
+            </div>
+            <div id="career-tab-assessment" class="path-tab-content active">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:4px;">Career Advancement Assessment</h3>
+                <p style="color:var(--gray-500);font-size:14px;margin-bottom:20px;">Identify your biggest opportunity for growth right now.</p>
+                <form id="career-assess-form" onsubmit="submitCareerAssessment(event)">
+                  <div class="assess-q">
+                    <label>1. Where are you in your career?</label>
+                    <label class="assess-option"><input type="radio" name="stage" value="entry" required> Entry level or first career job</label>
+                    <label class="assess-option"><input type="radio" name="stage" value="mid"> Mid-career — looking to move up</label>
+                    <label class="assess-option"><input type="radio" name="stage" value="senior"> Senior level — targeting leadership or exec</label>
+                    <label class="assess-option"><input type="radio" name="stage" value="pivot"> Career pivoter — changing industries</label>
+                  </div>
+                  <div class="assess-q">
+                    <label>2. What is your biggest career obstacle right now?</label>
+                    <label class="assess-option"><input type="radio" name="obstacle" value="network" required> I don't have the right connections</label>
+                    <label class="assess-option"><input type="radio" name="obstacle" value="resume"> My resume/LinkedIn isn't strong</label>
+                    <label class="assess-option"><input type="radio" name="obstacle" value="skills"> I need to build new skills</label>
+                    <label class="assess-option"><input type="radio" name="obstacle" value="confidence"> I struggle with interviews or self-promotion</label>
+                    <label class="assess-option"><input type="radio" name="obstacle" value="pay"> I'm underpaid but don't know how to negotiate</label>
+                  </div>
+                  <div class="assess-q">
+                    <label>3. How clear are you on your target role or next step?</label>
+                    <label class="assess-option"><input type="radio" name="clarity" value="none" required> I'm not sure what I want yet</label>
+                    <label class="assess-option"><input type="radio" name="clarity" value="some"> I have a general direction</label>
+                    <label class="assess-option"><input type="radio" name="clarity" value="clear"> I know exactly what I'm going for</label>
+                  </div>
+                  <button type="submit" class="btn btn-solid" style="margin-top:8px;">Get My Career Action Plan →</button>
+                </form>
+                <div id="career-assess-results" style="display:none;margin-top:24px;"></div>
+              </div>
+            </div>
+            <div id="career-tab-goals" class="path-tab-content">
+              <div class="card" style="margin-bottom:20px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                  <h3 style="font-size:18px;font-weight:700">📍 My Career Goals</h3>
+                  <button onclick="saveCareerGoals()" class="btn btn-solid" style="padding:8px 18px">Save Goals</button>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">My North Star — 3-Year Vision</label>
+                  <textarea id="cg-northstar" class="form-input" style="height:80px;resize:vertical" placeholder="In 3 years, I am [role] at [type of company], earning $[X], doing [specific work] that [impact]."></textarea>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                  <div class="form-group">
+                    <label class="form-label">Current Role / Title</label>
+                    <input id="cg-current-role" class="form-input" style="margin:0" placeholder="e.g. Operations Coordinator">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Target Role / Title</label>
+                    <input id="cg-target-role" class="form-input" style="margin:0" placeholder="e.g. Director of Operations">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Current Salary</label>
+                    <input id="cg-current-salary" class="form-input" style="margin:0" placeholder="$55,000">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Target Salary</label>
+                    <input id="cg-target-salary" class="form-input" style="margin:0" placeholder="$85,000">
+                  </div>
+                </div>
+                <div class="form-group" style="margin-top:8px">
+                  <label class="form-label">Skills Gap — What skills do you need that you don't yet have?</label>
+                  <textarea id="cg-skills-gap" class="form-input" style="height:70px;resize:vertical" placeholder="e.g. Data analysis, budget management, leading a team of 10+"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Visibility Gap — Who needs to know about your work who doesn't?</label>
+                  <textarea id="cg-visibility-gap" class="form-input" style="height:70px;resize:vertical" placeholder="e.g. VP of Operations, leaders in other departments, industry contacts"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Positioning Gap — How are you perceived vs. how you need to be perceived?</label>
+                  <textarea id="cg-positioning-gap" class="form-input" style="height:70px;resize:vertical" placeholder="e.g. Currently seen as an executor; need to be seen as a strategic leader"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Timeline / Target Date for Next Level</label>
+                  <input id="cg-timeline" type="date" class="form-input" style="margin:0">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">My Salary Negotiation Floor (minimum I'll accept)</label>
+                  <input id="cg-salary-floor" class="form-input" style="margin:0" placeholder="$75,000">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Notes / Action Steps</label>
+                  <textarea id="cg-notes" class="form-input" style="height:80px;resize:vertical" placeholder="What are you doing this week to move forward?"></textarea>
+                </div>
+                <div id="cg-saved-msg" style="display:none;color:var(--success);font-size:14px;font-weight:600;margin-top:8px">✅ Goals saved!</div>
+              </div>
+            </div>
+            <div id="career-tab-toolkit" class="path-tab-content">
+              <div class="card" style="margin-bottom:20px">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Job Search Toolkit</h3>
+                <h4 style="font-weight:700;margin-bottom:12px;">Resume Power Checklist</h4>
+                <div class="checklist-item"><input type="checkbox" id="cc-res1" onchange="saveCareerCheck('res1',this)"> <span><strong>Lead with impact numbers</strong> — "Increased revenue by 34%" beats "Responsible for sales"</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-res2" onchange="saveCareerCheck('res2',this)"> <span><strong>Tailor for each application</strong> — mirror the job description's keywords (ATS systems scan for matches)</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-res3" onchange="saveCareerCheck('res3',this)"> <span><strong>One page for under 10 years experience</strong> — two pages maximum for senior roles</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-res4" onchange="saveCareerCheck('res4',this)"> <span><strong>Strong summary section at top</strong> — 2–3 sentences positioning you for the specific role</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-res5" onchange="saveCareerCheck('res5',this)"> <span><strong>No objectives, no references available upon request</strong> — both are outdated</span></div>
+                <h4 style="font-weight:700;margin:20px 0 12px;">LinkedIn Optimization</h4>
+                <div class="checklist-item"><input type="checkbox" id="cc-li1" onchange="saveCareerCheck('li1',this)"> <span><strong>Professional headshot</strong> — profiles with photos get 21x more views</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-li2" onchange="saveCareerCheck('li2',this)"> <span><strong>Headline beyond your job title</strong> — "Operations Leader helping teams scale without burning out"</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-li3" onchange="saveCareerCheck('li3',this)"> <span><strong>About section in first person</strong> — tell your story, not a job description</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-li4" onchange="saveCareerCheck('li4',this)"> <span><strong>Request 3–5 recommendations</strong> — from managers, clients, and peers</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-li5" onchange="saveCareerCheck('li5',this)"> <span><strong>Turn on "Open to Work"</strong> — for passive searches, keep it visible to recruiters only</span></div>
+                <h4 style="font-weight:700;margin:20px 0 12px;">Networking Strategy</h4>
+                <div class="checklist-item"><input type="checkbox" id="cc-net1" onchange="saveCareerCheck('net1',this)"> <span><strong>Reconnect with 5 former colleagues</strong> — most opportunities come from "weak ties," not close friends</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-net2" onchange="saveCareerCheck('net2',this)"> <span><strong>Request 2 informational interviews per month</strong> — "coffee chats" at target companies</span></div>
+                <div class="checklist-item"><input type="checkbox" id="cc-net3" onchange="saveCareerCheck('net3',this)"> <span><strong>Join 1–2 professional associations</strong> — in your target industry or function</span></div>
+              </div>
+              <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+                  <h3 style="font-size:18px;font-weight:700">Job Applications Tracker</h3>
+                  <button onclick="openAddJobModal()" class="btn btn-solid">+ Add Application</button>
+                </div>
+                <div id="job-apps-list"></div>
+              </div>
+            </div>
+            <!-- ⚡ APPLY 10X FASTER -->
+            <div id="career-tab-apply10x" class="path-tab-content">
+              <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,#0F172A,#1e3a6e);color:#fff;padding:24px 28px">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                  <span style="font-size:32px">⚡</span>
+                  <div>
+                    <h3 style="font-size:20px;font-weight:800;margin:0;color:#fff">Apply 10x Faster</h3>
+                    <p style="font-size:13px;color:#94A3B8;margin:0">AI-powered resume optimization + cover letter generation — tailored to every job</p>
+                  </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:16px">
+                  <div style="background:rgba(255,255,255,0.08);border-radius:8px;padding:12px;text-align:center">
+                    <div style="font-size:22px;font-weight:800;color:#C9A84C" id="a10x-score-display">—</div>
+                    <div style="font-size:11px;color:#94A3B8;margin-top:2px">Match Score</div>
+                  </div>
+                  <div style="background:rgba(255,255,255,0.08);border-radius:8px;padding:12px;text-align:center">
+                    <div style="font-size:22px;font-weight:800;color:#4ade80" id="a10x-full-display">—</div>
+                    <div style="font-size:11px;color:#94A3B8;margin-top:2px">Full Matches</div>
+                  </div>
+                  <div style="background:rgba(255,255,255,0.08);border-radius:8px;padding:12px;text-align:center">
+                    <div style="font-size:22px;font-weight:800;color:#facc15" id="a10x-partial-display">—</div>
+                    <div style="font-size:11px;color:#94A3B8;margin-top:2px">Partial Matches</div>
+                  </div>
+                  <div style="background:rgba(255,255,255,0.08);border-radius:8px;padding:12px;text-align:center">
+                    <div style="font-size:22px;font-weight:800;color:#f87171" id="a10x-missing-display">—</div>
+                    <div style="font-size:11px;color:#94A3B8;margin-top:2px">Missing Keywords</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 1: Inputs -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px" class="a10x-grid">
+                <div class="card" style="padding:20px">
+                  <h4 style="font-weight:700;margin-bottom:4px">📄 Your Resume</h4>
+                  <p style="font-size:12px;color:var(--gray-500);margin-bottom:10px">Upload, drag & drop, or paste your resume</p>
+                  <div id="a10x-drop-zone" style="border:2px dashed #cbd5e1;border-radius:10px;padding:14px;text-align:center;cursor:pointer;background:#f8fafc;transition:all .15s;margin-bottom:10px"
+                    onclick="document.getElementById('a10x-file-input').click()"
+                    ondragover="event.preventDefault();this.style.borderColor='var(--brand-primary)';this.style.background='#eff6ff'"
+                    ondragleave="event.preventDefault();this.style.borderColor='#cbd5e1';this.style.background='#f8fafc'"
+                    ondrop="event.preventDefault();this.style.borderColor='#cbd5e1';this.style.background='#f8fafc';a10xHandleFile(event.dataTransfer.files[0])">
+                    <div style="font-size:22px;margin-bottom:4px">📎</div>
+                    <div style="font-size:13px;color:#475569;font-weight:500">
+                      <span style="color:var(--brand-primary);text-decoration:underline">Click to upload</span> or drag & drop
+                    </div>
+                    <div style="font-size:11px;color:#94a3b8;margin-top:3px">PDF, DOCX, or TXT — max 5 MB</div>
+                  </div>
+                  <input type="file" id="a10x-file-input" accept=".pdf,.docx,.doc,.txt,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain" style="display:none" onchange="a10xHandleFile(this.files[0])">
+                  <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+                    <span style="font-size:11px;color:#94a3b8;font-weight:600;letter-spacing:0.4px;text-transform:uppercase">Or pick from saved docs</span>
+                    <select id="a10x-bf-pick" class="form-input" style="margin:0;flex:1;font-size:12.5px;padding:7px 10px" onchange="_a10xPickFromBusinessFile(this.value)">
+                      <option value="">— pick a resume from your Personal or Business Files —</option>
+                    </select>
+                  </div>
+                  <textarea id="a10x-resume" class="form-textarea" style="min-height:200px;font-size:12px;font-family:monospace" placeholder="...or paste your resume text here" spellcheck="true" lang="en"></textarea>
+                  <div style="margin-top:8px;font-size:11px;color:var(--gray-400)">💡 Tip: PDF works best — text extraction happens automatically</div>
+                </div>
+                <div class="card" style="padding:20px">
+                  <h4 style="font-weight:700;margin-bottom:4px">💼 Job Description</h4>
+                  <p style="font-size:12px;color:var(--gray-500);margin-bottom:10px">Paste the full job posting you're applying to</p>
+                  <textarea id="a10x-job" class="form-textarea" style="min-height:220px;font-size:12px;font-family:monospace" placeholder="Paste the job description here — job title, requirements, responsibilities, qualifications...
+
+Example:
+Senior Project Manager — XYZ Company
+
+We are looking for an experienced PM to lead...
+
+Requirements:
+• 5+ years project management experience
+• PMP certification preferred
+• Strong communication skills..."></textarea>
+                  <div style="margin-top:8px;font-size:11px;color:var(--gray-400)">💡 Tip: Copy the full job post from LinkedIn, Indeed, etc.</div>
+                </div>
+              </div>
+
+              <!-- Actions -->
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+                <button class="btn btn-solid" style="background:linear-gradient(135deg,var(--brand-primary),#7C3AED);flex:1;min-width:200px" onclick="a10xAnalyze()"><span class="icon icon-sm" data-icon="search" style="margin-right:6px;vertical-align:-2px"></span>Analyze Resume Match</button>
+                <button class="btn btn-solid" style="flex:1;min-width:200px" onclick="a10xOptimize()"><span class="icon icon-sm" data-icon="spark" style="margin-right:6px;vertical-align:-2px"></span>Optimize Resume for Job</button>
+                <button class="btn btn-outline" style="flex:1;min-width:160px" onclick="a10xCoverLetter()"><span class="icon icon-sm" data-icon="note" style="margin-right:6px;vertical-align:-2px"></span>Generate Cover Letter</button>
+              </div>
+
+              <!-- Results -->
+              <div id="a10x-analysis-result" class="md-content" style="display:none;margin-bottom:20px;padding:24px;background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;font-size:14px;line-height:1.75"></div>
+              <div id="a10x-resume-result" class="md-content" style="display:none;margin-bottom:20px;padding:24px;background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;font-size:14px;line-height:1.75"></div>
+              <div id="a10x-cover-result" class="md-content" style="display:none;margin-bottom:20px;padding:24px;background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;font-size:14px;line-height:1.75"></div>
+
+            </div>
+
+            <div id="career-tab-resources" class="path-tab-content">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Career Resources</h3>
+                <a class="resource-link" href="https://www.linkedin.com/jobs" target="_blank"><span class="icon" data-icon="briefcase"></span><div class="info"><strong>LinkedIn Jobs</strong><span>Set job alerts for your target role and location</span></div></a>
+                <a class="resource-link" href="https://www.glassdoor.com" target="_blank"><span class="icon" data-icon="search"></span><div class="info"><strong>Glassdoor</strong><span>Research company culture and salary data before interviews</span></div></a>
+                <a class="resource-link" href="https://www.levels.fyi" target="_blank"><span class="icon" data-icon="chart"></span><div class="info"><strong>Levels.fyi</strong><span>Detailed compensation data by company and level (tech-focused)</span></div></a>
+                <a class="resource-link" href="https://www.themuse.com" target="_blank"><span class="icon" data-icon="spark"></span><div class="info"><strong>The Muse</strong><span>Career advice, company profiles, and job listings</span></div></a>
+                <a class="resource-link" href="https://www.careeronestop.org" target="_blank"><span class="icon" data-icon="shield"></span><div class="info"><strong>CareerOneStop (DOL)</strong><span>Free career exploration, training finder, and resume tools</span></div></a>
+              </div>
+            </div>
+          </div>
+        </div>

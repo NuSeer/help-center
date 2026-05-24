@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Client Portal — H.E.L.P. Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{min-height:100%}
+body{font-family:'DM Sans',-apple-system,system-ui,sans-serif;background:#F1F5F9;color:#0F172A;line-height:1.5}
+
+.shell{max-width:780px;margin:0 auto;padding:24px 20px 60px}
+
+/* Header band */
+.brand-bar{background:linear-gradient(135deg,#0F172A,#1e3a5f);color:#fff;padding:26px 22px;border-radius:14px;box-shadow:0 8px 30px rgba(15,23,42,0.15);margin-bottom:18px}
+.brand-bar .biz{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7;margin-bottom:4px}
+.brand-bar h1{font-size:24px;font-weight:700;margin-bottom:6px}
+.brand-bar .sub{font-size:14px;opacity:0.85}
+
+/* Card */
+.card{background:#fff;border-radius:12px;padding:20px;margin-bottom:14px;box-shadow:0 2px 8px rgba(15,23,42,0.04);border:1px solid #E2E8F0}
+.card h2{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:#64748B;margin-bottom:12px}
+
+/* Status grid */
+.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:8px}
+@media (max-width:520px){.status-grid{grid-template-columns:1fr}}
+.stat{padding:14px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px}
+.stat .lbl{font-size:11px;font-weight:600;letter-spacing:0.5px;text-transform:uppercase;color:#94A3B8;margin-bottom:4px}
+.stat .val{font-size:15px;font-weight:700;color:#0F172A}
+.badge{display:inline-block;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
+.badge.active{background:rgba(16,185,129,0.12);color:#10B981}
+.badge.completed{background:rgba(66,103,178,0.12);color:#4267B2}
+.badge.paid{background:rgba(16,185,129,0.12);color:#10B981}
+.badge.unpaid{background:rgba(249,115,22,0.12);color:#F97316}
+
+/* Progress */
+.progress{margin-top:6px}
+.progress-bar{height:8px;background:#E2E8F0;border-radius:99px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#1E5BC0,#16A34A);transition:width 0.6s}
+.progress-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13px}
+.progress-row .pct{font-weight:700;color:#16A34A}
+
+/* List items */
+.list-item{padding:14px;border:1px solid #E2E8F0;border-radius:10px;margin-bottom:8px;background:#F8FAFC}
+.list-item .title{font-weight:700;font-size:15px;color:#0F172A;margin-bottom:4px}
+.list-item .desc{font-size:13.5px;color:#475569;line-height:1.55;margin-bottom:6px}
+.list-item .meta{font-size:11px;color:#94A3B8;font-weight:600;letter-spacing:0.3px;text-transform:uppercase}
+.list-item a.link-btn{display:inline-block;margin-top:8px;padding:6px 14px;background:#1E5BC0;color:#fff;text-decoration:none;font-size:13px;font-weight:600;border-radius:7px}
+.list-item a.link-btn:hover{background:#144298}
+
+/* CTA buttons */
+.cta-stack{display:flex;flex-direction:column;gap:8px}
+.cta-btn{display:block;padding:14px 18px;background:#16A34A;color:#fff;text-decoration:none;border-radius:10px;font-weight:700;text-align:center;font-size:15px;border:none;cursor:pointer;font-family:inherit}
+.cta-btn:hover{background:#138a3e}
+.cta-btn.alt{background:#fff;color:#1E5BC0;border:1.5px solid #1E5BC0}
+.cta-btn.alt:hover{background:#F1F5F9}
+
+/* Message form */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;color:#64748B;margin-bottom:5px}
+.field input,.field textarea{width:100%;padding:11px 13px;border:1px solid #CBD5E1;border-radius:8px;font:inherit;font-size:14px;color:#0F172A;background:#fff}
+.field textarea{min-height:110px;resize:vertical}
+.field input:focus,.field textarea:focus{outline:none;border-color:#1E5BC0;box-shadow:0 0 0 3px rgba(30,91,192,0.12)}
+.field .hint{color:#94A3B8;font-size:11.5px;margin-top:4px}
+
+/* Toggle for file upload */
+.toggle-up{display:flex;align-items:center;gap:8px;cursor:pointer;color:#64748B;font-size:13px;font-weight:600;padding:8px 0}
+.toggle-up:hover{color:#1E5BC0}
+.upload-area{display:none;padding:14px;border:1.5px dashed #CBD5E1;border-radius:10px;text-align:center;background:#F8FAFC;margin-bottom:12px}
+.upload-area.show{display:block}
+.upload-area input[type=file]{display:none}
+.upload-area .pick-btn{display:inline-block;padding:8px 16px;background:#1E5BC0;color:#fff;border-radius:7px;cursor:pointer;font-weight:600;font-size:13px}
+.upload-area .picked{margin-top:8px;font-size:13px;color:#475569}
+
+/* States */
+.loading,.error,.success{text-align:center;padding:60px 20px;color:#64748B}
+.loading .ico,.error .ico,.success .ico{font-size:42px;margin-bottom:12px}
+.error h2,.success h2{font-size:20px;color:#0F172A;margin-bottom:8px}
+.error p,.success p{font-size:14px;line-height:1.6}
+
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(40px);background:#0F172A;color:#fff;padding:13px 22px;border-radius:10px;font-weight:600;font-size:14px;opacity:0;transition:all 0.3s;pointer-events:none;z-index:9999;box-shadow:0 20px 40px rgba(0,0,0,0.25)}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.success{background:#16A34A}
+.toast.error{background:#DC2626}
+
+.footer{text-align:center;padding:30px 0 10px;font-size:12px;color:#94A3B8}
+</style>
+</head>
+<body>
+
+<div class="shell" id="shell">
+  <div class="loading"><div class="ico">⏳</div><div>Loading your portal…</div></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ════════════════════════════════════════════
+   PORTAL CLIENT
+   URL format: /portal.html?t=PORTAL_TOKEN
+═══════════════════════════════════════════════ */
+const PB_BASE = location.origin + '/pb/api';
+const API_BASE = location.origin + '/api';
+
+const params = new URLSearchParams(location.search);
+const token = params.get('t') || params.get('token') || '';
+
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function toast(msg, kind){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + (kind || '');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => { t.className = 'toast'; }, 3500);
+}
+
+async function loadPortal(){
+  if(!token){
+    return renderError('No portal token in the URL.', 'Make sure you opened the full link your provider sent you.');
+  }
+  try {
+    // Fetch both the snapshot AND any extras (quick-uploaded deliverables) in
+    // a single request. The work portal owns "portal:{token}" but never touches
+    // "portal-extras:{token}", so uploads via /upload.html or the inline button
+    // can't be wiped by the work portal's auto-sync.
+    const filter = `(key="portal:${token}" || key="portal-extras:${token}")`;
+    const url = PB_BASE + '/collections/store/records?filter=' + encodeURIComponent(filter);
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const json = await res.json();
+    if(!json.items || !json.items.length){
+      return renderError('Portal Not Found', 'This link is invalid or has expired. Please contact your provider to get a fresh link.');
+    }
+    let snap = null;
+    let extras = null;
+    for(const item of json.items){
+      if(item.key === 'portal:' + token) snap = item.value;
+      else if(item.key === 'portal-extras:' + token) extras = item.value;
+    }
+    if(!snap){
+      return renderError('Portal Not Found', 'This link is invalid or has expired. Please contact your provider to get a fresh link.');
+    }
+    // Merge extras into the deliverables list (extras render after snapshot items)
+    if(extras && Array.isArray(extras.deliverables) && extras.deliverables.length){
+      snap.client = snap.client || {};
+      snap.client.deliverables = (snap.client.deliverables || []).concat(extras.deliverables);
+    }
+    // Surface itemized invoice from extras (if owner sent one via the invoice editor)
+    if(extras && extras.invoice && Array.isArray(extras.invoice.items) && extras.invoice.items.length){
+      snap.invoice = extras.invoice;
+    }
+    render(snap);
+  } catch(e){
+    renderError('Could Not Load Portal', 'Network error: ' + e.message + '. Please try again, or contact your provider.');
+  }
+}
+
+function renderError(title, body){
+  document.getElementById('shell').innerHTML = `
+    <div class="error">
+      <div class="ico">🔍</div>
+      <h2>${esc(title)}</h2>
+      <p>${esc(body)}</p>
+    </div>`;
+}
+
+function render(snap){
+  const c = snap.client || {};
+  const b = snap.branding || {};
+  const stripe = snap.stripe || {};
+  const booking = snap.booking || {};
+  const deliverables = c.deliverables || [];
+  const documents = snap.documents || [];
+
+  document.title = (b.businessName || 'Client Portal') + ' — Your Portal';
+
+  const statusClass = (c.status || '').toLowerCase() === 'completed' ? 'completed' : 'active';
+  const paidClass = c.paid ? 'paid' : 'unpaid';
+  const paidLabel = c.paid ? '✓ Paid in Full' : 'Awaiting Payment';
+
+  const pct = Math.max(0, Math.min(100, Number(c.projectStatus) || 0));
+
+  const deliverablesHtml = deliverables.length
+    ? deliverables.map(d => `
+        <div class="list-item">
+          <div class="title">${esc(d.name || d.title || 'Deliverable')}</div>
+          ${d.description ? `<div class="desc">${esc(d.description)}</div>` : ''}
+          ${d.dateAdded ? `<div class="meta">Added ${esc(new Date(d.dateAdded).toLocaleDateString())}</div>` : ''}
+          ${d.url ? `<a class="link-btn" href="${esc(d.url)}" target="_blank" rel="noopener">Open →</a>` : ''}
+        </div>`).join('')
+    : `<div style="padding:20px;text-align:center;color:#94A3B8;font-size:13.5px">No deliverables added yet. Your provider will post them here as work progresses.</div>`;
+
+  const documentsHtml = documents.length
+    ? `<div class="card"><h2>📄 Documents</h2>${documents.map(d => `
+        <div class="list-item">
+          <div class="title">${esc(d.type || d.title || 'Document')}</div>
+          ${d.status ? `<div class="meta">Status: ${esc(d.status)}</div>` : ''}
+        </div>`).join('')}</div>`
+    : '';
+
+  const bookingHtml = booking.enabled && booking.url
+    ? `<a class="cta-btn alt" href="${esc(booking.url)}" target="_blank" rel="noopener">📅 ${esc(booking.label || 'Schedule a Call')}</a>`
+    : '';
+
+  // ── INVOICE ──────────────────────────────────────────────────────────
+  // Prefer the itemized invoice from extras.invoice if present, otherwise
+  // fall back to the legacy single-amount card from client.invoiceNumber/price.
+  const fmtMoney = n => '$' + Number(n).toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2});
+  let invoiceHtml = '';
+  if(snap.invoice && Array.isArray(snap.invoice.items) && snap.invoice.items.length){
+    const inv = snap.invoice;
+    const t = inv.totals || { flat:0, monthly:0, incidental:0, dueNow:0 };
+    const isPaid = inv.status === 'paid' || c.paid;
+    const dueDateLabel = inv.dueDate ? `Due ${new Date(inv.dueDate).toLocaleDateString()}` : '';
+    const itemsRows = inv.items.map(it => {
+      const sub = (Number(it.amount) || 0) * (Number(it.qty) || 1);
+      const tag = it.type === 'monthly'
+        ? '<span style="display:inline-block;background:rgba(30,91,192,0.12);color:#1E40AF;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;margin-left:6px">MONTHLY</span>'
+        : (it.type === 'other' || it.type === 'incidental')
+          ? '<span style="display:inline-block;background:rgba(249,115,22,0.12);color:#9A3412;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;margin-left:6px">OTHER</span>'
+          : '';
+      const amt = it.type === 'monthly' ? (fmtMoney(sub) + '/mo') : fmtMoney(sub);
+      const qty = it.qty > 1 ? ` <span style="color:#94A3B8">× ${it.qty}</span>` : '';
+      return `<tr><td style="padding:10px 6px;border-bottom:1px solid #E2E8F0;font-size:14px;color:#0F172A">${esc(it.description)}${tag}${qty}</td><td style="padding:10px 6px;border-bottom:1px solid #E2E8F0;font-size:14px;color:#0F172A;text-align:right;font-weight:600">${amt}</td></tr>`;
+    }).join('');
+    const monthlyTotalRow = t.monthly > 0
+      ? `<tr><td style="padding:6px;color:#1E40AF;font-size:13px">Monthly recurring</td><td style="padding:6px;text-align:right;color:#1E40AF;font-weight:700">${fmtMoney(t.monthly)}/mo</td></tr>`
+      : '';
+    invoiceHtml = `
+      <div class="card">
+        <h2 style="margin-bottom:14px">💰 Invoice ${esc(inv.number || '')} ${isPaid ? '<span class="badge paid" style="margin-left:6px">✓ PAID</span>' : (dueDateLabel ? `<span style="color:#94A3B8;font-weight:500;font-size:12px;margin-left:6px">· ${esc(dueDateLabel)}</span>` : '')}</h2>
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr><th style="text-align:left;padding:6px;font-size:10px;text-transform:uppercase;color:#94A3B8;border-bottom:2px solid #CBD5E1">Item</th><th style="text-align:right;padding:6px;font-size:10px;text-transform:uppercase;color:#94A3B8;border-bottom:2px solid #CBD5E1">Amount</th></tr></thead>
+          <tbody>${itemsRows}</tbody>
+          <tfoot>${monthlyTotalRow}<tr><td style="padding:12px 6px;font-size:15px;font-weight:700;color:#0F172A;border-top:2px solid #0F172A">${isPaid ? 'Paid' : 'Due now'}</td><td style="padding:12px 6px;text-align:right;font-size:20px;font-weight:700;color:#16A34A;border-top:2px solid #0F172A">${fmtMoney(t.dueNow)}</td></tr></tfoot>
+        </table>
+        ${inv.notes ? `<div style="margin-top:14px;padding:11px 13px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;color:#475569"><strong style="color:#0F172A">Notes:</strong> ${esc(inv.notes)}</div>` : ''}
+      </div>`;
+  } else if(c.invoiceNumber || c.price){
+    invoiceHtml = `
+      <div class="card">
+        <h2>💰 Invoice</h2>
+        <div class="status-grid">
+          <div class="stat">
+            <div class="lbl">Invoice #</div>
+            <div class="val">${esc(c.invoiceNumber || '—')}</div>
+          </div>
+          <div class="stat">
+            <div class="lbl">Amount</div>
+            <div class="val">${fmtMoney(c.price || 0)} <span class="badge ${paidClass}">${paidLabel}</span></div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  const html = `
+    <div class="brand-bar">
+      <div class="biz">${esc(b.businessName || 'H.E.L.P. Center')}</div>
+      <h1>Welcome, ${esc(c.name || 'Client')}</h1>
+      <div class="sub">${esc(c.businessName || c.service || '')}</div>
+    </div>
+
+    <div class="card">
+      <h2>Project Status</h2>
+      <div class="status-grid">
+        <div class="stat">
+          <div class="lbl">Status</div>
+          <div class="val"><span class="badge ${statusClass}">${esc(c.status || 'Active')}</span></div>
+        </div>
+        <div class="stat">
+          <div class="lbl">Service</div>
+          <div class="val">${esc(c.service || '—')}</div>
+        </div>
+      </div>
+      <div class="progress">
+        <div class="progress-row"><span>Project progress</span><span class="pct">${pct}%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      </div>
+    </div>
+
+    ${invoiceHtml}
+
+    <div class="card">
+      <h2>📦 Deliverables</h2>
+      ${deliverablesHtml}
+    </div>
+
+    ${documentsHtml}
+
+    <div class="card">
+      <h2>💬 Message ${esc(b.ownerName || 'Your Provider')}</h2>
+      <div class="field">
+        <label>Your name</label>
+        <input type="text" id="msg-name" value="${esc(c.name || '')}">
+      </div>
+      <div class="field">
+        <label>Your email</label>
+        <input type="email" id="msg-email" value="${esc(c.email || '')}">
+      </div>
+      <div class="field">
+        <label>Message</label>
+        <textarea id="msg-body" placeholder="Questions, feedback, requests..."></textarea>
+      </div>
+
+      <div class="toggle-up" onclick="toggleUpload()">
+        <span id="up-toggle-icon">▸</span> Attach a file (optional)
+      </div>
+      <div class="upload-area" id="upload-area">
+        <label class="pick-btn" for="msg-file">Choose a file</label>
+        <input type="file" id="msg-file" onchange="onFilePicked()">
+        <div class="picked" id="up-picked">No file selected.</div>
+      </div>
+
+      <button class="cta-btn" onclick="sendMessage()">Send Message →</button>
+    </div>
+
+    ${bookingHtml ? `<div class="card"><h2>📅 Scheduling</h2><div class="cta-stack">${bookingHtml}</div></div>` : ''}
+
+    <div class="footer">
+      Portal updated ${esc(snap.snapshotAt ? new Date(snap.snapshotAt).toLocaleString() : 'recently')}<br>
+      Powered by ${esc(b.businessName || 'H.E.L.P. Center')}
+    </div>
+  `;
+
+  document.getElementById('shell').innerHTML = html;
+
+  // Stash data for sendMessage
+  window._portal = { snap, ownerEmail: b.ownerEmail, businessName: b.businessName, ownerName: b.ownerName, clientId: c.id };
+}
+
+/* ── Optional file upload ─────────────────────── */
+function toggleUpload(){
+  const area = document.getElementById('upload-area');
+  area.classList.toggle('show');
+  document.getElementById('up-toggle-icon').textContent = area.classList.contains('show') ? '▾' : '▸';
+}
+function onFilePicked(){
+  const f = document.getElementById('msg-file').files[0];
+  document.getElementById('up-picked').textContent = f ? `${f.name} (${Math.round(f.size/1024)} KB)` : 'No file selected.';
+}
+
+async function uploadAttachment(file){
+  const fd = new FormData();
+  fd.append('file', file);
+  const res = await fetch(API_BASE + '/upload', { method:'POST', body: fd });
+  if(!res.ok) throw new Error('Upload failed (HTTP ' + res.status + ')');
+  const j = await res.json();
+  return j.url || j.path || '';
+}
+
+/* ── Send message to owner ─────────────────────── */
+async function sendMessage(){
+  const name = document.getElementById('msg-name').value.trim();
+  const email = document.getElementById('msg-email').value.trim();
+  const body = document.getElementById('msg-body').value.trim();
+  const file = document.getElementById('msg-file').files[0];
+
+  if(!name || !email || !body){
+    toast('Please fill in name, email, and message.', 'error');
+    return;
+  }
+
+  const btn = event.target;
+  btn.disabled = true; btn.textContent = 'Sending…';
+
+  let attachmentUrl = '';
+  if(file){
+    try {
+      attachmentUrl = await uploadAttachment(file);
+    } catch(e){
+      toast('Attachment upload failed: ' + e.message, 'error');
+      btn.disabled = false; btn.textContent = 'Send Message →';
+      return;
+    }
+  }
+
+  const p = window._portal;
+  const subject = `Portal message from ${name} — ${p.businessName || 'Client Portal'}`;
+  const html = `
+    <div style="font-family:Helvetica,Arial,sans-serif;background:#F1F5F9;padding:20px">
+      <div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(15,23,42,0.08)">
+        <div style="background:linear-gradient(135deg,#0F172A,#312E81);padding:22px;color:#fff">
+          <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;opacity:0.8">Client Portal — Incoming Message</div>
+          <div style="font-size:20px;font-weight:700;margin-top:4px">${esc(name)}</div>
+          <div style="font-size:13px;opacity:0.85;margin-top:2px">${esc(email)}</div>
+        </div>
+        <div style="padding:24px;color:#1F2937;font-size:15px;line-height:1.7">
+          <div style="white-space:pre-wrap">${esc(body)}</div>
+          ${attachmentUrl ? `<div style="margin-top:20px;padding:12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;font-size:13px">📎 Attachment: <a href="${esc(attachmentUrl)}" style="color:#1E5BC0">${esc(attachmentUrl)}</a></div>` : ''}
+          <div style="margin-top:24px;padding-top:16px;border-top:1px solid #E2E8F0;font-size:12px;color:#64748B">
+            Client ID: ${esc(p.clientId || '')} · Sent via portal.html · ${esc(new Date().toISOString())}
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  try {
+    const r = await fetch(API_BASE + '/email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: p.ownerEmail,
+        subject: subject,
+        html: html,
+        // Resend requires sender on the verified domain — let the server pick the
+        // default and route the client's address through replyTo instead.
+        replyToEmail: email,
+        replyToName: name
+      })
+    });
+    if(!r.ok){
+      const errBody = await r.json().catch(() => ({}));
+      throw new Error(errBody.error || ('HTTP ' + r.status));
+    }
+    toast('✓ Message sent. ' + (p.ownerName || 'Your provider') + ' will be in touch.', 'success');
+    document.getElementById('msg-body').value = '';
+    document.getElementById('msg-file').value = '';
+    document.getElementById('up-picked').textContent = 'No file selected.';
+    btn.textContent = 'Message Sent ✓';
+    setTimeout(() => { btn.disabled = false; btn.textContent = 'Send Message →'; }, 4000);
+  } catch(e){
+    toast('Send failed: ' + e.message, 'error');
+    btn.disabled = false; btn.textContent = 'Send Message →';
+  }
+}
+
+loadPortal();
+</script>
+</body>
+</html>

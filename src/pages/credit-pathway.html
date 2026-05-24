@@ -1,0 +1,106 @@
+      <div id="credit-pathway-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">Credit &amp; Finance</h1>
+          <p class="page-subtitle">Build business credit, master finances, and unlock funding</p>
+        </div>
+        <div class="content">
+          <div class="path-tabs-container">
+            <div class="path-tabs-nav">
+              <button class="path-tab active" onclick="pTab('credit','assessment',this)">Assessment</button>
+              <button class="path-tab" onclick="pTab('credit','roadmap',this)">10-Step Roadmap</button>
+              <button class="path-tab" onclick="pTab('credit','wisdom',this)">Financial Wisdom</button>
+              <button class="path-tab" onclick="pTab('credit','bizcredit',this)">Business Credit</button>
+              <button class="path-tab" onclick="pTab('credit','resources',this)">Resources</button>
+            </div>
+            <div id="credit-tab-assessment" class="path-tab-content active">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:4px;">Where are you on your financial journey?</h3>
+                <p style="color:var(--gray-500);font-size:14px;margin-bottom:20px;">Answer honestly — your roadmap will be customized to your starting point.</p>
+                <form id="credit-assess-form" onsubmit="submitCreditAssessment(event)">
+                  <div class="assess-q">
+                    <label>1. What is your current personal credit score range?</label>
+                    <label class="assess-option"><input type="radio" name="score" value="bad" required> Below 580 (Poor)</label>
+                    <label class="assess-option"><input type="radio" name="score" value="fair"> 580–669 (Fair)</label>
+                    <label class="assess-option"><input type="radio" name="score" value="good"> 670–739 (Good)</label>
+                    <label class="assess-option"><input type="radio" name="score" value="great"> 740+ (Excellent)</label>
+                  </div>
+                  <div class="assess-q">
+                    <label>2. Do you have any current negative items on your credit report?</label>
+                    <label class="assess-option"><input type="radio" name="negatives" value="many" required> Yes — collections, charge-offs, late payments</label>
+                    <label class="assess-option"><input type="radio" name="negatives" value="some"> Yes — a few late payments</label>
+                    <label class="assess-option"><input type="radio" name="negatives" value="none"> No negative items</label>
+                  </div>
+                  <div class="assess-q">
+                    <label>3. Do you have an EIN (Employer Identification Number) for your business?</label>
+                    <label class="assess-option"><input type="radio" name="ein" value="no" required> No</label>
+                    <label class="assess-option"><input type="radio" name="ein" value="yes"> Yes</label>
+                  </div>
+                  <div class="assess-q">
+                    <label>4. What is your current monthly savings rate?</label>
+                    <label class="assess-option"><input type="radio" name="savings" value="none" required> I'm not saving consistently</label>
+                    <label class="assess-option"><input type="radio" name="savings" value="low"> Less than 5% of income</label>
+                    <label class="assess-option"><input type="radio" name="savings" value="ok"> 5–15% of income</label>
+                    <label class="assess-option"><input type="radio" name="savings" value="good"> 15%+ of income</label>
+                  </div>
+                  <button type="submit" class="btn btn-solid" style="margin-top:8px;">Get My Personalized Roadmap →</button>
+                </form>
+                <div id="credit-assess-results" style="display:none;margin-top:24px;"></div>
+              </div>
+            </div>
+            <div id="credit-tab-roadmap" class="path-tab-content">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">The 10-Step Credit &amp; Finance Roadmap</h3>
+                <div class="roadmap-step"><div class="roadmap-num">1</div><div class="roadmap-body"><h4>Pull All 3 Credit Reports</h4><p>Get free reports at AnnualCreditReport.com. Review Equifax, Experian, and TransUnion for errors, negative items, and accounts you don't recognize.</p></div></div>
+                <div class="roadmap-step"><div class="roadmap-num">2</div><div class="roadmap-body"><h4>Dispute Inaccurate Items</h4><p>Write formal dispute letters to each bureau. Under the FCRA, bureaus must investigate and respond within 30 days. Keep copies of everything.</p></div></div>
+                <div class="roadmap-step"><div class="roadmap-num">3</div><div class="roadmap-body"><h4>Set Up a Debt Payoff Plan</h4><p>Use the Snowball Method (smallest balance first) or Avalanche Method (highest interest first). Both work — choose the one you'll actually stick to.</p></div></div>
+                <div class="roadmap-step"><div class="roadmap-num">4</div><div class="roadmap-body"><h4>Open a Secured Credit Card</h4><p>If rebuilding, a secured card (deposit-backed) lets you build positive payment history. Use it for small purchases and pay in full monthly.</p></div></div>
+                <div class="roadmap-step"><div class="roadmap-num">5</div><div class="roadmap-body"><h4>Build a 3-Month Emergency Fund</h4><p>Start with $1,000, then build to 3 months of expenses. Keep it in a separate high-yield savings account. This protects credit during setbacks.</p></div></div>
+                <div class="roadmap-step"><div class="roadmap-num">6</div><div class="roadmap-body"><h4>Get Your EIN &amp; Open a Business Bank Account</h4><p>Register your EIN free at IRS.gov. Open a dedicated business checking account immediately — this is the foundation of your business financial identity.</p></div></div>
+                <div class="roadmap-step"><div class="roadmap-num">7</div><div class="roadmap-body"><h4>Register with Business Credit Bureaus</h4><p>Set up profiles with Dun &amp; Bradstreet (DUNS number), Experian Business, and Equifax Business. These are separate from your personal credit.</p></div></div>
+                <div class="roadmap-step"><div class="roadmap-num">8</div><div class="roadmap-body"><h4>Open Net-30 Vendor Accounts</h4><p>Apply for vendor accounts that report to business credit bureaus (Uline, Quill, Grainger). Pay on or before the due date to build your Paydex score.</p></div></div>
+                <div class="roadmap-step"><div class="roadmap-num">9</div><div class="roadmap-body"><h4>Apply for a Business Credit Card</h4><p>Once you have 3–6 months of business banking history and vendor accounts, apply for a business credit card. Use it for business expenses only.</p></div></div>
+                <div class="roadmap-step"><div class="roadmap-num">10</div><div class="roadmap-body"><h4>Pursue Funding &amp; Grants</h4><p>With solid credit and financials, apply for SBA microloans, CDFI loans, MBDA grants, and local small business programs. Keep your documents ready.</p></div></div>
+              </div>
+            </div>
+            <div id="credit-tab-wisdom" class="path-tab-content">
+              <div class="card" style="margin-bottom:16px;">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Financial Wisdom Library</h3>
+                <div class="tip-box">
+                  <h4>The 3-Bank Method</h4>
+                  <p>Keep three separate accounts: (1) Operations — for bills and recurring expenses. (2) Profit — 10% of every payment received goes here, never touched. (3) Growth — for reinvestment and opportunities. This simple separation prevents cash flow chaos and builds wealth automatically.</p>
+                </div>
+                <div class="tip-box">
+                  <h4>ROSCAs — Rotating Savings &amp; Credit Associations</h4>
+                  <p>A centuries-old community banking method used across Africa, the Caribbean, and Latin America. A group of trusted people each contribute a fixed amount monthly; one member receives the full pot each month. Known as "sou-sou" in the Caribbean and "partner" in Jamaica, ROSCAs build financial discipline and provide lump-sum capital without interest. Best for trusted, small groups with clear agreements in writing.</p>
+                </div>
+                <div class="tip-box">
+                  <h4>Black Banking History &amp; Why It Matters</h4>
+                  <p>Black-owned banks were established after Reconstruction to serve communities locked out of mainstream banking. The Freedman's Bank (1865), though it failed due to mismanagement, inspired generations of Black banking pioneers. Today, Black-owned CDFIs and banks like OneUnited Bank, Carver Federal, and Liberty Bank offer business loans, mortgages, and credit-building products specifically designed for Black entrepreneurs. Banking Black keeps capital circulating in Black communities.</p>
+                </div>
+                <div class="tip-box">
+                  <h4>The 50/30/20 Budget Rule</h4>
+                  <p>Allocate 50% of after-tax income to needs (rent, utilities, food), 30% to wants (entertainment, dining out), and 20% to savings and debt repayment. For business owners, shift this to 40/20/40 — directing 40% toward growth and savings to build wealth faster.</p>
+                </div>
+              </div>
+            </div>
+            <div id="credit-tab-bizcredit" class="path-tab-content">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:6px;">Business Credit Building Track</h3>
+                <p style="color:var(--gray-500);font-size:14px;margin-bottom:20px;">Check off each milestone as you complete it. Your progress is saved automatically.</p>
+                <div id="biz-credit-checklist"></div>
+              </div>
+            </div>
+            <div id="credit-tab-resources" class="path-tab-content">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Credit &amp; Finance Resources</h3>
+                <a class="resource-link" href="https://www.annualcreditreport.com" target="_blank"><span class="icon" data-icon="clipboard"></span><div class="info"><strong>Annual Credit Report</strong><span>Free reports from all 3 bureaus — federally mandated</span></div></a>
+                <a class="resource-link" href="https://www.dnb.com/duns-number.html" target="_blank"><span class="icon" data-icon="chart"></span><div class="info"><strong>Dun &amp; Bradstreet DUNS Number</strong><span>Free business credit identifier — required for many grants</span></div></a>
+                <a class="resource-link" href="https://www.irs.gov/businesses/small-businesses-self-employed/apply-for-an-employer-identification-number-ein-online" target="_blank"><span class="icon" data-icon="shield"></span><div class="info"><strong>IRS EIN Application</strong><span>Free — apply online, get your EIN immediately</span></div></a>
+                <a class="resource-link" href="https://www.sba.gov/funding-programs/loans/microloans" target="_blank"><span class="icon" data-icon="briefcase"></span><div class="info"><strong>SBA Microloans</strong><span>Up to $50,000 for small businesses and startups</span></div></a>
+                <a class="resource-link" href="https://www.mbda.gov" target="_blank"><span class="icon" data-icon="star"></span><div class="info"><strong>MBDA — Minority Business Development Agency</strong><span>Grants, loans, and business development services</span></div></a>
+                <a class="resource-link" href="https://www.oneunited.com" target="_blank"><span class="icon" data-icon="creditcard"></span><div class="info"><strong>OneUnited Bank</strong><span>America's largest Black-owned bank — business accounts available</span></div></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>

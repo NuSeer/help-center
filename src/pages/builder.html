@@ -1,0 +1,245 @@
+      <div id="builder-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">Business Builder</h1>
+          <p class="page-subtitle">Professional tools to build your brand and operations</p>
+        </div>
+
+        <div class="content">
+          <div class="tabs">
+            <div class="tab active" onclick="showTab('foundation', event)">Foundation</div>
+            <div class="tab" onclick="showTab('branding', event)">Branding</div>
+            <div class="tab" onclick="showTab('operations', event)">Operations</div>
+            <div class="tab" onclick="showTab('marketing', event)">Marketing</div>
+          </div>
+
+          <div id="foundation-tab" class="tab-content active">
+            <div class="builder-grid">
+              <div class="tool-card" style="grid-column:1/-1">
+                <h4 class="tool-header"><span class="icon icon-sm" data-icon="spark" style="margin-right:8px;vertical-align:-2px;color:var(--brand-primary)"></span>AI Business Name Generator</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Enter keywords that describe your business — industry, vibe, audience, or values — and AI will generate 8 unique, brandable names with taglines.</p>
+                <input type="text" id="biz-name-keywords" class="form-input" placeholder="e.g. holistic wellness, Black women, healing, community...">
+                <button id="biz-name-btn" onclick="generateBizName()" class="btn btn-solid" style="width:100%;margin-top:12px;background:linear-gradient(135deg,var(--accent),#7C3AED)"><span class="icon icon-sm" data-icon="spark" style="margin-right:6px;vertical-align:-2px"></span>Generate Names with AI</button>
+                <div id="biz-name-results" style="margin-top:16px;padding:16px;background:var(--gray-50);border-radius:10px;min-height:40px;display:none"></div>
+                <script>document.getElementById('biz-name-keywords').addEventListener('input',()=>{const r=document.getElementById('biz-name-results');if(r&&r.textContent.trim())r.style.display='block';});</script>
+              </div>
+              <div class="tool-card">
+                <h4 class="tool-header">Legal Structure Selector</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Pick the structure that protects your assets and matches your goals.</p>
+                <div class="tool-options">
+                  <div class="tool-option" onclick="showLegalInfo('llc',this)">LLC — Limited Liability Company</div>
+                  <div class="tool-option" onclick="showLegalInfo('scorp',this)">S-Corp — S Corporation</div>
+                  <div class="tool-option" onclick="showLegalInfo('sole',this)">Sole Proprietorship</div>
+                </div>
+                <div id="legal-info" style="margin-top:12px;font-size:13px;color:var(--gray-600);line-height:1.7;padding:12px;background:var(--gray-50);border-radius:8px;display:none"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="branding-tab" class="tab-content">
+            <div style="max-width:780px;margin:0 auto"><!-- Brand Wizard lives here directly -->
+              <!-- Progress bar -->
+              <div style="display:flex;gap:6px;margin-bottom:24px;align-items:center">
+                <div id="bw-prog-1" style="flex:1;height:4px;border-radius:4px;background:var(--brand-primary);transition:all .3s"></div>
+                <div id="bw-prog-2" style="flex:1;height:4px;border-radius:4px;background:#E2E8F0;transition:all .3s"></div>
+                <div id="bw-prog-3" style="flex:1;height:4px;border-radius:4px;background:#E2E8F0;transition:all .3s"></div>
+                <div id="bw-prog-4" style="flex:1;height:4px;border-radius:4px;background:#E2E8F0;transition:all .3s"></div>
+                <span id="bw-step-label" style="font-size:12px;color:var(--gray-500);white-space:nowrap;margin-left:8px">Step 1 of 4</span>
+              </div>
+
+              <!-- Step 1: Business Basics -->
+              <div id="bw-step-1" class="card" style="padding:28px">
+                <h3 style="font-size:18px;font-weight:800;margin-bottom:4px">Tell us about your business</h3>
+                <p style="font-size:14px;color:var(--gray-500);margin-bottom:20px">We'll use this to build everything — tagline, colors, voice, and more.</p>
+                <div class="form-group"><label class="form-label">Business Name (or leave blank for suggestions)</label>
+                  <input type="text" id="bw-name" class="form-input" placeholder="e.g. H.E.L.P. Center"></div>
+                <div class="form-group"><label class="form-label">What does your business do? *</label>
+                  <textarea id="bw-what" class="form-textarea" style="min-height:70px" placeholder="e.g. We help Black entrepreneurs build credit, form LLCs, and launch their businesses through 1-on-1 coaching and online resources."></textarea></div>
+                <div class="form-group"><label class="form-label">Who do you serve? *</label>
+                  <input type="text" id="bw-who" class="form-input" placeholder="e.g. Black women entrepreneurs ages 25–45"></div>
+                <div class="form-group"><label class="form-label">What makes you different from competitors?</label>
+                  <input type="text" id="bw-diff" class="form-input" placeholder="e.g. We combine spiritual community with real business strategy"></div>
+                <button class="btn btn-solid" style="width:100%;margin-top:8px" onclick="bwNext(2)">Next: Your Brand Personality →</button>
+              </div>
+
+              <!-- Step 2: Personality -->
+              <div id="bw-step-2" class="card" style="padding:28px;display:none">
+                <h3 style="font-size:18px;font-weight:800;margin-bottom:4px">Choose your brand personality</h3>
+                <p style="font-size:14px;color:var(--gray-500);margin-bottom:20px">Pick up to 3 words that describe how you want your brand to feel.</p>
+                <div class="tool-options" style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="bw-personality-opts">
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Bold & Confident">Bold & Confident</div>
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Warm & Nurturing">Warm & Nurturing</div>
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Professional & Authoritative">Professional & Authoritative</div>
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Creative & Innovative">Creative & Innovative</div>
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Community-Focused & Inclusive">Community-Focused</div>
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Spiritual & Purpose-Driven">Spiritual & Purpose-Driven</div>
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Luxury & Premium">Luxury & Premium</div>
+                  <div class="tool-option" onclick="bwToggle(this,'bw-personality')" data-val="Educational & Empowering">Educational & Empowering</div>
+                </div>
+                <input type="hidden" id="bw-personality" value="">
+                <div style="display:flex;gap:10px;margin-top:20px">
+                  <button class="btn btn-outline" style="flex:1" onclick="bwNext(1)">← Back</button>
+                  <button class="btn btn-solid" style="flex:2" onclick="bwNext(3)">Next: Visual Style →</button>
+                </div>
+              </div>
+
+              <!-- Step 3: Visual Style & Colors -->
+              <div id="bw-step-3" class="card" style="padding:28px;display:none">
+                <h3 style="font-size:18px;font-weight:800;margin-bottom:4px">Choose your visual direction</h3>
+                <p style="font-size:14px;color:var(--gray-500);margin-bottom:16px">What style feels right for your brand?</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px" id="bw-style-opts">
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-style')" data-val="Modern & Clean">Modern & Clean</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-style')" data-val="Classic & Traditional">Classic & Traditional</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-style')" data-val="Bold & Vibrant">Bold & Vibrant</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-style')" data-val="Minimal & Elegant">Minimal & Elegant</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-style')" data-val="Earthy & Natural">Earthy & Natural</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-style')" data-val="Afrocentric & Cultural">Afrocentric & Cultural</div>
+                </div>
+                <input type="hidden" id="bw-style" value="">
+                <p style="font-size:14px;font-weight:600;margin-bottom:10px">Color vibe</p>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px" id="bw-color-opts">
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-color')" data-val="Blues & Navy (Trust, Professional)" style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:50%;background:#1e3a6e;display:inline-block"></span>Blues & Navy</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-color')" data-val="Greens (Growth, Wealth, Natural)" style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:50%;background:#2E7D32;display:inline-block"></span>Greens</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-color')" data-val="Golds & Warm Tones (Luxury, Power, Legacy)" style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:50%;background:#C9A84C;display:inline-block"></span>Golds & Warm Tones</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-color')" data-val="Purples (Creativity, Royalty, Spirituality)" style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:50%;background:#7B1FA2;display:inline-block"></span>Purples</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-color')" data-val="Reds & Oranges (Energy, Bold, Passion)" style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:50%;background:#E65100;display:inline-block"></span>Reds & Oranges</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'bw-color')" data-val="Black, White & Gold (Timeless, Premium)" style="display:flex;align-items:center;gap:8px"><span style="width:16px;height:16px;border-radius:50%;background:#111;display:inline-block"></span>Black, White & Gold</div>
+                </div>
+                <input type="hidden" id="bw-color" value="">
+                <div style="display:flex;gap:10px;margin-top:20px">
+                  <button class="btn btn-outline" style="flex:1" onclick="bwNext(2)">← Back</button>
+                  <button class="btn btn-solid" style="flex:2" onclick="bwNext(4)">Next: Generate My Brand →</button>
+                </div>
+              </div>
+
+              <!-- Step 4: Generate -->
+              <div id="bw-step-4" class="card" style="padding:28px;display:none">
+                <h3 style="font-size:18px;font-weight:800;margin-bottom:4px">Your Brand Package</h3>
+                <p style="font-size:14px;color:var(--gray-500);margin-bottom:20px">AI is building your complete brand — tagline, colors, fonts, voice guide, logo brief, and social bios.</p>
+                <div style="display:flex;gap:10px;margin-bottom:20px">
+                  <button class="btn btn-outline" onclick="bwNext(3)">← Edit Choices</button>
+                  <button class="btn btn-solid" style="background:linear-gradient(135deg,var(--brand-primary),#7C3AED)" onclick="bwGenerate()"><span class="icon icon-sm" data-icon="spark" style="margin-right:6px;vertical-align:-2px"></span>Build My Brand</button>
+                  <button class="btn btn-outline" onclick="bwPrint()" style="margin-left:auto"><span class="icon icon-sm" data-icon="print" style="margin-right:6px;vertical-align:-2px"></span>Print / Save</button>
+                </div>
+                <div id="bw-result" class="md-content" style="font-size:14px;line-height:1.85;min-height:100px"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="operations-tab" class="tab-content">
+            <div class="builder-grid">
+              <div class="tool-card">
+                <h4 class="tool-header"><span class="icon icon-sm" data-icon="clipboard" style="margin-right:8px;vertical-align:-2px;color:var(--brand-primary)"></span>Process Template / SOP</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Select a process — AI writes the full step-by-step SOP you can use immediately.</p>
+                <div class="tool-options" id="proc-opts">
+                  <div class="tool-option" onclick="selectBbOption(this,'proc-type')" data-val="Client Onboarding Process">Client Onboarding</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'proc-type')" data-val="Project Management Workflow">Project Management</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'proc-type')" data-val="Invoice & Payment Collection">Invoice & Payments</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'proc-type')" data-val="Discovery Call Script">Discovery Call Script</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'proc-type')" data-val="Proposal & Contract Process">Proposal & Contract</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'proc-type')" data-val="Social Media Content Process">Content Creation</div>
+                </div>
+                <input type="hidden" id="proc-type" value="">
+                <input type="text" id="proc-biz" class="form-input" style="margin-top:10px" placeholder="Your business type (e.g. web design, coaching)...">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('process-template')"><span class="icon icon-sm" data-icon="clipboard" style="margin-right:6px;vertical-align:-2px"></span>Generate SOP</button>
+                <div id="bb-process-template-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+              </div>
+              <div class="tool-card">
+                <h4 class="tool-header"><span class="icon icon-sm" data-icon="settings" style="margin-right:8px;vertical-align:-2px;color:var(--brand-primary)"></span>Automation Recommendations</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Tell AI what you do manually — it recommends free/low-cost tools to automate it.</p>
+                <textarea id="auto-tasks" class="form-textarea" style="min-height:90px" placeholder="What tasks take up most of your time? (e.g. sending invoices, scheduling, following up with clients, posting content...)"></textarea>
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('automations')"><span class="icon icon-sm" data-icon="settings" style="margin-right:6px;vertical-align:-2px"></span>Get Automation Plan</button>
+                <div id="bb-automations-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+              </div>
+              <div class="tool-card">
+                <h4 class="tool-header"><span class="icon icon-sm" data-icon="user" style="margin-right:8px;vertical-align:-2px;color:var(--brand-primary)"></span>Hiring & Job Description</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI writes a complete job description, interview questions, and scoring rubric.</p>
+                <input type="text" id="hire-role" class="form-input" placeholder="Role title (e.g. Virtual Assistant, Social Media Manager)...">
+                <input type="text" id="hire-biz" class="form-input" style="margin-top:8px" placeholder="Your business & what they'll help with...">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('hire-pack')"><span class="icon icon-sm" data-icon="user" style="margin-right:6px;vertical-align:-2px"></span>Generate Hiring Pack</button>
+                <div id="bb-hire-pack-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+              </div>
+              <div class="tool-card">
+                <h4 class="tool-header"><span class="icon icon-sm" data-icon="dollar" style="margin-right:8px;vertical-align:-2px;color:var(--brand-primary)"></span>Pricing Strategy Builder</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI builds a complete pricing structure — packages, tiers, discounts, retainers.</p>
+                <input type="text" id="price-svc" class="form-input" placeholder="Service or product...">
+                <input type="text" id="price-target" class="form-input" style="margin-top:8px" placeholder="Target monthly revenue (e.g. $10k)...">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('pricing-strategy')"><span class="icon icon-sm" data-icon="dollar" style="margin-right:6px;vertical-align:-2px"></span>Build Pricing</button>
+                <div id="bb-pricing-strategy-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+              </div>
+              <div class="tool-card">
+                <h4 class="tool-header"><span class="icon icon-sm" data-icon="note" style="margin-right:8px;vertical-align:-2px;color:var(--brand-primary)"></span>Client Intake Form Builder</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI builds a complete intake form with the right questions — paste straight into Google Forms or Typeform.</p>
+                <input type="text" id="intake-svc" class="form-input" placeholder="Type of service/project...">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('intake-form')"><span class="icon icon-sm" data-icon="note" style="margin-right:6px;vertical-align:-2px"></span>Build Intake Form</button>
+                <div id="bb-intake-form-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+              </div>
+              <div class="tool-card">
+                <h4 class="tool-header"><span class="icon icon-sm" data-icon="send" style="margin-right:8px;vertical-align:-2px;color:var(--brand-primary)"></span>Email Templates Library</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI generates 8 reusable email templates: inquiry response, proposal follow-up, invoice reminder, project completion, etc.</p>
+                <input type="text" id="emt-biz" class="form-input" placeholder="Your business type...">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('email-templates')"><span class="icon icon-sm" data-icon="send" style="margin-right:6px;vertical-align:-2px"></span>Generate Templates</button>
+                <div id="bb-email-templates-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+              </div>
+            </div>
+          </div>
+
+          <div id="marketing-tab" class="tab-content">
+            <div class="builder-grid">
+              <div class="tool-card">
+                <h4 class="tool-header"><span class="icon icon-sm" data-icon="spark" style="margin-right:8px;vertical-align:-2px;color:var(--brand-primary)"></span>Social Media Strategy</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI builds a 30-day social media plan with post ideas, best times, and platform strategy.</p>
+                <input type="text" id="sm-biz" class="form-input" placeholder="Business name & what you offer...">
+                <div class="tool-options" style="margin:10px 0" id="sm-plat-opts">
+                  <div class="tool-option" onclick="selectBbOption(this,'sm-platform')" data-val="Instagram">Instagram</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'sm-platform')" data-val="Facebook">Facebook</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'sm-platform')" data-val="TikTok">TikTok</div>
+                  <div class="tool-option" onclick="selectBbOption(this,'sm-platform')" data-val="LinkedIn">LinkedIn</div>
+                </div>
+                <input type="hidden" id="sm-platform" value="">
+                <button class="btn btn-solid" style="width:100%;margin-top:8px" onclick="bbGenerate('social-media')"><span class="icon icon-sm" data-icon="spark" style="margin-right:6px;vertical-align:-2px"></span>Build Strategy</button>
+                <div id="bb-social-media-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+              </div>
+              <div class="tool-card">
+                <h4 class="tool-header"><span class="icon icon-sm" data-icon="pen" style="margin-right:8px;vertical-align:-2px;color:var(--brand-primary)"></span>Ad Copy Generator</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI writes high-converting ad copy for Facebook, Instagram, or Google — ready to post.</p>
+                <input type="text" id="ad-product" class="form-input" placeholder="What are you promoting?">
+                <input type="text" id="ad-audience" class="form-input" placeholder="Who is your target audience?">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('ad-copy')"><span class="icon icon-sm" data-icon="pen" style="margin-right:6px;vertical-align:-2px"></span>Generate Ad Copy</button>
+                <div id="bb-ad-copy-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+              </div>
+              <div class="tool-card" style="grid-column:1/-1">
+                <h4 class="tool-header"><span class="icon icon-sm" data-icon="send" style="margin-right:8px;vertical-align:-2px;color:var(--brand-primary)"></span>Email Campaign Builder</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI writes a complete email sequence — welcome, nurture, and sales emails — ready to load into Mailchimp or ConvertKit.</p>
+                <input type="text" id="em-biz" class="form-input" placeholder="Business & offer (e.g. credit repair coaching program)...">
+                <input type="text" id="em-goal" class="form-input" placeholder="Campaign goal (e.g. sell a $297 course, book discovery calls)...">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('email-campaign')"><span class="icon icon-sm" data-icon="send" style="margin-right:6px;vertical-align:-2px"></span>Build Email Sequence</button>
+                <div id="bb-email-campaign-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+              </div>
+              <div class="tool-card">
+                <h4 class="tool-header"><span class="icon icon-sm" data-icon="search" style="margin-right:8px;vertical-align:-2px;color:var(--brand-primary)"></span>SEO Keyword Strategy</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI builds an SEO strategy with target keywords, page titles, meta descriptions, and content cluster ideas.</p>
+                <input type="text" id="seo-biz" class="form-input" placeholder="Business niche...">
+                <input type="text" id="seo-loc" class="form-input" style="margin-top:8px" placeholder="Location (if local SEO matters)...">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('seo-strategy')"><span class="icon icon-sm" data-icon="search" style="margin-right:6px;vertical-align:-2px"></span>Build SEO Plan</button>
+                <div id="bb-seo-strategy-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+              </div>
+              <div class="tool-card">
+                <h4 class="tool-header"><span class="icon icon-sm" data-icon="spark" style="margin-right:8px;vertical-align:-2px;color:var(--brand-primary)"></span>Lead Magnet Generator</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI designs a high-converting lead magnet — outline, opt-in copy, and follow-up email.</p>
+                <input type="text" id="lm-biz" class="form-input" placeholder="Your offering...">
+                <input type="text" id="lm-aud" class="form-input" style="margin-top:8px" placeholder="Target audience pain point...">
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('lead-magnet')"><span class="icon icon-sm" data-icon="spark" style="margin-right:6px;vertical-align:-2px"></span>Generate Lead Magnet</button>
+                <div id="bb-lead-magnet-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+              </div>
+              <div class="tool-card" style="grid-column:1/-1">
+                <h4 class="tool-header"><span class="icon icon-sm" data-icon="file" style="margin-right:8px;vertical-align:-2px;color:var(--brand-primary)"></span>Press Release / PR Pitch</h4>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">AI writes a full press release in AP format — newsworthy hook, quote, boilerplate, media contact.</p>
+                <input type="text" id="pr-event" class="form-input" placeholder="What's the announcement? (launch, milestone, event, partnership)">
+                <textarea id="pr-details" class="form-textarea" style="min-height:80px;margin-top:8px" placeholder="Key details — dates, names, numbers, why it matters..."></textarea>
+                <button class="btn btn-solid" style="width:100%;margin-top:10px" onclick="bbGenerate('press-release')"><span class="icon icon-sm" data-icon="file" style="margin-right:6px;vertical-align:-2px"></span>Generate Press Release</button>
+                <div id="bb-press-release-result" class="md-content" style="margin-top:14px;font-size:13px;line-height:1.8;display:none"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>

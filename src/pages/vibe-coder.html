@@ -1,0 +1,58 @@
+      <div id="vibe-coder-page" class="page hidden">
+        <div class="page-header">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+            <div>
+              <h1 class="page-title">Vibe Coder</h1>
+              <p class="page-subtitle">Describe a web app in plain English. AI builds it. Edit, preview, ship to a client.</p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button onclick="vbNewProject()" class="btn btn-outline" style="padding:8px 14px"><span class="icon icon-sm" data-icon="plus" style="margin-right:5px;vertical-align:-2px"></span>New Project</button>
+              <button onclick="vbStartTemplate('landing')" class="btn btn-outline" style="padding:8px 14px"><span class="icon icon-sm" data-icon="rocket" style="margin-right:5px;vertical-align:-2px"></span>Landing Page</button>
+              <button onclick="vbStartTemplate('portfolio')" class="btn btn-outline" style="padding:8px 14px"><span class="icon icon-sm" data-icon="star" style="margin-right:5px;vertical-align:-2px"></span>Portfolio</button>
+              <button onclick="vbStartTemplate('dashboard')" class="btn btn-outline" style="padding:8px 14px"><span class="icon icon-sm" data-icon="chart" style="margin-right:5px;vertical-align:-2px"></span>Dashboard</button>
+              <button onclick="vbStartTemplate('ecom')" class="btn btn-outline" style="padding:8px 14px"><span class="icon icon-sm" data-icon="package" style="margin-right:5px;vertical-align:-2px"></span>Shop</button>
+              <button onclick="vbStartTemplate('blog')" class="btn btn-outline" style="padding:8px 14px"><span class="icon icon-sm" data-icon="note" style="margin-right:5px;vertical-align:-2px"></span>Blog</button>
+              <button onclick="vbStartTemplate('booking')" class="btn btn-outline" style="padding:8px 14px"><span class="icon icon-sm" data-icon="calendar" style="margin-right:5px;vertical-align:-2px"></span>Booking</button>
+              <button onclick="vbDownloadZip()" class="btn btn-outline" style="padding:8px 14px"><span class="icon icon-sm" data-icon="download" style="margin-right:5px;vertical-align:-2px"></span>.zip</button>
+              <button onclick="vbSendToPortal()" class="btn btn-solid" style="padding:8px 14px"><span class="icon icon-sm" data-icon="upload" style="margin-right:5px;vertical-align:-2px"></span>Send to Portal</button>
+            </div>
+          </div>
+        </div>
+        <div class="content" style="padding:0">
+          <div id="vibe-grid" style="display:grid;grid-template-columns:200px 0.7fr 1.5fr;grid-template-rows:1fr 38vh;gap:8px;height:calc(100vh - 180px);min-height:500px;padding:0 16px 16px">
+            <!-- File tree -->
+            <div style="background:#0F172A;color:#E2E8F0;border-radius:10px;display:flex;flex-direction:column;overflow:hidden;grid-row:1/2">
+              <div style="padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#94A3B8;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.06)">
+                <span>Files</span>
+                <button onclick="vbAddFile()" title="New file" style="background:none;border:none;color:#94A3B8;cursor:pointer;font-size:14px;padding:0 4px">+</button>
+              </div>
+              <div id="vb-tree" style="flex:1;overflow-y:auto;padding:6px 0;font-family:var(--font-mono);font-size:12px"></div>
+            </div>
+            <!-- Editor -->
+            <div style="background:#0F172A;border-radius:10px;display:flex;flex-direction:column;overflow:hidden;grid-row:1/2">
+              <div id="vb-editor-header" style="padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:#94A3B8;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.06)">
+                <span id="vb-active-path">no file selected</span>
+                <button id="vb-set-entry" onclick="vbSetEntry()" title="Set as preview entry point" style="background:none;border:1px solid rgba(255,255,255,0.12);color:#94A3B8;cursor:pointer;font-size:10px;padding:3px 8px;border-radius:4px;display:none">Set as entry</button>
+              </div>
+              <textarea id="vb-editor" spellcheck="false" wrap="off" style="flex:1;background:#0F172A;color:#E2E8F0;border:none;outline:none;padding:14px;font-family:var(--font-mono);font-size:13px;line-height:1.55;resize:none;tab-size:2;white-space:pre" oninput="vbOnEditorInput()"></textarea>
+            </div>
+            <!-- Preview -->
+            <div style="background:#fff;border-radius:10px;border:1px solid var(--gray-200,#e5e7eb);display:flex;flex-direction:column;overflow:hidden;grid-row:1/2">
+              <div style="padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--gray-500);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gray-200,#e5e7eb)">
+                <span>Live Preview <span id="vb-entry-label" style="color:var(--brand-primary);text-transform:none;letter-spacing:0;font-weight:600"></span></span>
+                <button onclick="vbReloadPreview()" title="Reload preview" style="background:none;border:none;color:var(--gray-500);cursor:pointer;font-size:13px">↻</button>
+              </div>
+              <iframe id="vb-preview" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style="flex:1;border:none;background:#fff"></iframe>
+            </div>
+            <!-- Chat / log -->
+            <div style="background:#fff;border-radius:10px;border:1px solid var(--gray-200,#e5e7eb);display:flex;flex-direction:column;overflow:hidden;grid-column:1/-1;grid-row:2/3">
+              <div style="padding:10px 14px;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--gray-500);border-bottom:1px solid var(--gray-200,#e5e7eb)">AI Agent · Command Log</div>
+              <div id="vb-msgs" style="flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:8px;background:#F8FAFC"></div>
+              <div style="padding:10px 12px;border-top:1px solid var(--gray-200,#e5e7eb);background:#fff;display:flex;gap:8px;align-items:flex-end">
+                <textarea id="vb-input" placeholder="Describe what you want to build, or ask for a change…" onkeydown="if(event.key==='Enter'&amp;&amp;!event.shiftKey){event.preventDefault();vbSend()}" oninput="this.style.height='44px';this.style.height=Math.min(this.scrollHeight,140)+'px'" style="flex:1;padding:10px 14px;border:1.5px solid var(--gray-300,#cbd5e1);border-radius:10px;font-size:14px;font-family:inherit;resize:none;height:44px;max-height:140px;outline:none;line-height:1.5"></textarea>
+                <button onclick="vbSend()" id="vb-send-btn" style="background:var(--brand-primary);color:#fff;border:none;padding:0 22px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;height:44px;display:inline-flex;align-items:center;gap:6px">Send<span class="icon icon-sm" data-icon="send" style="width:14px;height:14px;color:#fff"></span></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>

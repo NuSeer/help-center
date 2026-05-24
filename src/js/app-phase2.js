@@ -767,6 +767,652 @@
 
     // ── END PHASE 3 ────────────────────────────────────────────────
 
+    // ── QUICK DELIVERABLE UPLOAD (modal launched from each client row) ─────────
+    // Calls POST /api/owner/deliverable on the backend (same endpoint as
+    // /upload.html). Auth = owner password from localStorage.settings.password.
+    function openUploadDeliverableModal(portalToken, clientName, clientEmail) {
+      const existing = document.getElementById('quick-upload-modal');
+      if (existing) existing.remove();
+
+      const modal = document.createElement('div');
+      modal.id = 'quick-upload-modal';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10020;display:flex;align-items:center;justify-content:center;padding:20px;overflow-y:auto';
+      modal.onclick = e => { if (e.target === modal) modal.remove(); };
+
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:14px;max-width:520px;width:100%;padding:24px;box-shadow:0 30px 80px rgba(0,0,0,0.4)">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+            <div>
+              <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#64748B;font-weight:700;margin-bottom:2px">Upload deliverable</div>
+              <div style="font-size:18px;font-weight:700;color:#0F172A">${(clientName||'Client').replace(/</g,'&lt;')}</div>
+              ${clientEmail ? `<div style="font-size:12px;color:#94A3B8">${clientEmail.replace(/</g,'&lt;')}</div>` : ''}
+            </div>
+            <button onclick="document.getElementById('quick-upload-modal').remove()" style="background:none;border:none;font-size:22px;color:#94A3B8;cursor:pointer;line-height:1;padding:4px 8px">×</button>
+          </div>
+
+          <div style="display:flex;background:#F1F5F9;border-radius:8px;padding:4px;margin-bottom:14px">
+            <button id="qu-tab-url" onclick="quickUploadSetMode('url')" style="flex:1;padding:8px;background:#1E5BC0;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">🔗 Link / URL</button>
+            <button id="qu-tab-file" onclick="quickUploadSetMode('file')" style="flex:1;padding:8px;background:transparent;color:#64748B;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600">📎 File upload</button>
+          </div>
+
+          <div id="qu-url-field">
+            <label style="display:block;font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px">URL</label>
+            <input type="url" id="qu-url" class="form-input" style="margin:0 0 12px" placeholder="https://...">
+          </div>
+
+          <div id="qu-file-field" style="display:none">
+            <label style="display:block;font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px">File</label>
+            <label style="display:block;padding:18px;border:1.5px dashed #CBD5E1;border-radius:8px;text-align:center;background:#F8FAFC;cursor:pointer;margin-bottom:12px" id="qu-file-area">
+              <span style="font-weight:600;color:#16A34A">📎 Choose a file</span>
+              <span style="display:block;font-size:11px;color:#94A3B8;margin-top:4px">Up to 50 MB</span>
+              <input type="file" id="qu-file" onchange="quickUploadFilePicked()" style="display:none">
+              <div id="qu-file-picked" style="font-size:13px;color:#0F172A;margin-top:6px;display:none"></div>
+            </label>
+          </div>
+
+          <label style="display:block;font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px">Title</label>
+          <input type="text" id="qu-title" class="form-input" style="margin:0 0 12px" placeholder='e.g. "Final logo files"'>
+
+          <label style="display:block;font-size:12px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:5px">Description (optional)</label>
+          <textarea id="qu-desc" class="form-input" style="margin:0 0 12px;min-height:70px;resize:vertical" placeholder="Notes for the client..."></textarea>
+
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin-bottom:14px;font-size:13px">
+            <input type="checkbox" id="qu-notify" checked> Email the client a notification${clientEmail ? '' : ' <span style="color:#94A3B8">(no email on file)</span>'}
+          </label>
+
+          <div id="qu-err" style="display:none;color:#DC2626;font-size:13px;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.2);border-radius:8px;padding:10px;margin-bottom:12px"></div>
+
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button onclick="document.getElementById('quick-upload-modal').remove()" class="btn btn-outline" style="padding:10px 18px">Cancel</button>
+            <button id="qu-submit" onclick="submitQuickUpload('${portalToken}')" class="btn btn-solid" style="padding:10px 18px;background:#16A34A;border-color:#16A34A">Add to Portal</button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      window._quickUploadMode = 'url';
+    }
+
+    function quickUploadSetMode(m) {
+      window._quickUploadMode = m;
+      document.getElementById('qu-tab-url').style.cssText = 'flex:1;padding:8px;background:' + (m==='url'?'#1E5BC0':'transparent') + ';color:' + (m==='url'?'#fff':'#64748B') + ';border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600';
+      document.getElementById('qu-tab-file').style.cssText = 'flex:1;padding:8px;background:' + (m==='file'?'#1E5BC0':'transparent') + ';color:' + (m==='file'?'#fff':'#64748B') + ';border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600';
+      document.getElementById('qu-url-field').style.display = m==='url' ? 'block' : 'none';
+      document.getElementById('qu-file-field').style.display = m==='file' ? 'block' : 'none';
+    }
+
+    function quickUploadFilePicked() {
+      const f = document.getElementById('qu-file').files[0];
+      const pk = document.getElementById('qu-file-picked');
+      if (f) { pk.style.display = 'block'; pk.textContent = f.name + ' (' + Math.round(f.size/1024) + ' KB)'; }
+      else { pk.style.display = 'none'; }
+    }
+
+    async function submitQuickUpload(portalToken) {
+      const errEl = document.getElementById('qu-err');
+      errEl.style.display = 'none';
+      const mode = window._quickUploadMode || 'url';
+      const title = document.getElementById('qu-title').value.trim();
+      const desc = document.getElementById('qu-desc').value.trim();
+      const notify = document.getElementById('qu-notify').checked;
+      if (!title) { errEl.textContent = 'Title is required.'; errEl.style.display = 'block'; return; }
+
+      const submitBtn = document.getElementById('qu-submit');
+      submitBtn.disabled = true;
+      const origLabel = submitBtn.textContent;
+
+      // Get owner password from local settings (work portal already authed this user)
+      const settings = JSON.parse(localStorage.getItem('settings')) || {};
+      const password = settings.password || '';
+      if (!password) { errEl.textContent = 'No owner password found in settings. Set one in Settings → Change Password.'; errEl.style.display = 'block'; submitBtn.disabled = false; submitBtn.textContent = origLabel; return; }
+
+      let url = '';
+      if (mode === 'url') {
+        url = document.getElementById('qu-url').value.trim();
+        if (!url) { errEl.textContent = 'Enter a URL or switch to File.'; errEl.style.display = 'block'; submitBtn.disabled = false; submitBtn.textContent = origLabel; return; }
+      } else {
+        const f = document.getElementById('qu-file').files[0];
+        if (!f) { errEl.textContent = 'Pick a file or switch to URL.'; errEl.style.display = 'block'; submitBtn.disabled = false; submitBtn.textContent = origLabel; return; }
+        submitBtn.textContent = 'Uploading file…';
+        try {
+          const fd = new FormData(); fd.append('file', f); fd.append('clientId', portalToken);
+          const upR = await fetch(location.origin + '/api/upload', { method: 'POST', body: fd });
+          if (!upR.ok) throw new Error('upload failed (HTTP ' + upR.status + ')');
+          const upJ = await upR.json();
+          url = upJ.url;
+        } catch (e) {
+          errEl.textContent = 'File upload failed: ' + e.message; errEl.style.display = 'block';
+          submitBtn.disabled = false; submitBtn.textContent = origLabel; return;
+        }
+      }
+
+      submitBtn.textContent = 'Saving…';
+      try {
+        const r = await fetch(location.origin + '/api/owner/deliverable', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password, portalToken, deliverable: { name: title, description: desc, url }, notify })
+        });
+        if (!r.ok) { const j = await r.json().catch(()=>({})); throw new Error(j.error || ('HTTP ' + r.status)); }
+        const j = await r.json();
+        document.getElementById('quick-upload-modal').remove();
+        showToast(j.emailed ? '✓ Added & client emailed' : '✓ Added to portal', 'success');
+      } catch (e) {
+        errEl.textContent = 'Save failed: ' + e.message; errEl.style.display = 'block';
+        submitBtn.disabled = false; submitBtn.textContent = origLabel;
+      }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // INVOICE EDITOR — line items (flat / monthly / incidental), send via email + Stripe pay link
+    // ══════════════════════════════════════════════════════════════════════════
+    function openInvoiceEditorModal(clientId){
+      const clients = getData('clients') || [];
+      const client = clients.find(c => c.id === clientId);
+      if(!client){ alert('Client not found.'); return; }
+
+      const existing = (client.invoice && typeof client.invoice === 'object') ? client.invoice : null;
+      // If no invoice yet, seed with the client.price field (legacy single amount) so we don't lose it
+      const seedItems = existing && Array.isArray(existing.items) && existing.items.length
+        ? existing.items
+        : (client.price ? [{ id:'li-'+Date.now().toString(36), description: client.service || 'Service', amount: Number(client.price)||0, qty: 1, type: 'flat' }] : []);
+
+      window._invoiceDraft = {
+        clientId,
+        number: (existing && existing.number) || client.invoiceNumber || ('INV-' + String(Date.now()).slice(-5)),
+        issuedDate: (existing && existing.issuedDate) || new Date().toISOString().slice(0,10),
+        dueDate: (existing && existing.dueDate) || '',
+        items: JSON.parse(JSON.stringify(seedItems)),
+        notes: (existing && existing.notes) || '',
+        status: (existing && existing.status) || 'draft'
+      };
+
+      const existingModal = document.getElementById('invoice-modal');
+      if(existingModal) existingModal.remove();
+
+      const modal = document.createElement('div');
+      modal.id = 'invoice-modal';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10025;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto';
+      modal.onclick = e => { if(e.target === modal) modal.remove(); };
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:14px;max-width:760px;width:100%;padding:24px;box-shadow:0 30px 80px rgba(0,0,0,0.4);margin:auto">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:18px">
+            <div>
+              <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:#64748B;font-weight:700;margin-bottom:2px">Invoice for</div>
+              <div style="font-size:20px;font-weight:700;color:#0F172A">${(client.name||'Client').replace(/</g,'&lt;')}</div>
+              ${client.businessName ? `<div style="font-size:13px;color:#64748B">${client.businessName.replace(/</g,'&lt;')}</div>` : ''}
+              ${client.email ? `<div style="font-size:12px;color:#94A3B8;margin-top:2px">${client.email.replace(/</g,'&lt;')}</div>` : '<div style="font-size:12px;color:#DC2626;margin-top:2px">⚠ No email — add one before sending</div>'}
+            </div>
+            <button onclick="document.getElementById('invoice-modal').remove()" style="background:none;border:none;font-size:26px;color:#94A3B8;cursor:pointer;line-height:1;padding:4px 8px">×</button>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:18px">
+            <div><label class="form-label" style="font-size:11px">Invoice #</label><input type="text" id="inv-num" class="form-input" style="margin:0" value="${(window._invoiceDraft.number||'').replace(/"/g,'&quot;')}"></div>
+            <div><label class="form-label" style="font-size:11px">Issued</label><input type="date" id="inv-issued" class="form-input" style="margin:0" value="${window._invoiceDraft.issuedDate}"></div>
+            <div><label class="form-label" style="font-size:11px">Due</label><input type="date" id="inv-due" class="form-input" style="margin:0" value="${window._invoiceDraft.dueDate}"></div>
+          </div>
+
+          <div style="font-size:12px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Line items</div>
+          ${(client.services && client.services.length) ? `<div style="margin-bottom:10px;padding:10px 12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px"><div style="font-size:11px;color:#64748B;font-weight:600;margin-bottom:6px">Quick add from this client's services:</div><div style="display:flex;flex-wrap:wrap;gap:6px">${client.services.map((s, i) => `<button onclick="addInvoiceLineFromService(${i})" style="padding:6px 10px;background:#fff;border:1px solid #CBD5E1;border-radius:99px;cursor:pointer;font:inherit;font-size:12px;color:#1E5BC0;white-space:nowrap">+ ${(s.name||'Service').replace(/</g,'&lt;')} <span style="color:#94A3B8">· $${(s.price||0).toLocaleString()}${s.billingType==='ongoing' ? '/mo' : ''}</span></button>`).join('')}</div></div>` : ''}
+          <div id="inv-items"></div>
+          <button onclick="addInvoiceLineItem()" style="margin-top:8px;background:transparent;border:1px dashed #CBD5E1;color:#64748B;padding:9px;width:100%;border-radius:8px;cursor:pointer;font:inherit;font-weight:600;font-size:13px">+ Add blank line item</button>
+
+          <div style="margin-top:18px;padding:14px;background:#F8FAFC;border-radius:10px">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:13px">
+              <div><div style="color:#64748B;font-size:11px;font-weight:600;text-transform:uppercase;margin-bottom:3px">Flat (one-time)</div><div style="font-size:17px;font-weight:700;color:#0F172A" id="inv-tot-flat">$0</div></div>
+              <div><div style="color:#64748B;font-size:11px;font-weight:600;text-transform:uppercase;margin-bottom:3px">Monthly recurring</div><div style="font-size:17px;font-weight:700;color:#1E5BC0" id="inv-tot-monthly">$0/mo</div></div>
+              <div><div style="color:#64748B;font-size:11px;font-weight:600;text-transform:uppercase;margin-bottom:3px">Other</div><div style="font-size:17px;font-weight:700;color:#F97316" id="inv-tot-incidental">$0</div></div>
+            </div>
+            <div style="margin-top:10px;padding-top:10px;border-top:1px solid #E2E8F0;display:flex;justify-content:space-between;align-items:center">
+              <div style="font-size:13px;color:#64748B">Due now (flat + first month + other)</div>
+              <div style="font-size:22px;font-weight:700;color:#16A34A" id="inv-tot-due">$0</div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px">
+            <label class="form-label" style="font-size:11px">Notes for client (optional)</label>
+            <textarea id="inv-notes" class="form-input" style="margin:0;min-height:60px;resize:vertical">${(window._invoiceDraft.notes||'').replace(/</g,'&lt;')}</textarea>
+          </div>
+
+          <div style="margin-top:16px;padding:12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px">
+            <label class="form-label" style="font-size:11px">📧 Send invoice to (leave blank to use client email on file — comma-separated for multiple)</label>
+            <input type="text" id="inv-to" class="form-input" style="margin:0" placeholder="${(client.email||'client@example.com').replace(/"/g,'&quot;')} (default — leave blank to use this)" value="">
+            <div class="hint" style="font-size:11px;color:#94A3B8;margin-top:4px">Leave blank to send to the client's email on file (<strong>${(client.email||'no email on file').replace(/</g,'&lt;')}</strong>). Type one or more emails here to send somewhere else instead. Reply-To will still be your address.</div>
+          </div>
+
+          <div id="inv-err" style="display:none;color:#DC2626;font-size:13px;background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.2);border-radius:8px;padding:10px;margin-top:12px"></div>
+          <div id="inv-ok" style="display:none;color:#10B981;font-size:13px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:10px;margin-top:12px"></div>
+
+          <div style="margin-top:16px;display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap">
+            <button onclick="deleteInvoiceEverywhere('${clientId}')" class="btn btn-outline" style="padding:10px 16px;color:#DC2626;border-color:#DC2626" ${existing ? '' : 'title="No saved invoice to delete"'}>× Delete Invoice</button>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button onclick="document.getElementById('invoice-modal').remove()" class="btn btn-outline" style="padding:10px 18px">Close</button>
+              <button onclick="previewInvoice('${clientId}')" class="btn btn-outline" style="padding:10px 18px;border-color:#1E5BC0;color:#1E5BC0">👁 Preview</button>
+              <button onclick="saveInvoiceDraft('${clientId}')" class="btn btn-outline" style="padding:10px 18px">Save Draft</button>
+              <button onclick="sendInvoiceToClient('${clientId}')" class="btn btn-solid" style="padding:10px 18px;background:#16A34A;border-color:#16A34A">📧 Send Invoice</button>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+      renderInvoiceItems();
+    }
+
+    function renderInvoiceItems(){
+      const wrap = document.getElementById('inv-items');
+      if(!wrap) return;
+      const items = window._invoiceDraft.items || [];
+      if(!items.length){
+        wrap.innerHTML = '<div style="padding:18px;text-align:center;color:#94A3B8;font-size:13px;background:#F8FAFC;border:1px dashed #E2E8F0;border-radius:8px">No line items yet. Click "+ Add line item" to add one.</div>';
+      } else {
+        wrap.innerHTML = items.map((it, i) => `
+          <div style="display:grid;grid-template-columns:1fr 60px 110px 130px 32px;gap:6px;align-items:center;margin-bottom:6px">
+            <input type="text" value="${(it.description||'').replace(/"/g,'&quot;')}" oninput="updInvLine(${i},'description',this.value)" placeholder="Description (e.g. Website build)" style="padding:8px 10px;border:1px solid #CBD5E1;border-radius:6px;font:inherit;font-size:13px">
+            <input type="number" min="1" step="1" value="${it.qty||1}" oninput="updInvLine(${i},'qty',Number(this.value)||1);updInvTotals()" style="padding:8px;border:1px solid #CBD5E1;border-radius:6px;font:inherit;font-size:13px;text-align:center" title="Qty">
+            <input type="number" min="0" step="0.01" value="${it.amount||0}" oninput="updInvLine(${i},'amount',Number(this.value)||0);updInvTotals()" placeholder="Amount" style="padding:8px;border:1px solid #CBD5E1;border-radius:6px;font:inherit;font-size:13px;text-align:right">
+            <select onchange="updInvLine(${i},'type',this.value);updInvTotals()" style="padding:8px;border:1px solid #CBD5E1;border-radius:6px;font:inherit;font-size:12px;font-weight:600">
+              <option value="flat" ${it.type==='flat'?'selected':''}>Flat</option>
+              <option value="monthly" ${it.type==='monthly'?'selected':''}>Monthly</option>
+              <option value="other" ${it.type==='other'||it.type==='incidental'?'selected':''}>Other</option>
+            </select>
+            <button onclick="removeInvLine(${i})" style="background:transparent;border:none;color:#DC2626;font-size:18px;cursor:pointer;padding:4px" title="Remove">×</button>
+          </div>
+        `).join('');
+      }
+      updInvTotals();
+    }
+    function addInvoiceLineItem(){
+      window._invoiceDraft.items.push({ id:'li-'+Date.now().toString(36)+Math.random().toString(36).slice(2,5), description:'', amount:0, qty:1, type:'flat' });
+      renderInvoiceItems();
+    }
+    function addInvoiceLineFromService(serviceIdx){
+      const clients = getData('clients') || [];
+      const client = clients.find(c => c.id === window._invoiceDraft.clientId);
+      const s = client && (client.services || [])[serviceIdx];
+      if(!s) return;
+      const type = (s.billingType === 'ongoing') ? 'monthly' : 'flat';
+      window._invoiceDraft.items.push({
+        id: 'li-' + Date.now().toString(36) + Math.random().toString(36).slice(2,5),
+        description: s.name || 'Service',
+        amount: Number(s.price) || 0,
+        qty: 1,
+        type: type
+      });
+      renderInvoiceItems();
+    }
+    function updInvLine(i, key, val){
+      window._invoiceDraft.items[i][key] = val;
+    }
+    function removeInvLine(i){
+      window._invoiceDraft.items.splice(i, 1);
+      renderInvoiceItems();
+    }
+    function updInvTotals(){
+      const items = window._invoiceDraft.items || [];
+      let flat=0, monthly=0, incidental=0;
+      for(const it of items){
+        const sub = (Number(it.amount)||0) * (Number(it.qty)||1);
+        if(it.type === 'monthly') monthly += sub;
+        else if(it.type === 'other' || it.type === 'incidental') incidental += sub;
+        else flat += sub;
+      }
+      // Due now includes the FIRST month of any monthly items (typical: setup + first month upfront).
+      // The "Monthly recurring" total stays visible so the owner knows what bills again next cycle.
+      const due = flat + incidental + monthly;
+      const fmt = n => '$' + Number(n).toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2});
+      const set = (id, v) => { const e=document.getElementById(id); if(e) e.textContent = v; };
+      set('inv-tot-flat', fmt(flat));
+      set('inv-tot-monthly', fmt(monthly) + '/mo');
+      set('inv-tot-incidental', fmt(incidental));
+      set('inv-tot-due', fmt(due));
+    }
+
+    // Nuke an invoice everywhere: clears client.invoice + legacy price fields
+    // locally, removes matching revenue rows, removes Business File entry,
+    // and tells the backend to drop the invoice from portal-extras (so portal.html stops showing it).
+    async function deleteInvoiceEverywhere(clientId){
+      const clients = getData('clients') || [];
+      const idx = clients.findIndex(c => c.id === clientId);
+      if(idx < 0) return;
+      const c = clients[idx];
+      const invNumber = (c.invoice && c.invoice.number) || c.invoiceNumber || '';
+      if(!confirm('Delete this invoice from EVERYWHERE?\n\n• The client portal\n• Client record\n• Revenue / dashboard\n• Business File\n\nThis cannot be undone. Continue?')) return;
+
+      const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+      const password = settings.password || '';
+
+      // 1. Server-side: remove invoice from portal-extras
+      if(password && c.portalToken){
+        try {
+          await fetch(location.origin + '/api/owner/invoice/delete', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password, portalToken: c.portalToken })
+          });
+        } catch(e){ /* keep going — local cleanup still runs */ }
+      }
+
+      // 2. Local: clear client.invoice + legacy fields
+      delete clients[idx].invoice;
+      clients[idx].invoiceNumber = '';
+      clients[idx].price = 0;
+      clients[idx].paid = false;
+      setData('clients', clients);
+
+      // 3. Revenue: remove rows whose invoiceNumber base matches
+      if(invNumber){
+        const rev = (getData('revenue') || []).filter(r => !(r.clientId === clientId && (r.invoiceNumber || '').replace(/-\d+$/, '') === invNumber));
+        setData('revenue', rev);
+      }
+
+      // 4. Business File: remove the invoice doc
+      const bf = (getData('businessFile') || []).filter(d => !(d.type === 'Invoice' && d.clientId === clientId && (d.meta && d.meta.invoiceNumber === invNumber)));
+      setData('businessFile', bf);
+
+      if(typeof logActivity === 'function') logActivity('invoice', 'Deleted invoice ' + invNumber + ' for ' + (c.name||''));
+
+      // Close + refresh
+      const modal = document.getElementById('invoice-modal'); if(modal) modal.remove();
+      if(typeof showToast === 'function') showToast('✓ Invoice deleted everywhere', 'success');
+      if(typeof renderPortalLinks === 'function') renderPortalLinks();
+    }
+
+    // Render a client-side preview of the invoice in a modal — same layout the
+    // client will see in the email (minus the live Stripe button, which is
+    // generated at send time).
+    function previewInvoice(clientId){
+      const d = _collectInvoiceFromForm();
+      if(!d.items.length){ alert('Add at least one line item to preview.'); return; }
+      const clients = getData('clients') || [];
+      const c = clients.find(cl => cl.id === clientId) || {};
+      const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+      const biz = c.businessName ? settings.businessName || 'H.E.L.P. Center' : (settings.businessName || 'H.E.L.P. Center');
+      const escH = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const fmt = n => '$' + Number(n).toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2});
+      const t = d.totals || {flat:0, monthly:0, incidental:0, dueNow:0};
+      const dueLabel = d.dueDate ? ('Due by ' + new Date(d.dueDate).toLocaleDateString()) : '';
+      const toField = (document.getElementById('inv-to') ? document.getElementById('inv-to').value : '').trim();
+      const toList = toField ? toField.split(',').map(s => s.trim()).filter(Boolean) : [c.email || ''];
+      const onFile = (c.email || '').toLowerCase();
+      const primary = toList[0] || '';
+      const ccList = toList.slice(1);
+      const usingOnFile = !toField || primary.toLowerCase() === onFile;
+
+      const rows = d.items.map(it => {
+        const sub = (Number(it.amount)||0) * (Number(it.qty)||1);
+        const tag = it.type === 'monthly'
+          ? '<span style="background:#DBEAFE;color:#1E40AF;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:700;margin-left:6px">MONTHLY</span>'
+          : (it.type === 'other' || it.type === 'incidental')
+            ? '<span style="background:#FED7AA;color:#9A3412;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:700;margin-left:6px">OTHER</span>'
+            : '';
+        const amt = it.type === 'monthly' ? (fmt(sub) + '/mo') : fmt(sub);
+        return `<tr><td style="padding:10px 8px;border-bottom:1px solid #E2E8F0">${escH(it.description)}${tag}${it.qty>1?` × ${it.qty}`:''}</td><td style="padding:10px 8px;border-bottom:1px solid #E2E8F0;text-align:right;font-weight:600">${amt}</td></tr>`;
+      }).join('');
+      const monthlyRow = t.monthly > 0
+        ? `<tr><td style="padding:6px 8px;color:#1E40AF;font-size:13px">Monthly recurring</td><td style="padding:6px 8px;text-align:right;color:#1E40AF;font-weight:700">${fmt(t.monthly)}/mo</td></tr>`
+        : '';
+
+      const existing = document.getElementById('invoice-preview-modal'); if(existing) existing.remove();
+      const modal = document.createElement('div');
+      modal.id = 'invoice-preview-modal';
+      modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10030;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto';
+      modal.onclick = e => { if(e.target === modal) modal.remove(); };
+      modal.innerHTML = `
+        <div style="background:#F1F5F9;border-radius:14px;max-width:680px;width:100%;padding:0;margin:auto;overflow:hidden">
+          <div style="background:#0F172A;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center">
+            <div style="font-size:13px;font-weight:600">👁 Invoice preview <span style="opacity:0.6;font-weight:400;margin-left:8px">(this is what the recipient will see)</span></div>
+            <button onclick="document.getElementById('invoice-preview-modal').remove()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:18px">×</button>
+          </div>
+          <div style="padding:20px">
+            <div style="font-size:12px;color:#64748B;margin-bottom:10px;padding:10px 12px;background:#fff;border:1px solid #E2E8F0;border-radius:8px">
+              <strong>To:</strong> ${escH(primary) || '<em>(no recipient)</em>'}
+              ${usingOnFile
+                ? `<span style="background:#DCFCE7;color:#166534;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;margin-left:8px">CLIENT EMAIL ON FILE</span>`
+                : `<span style="background:#FEF3C7;color:#92400E;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700;margin-left:8px">⚠ OVERRIDE</span><span style="display:block;font-size:11px;color:#92400E;margin-top:4px">On file: ${escH(c.email || '(none)')} — NOT being used</span>`
+              }
+              ${ccList.length ? `<br><strong>Cc:</strong> ${ccList.map(e => escH(e)).join(', ')}` : ''}
+              <br><strong>Subject:</strong> Invoice ${escH(d.number||'')} from ${escH(biz)} — ${fmt(t.dueNow)} due
+            </div>
+            <div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(15,23,42,0.08)">
+              <div style="background:linear-gradient(135deg,#0F172A,#1e3a5f);padding:22px;color:#fff">
+                <div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.75">${escH(biz)}</div>
+                <div style="font-size:20px;font-weight:700;margin-top:4px">Invoice ${escH(d.number||'')}</div>
+                ${dueLabel ? `<div style="font-size:13px;opacity:0.85;margin-top:6px">${escH(dueLabel)}</div>` : ''}
+              </div>
+              <div style="padding:20px;color:#1F2937;font-size:14px;line-height:1.6">
+                <div>Hi ${escH(c.name||'')},</div>
+                <div style="margin:10px 0">Here is your invoice from ${escH(biz)}.</div>
+                <table style="width:100%;border-collapse:collapse;margin:14px 0">
+                  <thead><tr><th style="text-align:left;padding:8px;font-size:11px;text-transform:uppercase;color:#64748B;border-bottom:2px solid #CBD5E1">Item</th><th style="text-align:right;padding:8px;font-size:11px;text-transform:uppercase;color:#64748B;border-bottom:2px solid #CBD5E1">Amount</th></tr></thead>
+                  <tbody>${rows}</tbody>
+                  <tfoot>${monthlyRow}<tr><td style="padding:12px 8px;font-size:15px;font-weight:700;color:#0F172A;border-top:2px solid #0F172A">Due now</td><td style="padding:12px 8px;text-align:right;font-size:18px;font-weight:700;color:#16A34A;border-top:2px solid #0F172A">${fmt(t.dueNow)}</td></tr></tfoot>
+                </table>
+                <div style="margin:18px 0;padding:14px;background:#F8FAFC;border:1px dashed #CBD5E1;border-radius:10px;text-align:center;color:#64748B;font-size:12.5px">
+                  <strong>📱 QR code + 💳 Pay button</strong> will be generated and added here at send time.
+                </div>
+                ${d.notes ? `<div style="margin-top:14px;padding:12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;font-size:13px;color:#475569"><strong>Notes:</strong> ${escH(d.notes)}</div>` : ''}
+              </div>
+            </div>
+          </div>
+          <div style="background:#fff;padding:14px 20px;border-top:1px solid #E2E8F0;display:flex;justify-content:flex-end;gap:8px">
+            <button onclick="document.getElementById('invoice-preview-modal').remove()" class="btn btn-outline" style="padding:8px 18px">Back to edit</button>
+            <button onclick="document.getElementById('invoice-preview-modal').remove();sendInvoiceToClient('${clientId}')" class="btn btn-solid" style="padding:8px 18px;background:#16A34A;border-color:#16A34A">📧 Send Invoice</button>
+          </div>
+        </div>`;
+      document.body.appendChild(modal);
+    }
+
+    function _collectInvoiceFromForm(){
+      const d = window._invoiceDraft;
+      d.number = document.getElementById('inv-num').value.trim();
+      d.issuedDate = document.getElementById('inv-issued').value;
+      d.dueDate = document.getElementById('inv-due').value;
+      d.notes = document.getElementById('inv-notes').value.trim();
+      // Recompute totals for storage. dueNow includes first month of monthly items.
+      let flat=0, monthly=0, incidental=0;
+      for(const it of d.items){
+        const sub = (Number(it.amount)||0) * (Number(it.qty)||1);
+        if(it.type === 'monthly') monthly += sub;
+        else if(it.type === 'other' || it.type === 'incidental') incidental += sub;
+        else flat += sub;
+      }
+      d.totals = { flat, monthly, incidental, dueNow: flat + incidental + monthly };
+      return d;
+    }
+
+    function saveInvoiceDraft(clientId){
+      const d = _collectInvoiceFromForm();
+      const clients = getData('clients') || [];
+      const idx = clients.findIndex(c => c.id === clientId);
+      if(idx < 0) return;
+      clients[idx].invoice = { number:d.number, issuedDate:d.issuedDate, dueDate:d.dueDate, items:d.items, notes:d.notes, totals:d.totals, status:d.status || 'draft' };
+      clients[idx].invoiceNumber = d.number;
+      clients[idx].price = d.totals.dueNow; // keep legacy field in sync for back-compat
+      setData('clients', clients);
+      // Mirror to Business File so the owner can review/edit/resend from one place
+      _persistInvoiceToBusinessFile(clients[idx], clients[idx].invoice);
+      document.getElementById('inv-ok').textContent = '✓ Draft saved (also added to Business File)';
+      document.getElementById('inv-ok').style.display = 'block';
+      // Auto-sync portal snapshot so portal.html sees latest immediately
+      const tok = clients[idx].portalToken;
+      if(tok && typeof refreshPortalSnapshot === 'function'){ try { refreshPortalSnapshot(clients[idx]); } catch(e){} }
+    }
+
+    // Persist (or update) an invoice in the Business File array. Uses invoiceNumber+clientId
+    // as the dedup key, so re-sends and draft saves don't pile up new entries.
+    function _persistInvoiceToBusinessFile(client, invoice){
+      if(!invoice || !Array.isArray(invoice.items)) return;
+      const fmt = n => '$' + Number(n).toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2});
+      const t = invoice.totals || {flat:0, monthly:0, incidental:0, dueNow:0};
+      const escH = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const rows = invoice.items.map(it => {
+        const sub = (Number(it.amount)||0) * (Number(it.qty)||1);
+        const amt = it.type === 'monthly' ? (fmt(sub) + '/mo') : fmt(sub);
+        const tag = it.type === 'monthly' ? ' [MONTHLY]' : (it.type === 'other' || it.type === 'incidental') ? ' [OTHER]' : '';
+        return `<tr><td style="padding:6px 4px">${escH(it.description)}${tag}${it.qty>1?` × ${it.qty}`:''}</td><td style="padding:6px 4px;text-align:right;font-weight:600">${amt}</td></tr>`;
+      }).join('');
+      const html =
+        `<div style="font-family:sans-serif">
+          <h2>Invoice ${escH(invoice.number||'')}</h2>
+          <p style="color:#64748B">Client: <strong>${escH(client.name||'')}</strong>${client.businessName?` (${escH(client.businessName)})`:''} · ${escH(client.email||'')}</p>
+          <p>Issued: ${escH(invoice.issuedDate||'')}${invoice.dueDate?` · Due: ${escH(invoice.dueDate)}`:''}</p>
+          <table style="width:100%;border-collapse:collapse;margin:12px 0;font-size:14px">
+            <thead><tr><th style="text-align:left;padding:6px 4px;border-bottom:2px solid #CBD5E1">Item</th><th style="text-align:right;padding:6px 4px;border-bottom:2px solid #CBD5E1">Amount</th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+          <p style="font-size:14px"><strong>Flat:</strong> ${fmt(t.flat)} &nbsp; <strong>Monthly:</strong> ${fmt(t.monthly)}/mo &nbsp; <strong>Other:</strong> ${fmt(t.incidental)} &nbsp; <strong>Due now:</strong> ${fmt(t.dueNow)}</p>
+          ${invoice.notes ? `<p><strong>Notes:</strong> ${escH(invoice.notes)}</p>` : ''}
+          <p style="font-size:12px;color:#94A3B8;margin-top:14px">Status: ${invoice.status||'draft'}${invoice.sentAt?` · sent ${new Date(invoice.sentAt).toLocaleString()}`:''}</p>
+        </div>`;
+
+      const docs = getData('businessFile') || [];
+      const key = (invoice.number || '') + '|' + client.id;
+      const existingIdx = docs.findIndex(d => d.type === 'Invoice' && d.meta && (d.meta.invoiceNumber + '|' + d.clientId) === key);
+      const doc = {
+        id: existingIdx >= 0 ? docs[existingIdx].id : ('bf-inv-' + Date.now().toString(36) + Math.random().toString(36).slice(2,5)),
+        type: 'Invoice',
+        title: 'Invoice ' + (invoice.number || '') + ' — ' + (client.name || client.businessName || ''),
+        content: html,
+        clientId: client.id,
+        clientName: client.name || client.businessName || '',
+        meta: {
+          invoiceNumber: invoice.number || '',
+          totals: invoice.totals || {},
+          items: invoice.items || [],
+          status: invoice.status || 'draft',
+          dueDate: invoice.dueDate || '',
+          issuedDate: invoice.issuedDate || '',
+          sentAt: invoice.sentAt || '',
+          portalToken: client.portalToken || ''
+        },
+        createdAt: existingIdx >= 0 ? docs[existingIdx].createdAt : Date.now(),
+        updatedAt: Date.now(),
+        date: new Date().toISOString().split('T')[0]
+      };
+      if(existingIdx >= 0) docs[existingIdx] = doc;
+      else docs.unshift(doc);
+      setData('businessFile', docs);
+      if(typeof logActivity === 'function') {
+        logActivity('invoice', (existingIdx >= 0 ? 'Updated' : 'Saved') + ' invoice ' + (invoice.number||'') + ' to Business File');
+      }
+    }
+
+    async function sendInvoiceToClient(clientId){
+      const errEl = document.getElementById('inv-err');
+      const okEl = document.getElementById('inv-ok');
+      errEl.style.display = 'none'; okEl.style.display = 'none';
+
+      const d = _collectInvoiceFromForm();
+      if(!d.items.length){ errEl.textContent = 'Add at least one line item before sending.'; errEl.style.display='block'; return; }
+      if(d.items.some(it => !it.description || it.description.trim() === '')){ errEl.textContent = 'Every line item needs a description.'; errEl.style.display='block'; return; }
+
+      const clients = getData('clients') || [];
+      const idx = clients.findIndex(c => c.id === clientId);
+      if(idx < 0) return;
+      const c = clients[idx];
+      if(!c.email){ errEl.textContent = 'Add an email to the client record before sending.'; errEl.style.display='block'; return; }
+
+      // Save the draft first (so client.invoice + snapshot are up to date)
+      d.status = 'sent';
+      d.sentAt = new Date().toISOString();
+      clients[idx].invoice = { number:d.number, issuedDate:d.issuedDate, dueDate:d.dueDate, items:d.items, notes:d.notes, totals:d.totals, status:'sent', sentAt:d.sentAt };
+      clients[idx].invoiceNumber = d.number;
+      clients[idx].price = d.totals.dueNow;
+      setData('clients', clients);
+
+      // Mirror to Business File so the owner can review/edit/resend
+      _persistInvoiceToBusinessFile(clients[idx], clients[idx].invoice);
+
+      // Sync line items into the revenue[] table so dashboard cards + Invoice tab
+      // both see them. Replace any prior rows with the same invoice number to
+      // avoid duplicates when an invoice is re-sent.
+      const allRev = (getData('revenue') || []).filter(r => !(r.clientId === clientId && (r.invoiceNumber || '').replace(/-\d+$/, '') === d.number));
+      const baseDate = d.issuedDate || new Date().toISOString().slice(0,10);
+      d.items.forEach((it, i) => {
+        const lineAmount = (Number(it.amount) || 0) * (Number(it.qty) || 1);
+        if (lineAmount <= 0) return;
+        allRev.unshift({
+          id: 'rev-' + Date.now().toString(36) + '-' + i,
+          clientId: clientId,
+          clientName: c.name || c.businessName || '',
+          serviceType: it.description,
+          invoiceNumber: d.number + (d.items.length > 1 ? '-' + (i + 1) : ''),
+          amount: lineAmount,
+          status: 'Pending',
+          date: baseDate,
+          billingType: (it.type === 'monthly') ? 'ongoing' : 'flat',
+          billingPeriod: (it.type === 'monthly') ? baseDate : '',
+          notes: (it.type === 'other') ? 'Other / one-off' : ''
+        });
+      });
+      setData('revenue', allRev);
+
+      const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+      const password = settings.password || '';
+      if(!password){ errEl.textContent = 'No owner password in settings — set one first.'; errEl.style.display='block'; return; }
+
+      // Allow override of the recipient (accounting may not be the same as the client's main email).
+      const toField = (document.getElementById('inv-to').value || '').trim();
+      const toEmails = toField ? toField.split(',').map(s => s.trim()).filter(Boolean) : [c.email];
+      const primaryEmail = toEmails[0];
+      if(!primaryEmail || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(primaryEmail)){ errEl.textContent = 'Enter a valid recipient email.'; errEl.style.display='block'; return; }
+
+      const btn = event.target;
+      btn.disabled = true; btn.textContent = 'Sending…';
+
+      try {
+        const r = await fetch(location.origin + '/api/owner/invoice/send', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            password,
+            portalToken: c.portalToken,
+            clientName: c.name,
+            clientEmail: primaryEmail,
+            extraRecipients: toEmails.slice(1),
+            businessName: c.businessName || '',
+            invoice: clients[idx].invoice
+          })
+        });
+        if(!r.ok){ const j = await r.json().catch(()=>({})); throw new Error(j.error || ('HTTP ' + r.status)); }
+        const j = await r.json();
+        okEl.innerHTML = '✓ Invoice sent to ' + toEmails.join(', ') + (j.payUrl ? ' (payment link included)' : '');
+        okEl.style.display = 'block';
+        btn.textContent = 'Invoice Sent ✓';
+        setTimeout(() => { document.getElementById('invoice-modal').remove(); if(typeof renderPortalLinks==='function') renderPortalLinks(); }, 2500);
+      } catch(e){
+        errEl.textContent = 'Send failed: ' + e.message;
+        errEl.style.display = 'block';
+        btn.disabled = false; btn.textContent = '📧 Send Invoice';
+      }
+    }
+
+    // Text the portal link via the device's native SMS app (or share sheet on mobile).
+    // Web Share API gives the best UX on mobile (lets user pick app); falls back to sms: link.
+    function textPortalLinkToClient(clientId, clientName, phone, portalToken) {
+      const origin = (window.location.origin && /^https?:/.test(window.location.origin)) ? window.location.origin : 'https://thehelpctr.com';
+      const url = origin + '/portal.html?t=' + portalToken;
+      const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+      const ownerName = settings.name || 'Joy';
+      const biz = settings.businessName || 'H.E.L.P. Center';
+      const body = 'Hi ' + (clientName || 'there') + ', here is your private ' + biz + ' portal: ' + url + ' — ' + ownerName;
+
+      // Native share sheet (mobile) — best UX, lets user pick Messages/WhatsApp/etc.
+      if (navigator.share) {
+        navigator.share({ title: biz + ' Portal', text: body, url }).catch(() => {/* user cancelled */});
+        return;
+      }
+
+      // Fallback: SMS URL (opens default messaging app). Works on mobile.
+      const to = (phone || '').replace(/[^0-9+]/g, '');
+      const smsUrl = 'sms:' + to + (to ? '?' : '?') + 'body=' + encodeURIComponent(body);
+      // Try opening; if no SMS handler is registered (desktop), copy to clipboard instead.
+      const w = window.open(smsUrl, '_self');
+      if (!w) {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(body).then(() => showToast('Message copied to clipboard — paste it into your messaging app', 'success'));
+        } else {
+          prompt('Copy and paste this into your messaging app:', body);
+        }
+      }
+    }
+
     function renderPortalLinks() {
       const el = document.getElementById('portal-links-list');
       if (!el) return;
@@ -776,9 +1422,13 @@
         return;
       }
       const s = JSON.parse(localStorage.getItem('settings')) || {};
-      const base = (s.portalBaseUrl || window.location.href.split('#')[0]).replace(/\/$/, '');
+      // Build the public portal URL. Prefer same-origin /portal.html (the dedicated
+      // client-facing page) over the work-portal hash route — query strings survive
+      // email clients that strip URL fragments, and portal.html has no sign-in screen.
+      const origin = (window.location.origin && /^https?:/.test(window.location.origin)) ? window.location.origin : 'https://thehelpctr.com';
+      const portalPageBase = (s.portalShareBase || (origin + '/portal.html')).replace(/\/$/, '');
       el.innerHTML = clients.map(c => {
-        const url = base + '#portal?token=' + c.portalToken;
+        const url = portalPageBase + '?t=' + c.portalToken;
         const docs = getDocsForClient(c.id);
         const docsList = docs.length ? `
             <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--gray-100)">
@@ -813,9 +1463,12 @@
               <input type="text" id="pl-${c.id}" class="form-input" style="flex:1;min-width:200px;margin:0;font-size:12px" value="${url}" readonly>
               <button onclick="copyPortalLink('${c.id}')" class="btn btn-solid" style="padding:10px 14px;font-size:13px;white-space:nowrap">Copy Link</button>
               <button onclick="emailPortalLinkToClient('${c.id}')" class="btn btn-outline" style="padding:10px 14px;font-size:13px;white-space:nowrap" title="${c.email ? 'Email the portal link to ' + (c.email).replace(/"/g, '&quot;') : 'Will prompt for email and save it to the client record'}"><span class="icon icon-sm" data-icon="send" style="margin-right:5px;vertical-align:-2px"></span>Email Link</button>
+              <button onclick="textPortalLinkToClient('${c.id}','${(c.name||'').replace(/'/g,"\\'")}','${(c.phone||'').replace(/[^0-9+]/g,'')}','${c.portalToken}')" class="btn btn-outline" style="padding:10px 14px;font-size:13px;white-space:nowrap" title="Open your phone's messaging app pre-filled with the portal link">📱 Text Link</button>
               <button onclick="sendPortalUpdateEmail('${c.id}')" class="btn btn-outline" style="padding:10px 14px;font-size:13px;white-space:nowrap" title="Notify the client that their portal has been updated"><span class="icon icon-sm" data-icon="bell" style="margin-right:5px;vertical-align:-2px"></span>Send Update</button>
               <button onclick="previewPortalLink('${c.portalToken}')" class="btn btn-outline" style="padding:10px 14px;font-size:13px">Preview</button>
               <button onclick="ownerMessageClient('${c.id}')" class="btn btn-outline" style="padding:10px 14px;font-size:13px">Message</button>
+              <button onclick="openUploadDeliverableModal('${c.portalToken}','${(c.name||'').replace(/'/g,"\\'")}','${(c.email||'').replace(/'/g,"\\'")}')" class="btn btn-solid" style="padding:10px 14px;font-size:13px;background:#16A34A;border-color:#16A34A">+ Upload</button>
+              <button onclick="openInvoiceEditorModal('${c.id}')" class="btn btn-solid" style="padding:10px 14px;font-size:13px;background:#1E5BC0;border-color:#1E5BC0">🧾 Invoice</button>
             </div>
             <div id="pl-confirm-${c.id}" style="display:none;font-size:12px;margin-top:8px;color:#10B981;font-weight:600">✓ Copied to clipboard</div>
             ${docsList}
@@ -4039,7 +4692,7 @@ function renderPortalDocsSection(clientId) {
 // Preview a client's portal as they would see it. Renders the portal directly in a
 // dashboard modal (no iframe, no new tab) so it works in PWA / popup-blocked contexts.
 // Accepts either a portalToken or a full URL containing token=...
-function previewPortalLink(tokenOrUrl) {
+async function previewPortalLink(tokenOrUrl) {
   let token = (tokenOrUrl || '').trim();
   if (token.includes('token=')) {
     const m = token.match(/token=([^&#]+)/);
@@ -4050,10 +4703,24 @@ function previewPortalLink(tokenOrUrl) {
   const client = clients.find(c => c.portalToken === token);
   if (!client) { alert('Client not found for this token.'); return; }
 
-  // Build the live URL once (used for the Open URL button)
-  const s = JSON.parse(localStorage.getItem('settings')) || {};
-  const base = (s.portalBaseUrl || window.location.href.split('#')[0]).replace(/\/$/, '');
-  const fullUrl = base + '#portal?token=' + token;
+  // Fetch any quick-upload extras for this client (deliverables added via
+  // /upload.html or the + Upload button) and merge them into client.deliverables
+  // so the preview matches what the client actually sees at portal.html.
+  try {
+    const origin = (window.location.origin && /^https?:/.test(window.location.origin)) ? window.location.origin : 'https://thehelpctr.com';
+    const r = await fetch(origin + '/pb/api/collections/store/records?filter=' + encodeURIComponent('(key="portal-extras:' + token + '")'));
+    if (r.ok) {
+      const j = await r.json();
+      if (j.items && j.items[0] && Array.isArray(j.items[0].value.deliverables) && j.items[0].value.deliverables.length) {
+        client.deliverables = (client.deliverables || []).concat(j.items[0].value.deliverables);
+      }
+    }
+  } catch (e) { /* network glitch — preview falls back to local-only */ }
+
+  // Build the live URL once (used for the Open URL button) — points to the
+  // dedicated portal.html page, NOT the legacy work-portal hash route.
+  const origin = (window.location.origin && /^https?:/.test(window.location.origin)) ? window.location.origin : 'https://thehelpctr.com';
+  const fullUrl = origin + '/portal.html?t=' + token;
 
   let modal = document.getElementById('portal-preview-modal');
   if (modal) modal.remove();
@@ -5086,6 +5753,105 @@ function renderBookingDashboard() {
   renderAvailabilityRows();
   loadBookingSettingsUI();
   renderDocumentsList();
+  // Fire-and-forget: update the pending-requests badge on the Requests tab
+  const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+  if (settings.password && typeof fetchPendingBookingCount === 'function') {
+    fetchPendingBookingCount(settings.password).then(count => {
+      const badge = document.getElementById('bk-req-badge');
+      if (!badge) return;
+      if (count > 0) { badge.style.display = 'inline-block'; badge.textContent = count; }
+      else { badge.style.display = 'none'; }
+    }).catch(()=>{});
+  }
+}
+
+// Fetch + render public booking requests (from booking.html submissions).
+async function renderBookingRequests() {
+  const list = document.getElementById('bk-req-list');
+  const badge = document.getElementById('bk-req-badge');
+  if (!list) return;
+  const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+  const password = settings.password || '';
+  if (!password) { list.innerHTML = '<div style="color:var(--error);padding:14px">Set an owner password in Settings first.</div>'; return; }
+  const filter = document.getElementById('bk-req-filter') ? document.getElementById('bk-req-filter').value : 'pending';
+  list.innerHTML = '<div style="color:var(--gray-400);padding:20px;text-align:center">Loading…</div>';
+  try {
+    const r = await fetch(location.origin + '/api/owner/booking/list', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password, status: filter })
+    });
+    if (!r.ok) { const j = await r.json().catch(()=>({})); throw new Error(j.error || ('HTTP ' + r.status)); }
+    const j = await r.json();
+    const reqs = j.requests || [];
+    // Update sidebar/tab badge with pending count
+    const pendingCount = (await fetchPendingBookingCount(password));
+    if (badge) {
+      if (pendingCount > 0) { badge.style.display = 'inline-block'; badge.textContent = pendingCount; }
+      else { badge.style.display = 'none'; }
+    }
+    if (!reqs.length) {
+      list.innerHTML = '<div style="background:var(--gray-50);border-radius:10px;padding:30px;text-align:center;color:var(--gray-500);font-size:14px">No ' + (filter === 'pending' ? 'pending' : '') + ' booking requests.</div>';
+      return;
+    }
+    const escH = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    list.innerHTML = reqs.map(req => {
+      const status = req.status || 'pending';
+      const isPending = status === 'pending';
+      const dateLabel = req.date ? new Date(req.date).toLocaleDateString(undefined, {weekday:'short', month:'short', day:'numeric'}) : '?';
+      return `
+        <div style="border:1.5px solid ${isPending?'rgba(245,158,11,0.4)':'var(--gray-200)'};border-radius:12px;padding:16px;margin-bottom:12px;background:${isPending?'rgba(245,158,11,0.04)':'#fff'}">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font-weight:700;font-size:15px;color:var(--gray-900)">${escH(req.name)} <span style="font-weight:400;color:var(--gray-500);font-size:13px">· ${escH(req.email)}</span></div>
+              ${req.phone ? `<div style="font-size:12px;color:var(--gray-500)">${escH(req.phone)}</div>` : ''}
+            </div>
+            <span style="padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;background:${isPending?'rgba(245,158,11,0.12)':'rgba(100,116,139,0.12)'};color:${isPending?'#9A3412':'var(--gray-500)'}">${status.toUpperCase()}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;font-size:13px;padding:10px 0;border-top:1px solid var(--gray-100)">
+            <div><div style="font-size:10px;color:var(--gray-400);text-transform:uppercase;font-weight:600">Date</div><div>${escH(dateLabel)}</div></div>
+            <div><div style="font-size:10px;color:var(--gray-400);text-transform:uppercase;font-weight:600">Time</div><div>${escH(req.time || '?')}</div></div>
+            ${req.service ? `<div><div style="font-size:10px;color:var(--gray-400);text-transform:uppercase;font-weight:600">About</div><div>${escH(req.service)}</div></div>` : ''}
+            <div><div style="font-size:10px;color:var(--gray-400);text-transform:uppercase;font-weight:600">Received</div><div>${escH(new Date(req.receivedAt).toLocaleString())}</div></div>
+          </div>
+          ${req.notes ? `<div style="padding:10px;background:var(--gray-50);border-radius:8px;font-size:13px;color:var(--gray-700);margin-bottom:10px"><em>"${escH(req.notes)}"</em></div>` : ''}
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <a href="mailto:${encodeURIComponent(req.email)}?subject=Re: your booking request" class="btn btn-solid" style="padding:7px 14px;font-size:12px;text-decoration:none">📧 Reply</a>
+            ${isPending ? `<button onclick="updateBookingRequestStatus('${req.id}','confirmed')" class="btn btn-outline" style="padding:7px 14px;font-size:12px;color:#10B981;border-color:#10B981">✓ Mark Confirmed</button>` : ''}
+            ${isPending ? `<button onclick="updateBookingRequestStatus('${req.id}','declined')" class="btn btn-outline" style="padding:7px 14px;font-size:12px;color:#DC2626;border-color:#DC2626">✗ Decline</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = '<div style="color:var(--error);padding:14px">Failed to load: ' + e.message + '</div>';
+  }
+}
+
+async function fetchPendingBookingCount(password) {
+  try {
+    const r = await fetch(location.origin + '/api/owner/booking/list', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password, status: 'pending' })
+    });
+    if (!r.ok) return 0;
+    const j = await r.json();
+    return (j.requests || []).length;
+  } catch (e) { return 0; }
+}
+
+async function updateBookingRequestStatus(requestId, status) {
+  const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+  const password = settings.password || '';
+  if (!password) return;
+  try {
+    const r = await fetch(location.origin + '/api/owner/booking/update', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password, requestId, status })
+    });
+    if (!r.ok) { const j = await r.json().catch(()=>({})); throw new Error(j.error || ('HTTP ' + r.status)); }
+    renderBookingRequests();
+  } catch (e) {
+    alert('Update failed: ' + e.message);
+  }
 }
 
 function bookTab(tabId, btn) {
@@ -5096,6 +5862,7 @@ function bookTab(tabId, btn) {
   if (btn) btn.classList.add('active');
   if (tabId === 'bk-settings') loadBookingSettingsUI();
   if (tabId === 'services') renderServicesList();
+  if (tabId === 'requests') renderBookingRequests();
   if (tabId === 'availability') renderAvailabilityUI();
   if (tabId === 'documents') renderDocumentsTab();
 }
@@ -5309,7 +6076,7 @@ function saveAvailability() {
 // ── BOOKING SETTINGS UI ───────────────────────────────────────────────────────
 function loadBookingSettingsUI() {
   const s = getBookingSettings();
-  const link = window.location.origin + window.location.pathname + '#book?u=' + s.bookingToken;
+  const link = ((window.location.origin && /^https?:/.test(window.location.origin)) ? window.location.origin : 'https://thehelpctr.com') + '/booking.html?u=' + s.bookingToken;
   const lEl = document.getElementById('bk-public-link');
   if (lEl) lEl.value = link;
   const tog = document.getElementById('bk-enabled-toggle');
@@ -5333,7 +6100,7 @@ function saveBookingSettings() {
 
 function copyBookingLink() {
   const s = getBookingSettings();
-  const link = window.location.origin + window.location.pathname + '#book?u=' + s.bookingToken;
+  const link = ((window.location.origin && /^https?:/.test(window.location.origin)) ? window.location.origin : 'https://thehelpctr.com') + '/booking.html?u=' + s.bookingToken;
   navigator.clipboard.writeText(link).catch(()=>{});
   showToast('Booking link copied!','success');
 }

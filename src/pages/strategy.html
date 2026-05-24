@@ -1,0 +1,66 @@
+<div id="strategy-page" class="page hidden">
+  <div class="page-header">
+    <h1 class="page-title">Growth Strategy Hub</h1>
+    <p class="page-subtitle">SaaS launch roadmap, target-client outreach scripts, and your 48-hour action list</p>
+  </div>
+  <div class="content">
+    <div class="path-tabs-container">
+      <div class="path-tabs-nav">
+        <button class="path-tab active" onclick="pTab('strategy','saas',this)">SaaS Launch Plan</button>
+        <button class="path-tab" onclick="pTab('strategy','outreach',this)">Church Outreach</button>
+        <button class="path-tab" onclick="pTab('strategy','checklist',this)">48-Hr Action List</button>
+      </div>
+
+      <!-- TAB: SAAS LAUNCH PLAN -->
+      <div id="strategy-tab-saas" class="path-tab-content active">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
+          <div class="card" style="text-align:center;border-top:3px solid var(--gold)"><div style="font-size:22px;font-weight:800;color:var(--gold)">$490</div><div style="font-size:12px;color:var(--gray-500)">10 users @ $49/mo</div></div>
+          <div class="card" style="text-align:center;border-top:3px solid var(--gold)"><div style="font-size:22px;font-weight:800;color:var(--gold)">$980</div><div style="font-size:12px;color:var(--gray-500)">20 users @ $49/mo</div></div>
+          <div class="card" style="text-align:center;border-top:3px solid var(--gold)"><div style="font-size:22px;font-weight:800;color:var(--gold)">$2,450</div><div style="font-size:12px;color:var(--gray-500)">50 users @ $49/mo</div></div>
+          <div class="card" style="text-align:center;border-top:3px solid var(--gold)"><div style="font-size:22px;font-weight:800;color:var(--gold)">$4,900</div><div style="font-size:12px;color:var(--gray-500)">100 users @ $49/mo</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:28px">
+          <div class="card"><div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px">STARTER</div><div style="font-size:24px;font-weight:800;margin-bottom:2px;letter-spacing:-0.02em">$19<span style="font-size:14px;font-weight:400;color:var(--gray-500)">/mo</span></div><div style="font-size:12px;color:var(--gray-500);margin-bottom:14px">$190/yr (save $38)</div><div style="font-size:13px;font-weight:700;margin-bottom:8px;letter-spacing:-0.005em">Spark Plan</div><div style="font-size:12.5px;color:var(--gray-600);line-height:1.7">Modern dashboard with KPI stat cards<br>Up to 10 clients with private portals<br>Client signature collection (typed or drawn)<br>Proposals + Invoices<br>Calendar with iCal subscription feed<br>Booking system<br>1 AI specialist included<br>Email support</div></div>
+          <div class="card" style="border:2px solid var(--gold);background:var(--gold-dim)"><div style="font-size:11px;font-weight:700;color:var(--gold);margin-bottom:6px">MOST POPULAR</div><div style="font-size:24px;font-weight:800;margin-bottom:2px;color:var(--gold);letter-spacing:-0.02em">$49<span style="font-size:14px;font-weight:400;color:var(--gray-500)">/mo</span></div><div style="font-size:12px;color:var(--gray-500);margin-bottom:14px">$490/yr (save $98)</div><div style="font-size:13px;font-weight:700;margin-bottom:8px;letter-spacing:-0.005em">Growth Plan</div><div style="font-size:12.5px;color:var(--gray-600);line-height:1.7">Everything in Spark<br>Unlimited clients<br>11 legal contract templates (Service, NDA, IC, Coaching, Retainer, SOW, Website, Copyright, Release, Speaker, Client)<br>Stripe payment processing<br>AI Coach + tool-enabled AI Assistant<br>All 8 AI specialists<br>7 growth pathways<br>Business Builder suite (brand kit, SOPs, ads, SEO, lead magnets, social, intake)<br>Resend email integration<br>Priority support</div></div>
+          <div class="card"><div style="font-size:11px;font-weight:700;color:#A78BFA;margin-bottom:6px">PRO</div><div style="font-size:24px;font-weight:800;margin-bottom:2px;letter-spacing:-0.02em">$97<span style="font-size:14px;font-weight:400;color:var(--gray-500)">/mo</span></div><div style="font-size:12px;color:var(--gray-500);margin-bottom:14px">$970/yr (save $194)</div><div style="font-size:13px;font-weight:700;margin-bottom:8px;letter-spacing:-0.005em">Elite Plan</div><div style="font-size:12.5px;color:var(--gray-600);line-height:1.7">Everything in Growth<br>Vibe Coder — AI builds full HTML/CSS/JS apps for clients<br>White-label custom branding (logo + 5-color palette)<br>Custom domain support<br>Team member access<br>Document AI Improve (one-click polish on contracts &amp; proposals)<br>Forward-to-team-member sharing for client portals<br>Selective JSON import / full backup &amp; restore<br>Monthly strategy call<br>Beta feature access</div></div>
+        </div>
+        <h3 style="font-size:17px;font-weight:700;margin-bottom:20px">Launch Roadmap</h3>
+        <div id="roadmap-phases"></div>
+        <div style="margin-top:28px;padding:18px 22px;background:linear-gradient(135deg,#0F172A,#1E3A8A);border-radius:12px;color:#fff">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+            <div>
+              <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#93C5FD">For Investors &amp; Advisors</div>
+              <div style="font-size:16px;font-weight:700;margin-top:4px">Generate a Consultant Review Document</div>
+              <div style="font-size:13px;color:#CBD5E1;margin-top:4px;max-width:520px">A clean, print-ready business memo summarizing the product, pricing, market, and roadmap — strip out personal references, hand to your consultant.</div>
+            </div>
+            <button onclick="generateSaasReviewDoc()" class="btn btn-solid" style="background:#fff;color:#0F172A;padding:10px 18px;font-weight:700"><span class="icon icon-sm" data-icon="file" style="margin-right:6px;vertical-align:-2px"></span>Generate Review Doc</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: CHURCH OUTREACH -->
+      <div id="strategy-tab-outreach" class="path-tab-content">
+        <h3 style="font-size:17px;font-weight:700;margin-bottom:16px">Target Client Niches</h3>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:28px" id="niche-cards"></div>
+        <h3 style="font-size:17px;font-weight:700;margin-bottom:16px">Outreach Scripts</h3>
+        <div id="outreach-scripts"></div>
+      </div>
+
+      <!-- TAB: 48-HR ACTION LIST -->
+      <div id="strategy-tab-checklist" class="path-tab-content">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px">
+          <div class="card" style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">$1,500</div><div style="font-size:12px;font-weight:600;color:var(--gray-500)">Conservative</div><div style="font-size:12px;color:var(--gray-400)">2 landing pages + 3 retainer clients</div></div>
+          <div class="card" style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">$3,500</div><div style="font-size:12px;font-weight:600;color:var(--gray-500)">Realistic</div><div style="font-size:12px;color:var(--gray-400)">2 client sites + 4 retainer clients</div></div>
+          <div class="card" style="text-align:center"><div style="font-size:20px;font-weight:800;color:var(--gold)">$7,000+</div><div style="font-size:12px;font-weight:600;color:var(--gray-500)">Strong Month</div><div style="font-size:12px;color:var(--gray-400)">3 client sites + retainers + 5 SaaS users</div></div>
+        </div>
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h3 style="font-size:17px;font-weight:700">Your 48-Hour Action Plan</h3>
+            <button onclick="resetActionChecklist()" class="btn btn-outline" style="font-size:12px;padding:6px 12px">Reset</button>
+          </div>
+          <div id="action-checklist"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

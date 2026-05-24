@@ -1,0 +1,56 @@
+      <div id="my-profile-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">Your Visionary Profile</h1>
+          <p class="page-subtitle">This profile personalizes every AI tool in your ecosystem to YOUR vision, background, and goals</p>
+        </div>
+        <div class="content">
+          <div style="max-width:700px;">
+            <div style="display:flex;flex-direction:column;gap:16px;">
+              <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Preferred Name</label>
+                <input type="text" id="vp-name" class="form-input" style="margin:0;" placeholder="What should I call you?"/>
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Your Big Mission</label>
+                <textarea id="vp-mission" class="form-input" style="margin:0;min-height:80px;resize:vertical;" placeholder="In 1-2 sentences — what are you building, creating, or changing in the world?"></textarea>
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Communication Style</label>
+                <select id="vp-style" class="form-input" style="margin:0;">
+                  <option value="direct">🔥 Give it to me straight — short and actionable</option>
+                  <option value="walkthrough">📖 Walk me through it — thorough and step-by-step</option>
+                  <option value="picture_first">🎨 Paint the picture — context first, then details</option>
+                  <option value="evidence">🔬 Show me the evidence — data and proof</option>
+                  <option value="connect_dots">🌀 Connect the dots — how does this relate to everything?</option>
+                  <option value="build_together">🏗️ Build as we go — start simple, keep going deeper</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Where Are You Right Now?</label>
+                <select id="vp-stage" class="form-input" style="margin:0;">
+                  <option value="starting">🌱 Just starting — ideas forming</option>
+                  <option value="in_motion">🔥 In motion — actively building</option>
+                  <option value="scaling">🌊 Scaling — something exists, growing it</option>
+                  <option value="rebuilding">🔄 Rebuilding — pivoting or redirecting</option>
+                  <option value="mastery">🏔️ Mastery — deep in expertise</option>
+                  <option value="searching">🔍 Searching — still finding the path</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">5-Year Vision</label>
+                <textarea id="vp-vision" class="form-input" style="margin:0;min-height:80px;resize:vertical;" placeholder="What does success look like for you in 5 years? Be honest, not aspirational."></textarea>
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Cultural Context &amp; Background (Optional)</label>
+                <textarea id="vp-cultural" class="form-input" style="margin:0;min-height:60px;resize:vertical;" placeholder="Anything about your background, community, or values that shapes how you approach business?"></textarea>
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">Sacred Preferences (Optional)</label>
+                <textarea id="vp-sacred" class="form-input" style="margin:0;min-height:60px;resize:vertical;" placeholder="Anything I should NEVER assume, say, or do when working with you?"></textarea>
+              </div>
+              <button onclick="saveProfileFromForm()" style="padding:14px;background:#1a1a2e;color:#C9A84C;border:none;border-radius:10px;font-weight:700;font-size:15px;cursor:pointer;">Save My Profile →</button>
+              <div id="profile-save-msg" style="display:none;color:#10B981;font-size:14px;font-weight:600;text-align:center;">✅ Profile saved successfully!</div>
+            </div>
+          </div>
+        </div>
+      </div>

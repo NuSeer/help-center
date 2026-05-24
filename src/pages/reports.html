@@ -1,0 +1,284 @@
+    <div id="reports-page" class="page hidden">
+      <div class="page-header">
+        <h1 class="page-title">Reports &amp; Documents</h1>
+        <p class="page-subtitle">Select a client, generate, edit, and print professional documents</p>
+      </div>
+      <div class="content">
+        <div class="path-tabs-container">
+          <div class="path-tabs-nav">
+            <button class="path-tab active" onclick="pTab('reports','proposal',this)">Proposal</button>
+            <button class="path-tab" onclick="pTab('reports','contract',this)">Contract</button>
+            <button class="path-tab" onclick="pTab('reports','receipt',this)">Receipt / Invoice</button>
+            <button class="path-tab" onclick="pTab('reports','bizplan',this)">Business Plan</button>
+            <button class="path-tab" onclick="pTab('reports','program',this)">Program Plan</button>
+            <button class="path-tab" onclick="pTab('reports','revenue',this)">Revenue Report</button>
+            <button class="path-tab" onclick="pTab('reports','clients',this)">Client List</button>
+            <button class="path-tab" onclick="pTab('reports','calendar',this)">Calendar</button>
+          </div>
+
+          <!-- PROPOSAL -->
+          <div id="reports-tab-proposal" class="path-tab-content active">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+              <div class="card">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Proposal Details</h3>
+                <div class="form-group"><label class="form-label">Select Client (optional)</label><select id="rp-client-select" class="form-input" style="margin:0" onchange="fillReportClient('rp')"><option value="">— Select a client —</option></select></div>
+                <div class="form-group"><label class="form-label">Client / Organization</label><input id="rp-client" class="form-input" style="margin:0" placeholder="Client name"></div>
+                <div class="form-group"><label class="form-label">Contact Person</label><input id="rp-contact" class="form-input" style="margin:0" placeholder="Contact name"></div>
+                <div class="form-group"><label class="form-label">Services & Fees <span style="color:#999;font-weight:400">(one per line — auto-fills when you select a client)</span></label><textarea id="rp-service" class="form-input" style="min-height:140px;resize:vertical;margin:0;font-family:inherit;line-height:1.6" placeholder="One service per line, e.g.:\nWebsite Design — $800.00\nChurch Website Maintenance — $75.00 monthly\n  • Calendar events updated monthly\n  • Flyers/photos added"></textarea></div>
+                <div class="form-group"><label class="form-label">Project Description</label><textarea id="rp-desc" class="form-input" style="height:80px;resize:vertical;margin:0" placeholder="Describe the project scope..."></textarea></div>
+                <div class="form-group"><label class="form-label">Timeline</label><input id="rp-timeline" class="form-input" style="margin:0" placeholder="e.g. ~30 days"></div>
+                <div class="form-group"><label class="form-label">Deposit Required <span style="color:#999;font-weight:400">(leave blank or "none" if no deposit)</span></label><input id="rp-deposit" class="form-input" style="margin:0" placeholder="e.g. $500, 50%, or leave blank"></div>
+                <div class="form-group"><label class="form-label">Additional Notes</label><textarea id="rp-notes" class="form-input" style="height:60px;resize:vertical;margin:0" placeholder="Special requirements, hosting, domain..."></textarea></div>
+                <button onclick="generateReportDoc('proposal')" class="btn btn-solid" style="width:100%">Generate Proposal</button>
+              </div>
+              <div class="card" style="display:flex;flex-direction:column">
+                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                  <button onclick="printDoc('report-preview')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="print" style="margin-right:6px;vertical-align:-2px"></span>Print</button>
+                  <button onclick="downloadDoc('report-preview','proposal')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="download" style="margin-right:6px;vertical-align:-2px"></span>Download</button>
+                  <button onclick="copyDocText('report-preview')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="clipboard" style="margin-right:6px;vertical-align:-2px"></span>Copy</button>
+                  <button onclick="emailDoc('report-preview','Proposal','rp')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="send" style="margin-right:6px;vertical-align:-2px"></span>Email</button>
+                  <button onclick="saveDocToBusinessFile('report-preview','Proposal','rp')" class="btn btn-outline" style="flex:1;padding:8px">💾 Save to File</button>
+                  <button onclick="sendDocToPortal('report-preview','Proposal','rp')" class="btn btn-outline" style="flex:1;padding:8px;border-color:#10B981;color:#10B981"><span class="icon icon-sm" data-icon="upload" style="margin-right:6px;vertical-align:-2px"></span>Send to Portal</button>
+                  <button onclick="aiSpellCheck('report-preview','Proposal')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="check" style="margin-right:6px;vertical-align:-2px"></span>Spell Check</button><button onclick="aiImproveDoc('report-preview','Proposal')" class="btn btn-solid" style="flex:1;padding:8px;background:linear-gradient(135deg,var(--brand-primary),#7C3AED)"><span class="icon icon-sm" data-icon="spark" style="margin-right:6px;vertical-align:-2px"></span>AI Improve</button>
+                </div>
+                <textarea id="report-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" placeholder="Fill in the form and click Generate..." spellcheck="true" lang="en"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- BUSINESS PLAN -->
+          <div id="reports-tab-bizplan" class="path-tab-content">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+              <div class="card">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Business Plan Details</h3>
+                <div class="form-group"><label class="form-label">Business Name</label><input id="bp-bizname" class="form-input" style="margin:0" placeholder="Your business name"></div>
+                <div class="form-group"><label class="form-label">Owner / Founder</label><input id="bp-owner" class="form-input" style="margin:0" placeholder="Your name"></div>
+                <div class="form-group"><label class="form-label">Business Type / Industry</label><input id="bp-industry" class="form-input" style="margin:0" placeholder="e.g. Business Consulting"></div>
+                <div class="form-group"><label class="form-label">Mission Statement</label><textarea id="bp-mission" class="form-input" style="height:70px;resize:vertical;margin:0" placeholder="What does your business do and for whom?"></textarea></div>
+                <div class="form-group"><label class="form-label">Target Market</label><textarea id="bp-market" class="form-input" style="height:60px;resize:vertical;margin:0" placeholder="Who are your ideal clients?"></textarea></div>
+                <div class="form-group"><label class="form-label">Services / Products</label><textarea id="bp-services" class="form-input" style="height:70px;resize:vertical;margin:0" placeholder="List your main offerings..."></textarea></div>
+                <div class="form-group"><label class="form-label">Revenue Goals (12 months)</label><input id="bp-revenue" class="form-input" style="margin:0" placeholder="e.g. $75,000"></div>
+                <div class="form-group"><label class="form-label">Startup / Operating Costs</label><input id="bp-costs" class="form-input" style="margin:0" placeholder="e.g. $2,000/month"></div>
+                <div class="form-group"><label class="form-label">Competitive Advantage</label><textarea id="bp-advantage" class="form-input" style="height:60px;resize:vertical;margin:0" placeholder="What makes you different?"></textarea></div>
+                <button onclick="generateReportDoc('bizplan')" class="btn btn-solid" style="width:100%">Generate Business Plan</button>
+              </div>
+              <div class="card" style="display:flex;flex-direction:column">
+                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                  <button onclick="printDoc('bizplan-preview')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="print" style="margin-right:6px;vertical-align:-2px"></span>Print</button>
+                  <button onclick="downloadDoc('bizplan-preview','business-plan')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="download" style="margin-right:6px;vertical-align:-2px"></span>Download</button>
+                  <button onclick="copyDocText('bizplan-preview')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="clipboard" style="margin-right:6px;vertical-align:-2px"></span>Copy</button>
+                  <button onclick="aiSpellCheck('bizplan-preview','Business Plan')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="check" style="margin-right:6px;vertical-align:-2px"></span>Spell Check</button><button onclick="aiImproveDoc('bizplan-preview','Business Plan')" class="btn btn-solid" style="flex:1;padding:8px;background:linear-gradient(135deg,var(--brand-primary),#7C3AED)"><span class="icon icon-sm" data-icon="spark" style="margin-right:6px;vertical-align:-2px"></span>AI Improve</button>
+                </div>
+                <textarea id="bizplan-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" placeholder="Fill in the form and click Generate..." spellcheck="true" lang="en"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- CONTRACT -->
+          <div id="reports-tab-contract" class="path-tab-content">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+              <div class="card">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Contract Details</h3>
+                <div class="form-group"><label class="form-label">Contract Type</label><select id="ct-type" class="form-input" style="margin:0">
+                  <option value="service">Service Agreement</option>
+                  <option value="contractor">Independent Contractor Agreement</option>
+                  <option value="nda">Non-Disclosure Agreement (NDA)</option>
+                  <option value="copyright">Copyright Transfer / License</option>
+                  <option value="client">Client Contract (general)</option>
+                  <option value="coaching">Coaching Agreement</option>
+                  <option value="retainer">Retainer Agreement</option>
+                  <option value="sow">Statement of Work (SOW)</option>
+                  <option value="website">Website Design Agreement</option>
+                  <option value="release">Photo / Video / Testimonial Release</option>
+                  <option value="speaker">Speaker / Workshop Agreement</option>
+                </select></div>
+                <div class="form-group"><label class="form-label">Select Client (optional)</label><select id="ct-client-select" class="form-input" style="margin:0" onchange="fillReportClient('ct')"><option value="">— Select a client —</option></select></div>
+                <div class="form-group"><label class="form-label">Client Full Name</label><input id="ct-client" class="form-input" style="margin:0" placeholder="Client legal name"></div>
+                <div class="form-group"><label class="form-label">Client Business / Org</label><input id="ct-org" class="form-input" style="margin:0" placeholder="Organization name (if applicable)"></div>
+                <div class="form-group"><label class="form-label">Service Description</label><textarea id="ct-service" class="form-input" style="height:70px;resize:vertical;margin:0" placeholder="Describe the exact services being provided..."></textarea></div>
+                <div class="form-group"><label class="form-label">Total Project Price</label><input id="ct-price" class="form-input" style="margin:0" placeholder="e.g. $1,500.00"></div>
+                <div class="form-group"><label class="form-label">Deposit Amount</label><input id="ct-deposit" class="form-input" style="margin:0" placeholder="e.g. $750.00 (50%)"></div>
+                <div class="form-group"><label class="form-label">Project Start Date</label><input id="ct-start" type="date" class="form-input" style="margin:0"></div>
+                <div class="form-group"><label class="form-label">Estimated Completion</label><input id="ct-end" type="date" class="form-input" style="margin:0"></div>
+                <div class="form-group"><label class="form-label">Revision Rounds Included</label><input id="ct-revisions" class="form-input" style="margin:0" placeholder="e.g. 2 revision rounds"></div>
+                <button onclick="generateReportDoc('contract')" class="btn btn-solid" style="width:100%">Generate Contract</button>
+              </div>
+              <div class="card" style="display:flex;flex-direction:column">
+                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                  <button onclick="printDoc('contract-preview')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="print" style="margin-right:6px;vertical-align:-2px"></span>Print</button>
+                  <button onclick="downloadDoc('contract-preview','contract')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="download" style="margin-right:6px;vertical-align:-2px"></span>Download</button>
+                  <button onclick="copyDocText('contract-preview')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="clipboard" style="margin-right:6px;vertical-align:-2px"></span>Copy</button>
+                  <button onclick="emailDoc('contract-preview','Service Contract','ct')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="send" style="margin-right:6px;vertical-align:-2px"></span>Email</button>
+                  <button onclick="saveDocToBusinessFile('contract-preview','Contract','ct')" class="btn btn-outline" style="flex:1;padding:8px">💾 Save to File</button>
+                  <button onclick="sendDocToPortal('contract-preview','Contract','ct')" class="btn btn-outline" style="flex:1;padding:8px;border-color:#10B981;color:#10B981"><span class="icon icon-sm" data-icon="upload" style="margin-right:6px;vertical-align:-2px"></span>Send to Portal</button>
+                  <button onclick="aiSpellCheck('contract-preview','Service Contract')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="check" style="margin-right:6px;vertical-align:-2px"></span>Spell Check</button><button onclick="aiImproveDoc('contract-preview','Service Contract')" class="btn btn-solid" style="flex:1;padding:8px;background:linear-gradient(135deg,var(--brand-primary),#7C3AED)"><span class="icon icon-sm" data-icon="spark" style="margin-right:6px;vertical-align:-2px"></span>AI Improve</button>
+                </div>
+                <textarea id="contract-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" placeholder="Fill in the form and click Generate..." spellcheck="true" lang="en"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- RECEIPT / INVOICE -->
+          <div id="reports-tab-receipt" class="path-tab-content">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+              <div class="card">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Invoice / Receipt Details</h3>
+                <div class="form-group"><label class="form-label">Select Client (optional)</label><select id="inv-client-select" class="form-input" style="margin:0" onchange="fillReportClient('inv')"><option value="">— Select a client —</option></select></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                  <div class="form-group"><label class="form-label">Client Name</label><input id="inv-client" class="form-input" style="margin:0" placeholder="Client name"></div>
+                  <div class="form-group"><label class="form-label">Client Email</label><input id="inv-email" class="form-input" style="margin:0" placeholder="email@example.com"></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                  <div class="form-group"><label class="form-label">Invoice #</label><input id="inv-number" class="form-input" style="margin:0" placeholder="INV-001"></div>
+                  <div class="form-group"><label class="form-label">Invoice Date</label><input id="inv-date" type="date" class="form-input" style="margin:0"></div>
+                </div>
+                <div class="form-group"><label class="form-label">Due Date</label><input id="inv-due" type="date" class="form-input" style="margin:0"></div>
+                <div style="margin:12px 0 6px;font-size:13px;font-weight:700">Line Items</div>
+                <div style="overflow-x:auto">
+                  <table style="width:100%;border-collapse:collapse;font-size:12px">
+                    <thead><tr style="background:var(--gray-100)">
+                      <th style="text-align:left;padding:6px 8px;border:1px solid var(--gray-200)">Description</th>
+                      <th style="text-align:center;padding:6px 8px;border:1px solid var(--gray-200);width:52px">Qty</th>
+                      <th style="text-align:right;padding:6px 8px;border:1px solid var(--gray-200);width:80px">Rate ($)</th>
+                      <th style="text-align:right;padding:6px 8px;border:1px solid var(--gray-200);width:80px">Amount</th>
+                      <th style="padding:4px;width:28px;border:1px solid var(--gray-200)"></th>
+                    </tr></thead>
+                    <tbody id="inv-items-body">
+                      <tr><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-desc" style="margin:0;padding:4px 6px;font-size:12px" value="Webpage Design" oninput="calcReceiptTotal()"></td><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-qty" type="number" min="1" style="margin:0;padding:4px 6px;font-size:12px;text-align:center;width:100%" value="1" oninput="calcReceiptTotal()"></td><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-rate" type="number" min="0" step="0.01" style="margin:0;padding:4px 6px;font-size:12px;text-align:right;width:100%" value="1500" oninput="calcReceiptTotal()"></td><td style="padding:4px 8px;border:1px solid var(--gray-200);text-align:right;font-size:12px;white-space:nowrap" class="inv-amt">$1,500.00</td><td style="padding:4px;border:1px solid var(--gray-200);text-align:center"><button onclick="removeInvRow(this)" style="background:none;border:none;color:var(--error);cursor:pointer;font-size:14px;line-height:1">✕</button></td></tr>
+                      <tr><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-desc" style="margin:0;padding:4px 6px;font-size:12px" value="Domain Purchase" oninput="calcReceiptTotal()"></td><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-qty" type="number" min="1" style="margin:0;padding:4px 6px;font-size:12px;text-align:center;width:100%" value="1" oninput="calcReceiptTotal()"></td><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-rate" type="number" min="0" step="0.01" style="margin:0;padding:4px 6px;font-size:12px;text-align:right;width:100%" value="20" oninput="calcReceiptTotal()"></td><td style="padding:4px 8px;border:1px solid var(--gray-200);text-align:right;font-size:12px;white-space:nowrap" class="inv-amt">$20.00</td><td style="padding:4px;border:1px solid var(--gray-200);text-align:center"><button onclick="removeInvRow(this)" style="background:none;border:none;color:var(--error);cursor:pointer;font-size:14px;line-height:1">✕</button></td></tr>
+                      <tr><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-desc" style="margin:0;padding:4px 6px;font-size:12px" value="Hosting (12 months)" oninput="calcReceiptTotal()"></td><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-qty" type="number" min="1" style="margin:0;padding:4px 6px;font-size:12px;text-align:center;width:100%" value="1" oninput="calcReceiptTotal()"></td><td style="padding:4px;border:1px solid var(--gray-200)"><input class="form-input inv-rate" type="number" min="0" step="0.01" style="margin:0;padding:4px 6px;font-size:12px;text-align:right;width:100%" value="120" oninput="calcReceiptTotal()"></td><td style="padding:4px 8px;border:1px solid var(--gray-200);text-align:right;font-size:12px;white-space:nowrap" class="inv-amt">$120.00</td><td style="padding:4px;border:1px solid var(--gray-200);text-align:center"><button onclick="removeInvRow(this)" style="background:none;border:none;color:var(--error);cursor:pointer;font-size:14px;line-height:1">✕</button></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px">
+                  <button onclick="addInvRow()" class="btn btn-outline" style="padding:5px 14px;font-size:12px">+ Add Line Item</button>
+                  <div style="font-size:14px;font-weight:700">Total: <span id="inv-total" style="color:var(--accent)">$1,640.00</span></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px">
+                  <div class="form-group"><label class="form-label">Tax Rate (%)</label><input id="inv-tax" type="number" min="0" max="30" step="0.1" class="form-input" style="margin:0" value="0" oninput="calcReceiptTotal()"></div>
+                  <div class="form-group"><label class="form-label">Amount Received ($)</label><input id="inv-deposit" type="number" min="0" step="0.01" class="form-input" style="margin:0" placeholder="0.00" oninput="calcReceiptTotal()"></div>
+                </div>
+                <div class="form-group"><label class="form-label">Payment Type</label>
+                  <select id="inv-payment-type" class="form-input" style="margin:0">
+                    <option value="">— None / Not yet paid —</option>
+                    <option value="Deposit Received">Deposit Received</option>
+                    <option value="Partial Payment">Partial Payment Received</option>
+                    <option value="Payment in Full">Payment in Full</option>
+                    <option value="Final Payment">Final Payment Received</option>
+                    <option value="Paid">Paid — Receipt Issued</option>
+                  </select>
+                </div>
+                <div class="form-group"><label class="form-label">Payment Method</label><select id="inv-payment" class="form-input" style="margin:0"><option>Credit Card</option><option>Zelle</option><option>PayPal</option><option>Venmo</option><option>Check</option><option>Bank Transfer</option><option>CashApp</option><option>Cash</option><option>Other</option></select></div>
+                <div class="form-group"><label class="form-label">Notes</label><textarea id="inv-notes" class="form-input" style="height:54px;resize:vertical;margin:0" placeholder="Thank you for your business!"></textarea></div>
+                <button onclick="generateReportDoc('receipt')" class="btn btn-solid" style="width:100%;margin-top:4px">Generate Invoice / Receipt</button>
+              </div>
+              <div class="card" style="display:flex;flex-direction:column">
+                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                  <button onclick="printDoc('receipt-preview')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="print" style="margin-right:6px;vertical-align:-2px"></span>Print</button>
+                  <button onclick="downloadDoc('receipt-preview','invoice')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="download" style="margin-right:6px;vertical-align:-2px"></span>Download</button>
+                  <button onclick="copyDocText('receipt-preview')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="clipboard" style="margin-right:6px;vertical-align:-2px"></span>Copy</button>
+                  <button onclick="emailDoc('receipt-preview','Invoice','inv')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="send" style="margin-right:6px;vertical-align:-2px"></span>Email</button>
+                  <button onclick="saveDocToBusinessFile('receipt-preview','Invoice','inv')" class="btn btn-outline" style="flex:1;padding:8px">💾 Save to File</button>
+                </div>
+                <textarea id="receipt-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" placeholder="Fill in the form and click Generate Invoice / Receipt..." spellcheck="true" lang="en"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- PROGRAM PLAN -->
+          <div id="reports-tab-program" class="path-tab-content">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+              <div class="card">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Program Plan Details</h3>
+                <div class="form-group"><label class="form-label">Program Name</label><input id="pp-name" class="form-input" style="margin:0" placeholder="e.g. H.E.L.P. Youth Leaders Academy"></div>
+                <div class="form-group"><label class="form-label">Program Director</label><input id="pp-director" class="form-input" style="margin:0" placeholder="Your name / organization"></div>
+                <div class="form-group"><label class="form-label">Target Participants</label><input id="pp-participants" class="form-input" style="margin:0" placeholder="e.g. Youth ages 13–17"></div>
+                <div class="form-group"><label class="form-label">Program Goals</label><textarea id="pp-goals" class="form-input" style="height:70px;resize:vertical;margin:0" placeholder="What will participants achieve?"></textarea></div>
+                <div class="form-group"><label class="form-label">Curriculum Overview</label><textarea id="pp-curriculum" class="form-input" style="height:80px;resize:vertical;margin:0" placeholder="Week by week topics..."></textarea></div>
+                <div class="form-group"><label class="form-label">Budget / Pricing</label><input id="pp-budget" class="form-input" style="margin:0" placeholder="e.g. $350/participant, 15 seats"></div>
+                <div class="form-group"><label class="form-label">Start Date</label><input id="pp-start" type="date" class="form-input" style="margin:0"></div>
+                <div class="form-group"><label class="form-label">Partners / Sponsors</label><textarea id="pp-partners" class="form-input" style="height:60px;resize:vertical;margin:0" placeholder="Schools, churches, community orgs..."></textarea></div>
+                <button onclick="generateReportDoc('program')" class="btn btn-solid" style="width:100%">Generate Program Plan</button>
+              </div>
+              <div class="card" style="display:flex;flex-direction:column">
+                <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+                  <button onclick="printDoc('program-preview')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="print" style="margin-right:6px;vertical-align:-2px"></span>Print</button>
+                  <button onclick="downloadDoc('program-preview','program-plan')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="download" style="margin-right:6px;vertical-align:-2px"></span>Download</button>
+                  <button onclick="copyDocText('program-preview')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="clipboard" style="margin-right:6px;vertical-align:-2px"></span>Copy</button>
+                  <button onclick="aiSpellCheck('program-preview','Program Plan')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="check" style="margin-right:6px;vertical-align:-2px"></span>Spell Check</button><button onclick="aiImproveDoc('program-preview','Program Plan')" class="btn btn-solid" style="flex:1;padding:8px;background:linear-gradient(135deg,var(--brand-primary),#7C3AED)"><span class="icon icon-sm" data-icon="spark" style="margin-right:6px;vertical-align:-2px"></span>AI Improve</button>
+                </div>
+                <textarea id="program-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" placeholder="Fill in the form and click Generate..." spellcheck="true" lang="en"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- REVENUE REPORT -->
+          <div id="reports-tab-revenue" class="path-tab-content">
+            <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+              <select id="rr-year" class="form-select" style="margin:0;width:120px" onchange="generateReportDoc('revenue')">
+                <option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option>
+              </select>
+              <select id="rr-month" class="form-select" style="margin:0;width:140px" onchange="generateReportDoc('revenue')">
+                <option value="">All Months</option>
+                <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+                <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+                <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+                <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+              </select>
+              <button onclick="generateReportDoc('revenue')" class="btn btn-solid" style="padding:10px 18px">Generate Report</button>
+              <button onclick="printDoc('revenue-report-preview')" class="btn btn-outline" style="padding:10px 18px">🖸️ Print</button>
+              <button onclick="downloadDoc('revenue-report-preview','revenue-report')" class="btn btn-outline" style="padding:10px 18px"><span class="icon icon-sm" data-icon="download" style="margin-right:6px;vertical-align:-2px"></span>Download</button>
+            </div>
+            <div class="card">
+              <textarea id="revenue-report-preview" class="form-input" style="width:100%;min-height:500px;font-size:13px;font-family:monospace;resize:vertical" placeholder="Select filters and click Generate Report..."></textarea>
+            </div>
+          </div>
+
+          <!-- CLIENT LIST -->
+          <div id="reports-tab-clients" class="path-tab-content">
+            <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+              <select id="rc-status" class="form-select" style="margin:0;width:160px" onchange="generateReportDoc('clients')">
+                <option value="All">All Statuses</option>
+                <option value="Lead">Lead</option>
+                <option value="Active">Active</option>
+                <option value="Completed">Completed</option>
+                <option value="On Hold">On Hold</option>
+              </select>
+              <select id="rc-paid" class="form-select" style="margin:0;width:160px" onchange="generateReportDoc('clients')">
+                <option value="All">All (Paid + Pending)</option>
+                <option value="Paid">Paid Only</option>
+                <option value="Pending">Pending Only</option>
+              </select>
+              <button onclick="generateReportDoc('clients')" class="btn btn-solid" style="padding:10px 18px">Generate Client Report</button>
+              <button onclick="printClientReport()" class="btn btn-outline" style="padding:10px 18px"><span class="icon icon-sm" data-icon="print" style="margin-right:6px;vertical-align:-2px"></span>Print Formatted</button>
+              <button onclick="downloadDoc('clients-preview','client-list')" class="btn btn-outline" style="padding:10px 18px"><span class="icon icon-sm" data-icon="download" style="margin-right:6px;vertical-align:-2px"></span>Download</button>
+            </div>
+            <div class="card">
+              <textarea id="clients-preview" class="form-input" style="width:100%;min-height:500px;font-size:13px;font-family:monospace;resize:vertical" placeholder="Click Generate Client Report to view your full client list with totals..."></textarea>
+            </div>
+          </div>
+
+          <!-- CALENDAR -->
+          <div id="reports-tab-calendar" class="path-tab-content">
+            <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
+              <select id="rcal-month" class="form-select" style="margin:0;width:140px" onchange="generateReportDoc('calendar')">
+                <option value="">All Months</option>
+                <option value="0">January</option><option value="1">February</option><option value="2">March</option>
+                <option value="3">April</option><option value="4">May</option><option value="5">June</option>
+                <option value="6">July</option><option value="7">August</option><option value="8">September</option>
+                <option value="9">October</option><option value="10">November</option><option value="11">December</option>
+              </select>
+              <select id="rcal-year" class="form-select" style="margin:0;width:120px" onchange="generateReportDoc('calendar')">
+                <option value="2026">2026</option><option value="2025">2025</option><option value="2024">2024</option>
+              </select>
+              <button onclick="generateReportDoc('calendar')" class="btn btn-solid" style="padding:10px 18px">Generate Calendar Report</button>
+              <button onclick="printCalendarReport()" class="btn btn-outline" style="padding:10px 18px"><span class="icon icon-sm" data-icon="print" style="margin-right:6px;vertical-align:-2px"></span>Print Formatted</button>
+              <button onclick="downloadDoc('calendar-preview','calendar')" class="btn btn-outline" style="padding:10px 18px"><span class="icon icon-sm" data-icon="download" style="margin-right:6px;vertical-align:-2px"></span>Download</button>
+            </div>
+            <div class="card">
+              <textarea id="calendar-preview" class="form-input" style="width:100%;min-height:500px;font-size:13px;font-family:monospace;resize:vertical" placeholder="Select a month/year and click Generate to list all bookings, events, and deadlines..."></textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

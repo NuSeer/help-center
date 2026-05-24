@@ -1,0 +1,136 @@
+      <div id="course-pathway-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">Course Development</h1>
+          <p class="page-subtitle">Plan, build, package, and launch a paid course or learning program</p>
+        </div>
+        <div class="content">
+          <div class="path-tabs-container">
+            <div class="path-tabs-nav">
+              <button class="path-tab active" onclick="pTab('course','plan',this)">Course Plan</button>
+              <button class="path-tab" onclick="pTab('course','curriculum',this)">Curriculum &amp; Modules</button>
+              <button class="path-tab" onclick="pTab('course','production',this)">Production</button>
+              <button class="path-tab" onclick="pTab('course','pricing',this)">Pricing &amp; Packaging</button>
+              <button class="path-tab" onclick="pTab('course','launch',this)">Launch &amp; Sales</button>
+              <button class="path-tab" onclick="pTab('course','platforms',this)">Platforms</button>
+            </div>
+
+            <div id="course-tab-plan" class="path-tab-content active">
+              <div class="card" style="margin-bottom:20px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                  <h3 style="font-size:18px;font-weight:700">My Course</h3>
+                  <button onclick="saveCoursePlan()" class="btn btn-solid" style="padding:8px 18px">Save Course</button>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                  <div class="form-group" style="grid-column:1/-1"><label class="form-label">Course Title</label><input id="cp-title" class="form-input" style="margin:0" placeholder="e.g. Build Your First Online Course in 30 Days"></div>
+                  <div class="form-group" style="grid-column:1/-1"><label class="form-label">One-Sentence Promise</label><input id="cp-promise" class="form-input" style="margin:0" placeholder="By the end of this course, students will be able to ___"></div>
+                  <div class="form-group"><label class="form-label">Target Student</label><input id="cp-audience" class="form-input" style="margin:0" placeholder="e.g. New coaches with no audience"></div>
+                  <div class="form-group"><label class="form-label">Format</label><select id="cp-format" class="form-input" style="margin:0">
+                    <option value="">Select…</option>
+                    <option>Self-paced video</option><option>Live cohort</option><option>Hybrid (live + recorded)</option><option>Workbook + email</option><option>Workshop series</option>
+                  </select></div>
+                  <div class="form-group"><label class="form-label">Estimated Length</label><select id="cp-length" class="form-input" style="margin:0">
+                    <option value="">Select…</option>
+                    <option>1–3 hours (mini)</option><option>4–8 hours (short)</option><option>2–4 weeks (standard)</option><option>6–8 weeks (cohort)</option><option>3+ months (deep)</option>
+                  </select></div>
+                  <div class="form-group"><label class="form-label">Skill Level</label><select id="cp-level" class="form-input" style="margin:0">
+                    <option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Mixed</option>
+                  </select></div>
+                  <div class="form-group"><label class="form-label">Target Launch Date</label><input id="cp-launch" type="date" class="form-input" style="margin:0"></div>
+                  <div class="form-group" style="grid-column:1/-1"><label class="form-label">3 Outcomes Students Will Get</label><textarea id="cp-outcomes" class="form-input" style="height:90px;margin:0;resize:vertical" placeholder="1. ___\n2. ___\n3. ___"></textarea></div>
+                  <div class="form-group" style="grid-column:1/-1"><label class="form-label">Why You Are the Right Teacher</label><textarea id="cp-credibility" class="form-input" style="height:80px;margin:0;resize:vertical" placeholder="Lived experience, results, credentials, body of work..."></textarea></div>
+                </div>
+              </div>
+
+              <div class="tip-box"><h4>Validate before you build</h4><p>Before recording a single video: get 5 conversations with people who match your target student. Ask what they have already tried, what they have spent money on, and what they wish existed. If 3 of 5 will pre-pay or sign a wait-list, you have validation. If not, refine the promise.</p></div>
+            </div>
+
+            <div id="course-tab-curriculum" class="path-tab-content">
+              <div class="card" style="margin-bottom:20px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                  <h3 style="font-size:18px;font-weight:700">Modules &amp; Lessons</h3>
+                  <button onclick="saveCourseCurriculum()" class="btn btn-solid" style="padding:8px 18px">Save Curriculum</button>
+                </div>
+                <p style="color:var(--gray-600);font-size:13px;margin-bottom:14px">Sketch out your modules and the lessons inside each. Aim for 4–8 modules with 3–5 lessons per module.</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px">
+                  <div class="form-group"><label class="form-label">Module 1 Title</label><input id="cc-m1-title" class="form-input" style="margin:0" placeholder="e.g. Define Your Course Promise"><textarea id="cc-m1-lessons" class="form-input" style="margin-top:8px;height:90px;resize:vertical" placeholder="Lesson 1: ___\nLesson 2: ___\nLesson 3: ___"></textarea></div>
+                  <div class="form-group"><label class="form-label">Module 2 Title</label><input id="cc-m2-title" class="form-input" style="margin:0" placeholder=""><textarea id="cc-m2-lessons" class="form-input" style="margin-top:8px;height:90px;resize:vertical"></textarea></div>
+                  <div class="form-group"><label class="form-label">Module 3 Title</label><input id="cc-m3-title" class="form-input" style="margin:0" placeholder=""><textarea id="cc-m3-lessons" class="form-input" style="margin-top:8px;height:90px;resize:vertical"></textarea></div>
+                  <div class="form-group"><label class="form-label">Module 4 Title</label><input id="cc-m4-title" class="form-input" style="margin:0" placeholder=""><textarea id="cc-m4-lessons" class="form-input" style="margin-top:8px;height:90px;resize:vertical"></textarea></div>
+                  <div class="form-group"><label class="form-label">Module 5 Title</label><input id="cc-m5-title" class="form-input" style="margin:0" placeholder=""><textarea id="cc-m5-lessons" class="form-input" style="margin-top:8px;height:90px;resize:vertical"></textarea></div>
+                  <div class="form-group"><label class="form-label">Module 6 Title</label><input id="cc-m6-title" class="form-input" style="margin:0" placeholder=""><textarea id="cc-m6-lessons" class="form-input" style="margin-top:8px;height:90px;resize:vertical"></textarea></div>
+                </div>
+              </div>
+              <div class="tip-box"><h4>Backwards design works</h4><p>Start from the final outcome and work backwards. What does a student need to know in week 4? What scaffolding did week 3 require? What did week 2 unlock? Most weak courses are weak because the order does not build.</p></div>
+            </div>
+
+            <div id="course-tab-production" class="path-tab-content">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:14px">Production Checklist</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+                  <div>
+                    <h4 style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--brand-primary)">Audio &amp; Video</h4>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px"><input type="checkbox" data-cp-check="prod-mic"> External USB or lavalier microphone (NOT laptop mic)</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px"><input type="checkbox" data-cp-check="prod-quiet"> Quiet recording space (closet / treated room)</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px"><input type="checkbox" data-cp-check="prod-light"> Soft front lighting (window or ring light)</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px"><input type="checkbox" data-cp-check="prod-camera"> 1080p or 4K camera (smartphone is fine)</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px"><input type="checkbox" data-cp-check="prod-script"> Lesson script or detailed bullet outline</label>
+                  </div>
+                  <div>
+                    <h4 style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--brand-primary)">Editing &amp; Delivery</h4>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px"><input type="checkbox" data-cp-check="prod-edit"> Editing tool chosen (Descript, CapCut, DaVinci, iMovie)</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px"><input type="checkbox" data-cp-check="prod-captions"> Captions on every video (accessibility)</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px"><input type="checkbox" data-cp-check="prod-thumbnails"> Lesson thumbnails / module covers</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px"><input type="checkbox" data-cp-check="prod-workbook"> Companion workbook / worksheets (PDF)</label>
+                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px"><input type="checkbox" data-cp-check="prod-host"> Hosting decided (see Platforms tab)</label>
+                  </div>
+                </div>
+              </div>
+              <div class="tip-box" style="margin-top:16px"><h4>Done is better than perfect — but record the first lesson three times</h4><p>The first lesson always sounds awkward. Record it on day 1, again on day 7, and again at the end of production. Use the third take. Everyone you teach will have a more polished first impression.</p></div>
+            </div>
+
+            <div id="course-tab-pricing" class="path-tab-content">
+              <div class="card" style="margin-bottom:20px">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:14px">Pricing Tiers</h3>
+                <p style="color:var(--gray-600);font-size:13px;margin-bottom:14px">Most courses sell better with 2–3 price tiers. Anchor with the highest, drive volume with the middle.</p>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">
+                  <div class="form-group"><label class="form-label">Tier 1 — Self-Study</label><input id="cpr-t1-name" class="form-input" style="margin:0" placeholder="Self-Paced Course"><input id="cpr-t1-price" class="form-input" style="margin-top:8px" placeholder="$197"><textarea id="cpr-t1-includes" class="form-input" style="margin-top:8px;height:80px;resize:vertical" placeholder="What is included..."></textarea></div>
+                  <div class="form-group"><label class="form-label">Tier 2 — Course + Coaching</label><input id="cpr-t2-name" class="form-input" style="margin:0" placeholder="Course + Group Coaching"><input id="cpr-t2-price" class="form-input" style="margin-top:8px" placeholder="$497"><textarea id="cpr-t2-includes" class="form-input" style="margin-top:8px;height:80px;resize:vertical" placeholder="What is included..."></textarea></div>
+                  <div class="form-group"><label class="form-label">Tier 3 — VIP / Done-With-You</label><input id="cpr-t3-name" class="form-input" style="margin:0" placeholder="VIP Implementation"><input id="cpr-t3-price" class="form-input" style="margin-top:8px" placeholder="$1,997"><textarea id="cpr-t3-includes" class="form-input" style="margin-top:8px;height:80px;resize:vertical" placeholder="What is included..."></textarea></div>
+                </div>
+                <div style="margin-top:14px"><button onclick="saveCoursePricing()" class="btn btn-solid">Save Pricing</button></div>
+              </div>
+              <div class="tip-box"><h4>Beta cohort pricing rule</h4><p>Run the first cohort at 50% off in exchange for testimonials, case studies, and feedback. Make this explicit: students get a discount, you get social proof and a chance to fix the curriculum before the full-price launch.</p></div>
+            </div>
+
+            <div id="course-tab-launch" class="path-tab-content">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:14px">Launch Plan — 4 Week Sequence</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                  <div class="form-group"><label class="form-label">Week 1 — Pre-Launch Content</label><textarea id="cl-w1" class="form-input" style="height:80px;margin:0;resize:vertical" placeholder="3–5 free pieces tied to course outcome (post, video, podcast clip, lead magnet)"></textarea></div>
+                  <div class="form-group"><label class="form-label">Week 2 — Open Wait-List</label><textarea id="cl-w2" class="form-input" style="height:80px;margin:0;resize:vertical" placeholder="Email list capture, IG bio link, lead magnet hand-off + nurture sequence"></textarea></div>
+                  <div class="form-group"><label class="form-label">Week 3 — Open Cart / Beta Group</label><textarea id="cl-w3" class="form-input" style="height:80px;margin:0;resize:vertical" placeholder="Daily email or post for 5 days; objection-busters, FAQ, testimonial drops"></textarea></div>
+                  <div class="form-group"><label class="form-label">Week 4 — Close Cart + Onboard</label><textarea id="cl-w4" class="form-input" style="height:80px;margin:0;resize:vertical" placeholder="Last-call emails, deadline timer, then welcome / kickoff for paid students"></textarea></div>
+                </div>
+                <div style="margin-top:14px"><button onclick="saveCourseLaunch()" class="btn btn-solid">Save Launch Plan</button></div>
+              </div>
+              <div class="tip-box" style="margin-top:16px"><h4>Cart-close beats launch-day for sales</h4><p>The last 24 hours of a launch typically deliver 30–50% of total sales. Tell your audience you are closing, mean it, and close on time. Re-opening early trains buyers to wait.</p></div>
+            </div>
+
+            <div id="course-tab-platforms" class="path-tab-content">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:14px">Where to Host Your Course</h3>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <a class="resource-link" href="https://teachable.com" target="_blank"><span class="icon" data-icon="book"></span><div class="info"><strong>Teachable</strong><span>Easy to set up, hosts video + drip + sales pages. Tier-priced.</span></div></a>
+                  <a class="resource-link" href="https://thinkific.com" target="_blank"><span class="icon" data-icon="book"></span><div class="info"><strong>Thinkific</strong><span>Strong free plan to validate before paying.</span></div></a>
+                  <a class="resource-link" href="https://podia.com" target="_blank"><span class="icon" data-icon="package"></span><div class="info"><strong>Podia</strong><span>All-in-one: course, digital downloads, email, community.</span></div></a>
+                  <a class="resource-link" href="https://kajabi.com" target="_blank"><span class="icon" data-icon="rocket"></span><div class="info"><strong>Kajabi</strong><span>Premium all-in-one — courses, funnels, email, communities.</span></div></a>
+                  <a class="resource-link" href="https://www.skool.com" target="_blank"><span class="icon" data-icon="users"></span><div class="info"><strong>Skool</strong><span>Course + community in one. Strong for cohort-based teaching.</span></div></a>
+                  <a class="resource-link" href="https://www.notion.so" target="_blank"><span class="icon" data-icon="note"></span><div class="info"><strong>Notion + Stripe + Loom</strong><span>Zero-cost MVP: paywall a Notion doc with Stripe, embed Loom recordings.</span></div></a>
+                </div>
+              </div>
+              <div class="tip-box" style="margin-top:16px"><h4>Pick the platform that matches your delivery</h4><p>Self-paced video → Teachable / Thinkific / Podia. Cohort with community → Skool or Kajabi. Live workshop series → Zoom + a private Slack/Discord. Do not overpay for features you will not use in the first launch.</p></div>
+            </div>
+
+          </div>
+        </div>
+      </div>

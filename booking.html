@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Book a Call — H.E.L.P. Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{min-height:100%}
+body{font-family:'DM Sans',-apple-system,system-ui,sans-serif;background:#F1F5F9;color:#0F172A;line-height:1.5}
+.shell{max-width:560px;margin:0 auto;padding:24px 18px 60px}
+.brand-bar{background:linear-gradient(135deg,#0F172A,#1e3a5f);color:#fff;padding:26px 22px;border-radius:14px;box-shadow:0 8px 30px rgba(15,23,42,0.15);margin-bottom:18px}
+.brand-bar .biz{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.7;margin-bottom:4px}
+.brand-bar h1{font-size:24px;font-weight:700;margin-bottom:6px}
+.brand-bar .sub{font-size:14px;opacity:0.85;line-height:1.6}
+.card{background:#fff;border-radius:12px;padding:22px;margin-bottom:14px;box-shadow:0 2px 8px rgba(15,23,42,0.04);border:1px solid #E2E8F0}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:600;letter-spacing:0.4px;text-transform:uppercase;color:#64748B;margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:11px 13px;border:1px solid #CBD5E1;border-radius:8px;font:inherit;font-size:14px;color:#0F172A;background:#fff}
+.field textarea{min-height:80px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#1E5BC0;box-shadow:0 0 0 3px rgba(30,91,192,0.12)}
+.field .hint{color:#94A3B8;font-size:11.5px;margin-top:4px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:480px){.grid-2{grid-template-columns:1fr}}
+.btn{width:100%;padding:14px;background:#16A34A;color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;font:inherit;font-size:15px;letter-spacing:0.5px}
+.btn:hover{background:#138a3e}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.alert{padding:12px 14px;border-radius:8px;font-size:13px;margin-bottom:14px;display:none}
+.alert.show{display:block}
+.alert.err{background:rgba(220,38,38,0.08);border:1px solid rgba(220,38,38,0.25);color:#991B1B}
+.alert.ok{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.25);color:#065F46}
+.done{text-align:center;padding:30px 20px;display:none}
+.done.show{display:block}
+.done .ico{font-size:48px;color:#22c55e;margin-bottom:14px}
+.done h2{font-size:22px;margin-bottom:8px;color:#0F172A}
+.done p{color:#64748B;font-size:14px;line-height:1.6;margin-bottom:10px}
+.done .sum{margin-top:14px;padding:14px;background:#F8FAFC;border-radius:8px;text-align:left;font-size:13px;line-height:1.7}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,0.25);border-top-color:white;border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.footer{text-align:center;padding:30px 0 10px;font-size:12px;color:#94A3B8}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <div class="brand-bar">
+    <div class="biz">H.E.L.P. Center</div>
+    <h1>Schedule a Call</h1>
+    <div class="sub">Request a time below — Joy will reach out within 24 hours to confirm.</div>
+  </div>
+
+  <div class="card" id="form-card">
+    <div class="grid-2">
+      <div class="field">
+        <label>Your name</label>
+        <input type="text" id="bk-name" placeholder="First and last">
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input type="email" id="bk-email" placeholder="you@example.com">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Phone (optional)</label>
+      <input type="tel" id="bk-phone" placeholder="(555) 000-0000">
+    </div>
+
+    <div class="field">
+      <label>What's this about?</label>
+      <select id="bk-service">
+        <option value="">— Choose one —</option>
+        <option>General consultation</option>
+        <option>Website project</option>
+        <option>Business consulting</option>
+        <option>Credit / financing question</option>
+        <option>Programs &amp; courses</option>
+        <option>Existing client check-in</option>
+        <option>Other (describe below)</option>
+      </select>
+    </div>
+
+    <div class="grid-2">
+      <div class="field">
+        <label>Preferred date</label>
+        <input type="date" id="bk-date">
+        <div class="hint">Joy will confirm or suggest an alternative.</div>
+      </div>
+      <div class="field">
+        <label>Preferred time</label>
+        <select id="bk-time">
+          <option value="">— Pick a window —</option>
+          <option>Morning (9–12 EST)</option>
+          <option>Lunch (12–1 EST)</option>
+          <option>Early afternoon (1–3 EST)</option>
+          <option>Late afternoon (3–5 EST)</option>
+          <option>Evening (5–7 EST)</option>
+          <option>Flexible — anytime</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Notes for Joy (optional)</label>
+      <textarea id="bk-notes" placeholder="What you'd like to discuss, context, questions..."></textarea>
+    </div>
+
+    <div class="alert err" id="err"></div>
+    <button class="btn" id="submit-btn" onclick="submitBooking()">Request This Time</button>
+  </div>
+
+  <div class="card done" id="done-card">
+    <div class="ico">✓</div>
+    <h2>Request sent</h2>
+    <p>Joy received your booking request and will email you within 24 hours to confirm or suggest another time.</p>
+    <div class="sum" id="done-summary"></div>
+  </div>
+
+  <div class="footer">Powered by H.E.L.P. Center</div>
+
+</div>
+
+<script>
+const API = location.origin + '/api';
+const token = new URLSearchParams(location.search).get('u') || '';
+
+// Default the date picker to "tomorrow" so the past doesn't show as the default
+(function initDate(){
+  const d = new Date(); d.setDate(d.getDate() + 1);
+  document.getElementById('bk-date').value = d.toISOString().slice(0, 10);
+  document.getElementById('bk-date').min = new Date().toISOString().slice(0, 10);
+})();
+
+function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+async function submitBooking(){
+  const errEl = document.getElementById('err');
+  errEl.classList.remove('show');
+
+  const name = document.getElementById('bk-name').value.trim();
+  const email = document.getElementById('bk-email').value.trim();
+  const phone = document.getElementById('bk-phone').value.trim();
+  const service = document.getElementById('bk-service').value;
+  const date = document.getElementById('bk-date').value;
+  const time = document.getElementById('bk-time').value;
+  const notes = document.getElementById('bk-notes').value.trim();
+
+  if(!name || !email || !date || !time){
+    errEl.textContent = 'Please fill in your name, email, preferred date, and time.';
+    errEl.classList.add('show'); return;
+  }
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){
+    errEl.textContent = 'That email doesn\'t look right — please check.';
+    errEl.classList.add('show'); return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Sending request…';
+
+  try {
+    const r = await fetch(API + '/owner/booking/request', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ bookingToken: token, name, email, phone, service, date, time, notes })
+    });
+    if(!r.ok){ const j = await r.json().catch(()=>({})); throw new Error(j.error || ('HTTP ' + r.status)); }
+    // Show success state
+    document.getElementById('form-card').style.display = 'none';
+    document.getElementById('done-card').classList.add('show');
+    document.getElementById('done-summary').innerHTML =
+      '<strong>What you requested:</strong><br>' +
+      esc(name) + ' &middot; ' + esc(email) + (phone ? ' &middot; ' + esc(phone) : '') + '<br>' +
+      'Date: ' + esc(new Date(date).toLocaleDateString()) + '<br>' +
+      'Time: ' + esc(time) +
+      (service ? '<br>About: ' + esc(service) : '') +
+      (notes ? '<br><br><em>"' + esc(notes) + '"</em>' : '');
+  } catch(e){
+    errEl.textContent = 'Request failed: ' + e.message + '. Please try again or email joy@thehelpctr.com directly.';
+    errEl.classList.add('show');
+    btn.disabled = false; btn.textContent = 'Request This Time';
+  }
+}
+</script>
+</body>
+</html>

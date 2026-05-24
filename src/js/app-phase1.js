@@ -370,7 +370,7 @@
             return {
               enabled: true,
               token: bs.bookingToken,
-              url: base + '#book?u=' + bs.bookingToken,
+              url: (((window.location.origin && /^https?:/.test(window.location.origin)) ? window.location.origin : 'https://thehelpctr.com') + '/booking.html?u=' + bs.bookingToken),
               label: bs.label || 'Schedule a Call'
             };
           } catch(e) { return null; }
@@ -1006,8 +1006,10 @@
       const integrations = getData('integrationSettings') || {};
       const businessName = settings.businessName || 'H.E.L.P. Center';
       const ownerName = settings.name || businessName;
-      const portalUrl = ((settings.portalBaseUrl || window.location.href.split('#')[0]).replace(/\/$/, ''))
-        + '#portal?token=' + (client.portalToken || '');
+      // Send notification emails point clients to the dedicated portal.html page
+      // (query-string routing survives email clients; no sign-in screen).
+      const _origin = (window.location.origin && /^https?:/.test(window.location.origin)) ? window.location.origin : 'https://thehelpctr.com';
+      const portalUrl = (settings.portalShareBase || (_origin + '/portal.html')) + '?t=' + (client.portalToken || '');
       const subject = opts.subject || ('Update from ' + businessName);
       const heading = opts.heading || 'A new update is ready for you';
       const bodyHtml = opts.body || '';
@@ -1226,6 +1228,29 @@
       }
     }
 
+    // Delete a quick-upload deliverable (one added via /upload.html or the + Upload button).
+    // Calls POST /api/owner/deliverable/delete on the backend, then refreshes the Preview.
+    async function ppDeleteQuickUpload(portalToken, deliverableId, btn) {
+      if (!confirm('Remove this uploaded deliverable from the client portal?')) return;
+      const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+      const password = settings.password || '';
+      if (!password) { alert('No owner password in settings.'); return; }
+      btn.disabled = true; btn.textContent = 'Removing…';
+      try {
+        const r = await fetch(location.origin + '/api/owner/deliverable/delete', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password, portalToken, deliverableId })
+        });
+        if (!r.ok) { const j = await r.json().catch(()=>({})); throw new Error(j.error || ('HTTP ' + r.status)); }
+        showToast('Deliverable removed', 'success');
+        // Re-open the preview to show fresh data
+        setTimeout(() => { const m = document.getElementById('portal-preview-modal'); if (m) m.remove(); previewPortalLink(portalToken); }, 400);
+      } catch (e) {
+        alert('Delete failed: ' + e.message);
+        btn.disabled = false; btn.textContent = '× Remove';
+      }
+    }
+
     async function showPortal(token) {
       document.getElementById('login-page').classList.add('hidden');
       document.getElementById('app').classList.add('hidden');
@@ -1301,7 +1326,7 @@
               const bs = JSON.parse(localStorage.getItem('bookingSettings')||'{}');
               if (!bs || !bs.bookingToken || !bs.enabled) return null;
               const base = (JSON.parse(localStorage.getItem('settings'))||{}).portalBaseUrl || window.location.href.split('#')[0];
-              return { enabled: true, token: bs.bookingToken, url: base.replace(/\/$/, '') + '#book?u=' + bs.bookingToken, label: bs.label || 'Schedule a Call' };
+              return { enabled: true, token: bs.bookingToken, url: (((window.location.origin && /^https?:/.test(window.location.origin)) ? window.location.origin : 'https://thehelpctr.com') + '/booking.html?u=' + bs.bookingToken), label: bs.label || 'Schedule a Call' };
             } catch(e){ return null; }
           })();
 
@@ -1445,6 +1470,7 @@
                   <div style="display:flex;gap:6px;flex-wrap:wrap">
                     <button class="pp-btn pp-btn-primary" onclick="openPortalDoc('${d.id}')">${d.status==='signed'?'View Signed':'Review &amp; Sign →'}</button>
                     <button class="pp-btn pp-btn-outline" onclick="ppPrintDoc('${d.id}')"><span class="icon icon-sm" data-icon="print" style="margin-right:6px;vertical-align:-2px"></span>Print</button>
+                    <button class="pp-btn pp-btn-outline" onclick="ownerDeleteClientDoc('${d.id}')" style="border-color:#DC2626;color:#DC2626" title="Remove this document from the client portal">× Remove</button>
                   </div>
                 </div>`;
               }).join('') : '<div class="pp-empty">No documents yet. New documents appear here when sent.</div>'}
@@ -1488,6 +1514,7 @@
                       ${isSite ? `<button class="pp-btn pp-btn-outline" onclick="ppToggleSitePreview('${d.id}')"><span class="icon icon-sm" data-icon="eye" style="margin-right:6px;vertical-align:-2px"></span>Preview Inline</button>` : ''}
                       <button class="pp-btn pp-btn-primary" onclick="ppOpenDeliverableInline('${d.id}', ${JSON.stringify(readUrl).replace(/"/g,'&quot;')}, ${JSON.stringify(d.name||'').replace(/"/g,'&quot;')})"><span class="icon icon-sm" data-icon="eye" style="margin-right:6px;vertical-align:-2px"></span>Read</button>
                       <a class="pp-btn pp-btn-outline" href="${escH(url)}" target="_blank" rel="noopener" download="${escH(downloadName)}"><span class="icon icon-sm" data-icon="download" style="margin-right:6px;vertical-align:-2px"></span>Download</a>
+                      ${d.addedVia === 'quick-upload' ? `<button class="pp-btn pp-btn-outline" onclick="ppDeleteQuickUpload('${client.portalToken}','${d.id}', this)" style="border-color:#DC2626;color:#DC2626" title="Remove this uploaded deliverable">× Remove</button>` : ''}
                     </div>
                   </div>
                   ${isSite?`<iframe id="pp-iframe-${d.id}" class="pp-deliv-iframe" style="display:none" src="" data-src="${escH(url)}" title="${escH(d.name)}"></iframe>`:''}
@@ -2359,6 +2386,19 @@
     }
 
     // ── DASHBOARD ─────────────────────────────────────────────────
+    // Navigate from a dashboard stat card to its review page with a status pre-filter applied.
+    function dashStatJump(page, status) {
+      showPage(page, null);
+      setTimeout(() => {
+        if (page === 'revenue') {
+          const sel = document.getElementById('rev-filter-status');
+          if (sel) { sel.value = status || ''; if (typeof renderRevenue === 'function') renderRevenue(); }
+        } else if (page === 'clients') {
+          const sel = document.getElementById('client-filter');
+          if (sel) { sel.value = status || 'All'; if (typeof renderClients === 'function') renderClients(); }
+        }
+      }, 80);
+    }
     function updateDashboard() {
       const clients = getData('clients');
       const revenue = getData('revenue');
@@ -5446,6 +5486,10 @@
                             <td style="padding:6px 4px;text-align:right;font-weight:600;color:${r.paidBy==='client'?'#10B981':'inherit'}">
                               ${r.paidBy==='client'?'−':''}$${Math.abs(r.amount).toLocaleString('en-US',{minimumFractionDigits:2})}
                             </td>
+                            <td style="padding:6px 4px;text-align:right;width:60px">
+                              <button onclick="editRevenueLine('${client.id}','${r.id}')" title="Edit amount or service" style="background:transparent;border:none;color:#64748B;cursor:pointer;font-size:13px;padding:2px 4px">✎</button>
+                              <button onclick="deleteRevenueLine('${client.id}','${r.id}')" title="Remove this line item" style="background:transparent;border:none;color:#DC2626;cursor:pointer;font-size:16px;padding:2px 4px">×</button>
+                            </td>
                           </tr>`).join('')}
                       </table>
                       ${deductions > 0 ? `
@@ -5479,17 +5523,25 @@
                 // ongoing service billed on its own date).
                 const services = (client.services || []);
                 const perServicePanel = services.length ? `
-                  <div style="background:#FFF7ED;border:1px solid #FDBA74;border-radius:12px;padding:16px;margin-bottom:16px">
+                  <div style="background:#FFF7ED;border:1px solid #FDBA74;border-radius:12px;padding:16px;margin-bottom:16px" id="bs-panel-${client.id}">
                     <div style="font-size:13px;font-weight:600;color:#9A3412;margin-bottom:6px">📋 Bill Services Separately</div>
-                    <p style="font-size:12px;color:#7C2D12;margin-bottom:12px">Generate an invoice for ONE service at a time — useful when the client pays the flat fee before the monthly hosting starts, or any combination.</p>
+                    <p style="font-size:12px;color:#7C2D12;margin-bottom:12px">Pick one or more services. Combined totals (flat + monthly) update as you check boxes. Click "Generate Invoice for Selected" to open the editor pre-loaded with them.</p>
                     ${services.map((s,i) => `
-                      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #FED7AA">
+                      <label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #FED7AA;cursor:pointer">
+                        <input type="checkbox" class="bs-pick" data-idx="${i}" data-price="${Number(s.price)||0}" data-monthly="${s.billingType==='ongoing'?'1':'0'}" onchange="updateBillSeparatelyTotals('${client.id}')" style="width:18px;height:18px;accent-color:#F97316;cursor:pointer">
                         <div style="flex:1;min-width:0">
                           <div style="font-weight:600;color:#0F172A;font-size:13px">${(s.name||'').replace(/</g,'&lt;')}</div>
                           <div style="font-size:11.5px;color:#9A3412">$${(s.price||0).toLocaleString()} · ${s.billingType==='ongoing' ? '🔄 Monthly' : '1× Flat'}${s.paidBy==='client' ? ' · client paid' : ''}</div>
                         </div>
-                        <button onclick="billSingleService('${client.id}', ${i})" class="btn btn-outline" style="padding:6px 12px;font-size:12px;color:#9A3412;border-color:#FDBA74">📄 Bill This</button>
-                      </div>`).join('')}
+                      </label>`).join('')}
+                    <div style="margin-top:12px;padding:12px;background:#fff;border:1px solid #FED7AA;border-radius:8px">
+                      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:12px;color:#7C2D12">
+                        <div><div style="font-weight:700;text-transform:uppercase;font-size:10px;color:#9A3412">Flat</div><div style="font-size:15px;font-weight:700;color:#0F172A" id="bs-flat-${client.id}">$0</div></div>
+                        <div><div style="font-weight:700;text-transform:uppercase;font-size:10px;color:#9A3412">Monthly</div><div style="font-size:15px;font-weight:700;color:#1E40AF" id="bs-monthly-${client.id}">$0/mo</div></div>
+                        <div><div style="font-weight:700;text-transform:uppercase;font-size:10px;color:#9A3412">Combined now</div><div style="font-size:18px;font-weight:700;color:#16A34A" id="bs-total-${client.id}">$0</div></div>
+                      </div>
+                    </div>
+                    <button onclick="generateInvoiceFromSelected('${client.id}')" class="btn btn-solid" style="margin-top:10px;width:100%;padding:10px;background:#F97316;border-color:#F97316;font-size:13px">📄 Generate Invoice for Selected</button>
                   </div>` : '';
                 return perServicePanel + genBtn + (invoiceBlocks || `<p style="color:var(--gray-400);text-align:center;padding:24px">No invoices yet.</p>`);
               })()}
@@ -5512,7 +5564,7 @@
               <div style="background:var(--gray-50);border-radius:12px;padding:20px;margin-bottom:16px">
                 <div style="font-size:13px;font-weight:600;color:var(--gray-700);margin-bottom:8px">Client Portal Link</div>
                 <div style="display:flex;gap:8px;align-items:center">
-                  <input type="text" id="pl-${client.id}" class="form-input" style="flex:1;margin:0;font-size:12px" value="${window.location.href.split('#')[0]}#portal?token=${client.portalToken}" readonly>
+                  <input type="text" id="pl-${client.id}" class="form-input" style="flex:1;margin:0;font-size:12px" value="${(window.location.origin && /^https?:/.test(window.location.origin)) ? window.location.origin : 'https://thehelpctr.com'}/portal.html?t=${client.portalToken}" readonly>
                   <button onclick="copyPortalLink('${client.id}')" class="btn btn-solid" style="padding:12px 16px;white-space:nowrap">Copy</button>
                 </div>
                 <div id="pl-confirm-${client.id}" style="color:var(--success);font-size:13px;margin-top:8px;display:none">✓ Link copied to clipboard!</div>
@@ -5533,6 +5585,95 @@
       const clients = getData('clients');
       const idx = clients.findIndex(c => c.id === id);
       if (idx > -1) { clients[idx].messages.forEach(m => { if (m.from==='client') m.read=true; }); setData('clients', clients); }
+    }
+
+    // Live recalculate of the "Bill Services Separately" totals when boxes are checked.
+    function updateBillSeparatelyTotals(clientId) {
+      const panel = document.getElementById('bs-panel-' + clientId);
+      if (!panel) return;
+      let flat = 0, monthly = 0;
+      panel.querySelectorAll('.bs-pick:checked').forEach(cb => {
+        const p = Number(cb.dataset.price) || 0;
+        if (cb.dataset.monthly === '1') monthly += p;
+        else flat += p;
+      });
+      const fmt = n => '$' + Number(n).toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2});
+      const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+      set('bs-flat-' + clientId, fmt(flat));
+      set('bs-monthly-' + clientId, fmt(monthly) + '/mo');
+      // "Combined now" = flat + monthly's first month — what the client owes on this invoice
+      set('bs-total-' + clientId, fmt(flat + monthly));
+    }
+
+    // Open the new invoice editor pre-loaded with the selected services from the
+    // legacy "Bill Services Separately" panel.
+    function generateInvoiceFromSelected(clientId) {
+      const panel = document.getElementById('bs-panel-' + clientId);
+      if (!panel) return;
+      const picks = Array.from(panel.querySelectorAll('.bs-pick:checked')).map(cb => Number(cb.dataset.idx));
+      if (!picks.length) { alert('Pick at least one service.'); return; }
+      const clients = getData('clients') || [];
+      const c = clients.find(cl => cl.id === clientId);
+      if (!c) return;
+      // Close the client detail modal so the invoice editor has the stage
+      closeModal('client-detail-modal');
+      // Open the invoice editor and seed items from the selected services
+      setTimeout(() => {
+        if (typeof openInvoiceEditorModal !== 'function') { alert('Invoice editor not available.'); return; }
+        openInvoiceEditorModal(clientId);
+        setTimeout(() => {
+          // Clear any default seed items and load our selected ones
+          window._invoiceDraft.items = [];
+          picks.forEach(i => {
+            if (typeof addInvoiceLineFromService === 'function') addInvoiceLineFromService(i);
+          });
+        }, 80);
+      }, 100);
+    }
+
+    // Delete a single line item from the revenue table (one row of an invoice).
+    // Auto-reopens the client detail modal on the invoice tab so the user sees the change.
+    function deleteRevenueLine(clientId, revenueId) {
+      const rev = getData('revenue') || [];
+      const r = rev.find(x => x.id === revenueId);
+      if (!r) return;
+      if (!confirm('Remove "' + (r.serviceType || 'this line') + '" — $' + Math.abs(r.amount).toLocaleString() + ' from the invoice?\n\nThis updates the invoice total and cannot be undone.')) return;
+      const next = rev.filter(x => x.id !== revenueId);
+      setData('revenue', next);
+      logActivity('invoice', 'Removed line "' + (r.serviceType || '') + '" from invoice ' + (r.invoiceNumber || ''));
+      // Refresh: close + reopen modal on the Invoice tab
+      const cid = clientId;
+      closeModal('client-detail-modal');
+      setTimeout(() => {
+        openClientDetail(cid);
+        // Switch to invoice tab after the modal renders
+        setTimeout(() => { const tab = document.querySelector('[onclick*="cdm"][onclick*="invoice"]'); if (tab) tab.click(); }, 100);
+      }, 100);
+    }
+
+    // Edit a line item: prompts for new service name + amount.
+    function editRevenueLine(clientId, revenueId) {
+      const rev = getData('revenue') || [];
+      const idx = rev.findIndex(x => x.id === revenueId);
+      if (idx < 0) return;
+      const r = rev[idx];
+      const newName = prompt('Service/description for this line:', r.serviceType || '');
+      if (newName === null) return;
+      const newAmtStr = prompt('Amount (USD):', String(Math.abs(r.amount) || 0));
+      if (newAmtStr === null) return;
+      const newAmt = Number(newAmtStr);
+      if (!isFinite(newAmt) || newAmt < 0) { alert('Invalid amount.'); return; }
+      rev[idx] = Object.assign({}, r, {
+        serviceType: newName.trim(),
+        amount: r.paidBy === 'client' ? -Math.abs(newAmt) : Math.abs(newAmt)
+      });
+      setData('revenue', rev);
+      logActivity('invoice', 'Edited line on invoice ' + (r.invoiceNumber || ''));
+      closeModal('client-detail-modal');
+      setTimeout(() => {
+        openClientDetail(clientId);
+        setTimeout(() => { const tab = document.querySelector('[onclick*="cdm"][onclick*="invoice"]'); if (tab) tab.click(); }, 100);
+      }, 100);
     }
 
     function saveProgress(clientId) {
@@ -5934,8 +6075,10 @@ ${ownerBiz}`;
       }
       if (typeof sendPortalNotificationEmail !== 'function') { alert('Email helper missing.'); return; }
       const settings = JSON.parse(localStorage.getItem('settings') || '{}');
-      const base = (settings.portalBaseUrl || window.location.href.split('#')[0]).replace(/\/$/, '');
-      const portalUrl = base + '#portal?token=' + (c.portalToken || '');
+      // Use the dedicated client-facing portal.html (query-string survives email
+      // clients that strip URL fragments; no work-portal sign-in screen).
+      const _origin = (window.location.origin && /^https?:/.test(window.location.origin)) ? window.location.origin : 'https://thehelpctr.com';
+      const portalUrl = (settings.portalShareBase || (_origin + '/portal.html')) + '?t=' + (c.portalToken || '');
       const owner = settings.name || 'Joy Watford';
       const biz = settings.businessName || 'H.E.L.P. Center';
       // Show editable preview modal so the owner sees EXACTLY what's being sent
@@ -5990,8 +6133,10 @@ ${ownerBiz}`;
       const btn = document.getElementById('pl-send-btn');
       if (btn) { btn.disabled = true; btn.textContent = 'Sending to ' + valid.length + '…'; }
       const settings = JSON.parse(localStorage.getItem('settings') || '{}');
-      const base = (settings.portalBaseUrl || window.location.href.split('#')[0]).replace(/\/$/, '');
-      const portalUrl = base + '#portal?token=' + (c.portalToken || '');
+      // Use the dedicated client-facing portal.html (query-string survives email
+      // clients that strip URL fragments; no work-portal sign-in screen).
+      const _origin = (window.location.origin && /^https?:/.test(window.location.origin)) ? window.location.origin : 'https://thehelpctr.com';
+      const portalUrl = (settings.portalShareBase || (_origin + '/portal.html')) + '?t=' + (c.portalToken || '');
       const bodyHtml = bodyText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/\n/g,'<br>').replace(/(https?:\/\/\S+)/g,'<a href="$1" style="color:#1E5BC0;font-weight:600">$1</a>');
       let successCount = 0, failed = [];
       for (const email of valid) {
@@ -6033,8 +6178,10 @@ ${ownerBiz}`;
         if (typeof renderPortalLinks === 'function') renderPortalLinks();
       }
       const settings = JSON.parse(localStorage.getItem('settings') || '{}');
-      const base = (settings.portalBaseUrl || window.location.href.split('#')[0]).replace(/\/$/, '');
-      const portalUrl = base + '#portal?token=' + (c.portalToken || '');
+      // Use the dedicated client-facing portal.html (query-string survives email
+      // clients that strip URL fragments; no work-portal sign-in screen).
+      const _origin = (window.location.origin && /^https?:/.test(window.location.origin)) ? window.location.origin : 'https://thehelpctr.com';
+      const portalUrl = (settings.portalShareBase || (_origin + '/portal.html')) + '?t=' + (c.portalToken || '');
       const biz = settings.businessName || 'H.E.L.P. Center';
       const owner = settings.name || 'Joy Watford';
       const old = document.getElementById('portal-update-overlay'); if (old) old.remove();
@@ -6068,8 +6215,10 @@ ${ownerBiz}`;
       const bodyText = document.getElementById('pu-body')?.value.trim() || '';
       const body = bodyText.replace(/\n/g, '<br>').replace(/(https?:\/\/\S+)/g, '<a href="$1" style="color:#1E5BC0;font-weight:600">$1</a>');
       const settings = JSON.parse(localStorage.getItem('settings') || '{}');
-      const base = (settings.portalBaseUrl || window.location.href.split('#')[0]).replace(/\/$/, '');
-      const portalUrl = base + '#portal?token=' + (c.portalToken || '');
+      // Use the dedicated client-facing portal.html (query-string survives email
+      // clients that strip URL fragments; no work-portal sign-in screen).
+      const _origin = (window.location.origin && /^https?:/.test(window.location.origin)) ? window.location.origin : 'https://thehelpctr.com';
+      const portalUrl = (settings.portalShareBase || (_origin + '/portal.html')) + '?t=' + (c.portalToken || '');
       const btn = document.getElementById('pu-send-btn');
       if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
       const result = await sendPortalNotificationEmail(c, { subject, title: subject, body, portalUrl });

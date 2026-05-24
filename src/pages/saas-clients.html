@@ -1,0 +1,30 @@
+      <div id="saas-clients-page" class="page hidden">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">
+          <div>
+            <h1 style="font-size:24px;font-weight:700;margin:0">SaaS Clients</h1>
+            <p style="font-size:13px;color:var(--gray-500);margin:4px 0 0">Tenants running their own dashboard off your platform. Each one is data-isolated.</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button id="enable-notifs-btn" onclick="_clickEnableNotifs()" class="btn btn-outline" style="padding:9px 16px;font-size:13px">🔔 Enable Notifications</button>
+            <button onclick="addTenantPrompt()" class="btn btn-solid" style="padding:9px 16px;font-size:13.5px;background:linear-gradient(135deg,#7C3AED,var(--brand-primary))">+ Add SaaS Client</button>
+          </div>
+        </div>
+
+        <div id="saas-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:20px"></div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+            <div style="font-size:14px;font-weight:600;color:#0F172A">Active Tenants</div>
+            <button onclick="renderSaasClientsPage()" class="btn btn-outline" style="padding:6px 12px;font-size:12px">Refresh</button>
+          </div>
+          <div id="saas-clients-list" style="border:1px solid var(--gray-200);border-radius:10px;overflow:hidden"></div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+            <div style="font-size:14px;font-weight:600;color:#0F172A">Tenant Inbox</div>
+            <button onclick="renderTenantInbox()" class="btn btn-outline" style="padding:6px 12px;font-size:12px">Refresh</button>
+          </div>
+          <div id="tenant-inbox-list-saas" style="border:1px solid var(--gray-200);border-radius:10px;overflow:hidden;max-height:480px;overflow-y:auto"></div>
+        </div>
+      </div>

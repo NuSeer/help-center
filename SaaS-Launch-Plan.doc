@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>The H.E.L.P. System — SaaS Launch Plan (v2)</title>
+  <style>
+    body { font-family: Calibri, Arial, sans-serif; line-height: 1.5; color: #1a1a1a; max-width: 8.5in; margin: 0 auto; padding: 0.75in; }
+    h1 { font-size: 24pt; color: #1E5BC0; border-bottom: 2px solid #1E5BC0; padding-bottom: 8px; margin-top: 0; }
+    h2 { font-size: 16pt; color: #1E5BC0; margin-top: 28px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+    h3 { font-size: 13pt; color: #333; margin-top: 18px; }
+    h4 { font-size: 11pt; color: #555; margin-top: 14px; margin-bottom: 4px; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10.5pt; }
+    th, td { border: 1px solid #aaa; padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #f0f4fa; font-weight: 600; }
+    .status-ready { color: #2c7a2c; font-weight: 600; }
+    .status-partial { color: #b8860b; font-weight: 600; }
+    .status-not-yet { color: #b22222; font-weight: 600; }
+    .status-ops { color: #555; font-weight: 600; }
+    .tier-price { font-size: 14pt; color: #1E5BC0; font-weight: 600; }
+    .callout { background: #f6f8fb; border-left: 4px solid #1E5BC0; padding: 12px 16px; margin: 14px 0; }
+    .callout-warn { background: #fffaf0; border-left-color: #d97706; }
+    .callout-pick { background: #f0faf0; border-left-color: #2c7a2c; }
+    .callout-correction { background: #fef5f5; border-left-color: #b22222; }
+    code { background: #f3f3f3; padding: 1px 5px; border-radius: 3px; font-family: Consolas, monospace; font-size: 10pt; }
+    ol li, ul li { margin-bottom: 5px; }
+    .doc-meta { color: #777; font-size: 10pt; margin-bottom: 24px; }
+    .strikethrough { text-decoration: line-through; color: #999; }
+  </style>
+</head>
+<body>
+
+<h1>The H.E.L.P. System — SaaS Launch Plan (v2)</h1>
+<div class="doc-meta">
+  Prepared for: Joy Watford, H.E.L.P. Center<br>
+  Date: 2026-05-14 (revised — supersedes v1 from 2026-05-13)<br>
+  Status: Corrected against CLAUDE_PROJECT_CONTEXT.md
+</div>
+
+<div class="callout callout-correction">
+  <strong>Corrections from v1:</strong> The previous version had several wrong assumptions that this v2 corrects. White-labeling is already built. DocuSeal integration is already wired (just dormant pending credentials). Resend setup takes ~1 hour, not days. The canonical pricing per CLAUDE_PROJECT_CONTEXT.md is 2 tiers (Solo / Pro), not 3.
+</div>
+
+<p>This v2 document covers what each pricing tier actually delivers today vs. what still needs work, the recommended launch sequence given true state, and exactly how to set up Stripe Payment Links from your existing account.</p>
+
+<hr>
+
+<h2>1. Tier Breakdown — 2-Tier Canonical Pricing</h2>
+
+<p>Per CLAUDE_PROJECT_CONTEXT.md, the platform sells two tiers. Both have 7-day free trials. The previous "Agency" tier was an error in the older landing page copy and has been removed.</p>
+
+<h3>Tier 1 — Solo <span class="tier-price">$29.99 / month</span> (7 days free)</h3>
+<p><em>For when you're running things yourself and want one system that keeps up with all of it.</em></p>
+
+<table>
+  <thead>
+    <tr><th>Promised Feature</th><th>Status</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Full business dashboard</td><td class="status-ready">✓ Built</td><td>Dashboard page with stats, search, activity feed</td></tr>
+    <tr><td>Client management &amp; portal links</td><td class="status-ready">✓ Built</td><td>Clients page + client portal pages</td></tr>
+    <tr><td>Smart booking page</td><td class="status-ready">✓ Built</td><td>Booking page integrates with calendar</td></tr>
+    <tr><td>AI Business Coach (Groq, OpenAI, Claude)</td><td class="status-ready">✓ Built</td><td>AI Project Suite with 6 AI tools; backend wired with Groq/Llama 3.3 70B; keys never in browser</td></tr>
+    <tr><td>Revenue tracking &amp; invoices</td><td class="status-partial">⚠ Partial</td><td>Revenue page exists; needs real data plumbing through PocketBase + simple invoice generator</td></tr>
+    <tr><td>E-signature &amp; contracts</td><td class="status-partial">⚠ UI built, awaiting SignFlow service</td><td>Integration code is in place (see Section 4 below); will work the moment SignFlow service ships</td></tr>
+    <tr><td>Business Library access</td><td class="status-ready">✓ Built</td><td>Library + Guides + 6 Pathways (Income, Credit, Confidence, Career, Business, Youth)</td></tr>
+    <tr><td>Branded workspace (their name, colors)</td><td class="status-ready">✓ Built</td><td>"All UI dynamic from settings (multi-tenant ready)" — already in place per CLAUDE_PROJECT_CONTEXT.md</td></tr>
+  </tbody>
+</table>
+
+<h4>What to build to deliver Solo cleanly:</h4>
+<ul>
+  <li>Wire revenue tracking persistence to PocketBase</li>
+  <li>Build the invoice generator (~1-2 days)</li>
+  <li>Build &amp; deploy SignFlow on the VPS per its CLAUDE.md (~1-2 weeks, separate project)</li>
+</ul>
+
+<p><strong>Estimated time to "ready to sell Solo":</strong> 1-2 weeks of focused work, mostly waiting on SignFlow deployment.</p>
+
+<h3>Tier 2 — Pro <span class="tier-price">$59.99 / month</span> (7 days free)</h3>
+<p><em>For when you're ready for branded emails, automated notifications, and contracts that send themselves.</em></p>
+
+<table>
+  <thead>
+    <tr><th>Promised Feature</th><th>Status</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Everything in Solo</td><td>—</td><td>(finish Solo first)</td></tr>
+    <tr><td>Branded emails from your own domain (Resend)</td><td class="status-ready">✓ Built</td><td>Resend integration wired at <code>/api/email</code>; setup takes ~1 hour per tenant</td></tr>
+    <tr><td>Auto-trigger e-signature on booking</td><td class="status-partial">⚠ Code wired, awaiting SignFlow</td><td>Once SignFlow ships, this becomes operational</td></tr>
+    <tr><td>Automated client notifications</td><td class="status-not-yet">○ Needs wiring</td><td>Triggers for: new booking, payment received, contract signed. Each is a small piece. Days of work, not weeks.</td></tr>
+    <tr><td>Advanced reporting</td><td class="status-partial">⚠ Needs definition</td><td>Reports page exists; what counts as "advanced" needs to be defined (cohorts? trends? exports?)</td></tr>
+    <tr><td>Priority support from Joy</td><td class="status-ops">— Operational</td><td>Means you respond faster. No code, just a promise you keep.</td></tr>
+  </tbody>
+</table>
+
+<p><strong>Estimated time to "ready to sell Pro":</strong> Days of work after Solo, primarily wiring email triggers and defining "advanced reporting."</p>
+
+<hr>
+
+<h2>2. What Changed Today (Phase 1 Integration Prep — Completed)</h2>
+
+<p>The H.E.L.P. System frontend has been updated to be provider-neutral for e-signature, ready to point at SignFlow when SignFlow ships.</p>
+
+<h3>Changes made (in <code>src/</code> source files, byte-identical to live until rebuilt)</h3>
+
+<table>
+  <thead>
+    <tr><th>What</th><th>Before</th><th>After</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>UI section title</td><td>"DocuSeal Integration"</td><td>"E-Signature &amp; Contracts"</td></tr>
+    <tr><td>Settings field labels</td><td>"DocuSeal URL," "DocuSeal API token"</td><td>"Service URL," "API Token" (provider-neutral)</td></tr>
+    <tr><td>Frontend function names</td><td><code>sendDocuSealDoc</code>, <code>sendDocuSealContract</code></td><td><code>sendForSignature</code>, <code>sendContractForSignature</code></td></tr>
+    <tr><td>Backend API path</td><td><code>/api/docuseal</code></td><td><code>/api/sign</code></td></tr>
+    <tr><td>localStorage key</td><td><code>docusealSettings</code></td><td><code>signatureSettings</code> (with one-time automatic migration)</td></tr>
+    <tr><td>Element IDs</td><td><code>docuseal-url</code>, <code>docuseal-token</code>, <code>docuseal-template-id</code></td><td><code>signature-url</code>, <code>signature-token</code>, <code>signature-template-id</code></td></tr>
+    <tr><td>Provider routing</td><td>Browser → DocuSeal direct (only mode)</td><td>Browser → user's provider (if configured) OR backend <code>/api/sign</code> → SignFlow (default)</td></tr>
+  </tbody>
+</table>
+
+<h3>10 client-side safeguards added (in a new <code>Signatures</code> module)</h3>
+
+<ol>
+  <li><strong>Email format validation</strong> — RegExp-based, rejects malformed addresses before sending</li>
+  <li><strong>500 KB content size cap</strong> — rejects oversized documents before they hit the network</li>
+  <li><strong>Required-fields gate</strong> — recipient email, name, subject, and content must all be present</li>
+  <li><strong>Self-send block</strong> — refuses to send a signature request to the logged-in user's own email</li>
+  <li><strong>Soft rate limit</strong> — 20 sends per hour per tenant (configurable per tier later)</li>
+  <li><strong>Duplicate-send guard</strong> — blocks same recipient + same subject within a 5-minute window</li>
+  <li><strong>Confirm-before-send dialog</strong> — explicit "Send X to Y. Continue?" — no accidental sends</li>
+  <li><strong>Tenant isolation</strong> — settings scoped per tenant via existing multi-tenant prefix layer</li>
+  <li><strong>Local audit log</strong> — last 200 events with timestamp, truncated email (last 4 chars only), event type, reason</li>
+  <li><strong>One-time data migration</strong> — automatically copies old <code>docusealSettings</code> → new <code>signatureSettings</code> if user had configured DocuSeal previously</li>
+</ol>
+
+<h3>Backend safeguards (documented, not yet implemented)</h3>
+
+<p>See <code>Backend-API-Contract-Sign.md</code> in your help-center folder. Required when backend dev updates <code>server.js</code>:</p>
+
+<ul>
+  <li>JWT authentication on every request</li>
+  <li>Tenant context verification (reject cross-tenant attempts)</li>
+  <li>Server-side rate limiting per tenant (mirrors client-side cap)</li>
+  <li>Input sanitization (strip HTML/script tags from titles, messages)</li>
+  <li>Webhook signature verification (when SignFlow calls back with "signature complete")</li>
+  <li>Audit log written to PocketBase</li>
+  <li>Document retention policy (purge temp PDFs after 30 days)</li>
+  <li>Retry with exponential backoff on 5xx errors</li>
+</ul>
+
+<hr>
+
+<h2>3. Launch Sequence Recommendation</h2>
+
+<p>Given the corrected reality (most features built, e-signature waiting on SignFlow), the launch sequence is simpler than v1 suggested:</p>
+
+<h4>Step 1 — Build &amp; deploy SignFlow (~1-2 weeks)</h4>
+<p>Stand up SignFlow as its own service per <code>CLAUDE (1).md</code> in your Downloads folder. React + Vite frontend, Express + SQLite backend, hosted on the same VPS at <code>signflow.thehelpctr.com</code>. Once running, point <code>SIGNFLOW_BASE_URL</code> in the backend <code>.env</code>.</p>
+
+<h4>Step 2 — Update backend <code>server.js</code> (~half day)</h4>
+<p>Add the <code>/api/sign</code> endpoint per <code>Backend-API-Contract-Sign.md</code>. Include all server-side safeguards. Add the webhook handler for signature-complete callbacks.</p>
+
+<h4>Step 3 — Finish Solo features (~1-2 days)</h4>
+<p>Wire revenue tracking to PocketBase. Build the invoice generator.</p>
+
+<h4>Step 4 — Soft-launch Solo only (week 1)</h4>
+<p>Open Solo tier signups to a small first wave — friends, family, inner circle of coaches. 5-10 customers. Collect feedback, fix anything that surfaces.</p>
+
+<h4>Step 5 — Wire Pro automation (~3-5 days)</h4>
+<p>Add automated email triggers (booking, payment, contract). Define and ship "advanced reporting." Open Pro tier.</p>
+
+<h4>Step 6 — Public launch (week 4+)</h4>
+<p>Open registration broadly. Use your origin story on the landing page to drive sign-ups.</p>
+
+<hr>
+
+<h2>4. Pre-Launch Checklist (any tier)</h2>
+
+<ol>
+  <li><strong>Real Stripe payment links</strong> — two of them (Solo + Pro)</li>
+  <li><strong>Tenant provisioning flow</strong> — when someone pays, create their subdirectory + send their login URL. Manual for first 5-10 customers OK; automate by customer #20</li>
+  <li><strong>Post-checkout welcome page</strong> — tell them how to log in. Currently signup redirects to Stripe and the user is left wondering what's next</li>
+  <li><strong>Terms of Service + Privacy Policy</strong> — Stripe requires these. termly.io ($0-29) generates both</li>
+  <li><strong>Refund policy</strong> — even if it's just "no refunds within 30 days, contact us after"</li>
+  <li><strong>SignFlow deployed and reachable</strong> — otherwise e-signature features fail</li>
+</ol>
+
+<hr>
+
+<h2>5. Setting Up the 2 Stripe Payment Links</h2>
+
+<div class="callout">
+  <strong>You have your existing Stripe account</strong> that you use INSIDE your portal to collect payments from your coaching clients. That's separate from Stripe Payment Links for SaaS subscriptions. Same account, different products. You don't need a new Stripe account — just create 2 new products inside the one you have.
+</div>
+
+<h3>Step by step (~10 minutes total):</h3>
+
+<ol>
+  <li>Go to <strong>dashboard.stripe.com</strong> and log in with your existing account</li>
+  <li>Click <strong>Products</strong> in the left sidebar → <strong>+ Add product</strong></li>
+  <li><strong>Product #1 — Solo:</strong>
+    <ul>
+      <li>Name: <code>The H.E.L.P. System — Solo</code></li>
+      <li>Description: "Dashboard, clients, booking, AI coach, e-signature, library — runs your business"</li>
+      <li>Pricing model: <strong>Recurring</strong></li>
+      <li>Price: <code>$29.99</code> per <strong>month</strong></li>
+      <li>Click <strong>Save product</strong></li>
+    </ul>
+  </li>
+  <li>On the product page, click <strong>Create payment link</strong> (top right)</li>
+  <li>Configure the link:
+    <ul>
+      <li>Quantity: 1, no minimum/maximum</li>
+      <li><strong>Trial period: 7 days</strong> (per CLAUDE_PROJECT_CONTEXT.md canonical pricing)</li>
+      <li>Collect customer name + email (recommended)</li>
+      <li><strong>Custom success URL:</strong> <code>https://thehelpctr.com/welcome</code> (build this page — Section 6 below)</li>
+    </ul>
+  </li>
+  <li>Click <strong>Create link</strong> → copy the URL</li>
+  <li><strong>Product #2 — Pro:</strong> repeat with <code>$59.99</code>, name "The H.E.L.P. System — Pro," and the same 7-day trial</li>
+</ol>
+
+<h3>Where the URLs go in code:</h3>
+
+<p>In <code>help-center-landing.html</code>, around lines 808-810, replace these:</p>
+
+<pre style="background:#f3f3f3;padding:10px;border-radius:4px;font-family:Consolas,monospace;font-size:10pt">
+stripeSolo: 'https://buy.stripe.com/YOUR_REAL_SOLO_LINK',
+stripePro:  'https://buy.stripe.com/YOUR_REAL_PRO_LINK',
+</pre>
+
+<p>The safety guard already in the code (<code>isUnsafeUrl()</code>) automatically unlocks the buttons once these aren't placeholders anymore.</p>
+
+<hr>
+
+<h2>6. The Welcome Page (post-checkout success URL)</h2>
+
+<p>When someone completes Stripe checkout, they should land on a welcome page that explains what happens next. Currently this doesn't exist. Recommended content:</p>
+
+<div class="callout">
+  <h4 style="margin-top:0">🎉 Welcome to The H.E.L.P. System</h4>
+  <p>Thank you for joining! Here's what happens now:</p>
+  <ol>
+    <li><strong>Check your email</strong> — within the next hour, Joy will send you your personal login URL and a password</li>
+    <li><strong>Your 7-day trial starts when you log in</strong> — you won't be charged until day 8, and you can cancel anytime</li>
+    <li><strong>Need help getting started?</strong> Email <code>joy@thehelpctr.com</code> any time — Joy personally responds to every new member</li>
+  </ol>
+  <p><em>— Joy Watford, founder, H.E.L.P. Center</em></p>
+</div>
+
+<p>Build this as a static page at <code>thehelpctr.com/welcome</code>.</p>
+
+<hr>
+
+<h2>7. Decisions Still Open</h2>
+
+<ul>
+  <li>Define what "advanced reporting" means for Pro tier (cohort analysis? revenue trends? CSV exports?)</li>
+  <li>Decide on annual pricing option (e.g., "$290/year, save 2 months" for Solo)</li>
+  <li>Decide whether to add "Agency — Coming Soon" placeholder later for anchor pricing effect</li>
+  <li>Confirm welcome page copy + build the page</li>
+  <li>Generate Terms of Service + Privacy Policy via termly.io</li>
+</ul>
+
+<hr>
+
+<h2>8. What's Done Today (May 13–14, 2026)</h2>
+
+<ul>
+  <li>✓ Landing page rewritten in Joy's voice (origin story, audience callouts, story section, differentiated CTAs)</li>
+  <li>✓ Landing pricing collapsed from 3 tiers to canonical 2 tiers (Solo $29.99 / Pro $59.99 with 7-day trials)</li>
+  <li>✓ Launch-blocker safety guards added to landing page (<code>isUnsafeUrl()</code>)</li>
+  <li>✓ Portal architecture split into <code>src/</code> + build pipeline (<code>extract.mjs</code> + <code>build.mjs</code>) — live portal byte-identical, untouched</li>
+  <li>✓ Pre-refactor timestamped backup of live portal saved</li>
+  <li>✓ Phase 1 integration prep complete: DocuSeal → provider-neutral E-Signature, ready for SignFlow</li>
+  <li>✓ 10 client-side safeguards added to e-signature flow</li>
+  <li>✓ Backend API contract documented (<code>Backend-API-Contract-Sign.md</code>)</li>
+  <li>✓ Built file rebuilt and verified: <code>help-center-system.built.html</code></li>
+  <li>✓ Live file MD5 verified unchanged through all of today's work</li>
+</ul>
+
+<p style="color:#777;font-size:10pt;margin-top:32px;border-top:1px solid #ddd;padding-top:8px">
+End of v2 launch plan. Open in Microsoft Word for editing, or in a browser to view. Companion document: <code>Backend-API-Contract-Sign.md</code>.
+</p>
+
+</body>
+</html>

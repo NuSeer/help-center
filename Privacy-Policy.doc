@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>The H.E.L.P. System — Privacy Policy</title>
+  <style>
+    body { font-family: Calibri, Arial, sans-serif; line-height: 1.55; color: #1a1a1a; max-width: 7.5in; margin: 0 auto; padding: 0.75in; }
+    h1 { font-size: 22pt; color: #1E5BC0; border-bottom: 2px solid #1E5BC0; padding-bottom: 6px; margin-top: 0; }
+    h2 { font-size: 14pt; color: #1E5BC0; margin-top: 24px; }
+    h3 { font-size: 12pt; color: #333; margin-top: 14px; }
+    p { margin: 8px 0; }
+    .meta { color: #777; font-size: 10pt; margin-bottom: 24px; }
+    .callout { background: #fef5f5; border-left: 4px solid #b22222; padding: 10px 14px; margin: 14px 0; font-size: 10.5pt; }
+    .placeholder { background: #fffaf0; padding: 1px 4px; border-radius: 3px; color: #b8860b; font-family: Consolas, monospace; font-size: 10pt; }
+    ol li, ul li { margin-bottom: 4px; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 10.5pt; }
+    th, td { border: 1px solid #aaa; padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #f0f4fa; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+<h1>Privacy Policy</h1>
+<div class="meta">
+  <strong>The H.E.L.P. System</strong><br>
+  Effective Date: <span class="placeholder">[EFFECTIVE DATE]</span><br>
+  Last Updated: 2026-05-14
+</div>
+
+<div class="callout">
+  <strong>NOT YET ATTORNEY REVIEWED.</strong> This document is a working draft. Before publishing, have a Florida-licensed attorney verify compliance with applicable privacy laws (CCPA, CPRA, GDPR if you serve EU customers).
+</div>
+
+<h2>1. Introduction</h2>
+<p>This Privacy Policy describes how <span class="placeholder">[LEGAL ENTITY NAME]</span> ("H.E.L.P. Center," "we," "us," or "our") collects, uses, shares, and protects information when you use The H.E.L.P. System (the "Service"). By using the Service, you agree to the practices described in this Policy. If you do not agree, please do not use the Service.</p>
+
+<h2>2. Information We Collect</h2>
+
+<h3>2.1 Information You Provide Directly</h3>
+<table>
+  <thead>
+    <tr><th>Category</th><th>Examples</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Account information</td><td>Name, email address, password (stored as a hash), business name</td></tr>
+    <tr><td>Billing information</td><td>Processed by Stripe — we do not store your full payment card details on our servers</td></tr>
+    <tr><td>Profile information</td><td>Photo, business address, phone number, branding settings</td></tr>
+    <tr><td>Your business content</td><td>Client records, bookings, invoices, ideas, notes, documents, and any other content you create or upload</td></tr>
+    <tr><td>Communications</td><td>Emails, support tickets, and other communications you send us</td></tr>
+  </tbody>
+</table>
+
+<h3>2.2 Information About People in Your Address Book</h3>
+<p>The Service allows you to store information about your own clients ("Client Data") such as name, email, phone, and notes. <strong>You are the data controller for Client Data.</strong> You are responsible for obtaining any necessary consents from your clients before storing or processing their data through the Service. We act as a data processor on your behalf for this data.</p>
+
+<h3>2.3 Information Collected Automatically</h3>
+<table>
+  <thead>
+    <tr><th>Category</th><th>Examples</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Usage data</td><td>Pages viewed, features used, timestamps, device type, browser type, IP address (truncated for analytics)</td></tr>
+    <tr><td>Cookies and local storage</td><td>Session tokens, preferences, audit logs (stored in your browser; see Section 6)</td></tr>
+    <tr><td>Performance and error data</td><td>Crash reports, slow-load events, error messages (to help us improve the Service)</td></tr>
+  </tbody>
+</table>
+
+<h3>2.4 Information from Third Parties</h3>
+<p>If you connect a third-party service (e.g., Stripe for payments, your own DocuSeal instance, Resend for email), we may receive limited information from that service necessary to complete the integration (e.g., subscription status from Stripe).</p>
+
+<h2>3. How We Use Your Information</h2>
+<p>We use the information we collect to:</p>
+<ul>
+  <li>Provide, maintain, and improve the Service</li>
+  <li>Process subscription payments and manage billing</li>
+  <li>Send transactional emails (account confirmations, payment receipts, security alerts)</li>
+  <li>Provide customer support and respond to inquiries</li>
+  <li>Detect and prevent fraud, abuse, or unauthorized access</li>
+  <li>Comply with legal obligations</li>
+  <li>Send service-related announcements and, with your consent, marketing communications (you can opt out at any time)</li>
+</ul>
+<p>We do <strong>not</strong> sell your personal information. We do <strong>not</strong> use Your Content or Client Data to train AI models or for any purpose beyond providing the Service to you.</p>
+
+<h2>4. Legal Basis for Processing (for EU/UK Users)</h2>
+<p>If you are located in the European Economic Area or the United Kingdom, our legal bases for processing your information are: (a) <strong>performance of a contract</strong> with you, (b) <strong>your consent</strong> (which you may withdraw at any time), (c) compliance with <strong>legal obligations</strong>, and (d) our <strong>legitimate interests</strong> in operating and improving the Service, where these interests are not overridden by your rights.</p>
+
+<h2>5. How We Share Information</h2>
+<p>We share information only as described below. We do not sell personal information.</p>
+
+<h3>5.1 Service Providers</h3>
+<p>We share information with trusted third-party providers who help us operate the Service. Each is contractually required to handle information consistent with this Policy.</p>
+<table>
+  <thead>
+    <tr><th>Provider</th><th>Purpose</th><th>Data Shared</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Stripe, Inc.</td><td>Payment processing</td><td>Name, email, billing details</td></tr>
+    <tr><td>Groq, Inc. (and optionally OpenAI, Anthropic)</td><td>AI Business Coach &amp; AI Project Suite</td><td>The text of your AI prompts (not your business records as a whole)</td></tr>
+    <tr><td>Resend</td><td>Branded transactional email delivery</td><td>Recipient email, subject, message body</td></tr>
+    <tr><td>SignFlow / DocuSeal-compatible providers</td><td>E-signature processing</td><td>Document content, recipient name and email</td></tr>
+    <tr><td>PocketBase (self-hosted)</td><td>Database and backend storage</td><td>All Service data — hosted on our infrastructure</td></tr>
+  </tbody>
+</table>
+
+<h3>5.2 Legal Requirements</h3>
+<p>We may disclose information when required by law, court order, or other legal process, or to protect the rights, property, or safety of H.E.L.P. Center, our Users, or others.</p>
+
+<h3>5.3 Business Transfers</h3>
+<p>If we are involved in a merger, acquisition, asset sale, or similar transaction, your information may be transferred as part of that transaction. We will provide notice and choices where required.</p>
+
+<h3>5.4 With Your Consent</h3>
+<p>We share information for any other purpose with your prior consent.</p>
+
+<h2>6. Cookies and Local Storage</h2>
+<p>The Service uses <strong>browser localStorage</strong> rather than traditional cookies for most of its functionality. Information stored locally includes:</p>
+<ul>
+  <li>Your session token (so you stay logged in)</li>
+  <li>Your account settings and preferences</li>
+  <li>A privacy-aware audit log of e-signature events (truncated emails — last 4 characters only — for the last 200 events)</li>
+  <li>Cached business data for offline access (the Service works offline when PocketBase sync is unavailable)</li>
+</ul>
+<p>You can clear localStorage at any time through your browser's settings, but doing so will sign you out and remove any unsynced local data.</p>
+
+<h2>7. Multi-Tenant Data Isolation</h2>
+<p>The H.E.L.P. System is a multi-tenant platform. Each subscriber's data ("Tenant Data") is logically isolated from every other subscriber's data. You can never see another subscriber's data, and no other subscriber can see yours. This isolation is enforced at both the browser level (via tenant-prefixed localStorage keys) and the database level (via tenant ID scoping in PocketBase).</p>
+
+<h2>8. Data Retention</h2>
+<p>We retain your information as follows:</p>
+<ul>
+  <li><strong>Active accounts:</strong> for as long as your subscription is active</li>
+  <li><strong>Cancelled accounts:</strong> 30 days after cancellation, to allow account restoration if you change your mind; then permanently deleted from active systems</li>
+  <li><strong>Backups:</strong> may persist up to 90 days in encrypted backup storage before being purged in normal rotation</li>
+  <li><strong>Signed documents:</strong> 30 days in our temporary storage; you should download and retain your own copies for your records</li>
+  <li><strong>Audit logs:</strong> 12 months</li>
+  <li><strong>Billing and tax records:</strong> 7 years (legal requirement)</li>
+</ul>
+
+<h2>9. Your Rights</h2>
+<p>Subject to applicable law, you have the right to:</p>
+<ul>
+  <li><strong>Access</strong> the personal information we hold about you</li>
+  <li><strong>Correct</strong> inaccurate or incomplete information</li>
+  <li><strong>Delete</strong> your account and personal information (subject to legal retention obligations)</li>
+  <li><strong>Export</strong> your data in a portable format (JSON export is available in-product)</li>
+  <li><strong>Object</strong> to or restrict certain processing</li>
+  <li><strong>Withdraw consent</strong> at any time where processing is based on consent</li>
+  <li><strong>Lodge a complaint</strong> with a data protection authority</li>
+</ul>
+<p>To exercise any of these rights, contact us at <span class="placeholder">[SUPPORT EMAIL]</span>. We will respond within 30 days.</p>
+
+<h2>10. California Residents — CCPA / CPRA Disclosures</h2>
+<p>If you are a California resident, you have additional rights under the California Consumer Privacy Act (CCPA) and California Privacy Rights Act (CPRA):</p>
+<ul>
+  <li><strong>Right to know</strong> what personal information we have collected, used, and disclosed about you</li>
+  <li><strong>Right to delete</strong> personal information (with some exceptions)</li>
+  <li><strong>Right to correct</strong> inaccurate personal information</li>
+  <li><strong>Right to opt out</strong> of the sale or sharing of personal information (we do <strong>not</strong> sell or share personal information for cross-context behavioral advertising)</li>
+  <li><strong>Right to limit</strong> the use of sensitive personal information</li>
+  <li><strong>Right to non-discrimination</strong> for exercising your rights</li>
+</ul>
+<p>Categories of information collected, sources, and purposes are described in Sections 2 and 3 above. We do not knowingly collect personal information from anyone under 16.</p>
+
+<h2>11. European/UK Residents — GDPR Disclosures</h2>
+<p>If you are located in the European Economic Area, the United Kingdom, or Switzerland, the controller of your personal information is <span class="placeholder">[LEGAL ENTITY NAME]</span>. Our legal bases for processing are set out in Section 4. You may contact us at <span class="placeholder">[SUPPORT EMAIL]</span> to exercise your rights under GDPR/UK-GDPR.</p>
+<p>If we transfer your information outside the EEA/UK (for example, to U.S.-based service providers), we use appropriate safeguards including Standard Contractual Clauses where applicable.</p>
+
+<h2>12. Children's Privacy</h2>
+<p>The Service is not intended for individuals under 18 years of age. We do not knowingly collect personal information from anyone under 18. If you believe we have inadvertently collected information from someone under 18, please contact us and we will delete it.</p>
+
+<h2>13. Security</h2>
+<p>We implement reasonable technical and organizational measures to protect your information, including:</p>
+<ul>
+  <li>HTTPS/TLS encryption for all data in transit</li>
+  <li>Password hashing using industry-standard algorithms (bcrypt)</li>
+  <li>JWT-based authentication with expiring tokens</li>
+  <li>Server-side rate limiting and input validation</li>
+  <li>Audit logging for sensitive operations (e-signature events, billing changes)</li>
+  <li>Backups stored in encrypted form</li>
+  <li>Multi-tenant isolation at both browser and database levels</li>
+</ul>
+<p>However, no method of transmission or storage is 100% secure. We cannot guarantee absolute security. If you believe your account has been compromised, contact us immediately at <span class="placeholder">[SUPPORT EMAIL]</span>.</p>
+
+<h2>14. International Users</h2>
+<p>The Service is operated from the United States. By using the Service, you understand and consent to your information being processed and stored in the United States, which may have data protection laws different from those of your country.</p>
+
+<h2>15. Changes to This Policy</h2>
+<p>We may update this Privacy Policy from time to time. When we do, we will update the "Last Updated" date at the top and notify active subscribers via email at least 14 days before material changes take effect. Continued use of the Service after the effective date constitutes acceptance of the revised Policy.</p>
+
+<h2>16. Contact Us</h2>
+<p>For privacy-related questions, requests, or complaints, contact us at:</p>
+<p>
+  H.E.L.P. Center — Privacy<br>
+  Attn: Joy Watford, Founder<br>
+  <span class="placeholder">[BUSINESS ADDRESS]</span><br>
+  Email: <span class="placeholder">[SUPPORT EMAIL — e.g., privacy@thehelpctr.com]</span><br>
+  Web: thehelpctr.com
+</p>
+
+<hr>
+<p style="font-size:10pt;color:#777;margin-top:24px">
+<strong>Reminder before publishing:</strong> Replace all <span class="placeholder">[BRACKETED PLACEHOLDERS]</span>. Have a Florida-licensed business attorney review. Update the Effective Date. If you serve customers in the EU/UK, GDPR review by a qualified attorney is strongly recommended.
+</p>
+
+</body>
+</html>

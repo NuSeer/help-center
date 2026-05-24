@@ -9391,11 +9391,155 @@ You have tools to:
     await _runAssistantTurn();
   }
 
+  // Gemini-first tool-call wrapper. Tries gemini-2.5-flash first, falls back to
+  // Groq gpt-oss-120b → gpt-oss-20b. Always returns an OpenAI-shaped assistant
+  // message: { role:'assistant', content, tool_calls? } so existing loops keep working.
+  async function _callToolModel({ messages, tools, temperature, maxTokens }) {
+    const cfg = JSON.parse(localStorage.getItem('settings') || '{}');
+    const errors = [];
+
+    if (cfg.geminiApiKey) {
+      try {
+        return await _geminiToolCall({ messages, tools, key: cfg.geminiApiKey, temperature, maxTokens });
+      } catch (e) {
+        errors.push('Gemini: ' + e.message);
+        console.warn('[ToolModel] Gemini failed, trying Groq —', e.message);
+      }
+    }
+
+    const groqKey = cfg.groqApiKey || cfg.groqApiKey2 || '';
+    if (groqKey) {
+      const TOOL_MODELS = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
+      for (const model of TOOL_MODELS) {
+        try {
+          const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + groqKey },
+            body: JSON.stringify({ model, messages, tools, tool_choice: 'auto', max_tokens: maxTokens || 2048, temperature: temperature == null ? 0.3 : temperature })
+          });
+          if (!r.ok) {
+            const e = await r.json().catch(() => ({}));
+            const errMsg = (e.error && e.error.message) || ('Groq HTTP ' + r.status);
+            errors.push(model + ': ' + errMsg);
+            if (r.status === 413 || r.status === 429 || /model|not.found|decommissioned|too.large|rate.limit/i.test(errMsg)) continue;
+            throw new Error(errMsg);
+          }
+          const data = await r.json();
+          const aiMsg = data.choices && data.choices[0] && data.choices[0].message;
+          if (!aiMsg) throw new Error('Groq empty response');
+          return { role: 'assistant', content: aiMsg.content || null, tool_calls: aiMsg.tool_calls };
+        } catch (e) {
+          errors.push(model + ': ' + e.message);
+        }
+      }
+    }
+
+    const stem = (cfg.geminiApiKey || groqKey)
+      ? 'All AI providers failed. '
+      : 'No AI key configured. Add a Gemini key in Settings → AI Integration. ';
+    throw new Error(stem + errors.join(' | '));
+  }
+
+  async function _geminiToolCall({ messages, tools, key, temperature, maxTokens }) {
+    const functionDeclarations = (tools || []).map(t => ({
+      name: t.function.name,
+      description: t.function.description,
+      parameters: t.function.parameters || { type: 'object', properties: {} }
+    }));
+
+    let systemInstruction = null;
+    const contents = [];
+    for (let i = 0; i < messages.length; i++) {
+      const m = messages[i];
+      if (m.role === 'system') {
+        systemInstruction = { parts: [{ text: m.content || '' }] };
+      } else if (m.role === 'user') {
+        contents.push({ role: 'user', parts: [{ text: m.content || '' }] });
+      } else if (m.role === 'assistant') {
+        const parts = [];
+        if (m.content) parts.push({ text: m.content });
+        if (m.tool_calls && m.tool_calls.length) {
+          for (const tc of m.tool_calls) {
+            let args;
+            try { args = typeof tc.function.arguments === 'string' ? JSON.parse(tc.function.arguments || '{}') : (tc.function.arguments || {}); }
+            catch { args = {}; }
+            parts.push({ functionCall: { name: tc.function.name, args } });
+          }
+        }
+        if (parts.length) contents.push({ role: 'model', parts });
+      } else if (m.role === 'tool') {
+        let name = m.name;
+        if (!name) {
+          // Walk back to find the matching tool_call so we can attach the function name
+          for (let j = i - 1; j >= 0; j--) {
+            const tcs = messages[j].tool_calls;
+            if (tcs) {
+              const hit = tcs.find(c => c.id === m.tool_call_id);
+              if (hit) { name = hit.function.name; break; }
+            }
+          }
+        }
+        let resp;
+        try { resp = JSON.parse(m.content); } catch { resp = { result: m.content }; }
+        if (resp === null || typeof resp !== 'object') resp = { result: resp };
+        contents.push({ role: 'function', parts: [{ functionResponse: { name: name || 'unknown', response: resp } }] });
+      }
+    }
+
+    const body = {
+      contents,
+      generationConfig: { temperature: temperature == null ? 0.3 : temperature, maxOutputTokens: maxTokens || 2048 }
+    };
+    if (systemInstruction) body.systemInstruction = systemInstruction;
+    if (functionDeclarations.length) {
+      body.tools = [{ functionDeclarations }];
+      body.toolConfig = { functionCallingConfig: { mode: 'AUTO' } };
+    }
+
+    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=' + encodeURIComponent(key);
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) {
+      const errText = await r.text().catch(() => '');
+      throw new Error('Gemini HTTP ' + r.status + (errText ? ': ' + errText.slice(0, 200) : ''));
+    }
+    const data = await r.json();
+    const cand = data.candidates && data.candidates[0];
+    if (!cand) {
+      if (data.promptFeedback && data.promptFeedback.blockReason) throw new Error('Gemini blocked: ' + data.promptFeedback.blockReason);
+      throw new Error('Gemini empty response');
+    }
+
+    const textParts = [];
+    const toolCalls = [];
+    for (const p of (cand.content && cand.content.parts || [])) {
+      if (p.text) textParts.push(p.text);
+      if (p.functionCall) {
+        toolCalls.push({
+          id: 'call_' + Math.random().toString(36).slice(2, 14),
+          type: 'function',
+          function: {
+            name: p.functionCall.name,
+            arguments: JSON.stringify(p.functionCall.args || {})
+          }
+        });
+      }
+    }
+
+    return {
+      role: 'assistant',
+      content: textParts.length ? textParts.join('') : null,
+      tool_calls: toolCalls.length ? toolCalls : undefined
+    };
+  }
+
   async function _runAssistantTurn() {
     const cfg = JSON.parse(localStorage.getItem('settings')) || {};
-    const groqKey = cfg.groqApiKey || '';
-    if (!groqKey) {
-      _asstAppend('assistant', '⚠️ Add your free Groq API key in **Settings → AI Integration**. Get one at console.groq.com');
+    if (!cfg.geminiApiKey && !cfg.groqApiKey && !cfg.groqApiKey2) {
+      _asstAppend('assistant', '⚠️ Add your free Gemini API key in **Settings → AI Integration** (Groq works as a fallback). Get one at aistudio.google.com');
       return;
     }
     _asstBusy = true;
@@ -9404,38 +9548,14 @@ You have tools to:
     typing.style.cssText = 'display:flex;justify-content:flex-start';
     typing.innerHTML = '<div style="padding:12px 16px;border-radius:18px 18px 18px 4px;background:#fff;color:#94A3B8;font-size:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">⏳ Thinking…</div>';
     if (msgs) { msgs.appendChild(typing); msgs.scrollTop = msgs.scrollHeight; }
-    // Trim history to avoid Groq 413. Tool-result messages (role:'tool') can be huge — keep only recent.
+    // Trim history to avoid payload bloat. Tool-result messages (role:'tool') can be huge — keep only recent.
     const trimmedAsst = _trimHistoryByBytes(_asstHistory, 60000);
     const apiMessages = [{ role:'system', content: ASSISTANT_SYSTEM_PROMPT }, ...trimmedAsst];
-    // Tool calling needs a model that reliably emits valid JSON for tool calls.
-    // Llama 3.3 70B fails ~30% on this; gpt-oss-120b is Groq's tool-calling model.
-    // Fall back to llama-3.3-70b WITHOUT tools if gpt-oss isn't reachable.
-    const TOOL_MODELS = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
-    let modelIdx = 0;
-    let aiModel = TOOL_MODELS[modelIdx];
 
     let iterations = 0;
     try {
       while (iterations++ < 8) {
-        const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method:'POST',
-          headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+groqKey },
-          body: JSON.stringify({ model: aiModel, messages: apiMessages, tools: HC_TOOLS, tool_choice: 'auto', max_tokens: 2048, temperature: 0.3 })
-        });
-        if (!res.ok) {
-          const e = await res.json().catch(()=>({}));
-          const errMsg = e.error?.message || 'Groq error '+res.status;
-          // If the primary tool model isn't available, try the smaller one once
-          if (modelIdx < TOOL_MODELS.length - 1 && /model|not.found|decommissioned|400/i.test(errMsg)) {
-            modelIdx++; aiModel = TOOL_MODELS[modelIdx];
-            console.warn('[Assistant] falling back to', aiModel, '—', errMsg);
-            continue;
-          }
-          throw new Error(errMsg);
-        }
-        const data = await res.json();
-        const aiMsg = data.choices?.[0]?.message;
-        if (!aiMsg) throw new Error('Empty response');
+        const aiMsg = await _callToolModel({ messages: apiMessages, tools: HC_TOOLS, temperature: 0.3, maxTokens: 2048 });
         const cleanedMsg = { role:'assistant', content: aiMsg.content || null };
         if (aiMsg.tool_calls && aiMsg.tool_calls.length) cleanedMsg.tool_calls = aiMsg.tool_calls;
         _asstHistory.push(cleanedMsg);
@@ -9449,7 +9569,8 @@ You have tools to:
             catch { parsedArgs = {}; }
             _asstAppendTool(tc.function.name, parsedArgs);
             const result = await _executeHCTool(tc.function.name, parsedArgs);
-            const toolMsg = { role:'tool', tool_call_id: tc.id, content: JSON.stringify(result) };
+            // `name` is needed for Gemini's functionResponse mapping; Groq ignores it.
+            const toolMsg = { role:'tool', tool_call_id: tc.id, name: tc.function.name, content: JSON.stringify(result) };
             _asstHistory.push(toolMsg);
             apiMessages.push(toolMsg);
           }
@@ -10123,9 +10244,8 @@ Be fast. Don't over-explain. Ship working code.`;
     document.getElementById('vb-send-btn').disabled = true;
 
     const cfg = JSON.parse(localStorage.getItem('settings') || '{}');
-    const groqKey = cfg.groqApiKey || '';
-    if (!groqKey) {
-      vbAppendMsg('assistant', 'No Groq API key configured. Add one in Settings → AI Settings.');
+    if (!cfg.geminiApiKey && !cfg.groqApiKey && !cfg.groqApiKey2) {
+      vbAppendMsg('assistant', 'No AI key configured. Add a Gemini key in Settings → AI Integration (Groq works as a fallback).');
       _vibe.busy = false; document.getElementById('vb-send-btn').disabled = false;
       return;
     }
@@ -10151,35 +10271,14 @@ Be fast. Don't over-explain. Ship working code.`;
     }
     messages.push(...trimmed);
 
-    const tryModels = ['openai/gpt-oss-120b', 'openai/gpt-oss-20b'];
     const MAX_ITER = 12;
     let lastError = null;
 
     for (let iter = 0; iter < MAX_ITER; iter++) {
-      let aiMsg = null, modelUsed = null;
-      for (const model of tryModels) {
-        try {
-          const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-            method: 'POST',
-            headers: { 'Authorization': 'Bearer ' + groqKey, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ model, messages, tools: VIBE_TOOLS, tool_choice: 'auto', temperature: 0.3, max_tokens: 4096 })
-          });
-          if (!r.ok) {
-            const err = await r.text();
-            lastError = 'HTTP ' + r.status + ': ' + err.slice(0, 200);
-            if (r.status === 400 || r.status === 404) continue;
-            if (r.status === 429) {
-              const wait = (err.match(/try again in (\d+(?:\.\d+)?)s/) || [])[1];
-              if (wait) { await new Promise(rs => setTimeout(rs, (parseFloat(wait) + 0.5) * 1000)); continue; }
-            }
-            continue;
-          }
-          const data = await r.json();
-          aiMsg = data.choices && data.choices[0] && data.choices[0].message;
-          modelUsed = model;
-          break;
-        } catch (e) { lastError = e.message; }
-      }
+      let aiMsg = null;
+      try {
+        aiMsg = await _callToolModel({ messages, tools: VIBE_TOOLS, temperature: 0.3, maxTokens: 4096 });
+      } catch (e) { lastError = e.message; }
 
       if (!aiMsg) {
         typing.remove();
@@ -10207,7 +10306,7 @@ Be fast. Don't over-explain. Ship working code.`;
         catch (e) { args = {}; }
         vbAppendToolCall(name, args);
         const result = vbExecuteTool(name, args);
-        messages.push({ role: 'tool', tool_call_id: call.id, content: JSON.stringify(result) });
+        messages.push({ role: 'tool', tool_call_id: call.id, name, content: JSON.stringify(result) });
         if (name === 'finish') {
           didFinish = true;
           typing.remove();

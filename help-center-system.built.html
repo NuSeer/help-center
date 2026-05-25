@@ -10433,8 +10433,9 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
     // Subscribes to PocketBase realtime and fires a desktop/mobile Notification
     // (plus an in-dashboard toast) the moment a client posts a portal message
     // or a tenant submits a Contact Owner message. No polling, no third-party.
-    const _SEEN_PORTAL_MSGS_KEY = '_seenPortalMsgIds';
-    const _SEEN_TENANT_MSGS_KEY = '_seenTenantMsgIds';
+    const _SEEN_PORTAL_MSGS_KEY    = '_seenPortalMsgIds';
+    const _SEEN_TENANT_MSGS_KEY    = '_seenTenantMsgIds';
+    const _SEEN_STRIPE_PAYMENTS_KEY = '_seenStripePayments';
     let _liveNotifEventSource = null;
     let _liveNotifClientId = null;
 
@@ -10657,6 +10658,65 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
             () => { showPage('saas-clients'); }
           );
           _markSeen(_SEEN_TENANT_MSGS_KEY, newTenantMsgs.map(m => m.id));
+        }
+      }
+      // 3) Stripe-paid invoice — written server-side by the /api/stripe/webhook
+      //    handler when payment_intent.succeeded or checkout.session.completed
+      //    (mode=payment) fires with metadata.invoiceNumber set.
+      if (record.key.startsWith('invoice:paid:') && value && value.invoiceNumber) {
+        const fingerprint = value.invoiceNumber + ':' + (value.firedAt || value.paidAt || '');
+        const seen = _seenIds(_SEEN_STRIPE_PAYMENTS_KEY);
+        if (!seen.has(fingerprint)) {
+          const base = value.invoiceNumber.replace(/-\d+$/, '');
+          const revenue = getData('revenue') || [];
+          let updated = false;
+          let total = 0;
+          let clientId = null;
+          revenue.forEach(r => {
+            const rBase = (r.invoiceNumber || '').replace(/-\d+$/, '');
+            if (rBase === base && r.status !== 'Paid') {
+              total += Number(r.amount || 0);
+              r.status = 'Paid';
+              r.paidDate = value.paidAt || new Date().toISOString().split('T')[0];
+              if (!clientId) clientId = r.clientId;
+              updated = true;
+            }
+          });
+          if (updated) setData('revenue', revenue);
+          let clientName = value.clientName || '';
+          if (clientId) {
+            const clients = getData('clients') || [];
+            const ci = clients.findIndex(c => c.id === clientId);
+            if (ci > -1) {
+              clientName = clients[ci].name || clientName;
+              if (clients[ci].invoiceNumber === base && !clients[ci].paid) {
+                clients[ci].paid = true;
+                clients[ci].paidDate = value.paidAt || new Date().toISOString().split('T')[0];
+                setData('clients', clients);
+              }
+            }
+          }
+          const shownAmt = '$' + Number(value.amount || total || 0).toLocaleString();
+          _showLiveNotification(
+            '💳 Stripe payment received: ' + shownAmt,
+            'Invoice ' + base + (clientName ? ' from ' + clientName : ''),
+            () => { if (clientId) openClientDetail(clientId); else showPage('revenue'); }
+          );
+          _sendNotifEmail(
+            '💳 Stripe payment received: ' + shownAmt + ' — Invoice ' + base,
+            `<p>A Stripe payment landed.</p>
+             <ul style="line-height:1.7">
+               <li><strong>Invoice:</strong> ${base}</li>
+               <li><strong>Amount:</strong> ${shownAmt}</li>
+               ${clientName ? `<li><strong>Client:</strong> ${clientName}</li>` : ''}
+               ${value.clientEmail ? `<li><strong>Client email:</strong> ${value.clientEmail}</li>` : ''}
+               <li><strong>Paid:</strong> ${value.paidAt || ''}</li>
+             </ul>
+             <p style="font-size:12px;color:#94A3B8">${updated ? 'Help Center invoice status has been flipped to Paid.' : 'Invoice already marked Paid in the Help Center (no change).'}</p>`
+          );
+          if (typeof renderClients === 'function') renderClients();
+          if (typeof updateDashboard === 'function') updateDashboard();
+          _markSeen(_SEEN_STRIPE_PAYMENTS_KEY, [fingerprint]);
         }
       }
     }
@@ -16310,7 +16370,18 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       { label:'Pink',   value:'#EC4899' },
     ];
 
-    const EVENT_TYPES = ['Meeting','Appointment','Deadline','Follow-Up','Workshop','Payment','Call','Other'];
+    const EVENT_TYPES = ['Meeting','Appointment','Deadline','Follow-Up','Workshop','Payment','Invoice','Call','Other'];
+    const EVENT_RECURRENCES = [
+      { value:'none',     label:'Does not repeat' },
+      { value:'daily',    label:'Daily' },
+      { value:'weekly',   label:'Weekly' },
+      { value:'biweekly', label:'Every 2 weeks' },
+      { value:'monthly',  label:'Monthly (same day)' },
+      { value:'yearly',   label:'Yearly' }
+    ];
+    // Cap each recurrence type so a single Save can't accidentally create
+    // thousands of rows in localStorage.
+    const EVENT_RECURRENCE_MAX = { daily: 365, weekly: 104, biweekly: 52, monthly: 60, yearly: 10 };
 
     function getEvents() { return JSON.parse(localStorage.getItem('calEvents')||'[]'); }
     function saveEvents(ev) { setData('calEvents', ev); }
@@ -16572,6 +16643,11 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         '<select id="em-type" class="form-select" style="margin:0">' +
         EVENT_TYPES.map(t => '<option'+(isEdit&&event.type===t?' selected':'')+'>'+t+'</option>').join('') +
         '</select></div>' +
+        '<div><label class="form-label">Repeat</label>' +
+        '<select id="em-recurrence" class="form-select" style="margin:0" onchange="document.getElementById(\'em-recurrence-count-wrap\').style.display=this.value===\'none\'?\'none\':\'block\'">' +
+        EVENT_RECURRENCES.map(r => '<option value="'+r.value+'"'+(isEdit&&(event.recurrence||'none')===r.value?' selected':'')+'>'+r.label+'</option>').join('') +
+        '</select></div>' +
+        '<div id="em-recurrence-count-wrap" style="grid-column:1/-1;'+(isEdit&&event.recurrence&&event.recurrence!=='none'?'':'display:none')+'"><label class="form-label">For how many occurrences (including this one)</label><input id="em-recurrence-count" type="number" min="2" max="365" class="form-input" style="margin:0" value="'+(isEdit&&event.recurrenceCount?event.recurrenceCount:'12')+'"></div>' +
         '<div style="grid-column:1/-1"><label class="form-label">Color</label>' +
         '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">' +
         EVENT_COLORS.map(c => '<div onclick="selectEventColor(\''+c.value+'\',this)" data-color="'+c.value+'" style="width:28px;height:28px;border-radius:50%;background:'+c.value+';cursor:pointer;border:3px solid '+(isEdit&&event.color===c.value?'#0F172A':'transparent')+';transition:border 0.1s" title="'+c.label+'"></div>').join('') +
@@ -16604,6 +16680,8 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       const title = (document.getElementById('em-title')?.value||'').trim();
       if (!title) { alert('Event title is required.'); return; }
       const events = getEvents();
+      const recurrence = (document.getElementById('em-recurrence')?.value || 'none');
+      const recurrenceCount = Math.max(1, Math.min(parseInt(document.getElementById('em-recurrence-count')?.value || '12', 10) || 1, EVENT_RECURRENCE_MAX[recurrence] || 1));
       const entry = {
         id: editId || 'ev-'+generateId(),
         title,
@@ -16613,23 +16691,80 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         type: document.getElementById('em-type')?.value||'',
         color: document.getElementById('em-color')?.value||'var(--brand-primary)',
         description: document.getElementById('em-desc')?.value||'',
-        location: document.getElementById('em-location')?.value||''
+        location: document.getElementById('em-location')?.value||'',
+        recurrence,
+        recurrenceCount: recurrence === 'none' ? 0 : recurrenceCount
       };
-      if (editId) { const i = events.findIndex(e=>e.id===editId); if(i>-1) events[i]=entry; }
-      else events.push(entry);
-      saveEvents(events);
+      if (editId) {
+        // Editing an existing event: in-place update, do NOT regenerate series.
+        // Series-level edits would need a separate UX; for now treat each occurrence as independent.
+        const i = events.findIndex(e=>e.id===editId);
+        if(i>-1) { entry.seriesId = events[i].seriesId; events[i]=entry; }
+        saveEvents(events);
+      } else if (recurrence === 'none' || recurrenceCount <= 1) {
+        events.push(entry);
+        saveEvents(events);
+      } else {
+        // New recurring event: expand into N occurrences sharing a seriesId.
+        const seriesId = 'srs-'+generateId();
+        if (!entry.date) { alert('Date is required for a recurring event.'); return; }
+        const base = new Date(entry.date + 'T12:00:00'); // noon to dodge DST edges
+        if (isNaN(base.getTime())) { alert('Invalid date.'); return; }
+        for (let i = 0; i < recurrenceCount; i++) {
+          const occDate = new Date(base.getTime());
+          if (recurrence === 'daily')    occDate.setDate(base.getDate() + i);
+          if (recurrence === 'weekly')   occDate.setDate(base.getDate() + 7 * i);
+          if (recurrence === 'biweekly') occDate.setDate(base.getDate() + 14 * i);
+          if (recurrence === 'monthly')  occDate.setMonth(base.getMonth() + i);
+          if (recurrence === 'yearly')   occDate.setFullYear(base.getFullYear() + i);
+          const yyyy = occDate.getFullYear();
+          const mm = String(occDate.getMonth() + 1).padStart(2, '0');
+          const dd = String(occDate.getDate()).padStart(2, '0');
+          events.push(Object.assign({}, entry, {
+            id: i === 0 ? entry.id : ('ev-'+generateId()),
+            date: yyyy + '-' + mm + '-' + dd,
+            seriesId,
+            seriesOriginal: i === 0,
+            seriesIndex: i + 1,
+            seriesTotal: recurrenceCount
+          }));
+        }
+        saveEvents(events);
+      }
       document.getElementById('event-modal').remove();
       renderCalendar();
-      showToast(editId?'Event updated!':'Event added!','success');
+      const msg = editId ? 'Event updated!'
+        : (recurrence !== 'none' && recurrenceCount > 1)
+          ? recurrenceCount + ' recurring events added!'
+          : 'Event added!';
+      showToast(msg, 'success');
     }
 
     function deleteEvent(id) {
-      if (!confirm('Delete this event?')) return;
-      saveEvents(getEvents().filter(e=>e.id!==id));
+      const events = getEvents();
+      const ev = events.find(e => e.id === id);
+      if (!ev) return;
+      // Series-aware delete: offer to wipe the whole series if this event is part of one.
+      if (ev.seriesId) {
+        const total = events.filter(e => e.seriesId === ev.seriesId).length;
+        const choice = confirm('This is one of ' + total + ' recurring events.\n\nOK = delete ALL ' + total + ' in the series\nCancel = keep, but delete just this one');
+        if (choice) {
+          if (!confirm('Delete ALL ' + total + ' events in the series?')) return;
+          saveEvents(events.filter(e => e.seriesId !== ev.seriesId));
+          showToast('Deleted ' + total + ' events in the series', 'success');
+        } else {
+          if (!confirm('Delete just this one occurrence?')) return;
+          saveEvents(events.filter(e => e.id !== id));
+          showToast('Event deleted', 'success');
+        }
+      } else {
+        if (!confirm('Delete this event?')) return;
+        saveEvents(events.filter(e => e.id !== id));
+        showToast('Event deleted', 'success');
+      }
       const modal = document.getElementById('event-modal');
       if (modal) modal.remove();
       renderCalendar();
-      showToast('Event deleted','success');
     }
 
         const LIBRARY_IDEAS = [

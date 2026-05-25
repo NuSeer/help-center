@@ -2127,6 +2127,22 @@
       } catch(e) {}
     }
 
+    // Send a notification email via the server's Resend proxy. Owner's
+    // `settings.notifyEmail` (or fallback `settings.email`) is the recipient.
+    // Silently no-ops if no address is configured or the server is unreachable.
+    async function _sendNotifEmail(subject, html) {
+      try {
+        const s = JSON.parse(localStorage.getItem('settings') || '{}');
+        const to = s.notifyEmail || s.email;
+        if (!to || !subject || !html) return;
+        await fetch(location.origin + '/api/email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to, subject, html })
+        });
+      } catch(e) { /* silent — notifications must not break the UI */ }
+    }
+
     function _handleStoreEvent(record) {
       if (!record || !record.key || !record.value) return;
       const value = typeof record.value === 'string' ? (function(){ try { return JSON.parse(record.value); } catch(e){ return null; } })() : record.value;
@@ -2212,6 +2228,74 @@
           }
         };
       } catch(e) { console.warn('[live notif] init error:', e); }
+      // Bookings don't live in the realtime store collection — poll the REST
+      // endpoint every 60s for new pending requests. Seed `seen` with the
+      // current set so we only fire on bookings that arrive AFTER login.
+      try {
+        const seedReqs = await _fetchPendingBookings();
+        _markSeen(_SEEN_BOOKINGS_KEY, (seedReqs || []).map(b => b && b.id).filter(Boolean));
+      } catch(e){}
+      if (_bookingPollTimer) clearInterval(_bookingPollTimer);
+      _bookingPollTimer = setInterval(_checkNewBookings, 60000);
+    }
+
+    // ── BOOKING POLL ───────────────────────────────────────────────────────────
+    let _bookingPollTimer = null;
+    const _SEEN_BOOKINGS_KEY = 'hc:seen:bookings';
+
+    async function _fetchPendingBookings() {
+      const s = JSON.parse(localStorage.getItem('settings') || '{}');
+      const password = s.password || '';
+      if (!password) return [];
+      const r = await fetch(location.origin + '/api/owner/booking/list', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, status: 'pending' })
+      });
+      if (!r.ok) return [];
+      const j = await r.json();
+      return j.requests || [];
+    }
+
+    async function _checkNewBookings() {
+      if (TENANT) return;
+      if (localStorage.getItem('loggedIn') !== 'true') return;
+      let reqs;
+      try { reqs = await _fetchPendingBookings(); } catch(e){ return; }
+      const seen = _seenIds(_SEEN_BOOKINGS_KEY);
+      const fresh = (reqs || []).filter(b => b && b.id && !seen.has(b.id));
+      if (!fresh.length) return;
+      if (fresh.length === 1) {
+        const b = fresh[0];
+        const when = (b.date ? new Date(b.date).toLocaleDateString(undefined, { month:'short', day:'numeric' }) : '?') + (b.time ? ' · ' + b.time : '');
+        _showLiveNotification(
+          '📅 New booking from ' + (b.name || 'someone'),
+          when + (b.service ? ' · ' + b.service : ''),
+          () => { showPage('booking'); }
+        );
+        _sendNotifEmail(
+          'New booking request: ' + (b.name || 'unknown'),
+          `<p><strong>${(b.name||'(no name)')}</strong> requested a booking.</p>
+           <ul style="line-height:1.7">
+             <li><strong>When:</strong> ${when}</li>
+             ${b.service ? `<li><strong>Service:</strong> ${b.service}</li>` : ''}
+             ${b.email ? `<li><strong>Email:</strong> ${b.email}</li>` : ''}
+             ${b.phone ? `<li><strong>Phone:</strong> ${b.phone}</li>` : ''}
+             ${b.notes ? `<li><strong>Notes:</strong> ${b.notes}</li>` : ''}
+           </ul>`
+        );
+      } else {
+        _showLiveNotification(
+          fresh.length + ' new booking requests',
+          fresh.map(b => b.name).filter(Boolean).slice(0, 3).join(', ') + (fresh.length > 3 ? '…' : ''),
+          () => { showPage('booking'); }
+        );
+        _sendNotifEmail(
+          fresh.length + ' new booking requests',
+          '<p>You have <strong>' + fresh.length + '</strong> new booking requests waiting.</p>' +
+          '<ul>' + fresh.map(b => `<li>${b.name || '(no name)'} — ${b.date || '?'} ${b.time || ''}</li>`).join('') + '</ul>'
+        );
+      }
+      _markSeen(_SEEN_BOOKINGS_KEY, fresh.map(b => b.id));
     }
 
     // ── CLOUD SYNC STATUS BADGE ────────────────────────────────────────────────
@@ -2398,6 +2482,137 @@
           if (sel) { sel.value = status || 'All'; if (typeof renderClients === 'function') renderClients(); }
         }
       }, 80);
+    }
+
+    // Quick snapshot modal opened from a dashboard stat card. Lists the
+    // relevant records inline so Joy doesn't have to leave the dashboard.
+    // The "View all →" footer button calls dashStatJump to drill into the
+    // full filtered page.
+    function dashStatSnapshot(kind) {
+      const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      const money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0 });
+      let title = '', rowsHtml = '', footerJump = null, footerLabel = 'View all', emptyMsg = '';
+      const clients = getData('clients') || [];
+      const revenue = getData('revenue') || [];
+      const ideas   = getData('ideas')   || [];
+
+      const tableShell = (head, body) =>
+        `<table style="width:100%;border-collapse:collapse;font-size:13px">
+           <thead><tr style="background:#f8fafc;border-bottom:1.5px solid #e2e8f0">${head}</tr></thead>
+           <tbody>${body}</tbody>
+         </table>`;
+      const th = t => `<th style="padding:8px 10px;text-align:left;font-weight:700;color:#475569;text-transform:uppercase;font-size:11px;letter-spacing:0.3px">${t}</th>`;
+      const td = (t, extra) => `<td style="padding:9px 10px;border-bottom:1px solid #f1f5f9;${extra || ''}">${t}</td>`;
+
+      if (kind === 'paid') {
+        title = '✓ Paid Revenue';
+        footerJump = () => dashStatJump('revenue', 'Paid');
+        footerLabel = 'View all in Revenue Tracker →';
+        const paid = revenue.filter(r => r.status === 'Paid').sort((a,b) => (b.date||'').localeCompare(a.date||'')).slice(0, 20);
+        const total = revenue.filter(r => r.status === 'Paid').reduce((s,r) => s + Number(r.amount||0), 0);
+        if (!paid.length) emptyMsg = 'No paid invoices yet.';
+        else {
+          rowsHtml = `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(16,185,129,0.08);border-radius:8px;font-size:13px;color:#065F46"><strong>${revenue.filter(r => r.status==='Paid').length}</strong> paid invoice(s), total <strong>${money(total)}</strong></div>` +
+            tableShell(
+              th('Date') + th('Client') + th('Invoice') + th('Amount'),
+              paid.map(r => `<tr>${td(esc(r.date||''))}${td(esc(r.clientName||''))}${td(esc(r.invoiceNumber||''))}${td(money(r.amount), 'text-align:right;font-weight:700;color:#10B981')}</tr>`).join('')
+            );
+        }
+      } else if (kind === 'pending') {
+        title = '⏳ Pending Revenue';
+        footerJump = () => dashStatJump('revenue', 'Pending');
+        footerLabel = 'View all in Revenue Tracker →';
+        const today = new Date();
+        const pending = revenue.filter(r => r.status === 'Pending' && Number(r.amount||0) > 0).sort((a,b) => (a.date||'').localeCompare(b.date||'')).slice(0, 20);
+        const total = revenue.filter(r => r.status === 'Pending').reduce((s,r) => s + Number(r.amount||0), 0);
+        if (!pending.length) emptyMsg = 'No pending invoices.';
+        else {
+          rowsHtml = `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(245,158,11,0.08);border-radius:8px;font-size:13px;color:#9A3412"><strong>${pending.length}</strong> pending invoice(s), total <strong>${money(total)}</strong></div>` +
+            tableShell(
+              th('Date') + th('Client') + th('Invoice') + th('Age') + th('Amount'),
+              pending.map(r => {
+                const age = r.date ? Math.max(0, Math.floor((today - new Date(r.date)) / 86400000)) : 0;
+                const ageColor = age > 30 ? '#DC2626' : age > 14 ? '#F59E0B' : '#64748B';
+                return `<tr>${td(esc(r.date||''))}${td(esc(r.clientName||''))}${td(esc(r.invoiceNumber||''))}${td(age + 'd', 'color:'+ageColor+';font-weight:600')}${td(money(r.amount), 'text-align:right;font-weight:700;color:#F59E0B')}</tr>`;
+              }).join('')
+            );
+        }
+      } else if (kind === 'active') {
+        title = '◉ Active Clients';
+        footerJump = () => dashStatJump('clients', 'Active');
+        footerLabel = 'View all in Client Manager →';
+        const active = clients.filter(c => c.status === 'Active').sort((a,b) => (a.name||'').localeCompare(b.name||'')).slice(0, 30);
+        if (!active.length) emptyMsg = 'No active clients.';
+        else {
+          rowsHtml = `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(30,91,192,0.08);border-radius:8px;font-size:13px;color:#1E40AF"><strong>${active.length}</strong> active client(s)</div>` +
+            tableShell(
+              th('Name') + th('Business') + th('Service'),
+              active.map(c => {
+                const svc = c.services && c.services.length ? c.services.map(s => s.name).join(', ') : (c.service || '');
+                return `<tr style="cursor:pointer" onclick="closeModal('dash-snap-modal');openClientDetail('${c.id}')">${td(esc(c.name||''))}${td(esc(c.businessName||''), 'color:#64748B')}${td(esc(svc), 'color:#64748B;font-size:12px')}</tr>`;
+              }).join('')
+            );
+        }
+      } else if (kind === 'completed') {
+        title = '✓ Completed Projects';
+        footerJump = () => dashStatJump('clients', 'Completed');
+        footerLabel = 'View all in Client Manager →';
+        const completed = clients.filter(c => c.status === 'Completed').sort((a,b) => (a.name||'').localeCompare(b.name||'')).slice(0, 30);
+        if (!completed.length) emptyMsg = 'No completed projects yet.';
+        else {
+          rowsHtml = `<div style="margin-bottom:12px;padding:10px 14px;background:rgba(59,109,17,0.08);border-radius:8px;font-size:13px;color:#3B6D11"><strong>${completed.length}</strong> completed project(s)</div>` +
+            tableShell(
+              th('Name') + th('Business') + th('Service'),
+              completed.map(c => {
+                const svc = c.services && c.services.length ? c.services.map(s => s.name).join(', ') : (c.service || '');
+                return `<tr style="cursor:pointer" onclick="closeModal('dash-snap-modal');openClientDetail('${c.id}')">${td(esc(c.name||''))}${td(esc(c.businessName||''), 'color:#64748B')}${td(esc(svc), 'color:#64748B;font-size:12px')}</tr>`;
+              }).join('')
+            );
+        }
+      } else if (kind === 'pipeline') {
+        title = '◈ Pipeline (Ideas)';
+        footerJump = () => dashStatJump('my-ideas', null);
+        footerLabel = 'View pipeline →';
+        const stages = ['Idea','Planning','Building'];
+        const stageIcons = { Idea:'💭', Planning:'📋', Building:'🔨' };
+        const inFlight = ideas.filter(i => i.stage !== 'Launched');
+        if (!inFlight.length) emptyMsg = 'No ideas in the pipeline.';
+        else {
+          rowsHtml = stages.map(s => {
+            const group = inFlight.filter(i => i.stage === s);
+            if (!group.length) return '';
+            return `<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px">${stageIcons[s]} ${s} (${group.length})</div>` +
+              group.map(i => `<div style="padding:8px 12px;background:#f8fafc;border-radius:8px;margin-bottom:4px;cursor:pointer" onclick="closeModal('dash-snap-modal');showPage('my-ideas',null);setTimeout(()=>openIdeaDetail('${i.id}'),60)"><strong style="font-size:13px">${esc(i.icon || '·')} ${esc(i.name || '')}</strong>${i.tagline ? `<div style="font-size:11px;color:#94A3B8;margin-top:2px">${esc(i.tagline)}</div>` : ''}</div>`).join('') + '</div>';
+          }).filter(Boolean).join('');
+        }
+      } else {
+        return;
+      }
+
+      const existing = document.getElementById('dash-snap-modal');
+      if (existing) existing.remove();
+      const wrap = document.createElement('div');
+      wrap.id = 'dash-snap-modal';
+      wrap.className = 'modal show';
+      wrap.style.cssText = 'display:flex;align-items:center;justify-content:center;position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:9999;padding:20px';
+      wrap.onclick = (e) => { if (e.target === wrap) closeModal('dash-snap-modal'); };
+      wrap.innerHTML =
+        `<div class="modal-content" style="background:#fff;border-radius:14px;max-width:760px;width:100%;max-height:85vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.3)">
+           <div style="padding:18px 22px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center">
+             <h2 style="margin:0;font-size:18px;font-weight:700;color:#0F172A">${title}</h2>
+             <button onclick="closeModal('dash-snap-modal')" style="background:transparent;border:none;font-size:24px;color:#94A3B8;cursor:pointer;line-height:1;padding:0 4px">×</button>
+           </div>
+           <div style="padding:18px 22px;overflow-y:auto;flex:1">
+             ${emptyMsg ? `<div style="text-align:center;color:#94A3B8;padding:40px 0;font-size:14px">${emptyMsg}</div>` : rowsHtml}
+           </div>
+           <div style="padding:14px 22px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:8px">
+             <button onclick="closeModal('dash-snap-modal')" class="btn btn-outline" style="padding:8px 16px;font-size:13px">Close</button>
+             <button id="dash-snap-view-all" class="btn btn-solid" style="padding:8px 16px;font-size:13px">${footerLabel}</button>
+           </div>
+         </div>`;
+      document.body.appendChild(wrap);
+      const jumpBtn = document.getElementById('dash-snap-view-all');
+      if (jumpBtn) jumpBtn.onclick = () => { closeModal('dash-snap-modal'); if (footerJump) footerJump(); };
     }
     function updateDashboard() {
       const clients = getData('clients');
@@ -5826,6 +6041,17 @@
         const ri = revenue.findIndex(r => r.clientId === clientId);
         if (ri > -1) { revenue[ri].status = 'Paid'; revenue[ri].date = clients[idx].paidDate; setData('revenue', revenue); }
         logActivity('revenue', 'Payment received from ' + clients[idx].name + ': $' + clients[idx].price);
+        const amt = '$' + Number(clients[idx].price || 0).toLocaleString();
+        _showLiveNotification('✅ Payment received: ' + amt, 'from ' + (clients[idx].name || 'a client'), () => openClientDetail(clientId));
+        _sendNotifEmail(
+          '✅ Payment received: ' + amt + ' — ' + (clients[idx].name || 'client'),
+          `<p>Payment recorded.</p>
+           <ul style="line-height:1.7">
+             <li><strong>Client:</strong> ${clients[idx].name || '(unknown)'}</li>
+             <li><strong>Amount:</strong> ${amt}</li>
+             <li><strong>Date:</strong> ${clients[idx].paidDate}</li>
+           </ul>`
+        );
       }
       closeModal('client-detail-modal'); openClientDetail(clientId);
       renderClients(); updateDashboard();
@@ -5859,8 +6085,10 @@
     function markInvoicePaid(clientId, invoiceBase) {
       const revenue = getData('revenue');
       const today = new Date().toISOString().split('T')[0];
+      let total = 0;
       revenue.forEach(r => {
         if (r.clientId === clientId && r.invoiceNumber.replace(/-\d+$/,'') === invoiceBase) {
+          if (r.status !== 'Paid') total += Number(r.amount || 0);
           r.status = 'Paid'; r.paidDate = today;
         }
       });
@@ -5872,6 +6100,18 @@
         clients[ci].paid = true; clients[ci].paidDate = today;
         setData('clients', clients);
       }
+      const clientName = (ci > -1 ? clients[ci].name : '') || 'client';
+      const amt = '$' + total.toLocaleString();
+      _showLiveNotification('✅ Invoice ' + invoiceBase + ' paid: ' + amt, 'from ' + clientName, () => openClientDetail(clientId));
+      _sendNotifEmail(
+        '✅ Invoice ' + invoiceBase + ' paid: ' + amt + ' — ' + clientName,
+        `<p>Invoice <strong>${invoiceBase}</strong> marked paid.</p>
+         <ul style="line-height:1.7">
+           <li><strong>Client:</strong> ${clientName}</li>
+           <li><strong>Amount:</strong> ${amt}</li>
+           <li><strong>Date:</strong> ${today}</li>
+         </ul>`
+      );
       closeModal('client-detail-modal'); openClientDetail(clientId);
       renderClients(); updateDashboard();
       showToast('Invoice marked as paid ✓', 'success');

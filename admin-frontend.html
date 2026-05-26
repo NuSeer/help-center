@@ -203,7 +203,7 @@ input[type=file]{display:none}
       <div class="grid-2">
         <div class="field"><label>Email</label><input type="email" data-bind="settings.email" placeholder="info@thehelpctr.com"></div>
         <div class="field"><label>Phone / Text</label><input type="tel" data-bind="settings.phone" placeholder="(904) 555-0100"></div>
-        <div class="field"><label>Location</label><input type="text" data-bind="settings.city" placeholder="Jacksonville, FL"></div>
+        <div class="field"><label>Location</label><input type="text" data-bind="settings.city" placeholder="City, State"></div>
         <div class="field"><label>Hours</label><input type="text" data-bind="settings.hours" placeholder="Mon–Fri, 9AM–6PM EST"></div>
       </div>
 
@@ -358,7 +358,7 @@ const DEFAULTS = {
   settings: {
     businessName:'H.E.L.P. Center', logoDataUrl:'',
     email:'info@thehelpctr.com', phone:'(904) 555-0100',
-    city:'Jacksonville, FL', hours:'Mon–Fri, 9AM–6PM EST',
+    city:'', hours:'Mon–Fri, 9AM–6PM EST',
     website:'thehelpctr.com',
     tagline:'Custom solutions. Real support. Business growth that lasts.',
     aboutDesc:'Empowering everyday leaders to shine bright — turning bold dreams into thriving businesses, one solution at a time.',

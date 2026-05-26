@@ -1409,7 +1409,7 @@ footer ul li a:hover { color: white; }
         <div class="cd-icon" style="background:rgba(249,115,22,0.15);">📍</div>
         <div>
           <div class="cd-label">Location</div>
-          <div class="cd-value" id="contact-location">Jacksonville, FL</div>
+          <div class="cd-value" id="contact-location"></div>
         </div>
       </div>
       <div class="contact-detail">
@@ -1634,7 +1634,7 @@ function loadSettings() {
   // Contact info
   const email = s.email || s.ownerEmail || 'info@thehelpctr.com';
   const phone = s.phone || s.ownerPhone || '(904) 555-0100';
-  const city  = s.city || 'Jacksonville, FL';
+  const city  = s.city || '';
   const hours = s.hours || 'Mon–Fri, 9AM–6PM EST';
   const website = s.website || 'thehelpctr.com';
 

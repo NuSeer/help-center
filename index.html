@@ -529,13 +529,14 @@ section { padding: 96px 5%; }
 /* ═══════════════════════════════════════════════════════
    HOW IT WORKS / PROCESS
 ═══════════════════════════════════════════════════════ */
-#process { background: #0d1525; }
+#process { background: #16213d; }
 .process-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 0;
-  border: 1px solid var(--card-border);
+  border: 1px solid rgba(255,255,255,0.10);
   border-radius: 16px;
+  background: rgba(255,255,255,0.02);
   overflow: hidden;
 }
 .process-step {
@@ -825,6 +826,19 @@ footer ul li a:hover { color: white; }
 }
 @media (max-width: 768px) {
   #hero { grid-template-columns: 1fr; padding-top: 100px; }
+  /* Desktop overlay fades right-to-transparent so the right column (the
+     browser mockup) shows through. On mobile the visual is hidden and text
+     spans the full width, so a horizontal fade leaves the right edge of
+     every line unprotected — text blends into the bg image. Override to a
+     uniform vertical overlay so the whole text column stays dark-on-light. */
+  #hero::before {
+    background: linear-gradient(
+      to bottom,
+      rgba(5,8,20,0.92) 0%,
+      rgba(5,8,20,0.85) 60%,
+      rgba(5,8,20,0.78) 100%
+    );
+  }
   .hero-visual { display: none; }
   .mockup-showcase { grid-template-columns: 1fr; }
   .mockup-card.featured { grid-column: 1; }

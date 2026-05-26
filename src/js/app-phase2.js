@@ -10433,28 +10433,49 @@ Be fast. Don't over-explain. Ship working code.`;
   }
 
   // ── Init ────────────────────────────────────────────────────────────────
+  // The in-portal Vibe Coder is now an iframe wrapper around Vibe Coder Pro
+  // (deployed at /vibe-coder-pro/). VCP auto-imports HC's AI keys from the
+  // shared same-origin `settings` localStorage on boot. The old in-line
+  // _vibe state / vbInit / VIBE_TOOLS / _runVibeAgent code is left intact
+  // for now in case we ever want to fall back; it's unused while the iframe
+  // is in place.
   function initVibeCoder() {
-    const last = localStorage.getItem('vibeLastProject');
-    if (last && vbLoadProject(last)) {
-      // ok
-    } else {
-      _vibe.projectName = 'untitled';
-      _vibe.files = new Map();
-      _vibe.entry = 'index.html';
-      _vibe.history = [];
+    const frame = document.getElementById('vc-frame');
+    if (frame && (!frame.src || frame.src === 'about:blank' || /about:blank/.test(frame.src))) {
+      frame.src = '/vibe-coder-pro/?embedded=1';
     }
-    vbRenderTree();
-    // Replay history into the chat so the user sees prior turns.
-    const msgs = document.getElementById('vb-msgs');
-    if (msgs) {
-      msgs.innerHTML = '';
-      _vibe.history.forEach(m => {
-        if (m.role === 'user' || m.role === 'assistant') vbAppendMsg(m.role, m.content);
-      });
-      if (msgs.children.length === 0) vbShowEmptyState();
-    }
-    vbRenderPreview();
-    setTimeout(() => document.getElementById('vb-input')?.focus(), 100);
   }
+
+  // Expand button — toggles the iframe between in-page and full-viewport.
+  // Pure-CSS positioning swap; no extra dependencies.
+  function vcExpand() {
+    const wrap  = document.getElementById('vc-frame-wrap');
+    const frame = document.getElementById('vc-frame');
+    const btn   = document.getElementById('vc-expand-btn');
+    if (!wrap || !frame) return;
+    const isOn = wrap.dataset.expanded === '1';
+    if (isOn) {
+      wrap.dataset.expanded = '';
+      wrap.style.cssText = 'position:relative;background:#0F172A;border-radius:12px;overflow:hidden;border:1px solid var(--gray-200,#e5e7eb)';
+      frame.style.height = 'calc(100vh - 200px)';
+      frame.style.minHeight = '560px';
+      if (btn) btn.innerHTML = '<span class="icon icon-sm" data-icon="rocket" style="margin-right:5px;vertical-align:-2px"></span>Expand';
+      document.body.style.overflow = '';
+    } else {
+      wrap.dataset.expanded = '1';
+      wrap.style.cssText = 'position:fixed;inset:0;background:#0F172A;border-radius:0;overflow:hidden;border:none;z-index:9999';
+      frame.style.height = '100vh';
+      frame.style.minHeight = '0';
+      if (btn) btn.innerHTML = '<span class="icon icon-sm" data-icon="x" style="margin-right:5px;vertical-align:-2px"></span>Collapse';
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  // Allow ESC to exit fullscreen.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const wrap = document.getElementById('vc-frame-wrap');
+    if (wrap && wrap.dataset.expanded === '1') vcExpand();
+  });
   // ══════════════════════════════════════════════════════════════════════════════
 

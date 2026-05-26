@@ -5503,6 +5503,12 @@
         : (client?.service ? [{ name: client.service, price: client?.price||0, billingType:'flat', paidBy:'' }] : [{ name:'Website Design', price:250, billingType:'flat', paidBy:'' }]);
       return `
         <div class="form-row">
+          <div class="form-group"><label class="form-label">Status <span style="color:#999;font-weight:400">(Lead = not a paying client yet)</span></label>
+            <select id="cf-status" class="form-select">${sta.map(s=>`<option${s===(client?.status||'Lead')?' selected':''}>${s}</option>`).join('')}</select></div>
+          <div class="form-group"><label class="form-label">Start Date</label>
+            <input type="date" id="cf-start" class="form-input" style="margin:0" value="${client?.startDate||''}"></div>
+        </div>
+        <div class="form-row">
           <div class="form-group"><label class="form-label">Full Name *</label>
             <input type="text" id="cf-name" class="form-input" style="margin:0" value="${client?.name||''}" placeholder="Full Name"></div>
           <div class="form-group"><label class="form-label">Business Name</label>
@@ -5513,12 +5519,6 @@
             <input type="email" id="cf-email" class="form-input" style="margin:0" value="${client?.email||''}" placeholder="email@example.com"></div>
           <div class="form-group"><label class="form-label">Phone</label>
             <input type="tel" id="cf-phone" class="form-input" style="margin:0" value="${client?.phone||''}" placeholder="(000) 000-0000"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">Status</label>
-            <select id="cf-status" class="form-select">${sta.map(s=>`<option${s===(client?.status||'Lead')?' selected':''}>${s}</option>`).join('')}</select></div>
-          <div class="form-group"><label class="form-label">Start Date</label>
-            <input type="date" id="cf-start" class="form-input" style="margin:0" value="${client?.startDate||''}"></div>
         </div>
 
         <div class="form-group" style="margin-bottom:6px">

@@ -1821,7 +1821,7 @@
   // Merged: both initReportsAutoSave AND populateReportClientDropdowns ran here.
   // Previously two separate `reports` keys silently overwrote each other, so
   // initReportsAutoSave never ran. Now both run on every reports-page navigation.
-  reports: () => { initReportsAutoSave(); populateReportClientDropdowns(); },
+  reports: () => { initReportsAutoSave(); populateReportClientDropdowns(); if (typeof renderReportsManuals === 'function') renderReportsManuals(); },
   'website-builder': () => { wbInit(); },
   booking: () => { renderBookingDashboard(); },
   'ai-projects': () => { renderAIProjectSkills(); },
@@ -3432,6 +3432,74 @@
     // Stores AI-generated docs, website builds, notes, etc. that are personal
     // to the owner. Sits in the same `personalFiles` array as uploaded files
     // but tagged with kind:'doc' so renderPersonalFiles can show it differently.
+    // Render the Manuals tab on the Reports page. Pulls from businessFile
+    // entries with meta.showInReports === true (set by the Full Manual flow
+    // and the "Open in Reports" toolbar button on every AI reply).
+    function renderReportsManuals() {
+      const list = document.getElementById('reports-manuals-list');
+      if (!list) return;
+      const all = getData('businessFile') || [];
+      const manuals = all.filter(d => d && d.meta && d.meta.showInReports);
+      if (!manuals.length) {
+        list.innerHTML = '<div style="padding:36px 20px;text-align:center;color:#94A3B8;font-size:13px;background:#F8FAFC;border-radius:10px">No generated manuals yet. Open the <strong>AI Project Suite</strong>, ask a specialist for a comprehensive manual, and click the <strong>📚 Full Manual</strong> button next to Send.</div>';
+        return;
+      }
+      const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      list.innerHTML = manuals.map(d => {
+        const date = d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : (d.date || '');
+        const sections = d.meta && d.meta.sections ? d.meta.sections + ' sections · ' : '';
+        const size = d.content ? Math.round(d.content.length/1000) + 'KB' : '';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#fff;border:1px solid #E2E8F0;border-radius:8px;gap:12px;flex-wrap:wrap">' +
+          '<div style="flex:1;min-width:200px">' +
+            '<div style="font-weight:700;font-size:14px;color:#0F172A">📚 ' + esc(d.title || 'Untitled') + '</div>' +
+            '<div style="font-size:11px;color:#64748B;margin-top:2px">' + esc(d.type || '') + ' · ' + sections + size + ' · ' + esc(date) + (d.meta && d.meta.partial ? ' · <span style="color:#9A3412;font-weight:700">PARTIAL</span>' : '') + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+            '<button onclick="renderReportsManualView(\'' + d.id + '\')" style="padding:6px 12px;font-size:12px;background:#1E5BC0;color:#fff;border:none;border-radius:6px;cursor:pointer">Open</button>' +
+            '<button onclick="renderReportsManualDownload(\'' + d.id + '\',\'doc\')" style="padding:6px 12px;font-size:12px;background:#fff;border:1px solid #E2E8F0;color:#475569;border-radius:6px;cursor:pointer">⬇ .doc</button>' +
+            '<button onclick="renderReportsManualDownload(\'' + d.id + '\',\'html\')" style="padding:6px 12px;font-size:12px;background:#fff;border:1px solid #E2E8F0;color:#475569;border-radius:6px;cursor:pointer">⬇ .html</button>' +
+            '<button onclick="renderReportsManualDelete(\'' + d.id + '\')" style="padding:6px 10px;font-size:12px;background:#fff;border:1px solid rgba(0,0,0,0.15);color:#dc2626;border-radius:6px;cursor:pointer">Delete</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+    function renderReportsManualView(id) {
+      const d = (getData('businessFile') || []).find(x => x.id === id);
+      if (!d) return;
+      const ex = document.getElementById('reports-manual-view'); if (ex) ex.remove();
+      const wrap = document.createElement('div');
+      wrap.id = 'reports-manual-view';
+      wrap.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+      wrap.onclick = (e) => { if (e.target === wrap) wrap.remove(); };
+      wrap.innerHTML =
+        '<div style="background:#fff;border-radius:14px;max-width:900px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.3)">' +
+          '<div style="padding:18px 22px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center">' +
+            '<h2 style="margin:0;font-size:17px;font-weight:700;color:#0F172A">📚 ' + (d.title || 'Untitled') + '</h2>' +
+            '<button onclick="document.getElementById(\'reports-manual-view\').remove()" style="background:transparent;border:none;font-size:24px;color:#94A3B8;cursor:pointer">×</button>' +
+          '</div>' +
+          '<iframe srcdoc="' + (d.content || '').replace(/"/g,'&quot;') + '" sandbox="allow-same-origin" style="flex:1;border:none;background:#fff;min-height:65vh"></iframe>' +
+        '</div>';
+      document.body.appendChild(wrap);
+    }
+    function renderReportsManualDownload(id, kind) {
+      const d = (getData('businessFile') || []).find(x => x.id === id);
+      if (!d || !d.content) return;
+      const safeName = (d.title || 'manual').replace(/[^a-z0-9_-]+/gi, '_').slice(0, 80) + '.' + kind;
+      const mime = kind === 'doc' ? 'application/msword' : 'text/html';
+      const blob = new Blob([kind === 'doc' ? '﻿' : '', d.content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = safeName;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+    function renderReportsManualDelete(id) {
+      if (!confirm('Delete this manual? It will be removed from Reports and Business File.')) return;
+      const all = getData('businessFile') || [];
+      setData('businessFile', all.filter(x => x.id !== id));
+      renderReportsManuals();
+      showToast('Manual deleted', 'success');
+    }
+
     function saveToPersonalFile(opts) {
       // opts = { type, title, content, meta? }
       const files = getData('personalFiles') || [];

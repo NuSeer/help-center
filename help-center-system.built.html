@@ -11859,6 +11859,35 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       return doc;
     }
 
+    // ── PERSONAL FILE (text-document archive — mirrors saveToBusinessFile) ──
+    // Stores AI-generated docs, website builds, notes, etc. that are personal
+    // to the owner. Sits in the same `personalFiles` array as uploaded files
+    // but tagged with kind:'doc' so renderPersonalFiles can show it differently.
+    function saveToPersonalFile(opts) {
+      // opts = { type, title, content, meta? }
+      const files = getData('personalFiles') || [];
+      const doc = {
+        id: generateId(),
+        kind: 'doc',
+        type: opts.type || 'Document',
+        title: opts.title || 'Untitled',
+        content: opts.content || '',
+        meta: opts.meta || {},
+        // Compatibility shims so the existing renderer's null-checks don't blow up
+        name: (opts.title || 'Untitled') + (opts.type ? ' · ' + opts.type : ''),
+        size: (opts.content || '').length,
+        mime: 'text/html',
+        uploadedAt: new Date().toISOString(),
+        createdAt: Date.now(),
+        date: new Date().toISOString().split('T')[0]
+      };
+      files.unshift(doc);
+      setData('personalFiles', files);
+      logActivity('system', `Saved to Personal File: ${doc.type} — ${doc.title}`);
+      showToast('💾 Saved to Personal File ✓', 'success');
+      return doc;
+    }
+
     function renderBusinessFile() {
       const list = document.getElementById('bf-list');
       const filterBar = document.getElementById('bf-filter-bar');
@@ -15589,6 +15618,10 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         const titleLine = (replyText.split('\n').find(l=>l.trim())||'AI Coach output').replace(/^#+\s*/,'').slice(0,100);
         if (typeof saveToBusinessFile === 'function') saveToBusinessFile({ type:'AI Coach', title: titleLine, content: replyText });
       }, '#16A34A'));
+      bar.appendChild(mk('Save to Personal File', () => {
+        const titleLine = (replyText.split('\n').find(l=>l.trim())||'AI Coach output').replace(/^#+\s*/,'').slice(0,100);
+        if (typeof saveToPersonalFile === 'function') saveToPersonalFile({ type:'AI Coach', title: titleLine, content: replyText });
+      }, '#8B5CF6'));
       bubbleEl.parentElement.insertBefore(bar, bubbleEl.nextSibling);
     }
 
@@ -17785,23 +17818,65 @@ Write a complete brief they can send to a Fiverr designer: style, colors, must-h
         '</tr></thead><tbody>' +
         filtered.map(f => {
           const dt = new Date(f.uploadedAt);
-          const ext = (f.name.split('.').pop() || '').toLowerCase();
-          const icon = /pdf/.test(ext) ? '📄' : /docx?|odt/.test(ext) ? '📝' : /xlsx?|csv/.test(ext) ? '📊' : /pptx?/.test(ext) ? '📽️' : /png|jpe?g|gif|svg|webp/.test(ext) ? '🖼️' : /mp[34]|wav|m4a|ogg/.test(ext) ? '🎵' : /mp4|mov|webm/.test(ext) ? '🎬' : /zip|rar|7z/.test(ext) ? '🗜️' : '📎';
-          const sizeKb = Math.round(f.size / 1024);
-          const sizeLabel = sizeKb > 1024 ? (sizeKb/1024).toFixed(1) + ' MB' : sizeKb + ' KB';
+          const isDoc = f.kind === 'doc';
+          const ext = (f.name && f.name.includes('.') ? f.name.split('.').pop() : '').toLowerCase();
+          const icon = isDoc ? '🧾'
+            : /pdf/.test(ext) ? '📄' : /docx?|odt/.test(ext) ? '📝' : /xlsx?|csv/.test(ext) ? '📊' : /pptx?/.test(ext) ? '📽️' : /png|jpe?g|gif|svg|webp/.test(ext) ? '🖼️' : /mp[34]|wav|m4a|ogg/.test(ext) ? '🎵' : /mp4|mov|webm/.test(ext) ? '🎬' : /zip|rar|7z/.test(ext) ? '🗜️' : '📎';
+          const sizeKb = Math.round((f.size || 0) / 1024);
+          const sizeLabel = isDoc
+            ? (f.type || 'Document')
+            : (sizeKb > 1024 ? (sizeKb/1024).toFixed(1) + ' MB' : sizeKb + ' KB');
+          const actions = isDoc
+            ? ('<button onclick="_pfViewDoc(\'' + f.id + '\')" class="btn btn-outline" style="padding:5px 11px;font-size:11.5px;margin-right:4px">View</button>' +
+               '<button onclick="_pfDownloadDoc(\'' + f.id + '\')" class="btn btn-outline" style="padding:5px 11px;font-size:11.5px;margin-right:4px">Download</button>' +
+               '<button onclick="_pfRename(\'' + f.id + '\')" class="btn btn-outline" style="padding:5px 11px;font-size:11.5px;margin-right:4px">Rename</button>' +
+               '<button onclick="_pfDelete(\'' + f.id + '\')" style="padding:5px 11px;font-size:11.5px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:#dc2626;font-weight:500">Delete</button>')
+            : ('<a href="' + escH(f.url) + '" target="_blank" rel="noopener" class="btn btn-outline" style="padding:5px 11px;font-size:11.5px;text-decoration:none;margin-right:4px">View ↗</a>' +
+               '<a href="' + escH(f.url) + '" download="' + escH(f.name) + '" class="btn btn-outline" style="padding:5px 11px;font-size:11.5px;text-decoration:none;margin-right:4px">Download</a>' +
+               '<button onclick="_pfRename(\'' + f.id + '\')" class="btn btn-outline" style="padding:5px 11px;font-size:11.5px;margin-right:4px">Rename</button>' +
+               '<button onclick="_pfDelete(\'' + f.id + '\')" style="padding:5px 11px;font-size:11.5px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:#dc2626;font-weight:500">Delete</button>');
           return '<tr style="border-bottom:1px solid #F1F5F9">' +
             '<td style="padding:10px 12px"><div><span style="margin-right:8px;font-size:18px">' + icon + '</span><strong style="color:#0F172A">' + escH(f.name) + '</strong></div>' +
               '<div style="margin-top:5px;margin-left:26px">' + _folderBadgeHTML('pf', f) + '</div></td>' +
             '<td style="padding:10px 12px;color:#64748B">' + sizeLabel + '</td>' +
             '<td style="padding:10px 12px;color:#64748B">' + dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) + '</td>' +
-            '<td style="padding:10px 12px;text-align:right;white-space:nowrap">' +
-              '<a href="' + escH(f.url) + '" target="_blank" rel="noopener" class="btn btn-outline" style="padding:5px 11px;font-size:11.5px;text-decoration:none;margin-right:4px">View ↗</a>' +
-              '<a href="' + escH(f.url) + '" download="' + escH(f.name) + '" class="btn btn-outline" style="padding:5px 11px;font-size:11.5px;text-decoration:none;margin-right:4px">Download</a>' +
-              '<button onclick="_pfRename(\'' + f.id + '\')" class="btn btn-outline" style="padding:5px 11px;font-size:11.5px;margin-right:4px">Rename</button>' +
-              '<button onclick="_pfDelete(\'' + f.id + '\')" style="padding:5px 11px;font-size:11.5px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:#dc2626;font-weight:500">Delete</button>' +
-            '</td>' +
+            '<td style="padding:10px 12px;text-align:right;white-space:nowrap">' + actions + '</td>' +
           '</tr>';
         }).join('') + '</tbody></table>';
+    }
+
+    function _pfViewDoc(id) {
+      const f = (getData('personalFiles') || []).find(x => x.id === id);
+      if (!f) return;
+      const ex = document.getElementById('pf-doc-view'); if (ex) ex.remove();
+      const wrap = document.createElement('div');
+      wrap.id = 'pf-doc-view';
+      wrap.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+      wrap.onclick = (e) => { if (e.target === wrap) wrap.remove(); };
+      const isHtml = /^\s*<!doctype/i.test(f.content || '') || /<html[\s>]/i.test(f.content || '');
+      wrap.innerHTML =
+        '<div style="background:#fff;border-radius:14px;max-width:900px;width:100%;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.3)">' +
+          '<div style="padding:18px 22px;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">' +
+            '<div><div style="font-size:11px;color:#94A3B8;text-transform:uppercase;font-weight:700;letter-spacing:0.4px">' + (f.type||'Document') + '</div>' +
+            '<h2 style="margin:4px 0 0;font-size:17px;font-weight:700;color:#0F172A">' + (f.title||f.name||'Untitled') + '</h2></div>' +
+            '<button onclick="document.getElementById(\'pf-doc-view\').remove()" style="background:transparent;border:none;font-size:24px;color:#94A3B8;cursor:pointer">×</button>' +
+          '</div>' +
+          (isHtml
+            ? '<iframe srcdoc="' + (f.content || '').replace(/"/g,'&quot;') + '" sandbox="allow-same-origin" style="flex:1;border:none;background:#fff;min-height:60vh"></iframe>'
+            : '<pre style="flex:1;overflow:auto;padding:18px 22px;font-family:var(--font-mono,monospace);font-size:13px;line-height:1.55;white-space:pre-wrap;color:#0F172A;background:#F8FAFC;margin:0;border-radius:0 0 14px 14px">' + (f.content||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</pre>') +
+        '</div>';
+      document.body.appendChild(wrap);
+    }
+    function _pfDownloadDoc(id) {
+      const f = (getData('personalFiles') || []).find(x => x.id === id);
+      if (!f) return;
+      const isHtml = /^\s*<!doctype/i.test(f.content || '') || /<html[\s>]/i.test(f.content || '');
+      const safeName = (f.title || 'document').replace(/[^a-z0-9_-]+/gi, '_').slice(0, 80) + (isHtml ? '.html' : '.txt');
+      const blob = new Blob([f.content || ''], { type: isHtml ? 'text/html' : 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = safeName;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
     function _pfRename(id) {
       const files = getData('personalFiles') || [];

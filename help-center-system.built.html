@@ -14041,8 +14041,13 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       const id = document.getElementById('cf-id').value;
       const name = document.getElementById('cf-name').value.trim();
       if (!name) { alert('Client name is required.'); return; }
-      const services = cfGetServices();
-      if (!services.length) { alert('Add at least one service.'); return; }
+      const status = document.getElementById('cf-status').value;
+      const isLead = status === 'Lead';
+      // Leads aren't paying clients yet — skip services + revenue entirely.
+      // When the user later changes status to Active they can add services
+      // via Edit Client, which will populate the first invoice.
+      const services = isLead ? [] : cfGetServices();
+      if (!isLead && !services.length) { alert('Add at least one service.'); return; }
       // Net charge = sum of (provider/unselected) services minus client-paid services
       // Client-paid = deduction; unselected ('') or 'owner' = charge
       const chargeTotal  = services.filter(s => s.paidBy !== 'client').reduce((a,s) => a + (s.price||0), 0);

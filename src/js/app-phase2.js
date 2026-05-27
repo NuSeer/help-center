@@ -8747,8 +8747,23 @@ Before you send your reply, verify:
   let _fmOutline = null;
   window._fmLast = null;
 
+  // Explicit window exports — defense-in-depth so inline onclick handlers
+  // always resolve even if the surrounding script context isn't pure global.
   async function genFullManual() {
-    if (!_chatProjectKey) return;
+    try { return await _genFullManualImpl(); }
+    catch (e) {
+      console.error('[Full Manual] failed:', e);
+      const msgs = document.getElementById('proj-chat-msgs');
+      if (msgs) {
+        const b = _appendMsg('assistant', '');
+        b.innerHTML = '<div style="color:#dc2626;padding:12px;background:#fef2f2;border-radius:8px">⚠️ Full Manual failed: ' + (e.message || e) + '</div>';
+      } else {
+        alert('Full Manual failed: ' + (e.message || e));
+      }
+    }
+  }
+  async function _genFullManualImpl() {
+    if (!_chatProjectKey) { alert('Open an AI specialist chat first (AI Project Suite → pick a specialist).'); return; }
     const input = document.getElementById('proj-chat-input');
     const userPrompt = (input?.value || '').trim();
     if (!userPrompt) {
@@ -8838,6 +8853,18 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
     _fmOutline = null;
     showToast('Manual cancelled', 'success');
   }
+
+  // Ensure every inline-onclick target is reachable from window — same
+  // pattern as sendProjectMsg uses successfully. This block runs once on
+  // script load.
+  try {
+    window.genFullManual   = genFullManual;
+    window.fmAddSection    = fmAddSection;
+    window.fmRemoveSection = fmRemoveSection;
+    window.fmCancelOutline = fmCancelOutline;
+    window.fmExpandAll     = fmExpandAll;
+    window.fmRenderSections= fmRenderSections;
+  } catch(e) { /* non-fatal */ }
 
   async function fmExpandAll() {
     if (!_fmOutline) return;

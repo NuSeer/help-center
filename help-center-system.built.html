@@ -13756,12 +13756,39 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
     function openAddClientModal() {
       const ex = document.getElementById('add-client-modal'); if (ex) ex.remove();
       document.body.appendChild(buildModal('add-client-modal', '+ New Client', clientFormHTML(null)));
+      cfToggleServicesForStatus();
     }
     function openEditClientModal(id) {
       const client = getData('clients').find(c => c.id === id);
       if (!client) return;
       const ex = document.getElementById('edit-client-modal'); if (ex) ex.remove();
       document.body.appendChild(buildModal('edit-client-modal', 'Edit Client', clientFormHTML(client)));
+      cfToggleServicesForStatus();
+    }
+
+    // When the client form's Status field is 'Lead', shadow the Services &
+    // Pricing block so it's clear pricing isn't relevant yet. Re-enables on
+    // Active / Completed / On Hold.
+    function cfToggleServicesForStatus() {
+      const sel = document.getElementById('cf-status');
+      const wrap = document.getElementById('cf-services-wrap');
+      if (!sel || !wrap) return;
+      const isLead = sel.value === 'Lead';
+      wrap.style.opacity = isLead ? '0.4' : '';
+      wrap.style.pointerEvents = isLead ? 'none' : '';
+      wrap.style.position = 'relative';
+      let badge = document.getElementById('cf-services-lead-badge');
+      if (isLead) {
+        if (!badge) {
+          badge = document.createElement('div');
+          badge.id = 'cf-services-lead-badge';
+          badge.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:12px;font-weight:700;color:#475569;background:rgba(248,250,252,0.5);border-radius:10px;text-transform:uppercase;letter-spacing:0.6px;text-align:center;padding:20px';
+          badge.innerHTML = 'Lead — change status to Active to add services & pricing';
+          wrap.appendChild(badge);
+        }
+      } else if (badge) {
+        badge.remove();
+      }
     }
 
     const CLIENT_SERVICES = ['Website Design','Ecommerce Website','Business Dashboard & Page','Domain','Website Hosting','Church Website Maintenance','Monthly Website Maintenance','SEO & Digital Marketing','Social Media Management','Promotional Materials','Consulting','Business Formation','Credit Repair Coaching','Grant Writing','Program Development','Nonprofit Formation','Bookkeeping','Other (custom)'];
@@ -13945,7 +13972,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       return `
         <div class="form-row">
           <div class="form-group"><label class="form-label">Status <span style="color:#999;font-weight:400">(Lead = not a paying client yet)</span></label>
-            <select id="cf-status" class="form-select">${sta.map(s=>`<option${s===(client?.status||'Lead')?' selected':''}>${s}</option>`).join('')}</select></div>
+            <select id="cf-status" class="form-select" onchange="cfToggleServicesForStatus()">${sta.map(s=>`<option${s===(client?.status||'Lead')?' selected':''}>${s}</option>`).join('')}</select></div>
           <div class="form-group"><label class="form-label">Start Date</label>
             <input type="date" id="cf-start" class="form-input" style="margin:0" value="${client?.startDate||''}"></div>
         </div>
@@ -13962,7 +13989,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
             <input type="tel" id="cf-phone" class="form-input" style="margin:0" value="${client?.phone||''}" placeholder="(000) 000-0000"></div>
         </div>
 
-        <div class="form-group" style="margin-bottom:6px">
+        <div class="form-group" id="cf-services-wrap" style="margin-bottom:6px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <label class="form-label" style="margin:0">Services & Pricing</label>
             <button type="button" onclick="cfAddSvc()" style="background:none;border:1px solid var(--brand-primary);color:var(--brand-primary);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer">+ Add Service</button>
@@ -27172,8 +27199,23 @@ Before you send your reply, verify:
   let _fmOutline = null;
   window._fmLast = null;
 
+  // Explicit window exports — defense-in-depth so inline onclick handlers
+  // always resolve even if the surrounding script context isn't pure global.
   async function genFullManual() {
-    if (!_chatProjectKey) return;
+    try { return await _genFullManualImpl(); }
+    catch (e) {
+      console.error('[Full Manual] failed:', e);
+      const msgs = document.getElementById('proj-chat-msgs');
+      if (msgs) {
+        const b = _appendMsg('assistant', '');
+        b.innerHTML = '<div style="color:#dc2626;padding:12px;background:#fef2f2;border-radius:8px">⚠️ Full Manual failed: ' + (e.message || e) + '</div>';
+      } else {
+        alert('Full Manual failed: ' + (e.message || e));
+      }
+    }
+  }
+  async function _genFullManualImpl() {
+    if (!_chatProjectKey) { alert('Open an AI specialist chat first (AI Project Suite → pick a specialist).'); return; }
     const input = document.getElementById('proj-chat-input');
     const userPrompt = (input?.value || '').trim();
     if (!userPrompt) {
@@ -27263,6 +27305,18 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
     _fmOutline = null;
     showToast('Manual cancelled', 'success');
   }
+
+  // Ensure every inline-onclick target is reachable from window — same
+  // pattern as sendProjectMsg uses successfully. This block runs once on
+  // script load.
+  try {
+    window.genFullManual   = genFullManual;
+    window.fmAddSection    = fmAddSection;
+    window.fmRemoveSection = fmRemoveSection;
+    window.fmCancelOutline = fmCancelOutline;
+    window.fmExpandAll     = fmExpandAll;
+    window.fmRenderSections= fmRenderSections;
+  } catch(e) { /* non-fatal */ }
 
   async function fmExpandAll() {
     if (!_fmOutline) return;

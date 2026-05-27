@@ -5315,12 +5315,39 @@
     function openAddClientModal() {
       const ex = document.getElementById('add-client-modal'); if (ex) ex.remove();
       document.body.appendChild(buildModal('add-client-modal', '+ New Client', clientFormHTML(null)));
+      cfToggleServicesForStatus();
     }
     function openEditClientModal(id) {
       const client = getData('clients').find(c => c.id === id);
       if (!client) return;
       const ex = document.getElementById('edit-client-modal'); if (ex) ex.remove();
       document.body.appendChild(buildModal('edit-client-modal', 'Edit Client', clientFormHTML(client)));
+      cfToggleServicesForStatus();
+    }
+
+    // When the client form's Status field is 'Lead', shadow the Services &
+    // Pricing block so it's clear pricing isn't relevant yet. Re-enables on
+    // Active / Completed / On Hold.
+    function cfToggleServicesForStatus() {
+      const sel = document.getElementById('cf-status');
+      const wrap = document.getElementById('cf-services-wrap');
+      if (!sel || !wrap) return;
+      const isLead = sel.value === 'Lead';
+      wrap.style.opacity = isLead ? '0.4' : '';
+      wrap.style.pointerEvents = isLead ? 'none' : '';
+      wrap.style.position = 'relative';
+      let badge = document.getElementById('cf-services-lead-badge');
+      if (isLead) {
+        if (!badge) {
+          badge = document.createElement('div');
+          badge.id = 'cf-services-lead-badge';
+          badge.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;font-size:12px;font-weight:700;color:#475569;background:rgba(248,250,252,0.5);border-radius:10px;text-transform:uppercase;letter-spacing:0.6px;text-align:center;padding:20px';
+          badge.innerHTML = 'Lead — change status to Active to add services & pricing';
+          wrap.appendChild(badge);
+        }
+      } else if (badge) {
+        badge.remove();
+      }
     }
 
     const CLIENT_SERVICES = ['Website Design','Ecommerce Website','Business Dashboard & Page','Domain','Website Hosting','Church Website Maintenance','Monthly Website Maintenance','SEO & Digital Marketing','Social Media Management','Promotional Materials','Consulting','Business Formation','Credit Repair Coaching','Grant Writing','Program Development','Nonprofit Formation','Bookkeeping','Other (custom)'];
@@ -5504,7 +5531,7 @@
       return `
         <div class="form-row">
           <div class="form-group"><label class="form-label">Status <span style="color:#999;font-weight:400">(Lead = not a paying client yet)</span></label>
-            <select id="cf-status" class="form-select">${sta.map(s=>`<option${s===(client?.status||'Lead')?' selected':''}>${s}</option>`).join('')}</select></div>
+            <select id="cf-status" class="form-select" onchange="cfToggleServicesForStatus()">${sta.map(s=>`<option${s===(client?.status||'Lead')?' selected':''}>${s}</option>`).join('')}</select></div>
           <div class="form-group"><label class="form-label">Start Date</label>
             <input type="date" id="cf-start" class="form-input" style="margin:0" value="${client?.startDate||''}"></div>
         </div>
@@ -5521,7 +5548,7 @@
             <input type="tel" id="cf-phone" class="form-input" style="margin:0" value="${client?.phone||''}" placeholder="(000) 000-0000"></div>
         </div>
 
-        <div class="form-group" style="margin-bottom:6px">
+        <div class="form-group" id="cf-services-wrap" style="margin-bottom:6px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <label class="form-label" style="margin:0">Services & Pricing</label>
             <button type="button" onclick="cfAddSvc()" style="background:none;border:1px solid var(--brand-primary);color:var(--brand-primary);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer">+ Add Service</button>

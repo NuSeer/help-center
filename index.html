@@ -3,8 +3,58 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>H.E.L.P. Center — We Help Everyday Leaders Prosper</title>
-<meta name="description" content="Empowering everyday leaders to shine bright — custom websites, graphic design, and business consulting. Real solutions. Real results.">
+<title>Custom Websites for Businesses, Churches, Athletes &amp; Coaches | H.E.L.P. Center</title>
+<meta name="description" content="H.E.L.P. Center builds custom websites for small businesses, churches, athletes, coaches, and entrepreneurs. Real support. Real results. Business growth that lasts. Start at thehelpctr.com.">
+<meta name="keywords" content="custom websites, athlete branding, athlete websites, church websites, small business websites, graphic design, business consulting, web design, coaches, entrepreneurs, sports brands, H.E.L.P. Center, thehelpctr.com">
+<link rel="canonical" href="https://thehelpctr.com/">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large">
+
+<!-- Open Graph (Facebook, LinkedIn, iMessage previews) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="H.E.L.P. Center">
+<meta property="og:url" content="https://thehelpctr.com/">
+<meta property="og:title" content="Custom Websites for Businesses, Churches, Athletes &amp; Coaches | H.E.L.P. Center">
+<meta property="og:description" content="Custom web pages, athlete branding &amp; stat sites, graphic design, business consulting, and growth programs. Real support. Real results.">
+<meta property="og:locale" content="en_US">
+
+<!-- Twitter / X card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Custom Websites for Businesses, Churches, Athletes &amp; Coaches | H.E.L.P. Center">
+<meta name="twitter:description" content="Custom web pages, athlete branding &amp; stat sites, graphic design, business consulting. Real support. Real results.">
+
+<!-- Structured data — Organization / Service / FAQ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "H.E.L.P. Center",
+  "alternateName": "Helping Everyday Leaders Prosper",
+  "url": "https://thehelpctr.com/",
+  "email": "joy@thehelpctr.com",
+  "description": "H.E.L.P. Center builds custom websites for small businesses, churches, athletes, coaches, and entrepreneurs. Real support. Real results. Business growth that lasts.",
+  "areaServed": "United States",
+  "founder": { "@type": "Person", "name": "Joy Watford" },
+  "knowsAbout": [
+    "custom web design",
+    "athlete branding",
+    "athlete stat websites",
+    "church websites",
+    "small business websites",
+    "graphic design",
+    "business consulting",
+    "credit repair coaching",
+    "youth program design"
+  ],
+  "makesOffer": [
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Custom Web Design" } },
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Athlete Branding &amp; Stat Sites" } },
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Graphic Design" } },
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Business Consulting" } },
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Growth Programs &amp; Courses" } }
+  ]
+}
+</script>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
@@ -1343,6 +1393,9 @@ footer ul li a:hover { color: white; }
       <p>We don't disappear after delivery. Ongoing support, updates, and consulting to keep your business growing.</p>
     </div>
   </div>
+  <div style="max-width:740px;margin:32px auto 0;text-align:center;padding:16px 20px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;font-size:14px;color:var(--muted)">
+    <strong style="color:#fff">Worked with us?</strong> We'd love to hear about it — <a href="mailto:joy@thehelpctr.com?subject=I'd%20like%20to%20leave%20a%20review&body=Hi%20Joy%2C%20I%20worked%20with%20H.E.L.P.%20Center%20and%20want%20to%20leave%20a%20review.%20Please%20send%20me%20my%20portal%20link." style="color:var(--brand-green-lt);font-weight:700;text-decoration:none">share your story →</a>
+  </div>
 </section>
 
 <!-- Programs section removed -->
@@ -1419,6 +1472,9 @@ footer ul li a:hover { color: white; }
       <h3>LET'S BUILD<br>YOUR <span class="g">VISION</span><br><span class="o">TOGETHER!</span></h3>
       <p id="contact-desc">
         Real solutions. Real support. Real results. Tell us what you need and we'll respond within 24 hours.
+      </p>
+      <p style="font-size:13.5px;color:var(--muted);margin:-4px 0 18px">
+        <strong style="color:#fff">Already worked with us?</strong> <a href="mailto:joy@thehelpctr.com?subject=I'd%20like%20to%20leave%20a%20review&body=Hi%20Joy%2C%20I%20worked%20with%20H.E.L.P.%20Center%20and%20want%20to%20leave%20a%20review.%20Please%20send%20me%20my%20portal%20link." style="color:var(--brand-green-lt);font-weight:700;text-decoration:none">Leave a review →</a>
       </p>
 
       <div class="contact-detail">
@@ -1750,6 +1806,8 @@ function loadReviews() {
   const all = getData('siteReviews') || [];
   // Only show approved reviews on the public site
   const reviews = all.filter(r => r && r.approved !== false);
+  // Update aggregateRating JSON-LD so Google can show stars in search results
+  updateReviewsSchema(reviews);
   if (!reviews.length) { sec.style.display = 'none'; return; }
   sec.style.display = 'block';
   const escH = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1774,6 +1832,45 @@ function loadReviews() {
       </div>
     </div>`;
   }).join('');
+}
+
+// Inject / update an AggregateRating JSON-LD block any time approved
+// reviews exist so Google can show star ratings in search results.
+// The block is removed entirely when reviews drop to zero so we never
+// claim a fake rating.
+function updateReviewsSchema(reviews) {
+  const existing = document.getElementById('reviews-aggregate-jsonld');
+  if (!reviews || !reviews.length) {
+    if (existing) existing.remove();
+    return;
+  }
+  const count = reviews.length;
+  const sum = reviews.reduce((a, r) => a + (Number(r.rating) || 5), 0);
+  const avg = (sum / count).toFixed(1);
+  const payload = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "H.E.L.P. Center",
+    "url": "https://thehelpctr.com",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": avg,
+      "reviewCount": String(count),
+      "bestRating": "5",
+      "worstRating": "1"
+    },
+    "review": reviews.slice(0, 10).map(r => ({
+      "@type": "Review",
+      "reviewRating": { "@type": "Rating", "ratingValue": String(Number(r.rating) || 5), "bestRating": "5" },
+      "author": { "@type": "Person", "name": r.name || "Anonymous" },
+      "reviewBody": r.text || ""
+    }))
+  };
+  const tag = existing || document.createElement('script');
+  tag.id = 'reviews-aggregate-jsonld';
+  tag.type = 'application/ld+json';
+  tag.textContent = JSON.stringify(payload);
+  if (!existing) document.head.appendChild(tag);
 }
 
 // ─── LOAD PROGRAMS ───────────────────────────────────────────────────────────

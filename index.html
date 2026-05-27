@@ -1280,6 +1280,36 @@ footer ul li a:hover { color: white; }
 <!-- ══════════════════════════════════
      HOW IT WORKS
 ══════════════════════════════════ -->
+<!-- ════════════════════════════════════════════════
+     REVIEWS / TESTIMONIALS
+     Populated by loadReviews() from siteReviews localStorage.
+     Owner adds reviews via Frontend Manager OR they come in through
+     the client portal "Leave a Review" form and the owner approves.
+═══════════════════════════════════════════════════ -->
+<section id="reviews" style="background:#141d33;padding:80px 5%;display:none">
+  <div class="section-head center">
+    <div class="section-lbl">What Clients Say</div>
+    <h2 class="section-title">REAL <span style="color:var(--brand-green-lt)">RESULTS</span>, REAL <span style="color:var(--brand-orange)">LEADERS</span></h2>
+    <p class="section-desc">Don't take our word for it — hear from the everyday leaders we've helped build their dream.</p>
+  </div>
+  <div id="reviews-grid" style="max-width:1200px;margin:48px auto 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px"></div>
+</section>
+
+<style>
+.review-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.10); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; transition: transform 0.2s, border-color 0.2s; }
+.review-card:hover { transform: translateY(-3px); border-color: var(--brand-green-lt); }
+.review-stars { color: #FFC107; font-size: 16px; letter-spacing: 2px; margin-bottom: 12px; }
+.review-text { color: #E2E8F0; font-size: 14.5px; line-height: 1.7; flex: 1; font-style: italic; margin-bottom: 18px; }
+.review-text::before { content: '"'; color: var(--brand-green-lt); font-size: 36px; line-height: 0; vertical-align: -10px; margin-right: 4px; }
+.review-graphic { width: 100%; height: 160px; background-size: cover; background-position: center; border-radius: 8px; margin-bottom: 14px; border: 1px solid rgba(255,255,255,0.06); }
+.review-meta { display: flex; gap: 12px; align-items: center; padding-top: 14px; border-top: 1px solid rgba(255,255,255,0.08); }
+.review-avatar { width: 44px; height: 44px; border-radius: 50%; background: linear-gradient(135deg, var(--brand-blue), var(--brand-green)); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex-shrink: 0; }
+.review-name { font-size: 14px; font-weight: 700; color: #fff; }
+.review-biz { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.review-link { display: inline-block; margin-top: 6px; font-size: 11px; color: var(--brand-green-lt); text-decoration: none; font-weight: 600; }
+.review-link:hover { text-decoration: underline; }
+</style>
+
 <section id="process">
   <div class="section-head center">
     <div class="section-lbl">The Process</div>
@@ -1712,6 +1742,40 @@ function loadServices() {
   `).join('');
 }
 
+// ─── LOAD REVIEWS / TESTIMONIALS ─────────────────────────────────────────────
+function loadReviews() {
+  const sec = document.getElementById('reviews');
+  const grid = document.getElementById('reviews-grid');
+  if (!sec || !grid) return;
+  const all = getData('siteReviews') || [];
+  // Only show approved reviews on the public site
+  const reviews = all.filter(r => r && r.approved !== false);
+  if (!reviews.length) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+  const escH = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  grid.innerHTML = reviews.map(r => {
+    const rating = Math.max(1, Math.min(5, Number(r.rating) || 5));
+    const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+    const name = r.name || 'Anonymous';
+    const initials = name.split(/\s+/).map(w => w[0]).join('').slice(0,2).toUpperCase() || '?';
+    const graphic = r.graphicUrl ? `<div class="review-graphic" style="background-image:url('${escH(r.graphicUrl)}')"></div>` : '';
+    const link = r.websiteUrl ? `<a href="${escH(r.websiteUrl)}" target="_blank" rel="noopener" class="review-link">↗ Visit their site</a>` : '';
+    return `<div class="review-card">
+      ${graphic}
+      <div class="review-stars" aria-label="${rating} of 5 stars">${stars}</div>
+      <div class="review-text">${escH(r.text || '')}</div>
+      <div class="review-meta">
+        <div class="review-avatar">${escH(initials)}</div>
+        <div style="flex:1;min-width:0">
+          <div class="review-name">${escH(name)}</div>
+          ${r.businessName ? `<div class="review-biz">${escH(r.businessName)}</div>` : ''}
+          ${link}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // ─── LOAD PROGRAMS ───────────────────────────────────────────────────────────
 const DEFAULT_PROGRAMS = [
   {
@@ -1899,7 +1963,7 @@ function checkAdminMode() {
 
 // ─── LISTEN FOR ADMIN CHANGES (cross-tab sync) ───────────────────────────────
 window.addEventListener('storage', (e) => {
-  const watched = ['settings','siteServices','sitePricing','sitePricingEnabled','sitePrograms','siteHero','siteColors','siteMockups','clients'];
+  const watched = ['settings','siteServices','sitePricing','sitePricingEnabled','sitePrograms','siteHero','siteColors','siteMockups','siteReviews','clients'];
   if (!watched.includes(e.key)) return;
 
   // Route to the smallest set of reloads needed for the key that changed.
@@ -1912,6 +1976,7 @@ window.addEventListener('storage', (e) => {
     case 'siteHero':       loadHero(); break;
     case 'siteColors':     loadColors(); break;
     case 'siteMockups':    loadMockups(); break;
+    case 'siteReviews':    loadReviews(); break;
     case 'clients':        /* lead arrived — nothing visual to refresh */ break;
   }
   observeFadeIns();
@@ -2098,6 +2163,7 @@ document.addEventListener('DOMContentLoaded', () => {
   loadServices();
   loadMockups();
   loadPrograms();
+  loadReviews();
   loadPricing();
   applyPricingVisibility();
   loadStats();

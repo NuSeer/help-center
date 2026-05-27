@@ -342,6 +342,16 @@ input[type=file]{display:none}
       <button class="add-btn" onclick="addRow('sitePricing')">+ Add pricing tier</button>
     </section>
 
+    <!-- ════════════════════════════════════════════════
+         REVIEWS / TESTIMONIALS
+    ═══════════════════════════════════════════════════ -->
+    <section class="card">
+      <h2>⭐ Reviews / Testimonials</h2>
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px">Reviews submitted via the client portal land here as <em>pending</em>. Uncheck "Approved" to hide a review from the public site without deleting it.</p>
+      <div class="row-list" id="reviews-rows"></div>
+      <button class="add-btn" onclick="addRow('siteReviews')">+ Add review</button>
+    </section>
+
   </main>
 
 </div>
@@ -352,7 +362,7 @@ input[type=file]{display:none}
 /* ════════════════════════════════════════════════
    DATA / STATE
 ═══════════════════════════════════════════════════ */
-const KEYS = ['settings','siteHero','siteColors','siteServices','siteMockups','sitePrograms','sitePricing','sitePricingEnabled'];
+const KEYS = ['settings','siteHero','siteColors','siteServices','siteMockups','sitePrograms','sitePricing','sitePricingEnabled','siteReviews'];
 
 const DEFAULTS = {
   settings: {
@@ -419,7 +429,8 @@ const DEFAULTS = {
     { name:'Premium', price:2500, unit:'per site', desc:'Full-featured website with booking, payment, and more.', popular:false,
       features:['Unlimited pages','Booking / scheduler','Client portal','E-commerce ready','Custom animations','Unlimited revisions','90-day support','Monthly maintenance'] }
   ],
-  sitePricingEnabled: false
+  sitePricingEnabled: false,
+  siteReviews: []
 };
 
 let state = {};
@@ -605,6 +616,7 @@ function renderAll(){
   renderMockups();
   renderPrograms();
   renderPricing();
+  renderReviews();
 }
 
 function renderPricingToggle(){
@@ -659,6 +671,10 @@ function addRow(target){
     state.siteMockups.cards = state.siteMockups.cards || [];
     state.siteMockups.cards.push({ category:'Category', categoryColor:'#22c55e', title:'New Mockup', desc:'', tags:[] });
     renderMockups();
+  } else if(target === 'siteReviews'){
+    state.siteReviews = state.siteReviews || [];
+    state.siteReviews.unshift({ id:'rev-'+Date.now().toString(36), name:'', businessName:'', rating:5, text:'', websiteUrl:'', graphicUrl:'', approved:true, submittedAt:new Date().toISOString(), source:'manual' });
+    renderReviews();
   }
   setDirty(true);
 }
@@ -831,6 +847,43 @@ function updPrice(i, key, val){ state.sitePricing[i][key] = val; setDirty(true);
 function movePriceRow(i, d){ moveRow(state.sitePricing, i, d); renderPricing(); setDirty(true); }
 function delPriceRow(i){ if(deleteRow(state.sitePricing, i)){ renderPricing(); setDirty(true); } }
 
+/* ── REVIEWS / TESTIMONIALS ── */
+function renderReviews(){
+  const root = document.getElementById('reviews-rows');
+  if(!root) return;
+  const arr = state.siteReviews || (state.siteReviews = []);
+  if(!arr.length){
+    root.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px;background:#F8FAFC;border-radius:8px">No reviews yet. Click <strong>+ Add review</strong> to add one manually, or wait for a client to submit one from their portal.</div>';
+    return;
+  }
+  root.innerHTML = arr.map((r, i) => `
+    <div class="row ${r.approved===false?'':'popular'}">
+      <div class="row-head">
+        <strong>${'★'.repeat(Math.max(1,Math.min(5,Number(r.rating)||5)))} ${escapeHtml(r.name||'(no name)')} ${r.businessName?'· '+escapeHtml(r.businessName):''}</strong>
+        ${rowActions(i, arr.length, `moveReviewRow(${i},-1)`, `moveReviewRow(${i},1)`, `delReviewRow(${i})`)}
+      </div>
+      <div class="grid-3">
+        <div class="field"><label>Name</label><input type="text" oninput="updReview(${i},'name',this.value)" value="${escapeAttr(r.name||'')}"></div>
+        <div class="field"><label>Business name</label><input type="text" oninput="updReview(${i},'businessName',this.value)" value="${escapeAttr(r.businessName||'')}"></div>
+        <div class="field"><label>Rating (1–5)</label><input type="number" min="1" max="5" oninput="updReview(${i},'rating',Math.max(1,Math.min(5,Number(this.value))))" value="${Number(r.rating||5)}"></div>
+      </div>
+      <div class="field"><label>Review text</label><textarea oninput="updReview(${i},'text',this.value)" placeholder="What did they say?">${escapeHtml(r.text||'')}</textarea></div>
+      <div class="grid-3">
+        <div class="field"><label>Website URL (optional — built by H.E.L.P. Center)</label><input type="url" oninput="updReview(${i},'websiteUrl',this.value)" value="${escapeAttr(r.websiteUrl||'')}" placeholder="https://…"></div>
+        <div class="field" style="grid-column:span 2"><label>Graphic URL (optional — design we did for them)</label><input type="url" oninput="updReview(${i},'graphicUrl',this.value)" value="${escapeAttr(r.graphicUrl||'')}" placeholder="https://… (uploaded image URL)"></div>
+      </div>
+      <div class="toggle">
+        <input type="checkbox" ${r.approved!==false?'checked':''} onchange="updReview(${i},'approved',this.checked);renderReviews()">
+        <label>Approved · show on public site</label>
+        ${r.source==='portal'?'<span style="margin-left:12px;font-size:11px;padding:2px 8px;background:rgba(30,91,192,0.12);color:#1E40AF;border-radius:99px;font-weight:700">FROM CLIENT PORTAL</span>':''}
+      </div>
+    </div>
+  `).join('');
+}
+function updReview(i, key, val){ state.siteReviews[i][key] = val; setDirty(true); }
+function moveReviewRow(i, d){ moveRow(state.siteReviews, i, d); renderReviews(); setDirty(true); }
+function delReviewRow(i){ if(deleteRow(state.siteReviews, i)){ renderReviews(); setDirty(true); } }
+
 /* ════════════════════════════════════════════════
    TAGS INPUT (reusable)
 ═══════════════════════════════════════════════════ */
@@ -869,6 +922,7 @@ function rerenderFor(arrayKey){
   else if(arrayKey === 'sitePrograms') renderPrograms();
   else if(arrayKey === 'sitePricing') renderPricing();
   else if(arrayKey === 'siteMockupsCards') renderMockups();
+  else if(arrayKey === 'siteReviews') renderReviews();
 }
 
 /* ════════════════════════════════════════════════

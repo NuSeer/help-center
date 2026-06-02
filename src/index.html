@@ -417,6 +417,13 @@
       </nav>
 
       <div class="sidebar-footer">
+        <div id="pb-sync-badge" style="display:none;padding:8px 10px;margin-bottom:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-size:12px;color:rgba(255,255,255,0.85)" title="Cross-device PocketBase sync status">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span class="pb-sync-dot" style="width:8px;height:8px;border-radius:50%;background:#64748B;flex:none"></span>
+            <span class="pb-sync-label" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Idle</span>
+          </div>
+          <button onclick="syncNow()" style="width:100%;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:5px;color:rgba(255,255,255,0.85);font-size:11px;font-weight:600;cursor:pointer">↻ Sync now</button>
+        </div>
         <div style="padding:8px 0 4px">
           <button class="sb-toggle-btn" id="sb-toggle-btn" onclick="toggleSidebarCollapse()" title="Collapse / expand sidebar">◀ Collapse</button>
           <button class="theme-btn" onclick="toggleTheme()" id="theme-btn" style="width:100%">🌙 Dark Mode</button>

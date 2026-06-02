@@ -5377,6 +5377,13 @@ function makeExtendedSections(template, content, pages) {
       </nav>
 
       <div class="sidebar-footer">
+        <div id="pb-sync-badge" style="display:none;padding:8px 10px;margin-bottom:8px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-size:12px;color:rgba(255,255,255,0.85)" title="Cross-device PocketBase sync status">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span class="pb-sync-dot" style="width:8px;height:8px;border-radius:50%;background:#64748B;flex:none"></span>
+            <span class="pb-sync-label" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">Idle</span>
+          </div>
+          <button onclick="syncNow()" style="width:100%;padding:5px 8px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:5px;color:rgba(255,255,255,0.85);font-size:11px;font-weight:600;cursor:pointer">↻ Sync now</button>
+        </div>
         <div style="padding:8px 0 4px">
           <button class="sb-toggle-btn" id="sb-toggle-btn" onclick="toggleSidebarCollapse()" title="Collapse / expand sidebar">◀ Collapse</button>
           <button class="theme-btn" onclick="toggleTheme()" id="theme-btn" style="width:100%">🌙 Dark Mode</button>
@@ -7765,6 +7772,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         <div class="path-tabs-container">
           <div class="path-tabs-nav">
             <button class="path-tab active" onclick="pTab('reports','manuals',this);renderReportsManuals()">📚 Manuals</button>
+            <button class="path-tab" id="rtab-reports" onclick="pTab('reports','reports',this);renderReportsReports()">📄 Reports</button>
             <button class="path-tab" onclick="pTab('reports','proposal',this)">Proposal</button>
             <button class="path-tab" onclick="pTab('reports','contract',this)">Contract</button>
             <button class="path-tab" onclick="pTab('reports','receipt',this)">Receipt / Invoice</button>
@@ -7781,6 +7789,15 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
               <h2 style="font-size:18px;font-weight:700;margin-bottom:6px">📚 Generated Manuals</h2>
               <p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">Documents auto-saved here by the AI Project Suite's <strong>📚 Full Manual</strong> button. Click any row to preview, download, or open in Business File.</p>
               <div id="reports-manuals-list" style="display:flex;flex-direction:column;gap:8px"></div>
+            </div>
+          </div>
+
+          <!-- REPORTS (saved from the AI Project Suite "🗂 Report" / "Open in Reports" buttons) -->
+          <div id="reports-tab-reports" class="path-tab-content">
+            <div class="card" style="margin-bottom:20px">
+              <h2 style="font-size:18px;font-weight:700;margin-bottom:6px">📄 Saved Reports</h2>
+              <p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">Single AI replies saved here by the AI Project Suite's <strong>🗂 Report</strong> button — a separate bucket from multi-section <strong>📚 Full Manual</strong> documents. Click any row to preview, download, or delete.</p>
+              <div id="reports-reports-list" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
           </div>
 
@@ -8554,6 +8571,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
     function getData(key) { return JSON.parse(localStorage.getItem(key)) || []; }
     function setData(key, val) {
       localStorage.setItem(key, JSON.stringify(val));
+      _pbStampLocal(key); // mark local-newer for the conflict resolver
       pbWrite(key, val); // fire-and-forget PocketBase sync
       // When client-facing data changes, refresh per-client portal snapshots.
       if (key === 'clients' || key === 'settings' || key === 'stripeSettings') {
@@ -8898,15 +8916,192 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       if (!ok) pbQueueAdd(key, val);
     }
 
+    // ── Sync v2 (B + i): timestamps + background sync + newer-wins ──────────
+    // Every key in this list is what the cross-device sync considers part of
+    // the user's "data" — pulled on login, pushed on write, and resolved by
+    // timestamp during background sync. Add here when introducing a new key
+    // that needs to follow the user across devices.
+    const TRACKED_KEYS = [
+      'clients','ideas','revenue','settings','activity','events','calEvents',
+      'notes','sentEmails','businessFile','personalFiles','clientDocuments',
+      'wbBuilds','vibeProjects','bookingSettings','stripeSettings','aiProjects',
+      'myProfile','reportDrafts','clientFeedback'
+    ];
+
+    // pb_localTs: { [key]: ISO timestamp of last local write }. Used to decide
+    // whether local or remote is newer during pbSyncAll.
+    function _pbStampLocal(key) {
+      try {
+        const m = JSON.parse(localStorage.getItem('pb_localTs')) || {};
+        m[key] = new Date().toISOString();
+        localStorage.setItem('pb_localTs', JSON.stringify(m));
+      } catch(e) {}
+    }
+    function _pbGetLocalTs(key) {
+      try {
+        const m = JSON.parse(localStorage.getItem('pb_localTs')) || {};
+        return m[key] || null;
+      } catch(e) { return null; }
+    }
+
+    // Manual full push (used by Settings "Push all to PocketBase" button) —
+    // now iterates every tracked key, not just the legacy six.
     async function pbPushAll() {
-      // Push all current localStorage data to PocketBase (manual full sync)
-      const keys = ['clients','ideas','revenue','settings','activity','events'];
-      for (const k of keys) {
-        const v = JSON.parse(localStorage.getItem(k));
-        if (v !== null) await pbWrite(k, v);
+      for (const k of TRACKED_KEYS) {
+        const raw = localStorage.getItem(k);
+        if (raw === null) continue;
+        let v; try { v = JSON.parse(raw); } catch(e) { continue; }
+        if (v === null) continue;
+        await pbWrite(k, v);
       }
       showToast('All data pushed to PocketBase', 'success');
     }
+
+    // Bidirectional sync: for every tracked key, compare local timestamp vs
+    // PB record's `updated` field. Newer wins (rule "i" from the design pitch).
+    // Single-user app so true conflicts are rare; this just keeps two devices
+    // in step without ever silently demoting fresher edits.
+    let _pbSyncing = false;
+    async function pbSyncAll(opts) {
+      opts = opts || {};
+      const pb = pbSettings();
+      if (!pb.enabled) return false;
+      if (_pbSyncing) return false; // overlap guard for interval + manual
+      _pbSyncing = true;
+      _pbSetStatus('syncing');
+      try {
+        const token = await pbAuth();
+        if (!token) { _pbSetStatus('error', 'auth failed'); return false; }
+        await pbDrainQueue();
+        // Fetch all tenant records once
+        let url = pb.url + '/api/collections/store/records?perPage=500';
+        if (TENANT_PREFIX) url += '&filter=' + encodeURIComponent(`key~"${TENANT_PREFIX}"`);
+        const r = await fetch(url, { headers: {'Authorization': token} });
+        if (r.status === 401) { localStorage.removeItem('pb_token'); _pbSetStatus('error', 'auth lost'); return false; }
+        if (!r.ok) { _pbSetStatus('error', 'fetch ' + r.status); return false; }
+        const {items=[]} = await r.json();
+        const remoteByKey = {};
+        items.forEach(it => { if (it && it.key) remoteByKey[_pbStripPrefix(it.key)] = it; });
+
+        // Walk the union of tracked keys + anything remote has that we don't
+        const seen = new Set();
+        TRACKED_KEYS.forEach(k => seen.add(k));
+        Object.keys(remoteByKey).forEach(k => seen.add(k));
+
+        for (const key of seen) {
+          // Skip per-portal and per-calendar snapshot keys — those have their
+          // own push paths and aren't owner-edited locally.
+          if (key.startsWith('portal:') || key.startsWith('cal:')) continue;
+          const remote = remoteByKey[key];
+          const localRaw = localStorage.getItem(key);
+          const localTs = _pbGetLocalTs(key);
+          const remoteTs = remote && remote.updated ? remote.updated : null;
+
+          if (!remote && localRaw !== null) {
+            // Remote missing → push local up
+            try { await pbWrite(key, JSON.parse(localRaw)); } catch(e) {}
+            continue;
+          }
+          if (remote && localRaw === null) {
+            // Local missing → pull remote down
+            const v = typeof remote.value === 'string' ? remote.value : JSON.stringify(remote.value);
+            localStorage.setItem(key, v);
+            continue;
+          }
+          if (!remote && localRaw === null) continue;
+
+          // Both sides exist — newer wins by timestamp (rule "i").
+          // If we have no localTs (legacy data), treat remote as authoritative.
+          const localMs = localTs ? Date.parse(localTs) : 0;
+          const remoteMs = remoteTs ? Date.parse(remoteTs) : 0;
+          if (localMs > remoteMs + 500) {
+            // Local newer — push (with 500ms grace to avoid PB clock jitter)
+            try { await pbWrite(key, JSON.parse(localRaw)); } catch(e) {}
+          } else if (remoteMs > localMs) {
+            // Remote newer — pull, with the same settings-merge protection
+            // pbPull() uses so per-device PB creds aren't wiped.
+            if (key === 'settings' && typeof remote.value === 'object' && remote.value !== null) {
+              const local = (function(){ try { return JSON.parse(localRaw) || {}; } catch(e) { return {}; } })();
+              const protectedKeys = ['pbUrl','pbEmail','pbPassword','pbEnabled','pbAuthMode'];
+              const merged = {...remote.value};
+              protectedKeys.forEach(k => { if (local[k] !== undefined && local[k] !== '') merged[k] = local[k]; });
+              if (!merged.password && local.password) merged.password = local.password;
+              localStorage.setItem(key, JSON.stringify(merged));
+            } else {
+              const v = typeof remote.value === 'string' ? remote.value : JSON.stringify(remote.value);
+              localStorage.setItem(key, v);
+            }
+          }
+        }
+        localStorage.setItem('pb_lastSync', new Date().toISOString());
+        _pbSetStatus('ok');
+        if (opts.toast) showToast('Synced with PocketBase', 'success');
+        return true;
+      } catch(e) {
+        _pbSetStatus('error', (e && e.message) || 'network');
+        return false;
+      } finally {
+        _pbSyncing = false;
+      }
+    }
+
+    // Background sync — runs every 30s while the app is open and a tab is
+    // visible. Cleared on logout / refresh. Skips when the tab is hidden so
+    // we don't burn cycles on a background tab.
+    let _pbSyncTimer = null;
+    function startBackgroundSync() {
+      if (_pbSyncTimer) return;
+      _pbSyncTimer = setInterval(() => {
+        if (document.hidden) return;
+        const pb = pbSettings();
+        if (!pb.enabled) return;
+        pbSyncAll();
+      }, 30000);
+    }
+    function stopBackgroundSync() {
+      if (_pbSyncTimer) { clearInterval(_pbSyncTimer); _pbSyncTimer = null; }
+    }
+    function syncNow() { pbSyncAll({ toast: true }).then(() => _pbRenderBadge()); }
+
+    // Sidebar badge: shows "Synced 2m ago" / "Syncing…" / "Sync error" with a
+    // manual Sync now button. Re-rendered every 15s so the relative time stays
+    // fresh without needing a sync to fire.
+    let _pbStatus = 'idle';
+    let _pbStatusDetail = '';
+    function _pbSetStatus(s, detail) {
+      _pbStatus = s;
+      _pbStatusDetail = detail || '';
+      _pbRenderBadge();
+    }
+    function _pbFmtAgo(iso) {
+      if (!iso) return 'never';
+      const ms = Date.now() - Date.parse(iso);
+      if (isNaN(ms) || ms < 0) return 'just now';
+      const s = Math.floor(ms/1000);
+      if (s < 10) return 'just now';
+      if (s < 60) return s + 's ago';
+      const m = Math.floor(s/60);
+      if (m < 60) return m + 'm ago';
+      const h = Math.floor(m/60);
+      if (h < 24) return h + 'h ago';
+      return Math.floor(h/24) + 'd ago';
+    }
+    function _pbRenderBadge() {
+      const el = document.getElementById('pb-sync-badge');
+      if (!el) return;
+      const pb = pbSettings();
+      if (!pb.enabled) { el.style.display = 'none'; return; }
+      el.style.display = 'block';
+      const last = localStorage.getItem('pb_lastSync');
+      let label, color;
+      if (_pbStatus === 'syncing') { label = 'Syncing…'; color = '#F59E0B'; }
+      else if (_pbStatus === 'error') { label = 'Sync error' + (_pbStatusDetail ? ' (' + _pbStatusDetail + ')' : ''); color = '#EF4444'; }
+      else { label = 'Synced ' + _pbFmtAgo(last); color = '#10B981'; }
+      el.querySelector('.pb-sync-dot').style.background = color;
+      el.querySelector('.pb-sync-label').textContent = label;
+    }
+    // Keep relative time fresh even between sync runs
+    setInterval(_pbRenderBadge, 15000);
 
     function showToast(msg, type='info') {
       let t = document.getElementById('help-toast');
@@ -9073,6 +9268,9 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         document.getElementById('app').classList.remove('hidden');
         if (typeof updateDashboard === 'function') updateDashboard();
         if (typeof checkOnboarding === 'function') checkOnboarding();
+        // Resume cross-device sync on refresh so the badge updates and any
+        // edits made elsewhere flow in within the next 30s tick.
+        try { pbSyncAll(); startBackgroundSync(); _pbRenderBadge(); } catch(e) {}
       }
     }
 
@@ -9175,7 +9373,8 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
           errEl.style.display = 'none';
           document.getElementById('login-page').classList.add('hidden');
           document.getElementById('app').classList.remove('hidden');
-          await pbPull();
+          await pbSyncAll();
+          startBackgroundSync();
           if (typeof updateDashboard === 'function') updateDashboard();
           if (typeof checkOnboarding === 'function') checkOnboarding();
           setTimeout(checkModelHealth, 2000);
@@ -9198,7 +9397,8 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         errEl.style.display = 'none';
         document.getElementById('login-page').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
-        pbPull();
+        pbSyncAll();
+        startBackgroundSync();
         if (typeof updateDashboard === 'function') updateDashboard();
         if (typeof checkOnboarding === 'function') checkOnboarding();
         setTimeout(checkModelHealth, 2000);
@@ -9347,6 +9547,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
 
     function logout() {
       localStorage.removeItem('loggedIn');
+      stopBackgroundSync();
       document.getElementById('app').classList.add('hidden');
       document.getElementById('login-page').classList.remove('hidden');
       document.getElementById('password-input').value = '';
@@ -10262,7 +10463,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
   // Merged: both initReportsAutoSave AND populateReportClientDropdowns ran here.
   // Previously two separate `reports` keys silently overwrote each other, so
   // initReportsAutoSave never ran. Now both run on every reports-page navigation.
-  reports: () => { initReportsAutoSave(); populateReportClientDropdowns(); if (typeof renderReportsManuals === 'function') renderReportsManuals(); },
+  reports: () => { initReportsAutoSave(); populateReportClientDropdowns(); if (typeof renderReportsManuals === 'function') renderReportsManuals(); if (typeof renderReportsReports === 'function') renderReportsReports(); },
   'website-builder': () => { wbInit(); },
   booking: () => { renderBookingDashboard(); },
   'ai-projects': () => { renderAIProjectSkills(); },
@@ -10809,7 +11010,12 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         const enabled = !!(s.pbEnabled && s.pbUrl && s.pbEmail && s.pbPassword);
         const existing = document.getElementById('sync-status-banner');
         if (existing) existing.remove();
-        if (enabled) return;  // Healthy — no banner needed
+        if (enabled) {
+          // Banner used to push the page down with body padding; clear it
+          // when sync gets enabled so the layout doesn't keep the gap.
+          document.body.style.paddingTop = '';
+          return;
+        }
         const banner = document.createElement('div');
         banner.id = 'sync-status-banner';
         banner.style.cssText = 'position:fixed;top:' + (TENANT ? '32px' : '0') + ';left:0;right:0;z-index:99998;background:linear-gradient(90deg,#DC2626,#F59E0B);color:#fff;font-size:12px;font-weight:700;letter-spacing:0.3px;text-align:center;padding:8px 14px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer';
@@ -11904,6 +12110,37 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         '</div>';
       }).join('');
     }
+    // Render the Reports tab — single AI replies saved via the "🗂 Report" /
+    // "Open in Reports" buttons (meta.showAsReport). A SEPARATE bucket from the
+    // multi-section Manuals (meta.showInReports). Reuses the manual view /
+    // download / delete handlers since both live in the same businessFile array.
+    function renderReportsReports() {
+      const list = document.getElementById('reports-reports-list');
+      if (!list) return;
+      const all = getData('businessFile') || [];
+      const reports = all.filter(d => d && d.meta && d.meta.showAsReport);
+      if (!reports.length) {
+        list.innerHTML = '<div style="padding:36px 20px;text-align:center;color:#94A3B8;font-size:13px;background:#F8FAFC;border-radius:10px">No reports saved yet. In an AI specialist chat, click 🗂 Report to save a reply here.</div>';
+        return;
+      }
+      const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      list.innerHTML = reports.map(d => {
+        const date = d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : (d.date || '');
+        const size = d.content ? Math.round(d.content.length/1000) + 'KB' : '';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#fff;border:1px solid #E2E8F0;border-radius:10px;gap:12px;flex-wrap:wrap">' +
+          '<div style="flex:1;min-width:200px">' +
+            '<div style="font-weight:700;font-size:14px;color:#0F172A">📄 ' + esc(d.title || 'Untitled') + '</div>' +
+            '<div style="font-size:11px;color:#64748B;margin-top:2px">' + esc(d.type || '') + ' · ' + size + ' · ' + esc(date) + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+            '<button onclick="renderReportsManualView(\'' + d.id + '\')" style="padding:6px 12px;font-size:12px;background:#1E5BC0;color:#fff;border:none;border-radius:6px;cursor:pointer">View</button>' +
+            '<button onclick="renderReportsManualDownload(\'' + d.id + '\',\'doc\')" style="padding:6px 12px;font-size:12px;background:#fff;border:1px solid #CBD5E1;color:#475569;border-radius:6px;cursor:pointer">.doc</button>' +
+            '<button onclick="renderReportsManualDownload(\'' + d.id + '\',\'html\')" style="padding:6px 12px;font-size:12px;background:#fff;border:1px solid #CBD5E1;color:#475569;border-radius:6px;cursor:pointer">.html</button>' +
+            '<button onclick="renderReportsManualDelete(\'' + d.id + '\')" style="padding:6px 10px;font-size:12px;background:#fff;border:1px solid rgba(220,38,38,0.4);color:#dc2626;border-radius:6px;cursor:pointer">🗑</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
     function renderReportsManualView(id) {
       const d = (getData('businessFile') || []).find(x => x.id === id);
       if (!d) return;
@@ -11934,11 +12171,12 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
     function renderReportsManualDelete(id) {
-      if (!confirm('Delete this manual? It will be removed from Reports and Business File.')) return;
+      if (!confirm('Delete this document? It will be removed from Reports and Business File.')) return;
       const all = getData('businessFile') || [];
       setData('businessFile', all.filter(x => x.id !== id));
       renderReportsManuals();
-      showToast('Manual deleted', 'success');
+      if (typeof renderReportsReports === 'function') renderReportsReports();
+      showToast('Document deleted', 'success');
     }
 
     function saveToPersonalFile(opts) {
@@ -15862,6 +16100,11 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         // Push the full settings record (now including pb credentials) to PB
         // so future pbPull calls don't wipe them on other devices.
         try { await pbWrite('settings', s); } catch(e) {}
+        // Re-render the "CLOUD SYNC IS OFF" warning banner — it was painted at
+        // page load and won't notice that PB is now enabled until the next
+        // refresh otherwise. Same goes for the sidebar sync badge.
+        try { _renderSyncStatusBadge(); } catch(e) {}
+        try { startBackgroundSync(); pbSyncAll().then(()=>_pbRenderBadge()); } catch(e) {}
       } else {
         // Don't disable or wipe — just show error. Credentials stay in LS so
         // the user can fix one field (e.g. password) without re-entering all.
@@ -26752,6 +26995,7 @@ Current year: 2026.${_QUALITY}`
         <div style="padding:12px 14px;border-top:1px solid #E2E8F0;display:flex;gap:8px;background:#fff;flex-shrink:0;align-items:flex-end">
           <textarea id="proj-chat-input" style="flex:1;padding:10px 14px;border:1.5px solid #CBD5E1;border-radius:12px;font-size:14px;font-family:inherit;resize:none;height:44px;max-height:140px;outline:none;line-height:1.5;transition:border .2s;overflow:hidden" placeholder="Type your question and press Enter…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendProjectMsg()}" oninput="this.style.height='44px';this.style.height=Math.min(this.scrollHeight,140)+'px'"></textarea>
           <button onclick="genFullManual()" title="Generate a multi-section manual (outline → expand each section → auto-save to Reports)" style="background:#fff;color:${color};border:1.5px solid ${color};padding:0 14px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;height:44px;white-space:nowrap;flex-shrink:0">📚 Full Manual</button>
+          <button onclick="reportFromChat()" title="Save the AI's latest reply to Reports → Manuals" style="background:#fff;color:#1E5BC0;border:1.5px solid #1E5BC0;padding:0 14px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;height:44px;white-space:nowrap;flex-shrink:0">🗂 Report</button>
           <button onclick="sendProjectMsg()" style="background:${color};color:#fff;border:none;padding:0 22px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;height:44px;white-space:nowrap;flex-shrink:0">Send ↑</button>
         </div>
       </div>`;
@@ -26967,9 +27211,7 @@ Current year: 2026.${_QUALITY}`
       if (typeof saveToPersonalFile === 'function') saveToPersonalFile({ type: projName + ' Output', title: titleLine, content: replyText });
     }, '#8B5CF6'));
     bar.appendChild(mkBtn('📚 Open in Reports', () => {
-      // Save with showInReports flag and jump to the Reports page.
-      saveToBusinessFile({ type: projName + ' Manual', title: titleLine, content: _wrapManualHtml(titleLine, replyText), meta: { showInReports: true, source: projName }, skipPortalConfirm: true });
-      showPage('reports', null);
+      _openInReports(replyText, projName);
     }, '#1E5BC0'));
     bar.appendChild(mkBtn('⬇ Download .doc', () => _downloadDoc(titleLine, _wrapManualHtml(titleLine, replyText)), '#0F172A'));
     bar.appendChild(mkBtn('⬇ Download .html', () => _downloadHtml(titleLine, _wrapManualHtml(titleLine, replyText)), '#0F172A'));
@@ -27204,6 +27446,50 @@ Before you send your reply, verify:
   let _fmOutline = null;
   window._fmLast = null;
 
+  // ─── SAVE AS REPORT (shared) ─────────────────────────────────────────────
+  // Save a single chat reply to the Business File with the showAsReport flag,
+  // then open the Reports page AND force the Reports tab to the front. Reports
+  // are their OWN bucket, separate from multi-section "Full Manual" docs (which
+  // use showInReports → Manuals tab). Without the tab-activation step, a
+  // previously-viewed Reports tab stays on top and the freshly-saved item
+  // renders in a hidden panel — which looked like "open in reports isn't
+  // working." Shared by the per-reply button and the composer's "🗂 Report".
+  function _openInReports(text, projName) {
+    if (!text || !text.trim()) {
+      if (typeof showToast === 'function') showToast('Nothing to send to Reports yet', 'error');
+      return;
+    }
+    const name = projName || 'AI';
+    const titleLine = (text.split('\n').find(l => l.trim()) || 'AI Output').replace(/^#+\s*/, '').slice(0, 100);
+    saveToBusinessFile({
+      type: name + ' Report',
+      title: titleLine,
+      content: _wrapManualHtml(titleLine, text),
+      meta: { showAsReport: true, source: name },
+      skipPortalConfirm: true
+    });
+    showPage('reports', null);
+    // Force the Reports tab to the front (its onclick runs pTab + render).
+    setTimeout(() => {
+      const btn = document.getElementById('rtab-reports');
+      if (btn) btn.click();
+      else if (typeof renderReportsReports === 'function') renderReportsReports();
+    }, 30);
+  }
+
+  // Triggered by the "🗂 Report" button in the AI chat composer — saves the
+  // most recent AI reply to Reports → Manuals.
+  function reportFromChat() {
+    const last = _chatHistory && _chatHistory.slice().reverse()
+      .find(m => m && m.role === 'assistant' && m.content && m.content.trim());
+    if (!last) {
+      alert('Ask the AI something first — then click 🗂 Report to save its reply to Reports.');
+      return;
+    }
+    const projName = (typeof PROJECTS !== 'undefined' && PROJECTS[_chatProjectKey]) ? PROJECTS[_chatProjectKey].name : 'AI';
+    _openInReports(last.content, projName);
+  }
+
   // Explicit window exports — defense-in-depth so inline onclick handlers
   // always resolve even if the surrounding script context isn't pure global.
   async function genFullManual() {
@@ -27316,6 +27602,8 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
   // script load.
   try {
     window.genFullManual   = genFullManual;
+    window.reportFromChat  = reportFromChat;
+    window._openInReports  = _openInReports;
     window.fmAddSection    = fmAddSection;
     window.fmRemoveSection = fmRemoveSection;
     window.fmCancelOutline = fmCancelOutline;

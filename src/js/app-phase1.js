@@ -113,6 +113,7 @@
     function getData(key) { return JSON.parse(localStorage.getItem(key)) || []; }
     function setData(key, val) {
       localStorage.setItem(key, JSON.stringify(val));
+      _pbStampLocal(key); // mark local-newer for the conflict resolver
       pbWrite(key, val); // fire-and-forget PocketBase sync
       // When client-facing data changes, refresh per-client portal snapshots.
       if (key === 'clients' || key === 'settings' || key === 'stripeSettings') {
@@ -457,15 +458,192 @@
       if (!ok) pbQueueAdd(key, val);
     }
 
+    // ── Sync v2 (B + i): timestamps + background sync + newer-wins ──────────
+    // Every key in this list is what the cross-device sync considers part of
+    // the user's "data" — pulled on login, pushed on write, and resolved by
+    // timestamp during background sync. Add here when introducing a new key
+    // that needs to follow the user across devices.
+    const TRACKED_KEYS = [
+      'clients','ideas','revenue','settings','activity','events','calEvents',
+      'notes','sentEmails','businessFile','personalFiles','clientDocuments',
+      'wbBuilds','vibeProjects','bookingSettings','stripeSettings','aiProjects',
+      'myProfile','reportDrafts','clientFeedback'
+    ];
+
+    // pb_localTs: { [key]: ISO timestamp of last local write }. Used to decide
+    // whether local or remote is newer during pbSyncAll.
+    function _pbStampLocal(key) {
+      try {
+        const m = JSON.parse(localStorage.getItem('pb_localTs')) || {};
+        m[key] = new Date().toISOString();
+        localStorage.setItem('pb_localTs', JSON.stringify(m));
+      } catch(e) {}
+    }
+    function _pbGetLocalTs(key) {
+      try {
+        const m = JSON.parse(localStorage.getItem('pb_localTs')) || {};
+        return m[key] || null;
+      } catch(e) { return null; }
+    }
+
+    // Manual full push (used by Settings "Push all to PocketBase" button) —
+    // now iterates every tracked key, not just the legacy six.
     async function pbPushAll() {
-      // Push all current localStorage data to PocketBase (manual full sync)
-      const keys = ['clients','ideas','revenue','settings','activity','events'];
-      for (const k of keys) {
-        const v = JSON.parse(localStorage.getItem(k));
-        if (v !== null) await pbWrite(k, v);
+      for (const k of TRACKED_KEYS) {
+        const raw = localStorage.getItem(k);
+        if (raw === null) continue;
+        let v; try { v = JSON.parse(raw); } catch(e) { continue; }
+        if (v === null) continue;
+        await pbWrite(k, v);
       }
       showToast('All data pushed to PocketBase', 'success');
     }
+
+    // Bidirectional sync: for every tracked key, compare local timestamp vs
+    // PB record's `updated` field. Newer wins (rule "i" from the design pitch).
+    // Single-user app so true conflicts are rare; this just keeps two devices
+    // in step without ever silently demoting fresher edits.
+    let _pbSyncing = false;
+    async function pbSyncAll(opts) {
+      opts = opts || {};
+      const pb = pbSettings();
+      if (!pb.enabled) return false;
+      if (_pbSyncing) return false; // overlap guard for interval + manual
+      _pbSyncing = true;
+      _pbSetStatus('syncing');
+      try {
+        const token = await pbAuth();
+        if (!token) { _pbSetStatus('error', 'auth failed'); return false; }
+        await pbDrainQueue();
+        // Fetch all tenant records once
+        let url = pb.url + '/api/collections/store/records?perPage=500';
+        if (TENANT_PREFIX) url += '&filter=' + encodeURIComponent(`key~"${TENANT_PREFIX}"`);
+        const r = await fetch(url, { headers: {'Authorization': token} });
+        if (r.status === 401) { localStorage.removeItem('pb_token'); _pbSetStatus('error', 'auth lost'); return false; }
+        if (!r.ok) { _pbSetStatus('error', 'fetch ' + r.status); return false; }
+        const {items=[]} = await r.json();
+        const remoteByKey = {};
+        items.forEach(it => { if (it && it.key) remoteByKey[_pbStripPrefix(it.key)] = it; });
+
+        // Walk the union of tracked keys + anything remote has that we don't
+        const seen = new Set();
+        TRACKED_KEYS.forEach(k => seen.add(k));
+        Object.keys(remoteByKey).forEach(k => seen.add(k));
+
+        for (const key of seen) {
+          // Skip per-portal and per-calendar snapshot keys — those have their
+          // own push paths and aren't owner-edited locally.
+          if (key.startsWith('portal:') || key.startsWith('cal:')) continue;
+          const remote = remoteByKey[key];
+          const localRaw = localStorage.getItem(key);
+          const localTs = _pbGetLocalTs(key);
+          const remoteTs = remote && remote.updated ? remote.updated : null;
+
+          if (!remote && localRaw !== null) {
+            // Remote missing → push local up
+            try { await pbWrite(key, JSON.parse(localRaw)); } catch(e) {}
+            continue;
+          }
+          if (remote && localRaw === null) {
+            // Local missing → pull remote down
+            const v = typeof remote.value === 'string' ? remote.value : JSON.stringify(remote.value);
+            localStorage.setItem(key, v);
+            continue;
+          }
+          if (!remote && localRaw === null) continue;
+
+          // Both sides exist — newer wins by timestamp (rule "i").
+          // If we have no localTs (legacy data), treat remote as authoritative.
+          const localMs = localTs ? Date.parse(localTs) : 0;
+          const remoteMs = remoteTs ? Date.parse(remoteTs) : 0;
+          if (localMs > remoteMs + 500) {
+            // Local newer — push (with 500ms grace to avoid PB clock jitter)
+            try { await pbWrite(key, JSON.parse(localRaw)); } catch(e) {}
+          } else if (remoteMs > localMs) {
+            // Remote newer — pull, with the same settings-merge protection
+            // pbPull() uses so per-device PB creds aren't wiped.
+            if (key === 'settings' && typeof remote.value === 'object' && remote.value !== null) {
+              const local = (function(){ try { return JSON.parse(localRaw) || {}; } catch(e) { return {}; } })();
+              const protectedKeys = ['pbUrl','pbEmail','pbPassword','pbEnabled','pbAuthMode'];
+              const merged = {...remote.value};
+              protectedKeys.forEach(k => { if (local[k] !== undefined && local[k] !== '') merged[k] = local[k]; });
+              if (!merged.password && local.password) merged.password = local.password;
+              localStorage.setItem(key, JSON.stringify(merged));
+            } else {
+              const v = typeof remote.value === 'string' ? remote.value : JSON.stringify(remote.value);
+              localStorage.setItem(key, v);
+            }
+          }
+        }
+        localStorage.setItem('pb_lastSync', new Date().toISOString());
+        _pbSetStatus('ok');
+        if (opts.toast) showToast('Synced with PocketBase', 'success');
+        return true;
+      } catch(e) {
+        _pbSetStatus('error', (e && e.message) || 'network');
+        return false;
+      } finally {
+        _pbSyncing = false;
+      }
+    }
+
+    // Background sync — runs every 30s while the app is open and a tab is
+    // visible. Cleared on logout / refresh. Skips when the tab is hidden so
+    // we don't burn cycles on a background tab.
+    let _pbSyncTimer = null;
+    function startBackgroundSync() {
+      if (_pbSyncTimer) return;
+      _pbSyncTimer = setInterval(() => {
+        if (document.hidden) return;
+        const pb = pbSettings();
+        if (!pb.enabled) return;
+        pbSyncAll();
+      }, 30000);
+    }
+    function stopBackgroundSync() {
+      if (_pbSyncTimer) { clearInterval(_pbSyncTimer); _pbSyncTimer = null; }
+    }
+    function syncNow() { pbSyncAll({ toast: true }).then(() => _pbRenderBadge()); }
+
+    // Sidebar badge: shows "Synced 2m ago" / "Syncing…" / "Sync error" with a
+    // manual Sync now button. Re-rendered every 15s so the relative time stays
+    // fresh without needing a sync to fire.
+    let _pbStatus = 'idle';
+    let _pbStatusDetail = '';
+    function _pbSetStatus(s, detail) {
+      _pbStatus = s;
+      _pbStatusDetail = detail || '';
+      _pbRenderBadge();
+    }
+    function _pbFmtAgo(iso) {
+      if (!iso) return 'never';
+      const ms = Date.now() - Date.parse(iso);
+      if (isNaN(ms) || ms < 0) return 'just now';
+      const s = Math.floor(ms/1000);
+      if (s < 10) return 'just now';
+      if (s < 60) return s + 's ago';
+      const m = Math.floor(s/60);
+      if (m < 60) return m + 'm ago';
+      const h = Math.floor(m/60);
+      if (h < 24) return h + 'h ago';
+      return Math.floor(h/24) + 'd ago';
+    }
+    function _pbRenderBadge() {
+      const el = document.getElementById('pb-sync-badge');
+      if (!el) return;
+      const pb = pbSettings();
+      if (!pb.enabled) { el.style.display = 'none'; return; }
+      el.style.display = 'block';
+      const last = localStorage.getItem('pb_lastSync');
+      let label, color;
+      if (_pbStatus === 'syncing') { label = 'Syncing…'; color = '#F59E0B'; }
+      else if (_pbStatus === 'error') { label = 'Sync error' + (_pbStatusDetail ? ' (' + _pbStatusDetail + ')' : ''); color = '#EF4444'; }
+      else { label = 'Synced ' + _pbFmtAgo(last); color = '#10B981'; }
+      el.querySelector('.pb-sync-dot').style.background = color;
+      el.querySelector('.pb-sync-label').textContent = label;
+    }
+    // Keep relative time fresh even between sync runs
+    setInterval(_pbRenderBadge, 15000);
 
     function showToast(msg, type='info') {
       let t = document.getElementById('help-toast');
@@ -632,6 +810,9 @@
         document.getElementById('app').classList.remove('hidden');
         if (typeof updateDashboard === 'function') updateDashboard();
         if (typeof checkOnboarding === 'function') checkOnboarding();
+        // Resume cross-device sync on refresh so the badge updates and any
+        // edits made elsewhere flow in within the next 30s tick.
+        try { pbSyncAll(); startBackgroundSync(); _pbRenderBadge(); } catch(e) {}
       }
     }
 
@@ -734,7 +915,8 @@
           errEl.style.display = 'none';
           document.getElementById('login-page').classList.add('hidden');
           document.getElementById('app').classList.remove('hidden');
-          await pbPull();
+          await pbSyncAll();
+          startBackgroundSync();
           if (typeof updateDashboard === 'function') updateDashboard();
           if (typeof checkOnboarding === 'function') checkOnboarding();
           setTimeout(checkModelHealth, 2000);
@@ -757,7 +939,8 @@
         errEl.style.display = 'none';
         document.getElementById('login-page').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
-        pbPull();
+        pbSyncAll();
+        startBackgroundSync();
         if (typeof updateDashboard === 'function') updateDashboard();
         if (typeof checkOnboarding === 'function') checkOnboarding();
         setTimeout(checkModelHealth, 2000);
@@ -906,6 +1089,7 @@
 
     function logout() {
       localStorage.removeItem('loggedIn');
+      stopBackgroundSync();
       document.getElementById('app').classList.add('hidden');
       document.getElementById('login-page').classList.remove('hidden');
       document.getElementById('password-input').value = '';
@@ -1821,7 +2005,7 @@
   // Merged: both initReportsAutoSave AND populateReportClientDropdowns ran here.
   // Previously two separate `reports` keys silently overwrote each other, so
   // initReportsAutoSave never ran. Now both run on every reports-page navigation.
-  reports: () => { initReportsAutoSave(); populateReportClientDropdowns(); if (typeof renderReportsManuals === 'function') renderReportsManuals(); },
+  reports: () => { initReportsAutoSave(); populateReportClientDropdowns(); if (typeof renderReportsManuals === 'function') renderReportsManuals(); if (typeof renderReportsReports === 'function') renderReportsReports(); },
   'website-builder': () => { wbInit(); },
   booking: () => { renderBookingDashboard(); },
   'ai-projects': () => { renderAIProjectSkills(); },
@@ -2368,7 +2552,12 @@
         const enabled = !!(s.pbEnabled && s.pbUrl && s.pbEmail && s.pbPassword);
         const existing = document.getElementById('sync-status-banner');
         if (existing) existing.remove();
-        if (enabled) return;  // Healthy — no banner needed
+        if (enabled) {
+          // Banner used to push the page down with body padding; clear it
+          // when sync gets enabled so the layout doesn't keep the gap.
+          document.body.style.paddingTop = '';
+          return;
+        }
         const banner = document.createElement('div');
         banner.id = 'sync-status-banner';
         banner.style.cssText = 'position:fixed;top:' + (TENANT ? '32px' : '0') + ';left:0;right:0;z-index:99998;background:linear-gradient(90deg,#DC2626,#F59E0B);color:#fff;font-size:12px;font-weight:700;letter-spacing:0.3px;text-align:center;padding:8px 14px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer';
@@ -3463,6 +3652,37 @@
         '</div>';
       }).join('');
     }
+    // Render the Reports tab — single AI replies saved via the "🗂 Report" /
+    // "Open in Reports" buttons (meta.showAsReport). A SEPARATE bucket from the
+    // multi-section Manuals (meta.showInReports). Reuses the manual view /
+    // download / delete handlers since both live in the same businessFile array.
+    function renderReportsReports() {
+      const list = document.getElementById('reports-reports-list');
+      if (!list) return;
+      const all = getData('businessFile') || [];
+      const reports = all.filter(d => d && d.meta && d.meta.showAsReport);
+      if (!reports.length) {
+        list.innerHTML = '<div style="padding:36px 20px;text-align:center;color:#94A3B8;font-size:13px;background:#F8FAFC;border-radius:10px">No reports saved yet. In an AI specialist chat, click 🗂 Report to save a reply here.</div>';
+        return;
+      }
+      const esc = s => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      list.innerHTML = reports.map(d => {
+        const date = d.createdAt ? new Date(d.createdAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : (d.date || '');
+        const size = d.content ? Math.round(d.content.length/1000) + 'KB' : '';
+        return '<div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:#fff;border:1px solid #E2E8F0;border-radius:10px;gap:12px;flex-wrap:wrap">' +
+          '<div style="flex:1;min-width:200px">' +
+            '<div style="font-weight:700;font-size:14px;color:#0F172A">📄 ' + esc(d.title || 'Untitled') + '</div>' +
+            '<div style="font-size:11px;color:#64748B;margin-top:2px">' + esc(d.type || '') + ' · ' + size + ' · ' + esc(date) + '</div>' +
+          '</div>' +
+          '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+            '<button onclick="renderReportsManualView(\'' + d.id + '\')" style="padding:6px 12px;font-size:12px;background:#1E5BC0;color:#fff;border:none;border-radius:6px;cursor:pointer">View</button>' +
+            '<button onclick="renderReportsManualDownload(\'' + d.id + '\',\'doc\')" style="padding:6px 12px;font-size:12px;background:#fff;border:1px solid #CBD5E1;color:#475569;border-radius:6px;cursor:pointer">.doc</button>' +
+            '<button onclick="renderReportsManualDownload(\'' + d.id + '\',\'html\')" style="padding:6px 12px;font-size:12px;background:#fff;border:1px solid #CBD5E1;color:#475569;border-radius:6px;cursor:pointer">.html</button>' +
+            '<button onclick="renderReportsManualDelete(\'' + d.id + '\')" style="padding:6px 10px;font-size:12px;background:#fff;border:1px solid rgba(220,38,38,0.4);color:#dc2626;border-radius:6px;cursor:pointer">🗑</button>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
     function renderReportsManualView(id) {
       const d = (getData('businessFile') || []).find(x => x.id === id);
       if (!d) return;
@@ -3493,11 +3713,12 @@
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
     function renderReportsManualDelete(id) {
-      if (!confirm('Delete this manual? It will be removed from Reports and Business File.')) return;
+      if (!confirm('Delete this document? It will be removed from Reports and Business File.')) return;
       const all = getData('businessFile') || [];
       setData('businessFile', all.filter(x => x.id !== id));
       renderReportsManuals();
-      showToast('Manual deleted', 'success');
+      if (typeof renderReportsReports === 'function') renderReportsReports();
+      showToast('Document deleted', 'success');
     }
 
     function saveToPersonalFile(opts) {
@@ -7421,6 +7642,11 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         // Push the full settings record (now including pb credentials) to PB
         // so future pbPull calls don't wipe them on other devices.
         try { await pbWrite('settings', s); } catch(e) {}
+        // Re-render the "CLOUD SYNC IS OFF" warning banner — it was painted at
+        // page load and won't notice that PB is now enabled until the next
+        // refresh otherwise. Same goes for the sidebar sync badge.
+        try { _renderSyncStatusBadge(); } catch(e) {}
+        try { startBackgroundSync(); pbSyncAll().then(()=>_pbRenderBadge()); } catch(e) {}
       } else {
         // Don't disable or wipe — just show error. Credentials stay in LS so
         // the user can fix one field (e.g. password) without re-entering all.

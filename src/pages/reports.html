@@ -7,6 +7,7 @@
         <div class="path-tabs-container">
           <div class="path-tabs-nav">
             <button class="path-tab active" onclick="pTab('reports','manuals',this);renderReportsManuals()">📚 Manuals</button>
+            <button class="path-tab" id="rtab-reports" onclick="pTab('reports','reports',this);renderReportsReports()">📄 Reports</button>
             <button class="path-tab" onclick="pTab('reports','proposal',this)">Proposal</button>
             <button class="path-tab" onclick="pTab('reports','contract',this)">Contract</button>
             <button class="path-tab" onclick="pTab('reports','receipt',this)">Receipt / Invoice</button>
@@ -23,6 +24,15 @@
               <h2 style="font-size:18px;font-weight:700;margin-bottom:6px">📚 Generated Manuals</h2>
               <p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">Documents auto-saved here by the AI Project Suite's <strong>📚 Full Manual</strong> button. Click any row to preview, download, or open in Business File.</p>
               <div id="reports-manuals-list" style="display:flex;flex-direction:column;gap:8px"></div>
+            </div>
+          </div>
+
+          <!-- REPORTS (saved from the AI Project Suite "🗂 Report" / "Open in Reports" buttons) -->
+          <div id="reports-tab-reports" class="path-tab-content">
+            <div class="card" style="margin-bottom:20px">
+              <h2 style="font-size:18px;font-weight:700;margin-bottom:6px">📄 Saved Reports</h2>
+              <p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">Single AI replies saved here by the AI Project Suite's <strong>🗂 Report</strong> button — a separate bucket from multi-section <strong>📚 Full Manual</strong> documents. Click any row to preview, download, or delete.</p>
+              <div id="reports-reports-list" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
           </div>
 

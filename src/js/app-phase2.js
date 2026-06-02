@@ -8295,6 +8295,7 @@ Current year: 2026.${_QUALITY}`
         <div style="padding:12px 14px;border-top:1px solid #E2E8F0;display:flex;gap:8px;background:#fff;flex-shrink:0;align-items:flex-end">
           <textarea id="proj-chat-input" style="flex:1;padding:10px 14px;border:1.5px solid #CBD5E1;border-radius:12px;font-size:14px;font-family:inherit;resize:none;height:44px;max-height:140px;outline:none;line-height:1.5;transition:border .2s;overflow:hidden" placeholder="Type your question and press Enter…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendProjectMsg()}" oninput="this.style.height='44px';this.style.height=Math.min(this.scrollHeight,140)+'px'"></textarea>
           <button onclick="genFullManual()" title="Generate a multi-section manual (outline → expand each section → auto-save to Reports)" style="background:#fff;color:${color};border:1.5px solid ${color};padding:0 14px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;height:44px;white-space:nowrap;flex-shrink:0">📚 Full Manual</button>
+          <button onclick="reportFromChat()" title="Save the AI's latest reply to Reports → Manuals" style="background:#fff;color:#1E5BC0;border:1.5px solid #1E5BC0;padding:0 14px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;height:44px;white-space:nowrap;flex-shrink:0">🗂 Report</button>
           <button onclick="sendProjectMsg()" style="background:${color};color:#fff;border:none;padding:0 22px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;height:44px;white-space:nowrap;flex-shrink:0">Send ↑</button>
         </div>
       </div>`;
@@ -8510,9 +8511,7 @@ Current year: 2026.${_QUALITY}`
       if (typeof saveToPersonalFile === 'function') saveToPersonalFile({ type: projName + ' Output', title: titleLine, content: replyText });
     }, '#8B5CF6'));
     bar.appendChild(mkBtn('📚 Open in Reports', () => {
-      // Save with showInReports flag and jump to the Reports page.
-      saveToBusinessFile({ type: projName + ' Manual', title: titleLine, content: _wrapManualHtml(titleLine, replyText), meta: { showInReports: true, source: projName }, skipPortalConfirm: true });
-      showPage('reports', null);
+      _openInReports(replyText, projName);
     }, '#1E5BC0'));
     bar.appendChild(mkBtn('⬇ Download .doc', () => _downloadDoc(titleLine, _wrapManualHtml(titleLine, replyText)), '#0F172A'));
     bar.appendChild(mkBtn('⬇ Download .html', () => _downloadHtml(titleLine, _wrapManualHtml(titleLine, replyText)), '#0F172A'));
@@ -8747,6 +8746,50 @@ Before you send your reply, verify:
   let _fmOutline = null;
   window._fmLast = null;
 
+  // ─── SAVE AS REPORT (shared) ─────────────────────────────────────────────
+  // Save a single chat reply to the Business File with the showAsReport flag,
+  // then open the Reports page AND force the Reports tab to the front. Reports
+  // are their OWN bucket, separate from multi-section "Full Manual" docs (which
+  // use showInReports → Manuals tab). Without the tab-activation step, a
+  // previously-viewed Reports tab stays on top and the freshly-saved item
+  // renders in a hidden panel — which looked like "open in reports isn't
+  // working." Shared by the per-reply button and the composer's "🗂 Report".
+  function _openInReports(text, projName) {
+    if (!text || !text.trim()) {
+      if (typeof showToast === 'function') showToast('Nothing to send to Reports yet', 'error');
+      return;
+    }
+    const name = projName || 'AI';
+    const titleLine = (text.split('\n').find(l => l.trim()) || 'AI Output').replace(/^#+\s*/, '').slice(0, 100);
+    saveToBusinessFile({
+      type: name + ' Report',
+      title: titleLine,
+      content: _wrapManualHtml(titleLine, text),
+      meta: { showAsReport: true, source: name },
+      skipPortalConfirm: true
+    });
+    showPage('reports', null);
+    // Force the Reports tab to the front (its onclick runs pTab + render).
+    setTimeout(() => {
+      const btn = document.getElementById('rtab-reports');
+      if (btn) btn.click();
+      else if (typeof renderReportsReports === 'function') renderReportsReports();
+    }, 30);
+  }
+
+  // Triggered by the "🗂 Report" button in the AI chat composer — saves the
+  // most recent AI reply to Reports → Manuals.
+  function reportFromChat() {
+    const last = _chatHistory && _chatHistory.slice().reverse()
+      .find(m => m && m.role === 'assistant' && m.content && m.content.trim());
+    if (!last) {
+      alert('Ask the AI something first — then click 🗂 Report to save its reply to Reports.');
+      return;
+    }
+    const projName = (typeof PROJECTS !== 'undefined' && PROJECTS[_chatProjectKey]) ? PROJECTS[_chatProjectKey].name : 'AI';
+    _openInReports(last.content, projName);
+  }
+
   // Explicit window exports — defense-in-depth so inline onclick handlers
   // always resolve even if the surrounding script context isn't pure global.
   async function genFullManual() {
@@ -8859,6 +8902,8 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
   // script load.
   try {
     window.genFullManual   = genFullManual;
+    window.reportFromChat  = reportFromChat;
+    window._openInReports  = _openInReports;
     window.fmAddSection    = fmAddSection;
     window.fmRemoveSection = fmRemoveSection;
     window.fmCancelOutline = fmCancelOutline;

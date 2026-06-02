@@ -37,3 +37,7 @@ node_modules/
 hts-log.txt
 hts-cache/
 web.goodnotes.com/
+
+# ── Local scratch / backup snapshots — keep locally, never push ──────
+backups/
+.video-work/

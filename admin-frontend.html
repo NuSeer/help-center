@@ -392,15 +392,17 @@ const DEFAULTS = {
   siteMockups: {
     sectionLabel:'Website Mockups',
     sectionTitle:'SEE WHAT WE BUILD',
-    sectionDesc:'A taste of the work we do for clients. Every site is custom — these are just examples.',
+    sectionDesc:'H.E.L.P. Center designs custom websites for churches, athletes, salons, restaurants, authors, boutiques, event organizers, and counseling services. Based in Henry County, GA (metro Atlanta) — serving clients nationwide.',
     cards:[
-      { category:'Restaurant / Food',    categoryColor:'#f97316', title:'Restaurant & Menu Site',   desc:'Warm, appetite-triggering design with menu sections, hours, and online ordering.', tags:['Menu Layout','Reservations','Mobile Ready'], videoUrl:'' },
-      { category:'E-Commerce / Retail',  categoryColor:'#f97316', title:'Online Store / Boutique',  desc:'Product grid, cart, featured collections and a streamlined checkout experience.',   tags:['Product Grid','Cart UI','Shopify Ready'], videoUrl:'' },
-      { category:'Salon / Booking',      categoryColor:'#a855f7', title:'Salon & Appointment Site', desc:'Services menu, staff profiles, and integrated online booking for beauty businesses.', tags:['Booking System','Service Menu','Gallery'], videoUrl:'' },
-      { category:'Athlete Stats',        categoryColor:'#22c55e', title:'Athlete Profile & Stats',  desc:'Dynamic stats dashboard, highlights reel, and recruitment profile for athletes.',   tags:['Stats Dashboard','Highlights','Recruiting'], videoUrl:'' },
-      { category:'Event Page',           categoryColor:'#C9A84C', title:'Event & Registration Site',desc:'Countdown timer, ticket registration, speaker lineup, and event schedule.',          tags:['Countdown','Registration','Schedule'], videoUrl:'' },
-      { category:'Author Page',          categoryColor:'#4A86DD', title:'Author & Book Site',       desc:'Book showcase, author bio, press kit, speaking engagements, and purchase links.',    tags:['Book Showcase','Press Kit','Speaking'], videoUrl:'' },
-      { category:'Church / Non-Profit',  categoryColor:'#22c55e', title:'Church & Ministry Site',   desc:'Service times, sermon archive, ministry pages, events calendar, and giving portal — everything a growing congregation needs online.', tags:['Sermon Archive','Events','Online Giving','Ministries'], videoUrl:'' }
+      { category:'Restaurant / Food',         categoryColor:'#f97316', title:'Restaurant & Menu Site',            desc:'Custom restaurant website with menu sections, online ordering, reservations, and hours — mobile-ready design for restaurants, food trucks, caterers, and cafes.', tags:['Menu Layout','Reservations','Mobile Ready','Online Ordering','Food Truck'], videoUrl:'' },
+      { category:'E-Commerce / Retail',        categoryColor:'#f97316', title:'Online Store / Boutique',           desc:'Custom e-commerce website with product grid, shopping cart, featured collections, and streamlined checkout — Shopify-ready for boutiques, retail stores, and online sellers.', tags:['Product Grid','Cart UI','Shopify Ready','Boutique','Merch Store'], videoUrl:'' },
+      { category:'Salon / Booking',            categoryColor:'#a855f7', title:'Salon & Appointment Site',          desc:'Custom salon website with online booking, staff profiles, service menu, and gallery — perfect for beauty businesses, hair salons, spas, and barbershops.', tags:['Booking System','Service Menu','Gallery','Beauty Business','Hair Salon'], videoUrl:'' },
+      { category:'Athlete Stats',              categoryColor:'#22c55e', title:'Athlete Profile & Stats',           desc:'Custom athlete website with a stats dashboard, highlights reel, and recruitment profile — built for high school, college, and pro athletes getting noticed by coaches and scouts.', tags:['Stats Dashboard','Highlights','Recruiting','High School Athletes','College Athletes'], videoUrl:'' },
+      { category:'Event Page',                 categoryColor:'#C9A84C', title:'Event & Registration Site',         desc:'Custom event website with countdown timer, ticket registration, speaker lineup, and schedule — great for conferences, summits, church events, and faith-based gatherings.', tags:['Countdown','Registration','Schedule','Conference','Faith Events'], videoUrl:'' },
+      { category:'Author Page',                categoryColor:'#4A86DD', title:'Author & Book Site',                desc:'Custom author website with book showcase, author bio, press kit, speaking engagements, and purchase links — perfect for authors, speakers, and faith-based leaders.', tags:['Book Showcase','Press Kit','Speaking','Author Bio','Faith Leaders'], videoUrl:'' },
+      { category:'Consulting / Business Dev',  categoryColor:'#1E5BC0', title:'Consulting & Business Development Site', desc:'Custom website for consultants, coaches, and business strategists — service packages, strategy-call booking, client roadmaps, and lead capture. H.E.L.P. Center also offers hands-on business development, consulting, and growth programs — not just the site.', tags:['Strategy Calls','Service Packages','Lead Capture','Coaching','Business Development'], videoUrl:'' },
+      { category:'Nonprofit / Outreach',       categoryColor:'#E11D48', title:'Nonprofit & Outreach Site',         desc:'Custom nonprofit website with online donations, impact stories, programs, events, and volunteer sign-up — built to connect donors to real outcomes and grow recurring giving for outreach centers and ministries.', tags:['Online Donations','Impact Stories','Programs','Events','Volunteers'], videoUrl:'' },
+      { category:'Church / Non-Profit',        categoryColor:'#22c55e', title:'Church & Ministry Site',            desc:'Custom church website with service times, sermon archive, ministry pages, events calendar, and online giving — built for COGIC, Baptist, Pentecostal, and non-denominational congregations nationwide.', tags:['Sermon Archive','Events','Online Giving','Ministries','COGIC','Newport News VA'], videoUrl:'' }
     ]
   },
   sitePrograms: [
@@ -449,6 +451,14 @@ function loadState(){
     if(def !== null && typeof def === 'object' && !Array.isArray(def)){
       state[k] = Object.assign(deepClone(def), state[k] || {});
     }
+  }
+  // Migrate a stale mockup card list: if the saved list length doesn't match
+  // the current default set (e.g. it was saved before new cards were added),
+  // reset to the up-to-date defaults so every card is editable here and stays
+  // aligned with the live page (which applies overrides by position).
+  if(state.siteMockups && Array.isArray(state.siteMockups.cards)
+     && state.siteMockups.cards.length !== DEFAULTS.siteMockups.cards.length){
+    state.siteMockups.cards = deepClone(DEFAULTS.siteMockups.cards);
   }
 }
 
@@ -762,7 +772,7 @@ function renderMockups(){
       <div class="field"><label>Tags</label>${tagsInput('siteMockupsCards', i, 'tags', c.tags||[])}</div>
       <div class="field">
         <label>Video preview</label>
-        <div id="mock-preview-${i}" style="aspect-ratio:16/10;background:var(--dark-2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;overflow:hidden">Loading current video…</div>
+        <div id="mock-preview-${i}" style="aspect-ratio:16/10;max-width:240px;background:var(--dark-2);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px;overflow:hidden">Loading current video…</div>
         <input type="text" oninput="updMock(${i},'videoUrl',this.value)" value="${escapeAttr(c.videoUrl||'')}" placeholder="Override video URL (leave blank to keep current)" style="margin-top:8px">
         <div class="hint">Leave blank to keep whatever's baked into <code>index.html</code>. Paste any mp4 URL to replace this card's video.</div>
       </div>

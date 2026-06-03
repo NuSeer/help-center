@@ -2809,7 +2809,7 @@ NEXT STEPS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 1. Review and approve this proposal
 2. Submit 50% deposit to begin
-3. Receive project intake form within 24 hours
+3. Receive project intake form within 48 hours
 4. Work begins upon deposit confirmation
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -3241,8 +3241,8 @@ function generateReportDoc(type) {
       : `Deposit: None due.\n\nFinal: Full amount due upon project delivery.\n\nPayment Methods Accepted: Credit Card · Zelle · PayPal · Venmo · CashApp · Cash`;
 
     const nextStepsBlock = hasDeposit
-      ? '1. Review and approve this proposal\n2. Submit deposit to begin\n3. Receive intake form within 24 hours\n4. Work begins upon deposit confirmation'
-      : '1. Review and approve this proposal\n2. Confirm approval to begin\n3. Receive intake form within 24 hours\n4. Work begins upon approval confirmation';
+      ? '1. Review and approve this proposal\n2. Submit deposit to begin\n3. Receive intake form within 48 hours\n4. Work begins upon deposit confirmation'
+      : '1. Review and approve this proposal\n2. Confirm approval to begin\n3. Receive intake form within 48 hours\n4. Work begins upon approval confirmation';
 
     content = `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ${_ownerBiz.toUpperCase()} — PROJECT PROPOSAL
@@ -8531,7 +8531,10 @@ Current year: 2026.${_QUALITY}`
       "<style>",
       "body{font-family:'Calibri','Inter',Arial,sans-serif;max-width:820px;margin:24px auto;padding:0 24px;color:#0F172A;line-height:1.6;font-size:13.5pt}",
       "h1{font-size:22pt;color:#0F172A;border-bottom:2px solid #1E5BC0;padding-bottom:6px;margin:24px 0 16px}",
-      "h2{font-size:17pt;color:#1E5BC0;margin:22px 0 10px}",
+      "h2{font-size:17pt;color:#1E5BC0;margin:22px 0 10px;page-break-before:always}",
+      "h2:first-of-type{page-break-before:avoid}",
+      "h1,h2,h3,h4{page-break-after:avoid}",
+      "tr,blockquote,pre{page-break-inside:avoid}",
       "h3{font-size:14pt;color:#0F172A;margin:18px 0 8px}",
       "h4{font-size:12pt;color:#475569;margin:14px 0 6px}",
       "p,ul,ol{margin:8px 0}",
@@ -8943,6 +8946,7 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
       msgs.scrollTop = msgs.scrollHeight;
 
       const sectionPrompt = 'You are writing section ' + (i+1) + ' of ' + outline.sections.length + ' for the manual "' + outline.title + '".\n\n' +
+        (outline.audience ? 'INTENDED AUDIENCE: ' + outline.audience + '\n\n' : '') +
         'FULL OUTLINE (for context only — DO NOT recap other sections):\n' + outlineList + '\n\n' +
         'WRITE ONLY THIS SECTION:\n## ' + s.title + (s.brief ? '\n_' + s.brief + '_' : '') + '\n\n' +
         'Requirements:\n' +
@@ -8951,6 +8955,7 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
         '- Do NOT include a table of contents, section number, or summary of other sections.\n' +
         '- Do NOT add "In conclusion" wrap-up paragraphs — that\'s the manual\'s job, not each section\'s.\n' +
         '- Be specific: real dollar amounts, real platforms, real timelines.\n' +
+        '- NEVER ask the reader a question or request clarification (e.g. about the audience). Make reasonable assumptions and write the complete section. Do NOT output any "clarifying question".\n' +
         '- Begin with the H2 header "## ' + s.title + '" and dive straight into substantive content.';
 
       let sectionText = '';
@@ -8960,7 +8965,8 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
         try {
           const { text } = await askAI({
             messages: [{role:'system', content: sysPrompt}, {role:'user', content: sectionPrompt}],
-            project: _chatProjectKey
+            project: _chatProjectKey,
+            maxTokens: 8192
           });
           sectionText = (typeof cleanGroqResponse === 'function' ? cleanGroqResponse(text) : text) || '';
         } catch (e) {

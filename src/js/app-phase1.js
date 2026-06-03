@@ -4139,6 +4139,11 @@
     ]);
     function _isFinancialDoc(t) { return _financialDocTypes.has(t || ''); }
     function _reportPalette(type) { return REPORT_PALETTES[type] || REPORT_DEFAULT_PALETTE; }
+    // Some docs (Full Manuals) are saved with content that is ALREADY a complete
+    // styled HTML document (from _wrapManualHtml). Those must be shown/printed as-is
+    // in an iframe — never re-run through the markdown renderer, which would escape
+    // every tag and surface the raw HTML/CSS as literal text.
+    function _isFullHtmlDoc(c) { return /^\s*(<!DOCTYPE html|<html[\s>])/i.test(c || ''); }
 
     function _mdInline(s) {
       s = String(s == null ? '' : s)
@@ -4305,9 +4310,11 @@
       // Receipt, Proposal, Contract...) keep the plain <pre> view because their
       // print flow depends on the raw ASCII line-item layout.
       const useStyled = !_isFinancialDoc(doc.type);
-      const bodyHtml = useStyled
-        ? renderReportHTML(doc)
-        : `<pre style="white-space:pre-wrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;line-height:1.7;background:#f9f9f9;padding:18px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.08);margin:0;color:#1a1a1a">${(doc.content||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`;
+      const bodyHtml = _isFullHtmlDoc(doc.content)
+        ? `<iframe srcdoc="${(doc.content||'').replace(/"/g,'&quot;')}" sandbox="allow-same-origin" style="width:100%;border:none;background:#fff;min-height:70vh;border-radius:8px"></iframe>`
+        : useStyled
+          ? renderReportHTML(doc)
+          : `<pre style="white-space:pre-wrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:13px;line-height:1.7;background:#f9f9f9;padding:18px;border-radius:8px;border:0.5px solid rgba(0,0,0,0.08);margin:0;color:#1a1a1a">${(doc.content||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`;
       modal.innerHTML = `
         <div class="modal-box" style="max-width:920px;max-height:92vh;display:flex;flex-direction:column">
           <div class="modal-header">
@@ -4345,7 +4352,7 @@
       // open in a styled print window. Invoices, contracts, etc. fall back to
       // printDoc which knows how to format line-item tables and signatures.
       if (!_isFinancialDoc(doc.type)) {
-        const html = renderReportHTML(doc, { standalone: true });
+        const html = _isFullHtmlDoc(doc.content) ? doc.content : renderReportHTML(doc, { standalone: true });
         const w = window.open('', '_blank', 'width=900,height=1000');
         if (!w) { showToast('Pop-up blocked — allow pop-ups to print', 'warn'); return; }
         w.document.write(html);
@@ -4393,7 +4400,7 @@
       const safeTitle = (doc.title || doc.type || 'document').replace(/[^a-zA-Z0-9_\-]/g, '_').slice(0, 60);
       const dateStr = new Date(doc.createdAt || Date.now()).toISOString().slice(0, 10);
       const styled = !_isFinancialDoc(doc.type);
-      const payload = styled ? renderReportHTML(doc, { standalone: true }) : (doc.content || '');
+      const payload = styled ? (_isFullHtmlDoc(doc.content) ? doc.content : renderReportHTML(doc, { standalone: true })) : (doc.content || '');
       const mime = styled ? 'text/html;charset=utf-8' : 'text/plain;charset=utf-8';
       const ext = styled ? 'html' : 'txt';
       const blob = new Blob([payload], { type: mime });

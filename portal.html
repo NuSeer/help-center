@@ -317,7 +317,7 @@ function render(snap){
       <button class="cta-btn" onclick="sendMessage()">Send Message →</button>
     </div>
 
-    ${(c.status || '').toLowerCase() === 'completed' ? `
+    ${['active','completed'].includes((c.status || '').toLowerCase()) ? `
     <div class="card">
       <h2>⭐ Leave a Review</h2>
       <p style="font-size:13px;color:#64748B;margin:-8px 0 14px">Loved working with ${esc(b.businessName || 'us')}? A few words goes a long way — and lets future leaders know what to expect.</p>

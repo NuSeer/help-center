@@ -812,6 +812,84 @@ app.post('/api/owner/contact', async (req, res) => {
   res.json({ ok: true, emailed: true });
 });
 
+// POST /api/owner/review - public review submission from review.html (no auth).
+// Stores the review as pending AND emails the owner a JSON blob to paste into
+// the Frontend Manager -> Reviews. Mirrors the portal review flow + /api/owner/contact.
+app.post('/api/owner/review', async (req, res) => {
+  const { name, businessName, websiteUrl, rating, text } = req.body || {};
+  const rate = Math.max(1, Math.min(5, parseInt(rating, 10) || 0));
+  if (!name || !text || !rate) {
+    return res.status(400).json({ error: 'name, rating, and review text are required' });
+  }
+
+  const record = {
+    id: 'rev-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    name, businessName: businessName || '', rating: rate, text,
+    websiteUrl: websiteUrl || '', graphicUrl: '',
+    approved: false, submittedAt: new Date().toISOString(), source: 'website'
+  };
+  try {
+    const key = 'website-reviews';
+    const existing = _pbGet(key) || { reviews: [] };
+    if (!Array.isArray(existing.reviews)) existing.reviews = [];
+    existing.reviews.unshift(record);
+    existing.reviews = existing.reviews.slice(0, 500);
+    _pbUpsert(key, existing);
+  } catch (e) { console.error('[review store]', e.message); }
+
+  const ownerEmail = process.env.RESEND_FROM_EMAIL || 'joy@thehelpctr.com';
+  const escH = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const stars = '★'.repeat(rate) + '☆'.repeat(5 - rate);
+  const reviewJson = JSON.stringify(record);
+
+  const html =
+    '<div style="font-family:Helvetica,Arial,sans-serif;background:#F1F5F9;padding:20px">' +
+      '<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(15,23,42,0.08)">' +
+        '<div style="background:linear-gradient(135deg,#0F172A,#16A34A);padding:22px;color:#fff">' +
+          '<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.8">New Website Review</div>' +
+          '<div style="font-size:22px;font-weight:700;margin-top:6px;color:#FFC107;letter-spacing:4px">' + stars + '</div>' +
+          '<div style="font-size:18px;font-weight:700;margin-top:4px">' + escH(name) + (businessName ? ' <span style="font-weight:400;opacity:0.85">— ' + escH(businessName) + '</span>' : '') + '</div>' +
+        '</div>' +
+        '<div style="padding:24px;color:#1F2937;font-size:15px;line-height:1.7">' +
+          '<div style="font-style:italic;background:#F8FAFC;border-left:3px solid #16A34A;padding:12px 16px;border-radius:0 8px 8px 0;white-space:pre-wrap">' + escH(text) + '</div>' +
+          (websiteUrl ? '<div style="margin-top:16px;font-size:14px"><strong>Their website:</strong> <a href="' + escH(websiteUrl) + '" style="color:#1E5BC0">' + escH(websiteUrl) + '</a></div>' : '') +
+          '<div style="margin-top:24px;padding:14px;background:#FFF7ED;border:1px solid #FED7AA;border-radius:8px;font-size:12px;color:#475569">' +
+            '<strong style="color:#9A3412">To publish this review:</strong> open the Frontend Manager &rarr; Reviews &rarr; <strong>+ Add review</strong> (rating ' + rate + ', name "' + escH(name) + '"), or paste this JSON into your reviews list:' +
+            '<pre style="background:#0F172A;color:#E2E8F0;padding:10px;border-radius:6px;margin-top:8px;overflow-x:auto;font-size:11px;white-space:pre-wrap;word-break:break-all">' + escH(reviewJson) + '</pre>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[review] No Resend key; review stored but no email sent');
+    return res.json({ ok: true, emailed: false });
+  }
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + process.env.RESEND_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'H.E.L.P. Center <' + ownerEmail + '>',
+        to: [ownerEmail],
+        subject: '⭐ New review from ' + name + (businessName ? ' · ' + businessName : ''),
+        html
+      })
+    });
+    if (!r.ok) {
+      const d = await r.json().catch(() => ({}));
+      const msg = (d && (d.message || d.error)) || ('Resend HTTP ' + r.status);
+      console.error('[review resend]', msg);
+      return res.json({ ok: true, emailed: false, emailError: String(msg) });
+    }
+  } catch (e) {
+    console.error('[review send]', e.message);
+    return res.json({ ok: true, emailed: false, emailError: e.message });
+  }
+
+  res.json({ ok: true, emailed: true });
+});
+
 // POST /api/owner/invoice/send - persist invoice in portal-extras + email client with Stripe pay link
 app.post('/api/owner/invoice/send', async (req, res) => {
   if (!_verifyOwner(req)) return res.status(401).json({ error: 'Invalid owner password' });

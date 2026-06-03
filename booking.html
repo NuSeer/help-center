@@ -49,8 +49,8 @@ body{font-family:'DM Sans',-apple-system,system-ui,sans-serif;background:#F1F5F9
 
   <div class="brand-bar">
     <div class="biz">H.E.L.P. Center</div>
-    <h1>Schedule a Call</h1>
-    <div class="sub">Request a time below — Joy will reach out within 24 hours to confirm.</div>
+    <h1>Ready to Get Started?</h1>
+    <div class="sub">Request a time below and let's plan your next steps — Joy will reach out within 48 hours to confirm.</div>
   </div>
 
   <div class="card" id="form-card">
@@ -74,13 +74,11 @@ body{font-family:'DM Sans',-apple-system,system-ui,sans-serif;background:#F1F5F9
       <label>What's this about?</label>
       <select id="bk-service">
         <option value="">— Choose one —</option>
-        <option>General consultation</option>
         <option>Website project</option>
         <option>Business consulting</option>
         <option>Credit / financing question</option>
         <option>Programs &amp; courses</option>
         <option>Existing client check-in</option>
-        <option>Other (describe below)</option>
       </select>
     </div>
 
@@ -116,7 +114,7 @@ body{font-family:'DM Sans',-apple-system,system-ui,sans-serif;background:#F1F5F9
   <div class="card done" id="done-card">
     <div class="ico">✓</div>
     <h2>Request sent</h2>
-    <p>Joy received your booking request and will email you within 24 hours to confirm or suggest another time.</p>
+    <p>Joy received your booking request and will email you within 48 hours to confirm or suggest another time.</p>
     <div class="sum" id="done-summary"></div>
   </div>
 
@@ -128,11 +126,15 @@ body{font-family:'DM Sans',-apple-system,system-ui,sans-serif;background:#F1F5F9
 const API = location.origin + '/api';
 const token = new URLSearchParams(location.search).get('u') || '';
 
-// Default the date picker to "tomorrow" so the past doesn't show as the default
+// Joy needs ~48 hours to respond and confirm, so the earliest bookable date is
+// 2 days out — no booking for tomorrow. (Today the 2nd → earliest the 4th.)
 (function initDate(){
-  const d = new Date(); d.setDate(d.getDate() + 1);
-  document.getElementById('bk-date').value = d.toISOString().slice(0, 10);
-  document.getElementById('bk-date').min = new Date().toISOString().slice(0, 10);
+  const LEAD_DAYS = 2;
+  const earliest = new Date(); earliest.setDate(earliest.getDate() + LEAD_DAYS);
+  const iso = earliest.toISOString().slice(0, 10);
+  const el = document.getElementById('bk-date');
+  el.value = iso;   // default to the earliest allowed day
+  el.min = iso;     // block anything sooner than 48h out
 })();
 
 function esc(s){ return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }

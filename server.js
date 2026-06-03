@@ -518,7 +518,7 @@ app.post('/api/owner/booking/list', (req, res) => {
 
 // POST /api/owner/booking/update - mark a request as accepted/declined/done
 // Body: { password, requestId, status }
-app.post('/api/owner/booking/update', (req, res) => {
+app.post('/api/owner/booking/update', async (req, res) => {
   if (!_verifyOwner(req)) return res.status(401).json({ error: 'Invalid owner password' });
   const { requestId, status } = req.body || {};
   if (!requestId || !status) return res.status(400).json({ error: 'requestId and status are required' });
@@ -528,7 +528,75 @@ app.post('/api/owner/booking/update', (req, res) => {
   rec.requests[idx].status = status;
   rec.requests[idx].handledAt = new Date().toISOString();
   _pbUpsert('booking-requests', rec);
-  res.json({ ok: true, request: rec.requests[idx] });
+
+  // Auto-notify the client on confirm/decline so they always hear back, even
+  // when the owner doesn't write a detailed personal reply. Best-effort: a
+  // failure here never fails the status update. Other statuses don't email.
+  let emailed = false;
+  const bk = rec.requests[idx];
+  const notify = (status === 'confirmed' || status === 'declined');
+  if (notify && bk.email && process.env.RESEND_API_KEY && /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(bk.email)) {
+    const ownerEmail = process.env.RESEND_FROM_EMAIL || 'joy@thehelpctr.com';
+    const ownerName = process.env.RESEND_FROM_NAME || 'Joy Watford';
+    const escH = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const dateLabel = bk.date ? new Date(bk.date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }) : '';
+    const bookingUrl = 'https://thehelpctr.com/booking.html';
+
+    let subject, headline, bodyHtml;
+    if (status === 'confirmed') {
+      subject = 'Your booking is confirmed — H.E.L.P. Center';
+      headline = "You're confirmed! 🎉";
+      bodyHtml =
+        '<p style="margin:0 0 14px">Hi ' + escH(bk.name) + ',</p>' +
+        '<p style="margin:0 0 14px">Good news — ' + escH(ownerName) + ' confirmed your time. We look forward to speaking with you!</p>' +
+        '<div style="padding:14px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;font-size:14px;color:#475569">' +
+          '<strong style="color:#0F172A">Your confirmed time</strong><br>' +
+          escH(dateLabel) + (bk.time ? '<br>' + escH(bk.time) : '') +
+          (bk.service ? '<br>About: ' + escH(bk.service) : '') +
+        '</div>' +
+        '<p style="margin:16px 0 0;font-size:13px;color:#64748B">Need to reschedule? Just reply to this email.</p>';
+    } else {
+      subject = 'About your booking request — H.E.L.P. Center';
+      headline = 'About your requested time';
+      bodyHtml =
+        '<p style="margin:0 0 14px">Hi ' + escH(bk.name) + ',</p>' +
+        '<p style="margin:0 0 14px">Thanks so much for reaching out. Unfortunately we\'re not able to confirm the time you requested' + (dateLabel ? ' (' + escH(dateLabel) + (bk.time ? ', ' + escH(bk.time) : '') + ')' : '') + '.</p>' +
+        '<p style="margin:0 0 14px">We\'d still love to connect — please pick another time that works for you:</p>' +
+        '<p style="margin:0 0 14px"><a href="' + bookingUrl + '" style="display:inline-block;background:#1E5BC0;color:#fff;text-decoration:none;font-weight:700;padding:11px 20px;border-radius:8px;font-size:14px">Choose another time →</a></p>' +
+        '<p style="margin:16px 0 0;font-size:13px;color:#64748B">Or just reply to this email and we\'ll find something that fits.</p>';
+    }
+
+    const html =
+      '<div style="font-family:Helvetica,Arial,sans-serif;background:#F1F5F9;padding:24px">' +
+        '<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(15,23,42,0.08)">' +
+          '<div style="background:linear-gradient(135deg,#0F172A,#1e3a5f);padding:22px;color:#fff">' +
+            '<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.75">H.E.L.P. Center</div>' +
+            '<div style="font-size:20px;font-weight:700;margin-top:4px">' + headline + '</div>' +
+          '</div>' +
+          '<div style="padding:24px;color:#1F2937;font-size:15px;line-height:1.7">' + bodyHtml + '</div>' +
+        '</div>' +
+      '</div>';
+
+    try {
+      const r = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + process.env.RESEND_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: 'H.E.L.P. Center <' + ownerEmail + '>',
+          to: [bk.email],
+          subject,
+          html,
+          reply_to: [ownerName + ' <' + ownerEmail + '>']
+        })
+      });
+      emailed = r.ok;
+      if (!r.ok) { const d = await r.json().catch(() => ({})); console.error('[booking/update notify]', (d && (d.message || d.error)) || ('HTTP ' + r.status)); }
+    } catch (e) {
+      console.error('[booking/update notify send]', e.message);
+    }
+  }
+
+  res.json({ ok: true, request: rec.requests[idx], emailed });
 });
 
 // POST /api/owner/booking/request - public booking-request from booking.html (no auth)
@@ -614,6 +682,130 @@ app.post('/api/owner/booking/request', async (req, res) => {
     }
   } catch (e) {
     console.error('[booking/request send]', e.message);
+    return res.json({ ok: true, emailed: false, emailError: e.message });
+  }
+
+  // Send the requester a confirmation copy of their booking request. Best-effort:
+  // a failure here doesn't fail the request (the owner email already went out).
+  try {
+    const confHtml =
+      '<div style="font-family:Helvetica,Arial,sans-serif;background:#F1F5F9;padding:24px">' +
+        '<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(15,23,42,0.08)">' +
+          '<div style="background:linear-gradient(135deg,#0F172A,#1e3a5f);padding:22px;color:#fff">' +
+            '<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.75">H.E.L.P. Center</div>' +
+            '<div style="font-size:20px;font-weight:700;margin-top:4px">We received your request</div>' +
+          '</div>' +
+          '<div style="padding:24px;color:#1F2937;font-size:15px;line-height:1.7">' +
+            '<p style="margin:0 0 14px">Hi ' + escH(name) + ',</p>' +
+            '<p style="margin:0 0 14px">Thanks for reaching out to H.E.L.P. Center! We received your request and ' + escH(ownerName) + ' will be in touch within <strong>48 hours</strong> to confirm your time or suggest another.</p>' +
+            '<div style="padding:14px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;font-size:14px;color:#475569">' +
+              '<strong style="color:#0F172A">Your requested time</strong><br>' +
+              escH(dateLabel) + '<br>' + escH(time) +
+              (service ? '<br>About: ' + escH(service) : '') +
+            '</div>' +
+            '<p style="margin:16px 0 0;font-size:13px;color:#64748B">Need to change something? Just reply to this email.</p>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
+    await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + process.env.RESEND_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'H.E.L.P. Center <' + ownerEmail + '>',
+        to: [email],
+        subject: 'We received your booking request — H.E.L.P. Center',
+        html: confHtml,
+        reply_to: [ownerName + ' <' + ownerEmail + '>']
+      })
+    });
+  } catch (e) {
+    console.error('[booking/request confirm]', e.message);
+  }
+
+  res.json({ ok: true, emailed: true });
+});
+
+// POST /api/owner/contact - public "more information" inquiry from the main
+// site contact form (no auth). Stores the lead AND emails the owner. Mirrors
+// /api/owner/booking/request. This is the low-commitment front door; the
+// booking flow (booking.html) is the "let's establish business" path.
+app.post('/api/owner/contact', async (req, res) => {
+  const { name, email, phone, service, message } = req.body || {};
+  if (!name || !email) {
+    return res.status(400).json({ error: 'name and email are required' });
+  }
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    return res.status(400).json({ error: 'invalid email' });
+  }
+
+  // Store the lead (append-only) so nothing is lost even if email fails.
+  const leadRecord = {
+    id: 'lead-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    name, email, phone: phone || '', service: service || '', message: message || '',
+    source: 'Website Contact Form',
+    receivedAt: new Date().toISOString(),
+    status: 'new'
+  };
+  try {
+    const key = 'website-leads';
+    const existing = _pbGet(key) || { leads: [] };
+    if (!Array.isArray(existing.leads)) existing.leads = [];
+    existing.leads.unshift(leadRecord); // newest first
+    existing.leads = existing.leads.slice(0, 500); // cap log size
+    _pbUpsert(key, existing);
+  } catch (e) {
+    console.error('[contact store]', e.message);
+    // Continue and email even if store failed
+  }
+
+  // Email the owner
+  const ownerEmail = process.env.RESEND_FROM_EMAIL || 'joy@thehelpctr.com';
+  const escH = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  const html =
+    '<div style="font-family:Helvetica,Arial,sans-serif;background:#F1F5F9;padding:24px">' +
+      '<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(15,23,42,0.08)">' +
+        '<div style="background:linear-gradient(135deg,#0F172A,#1e3a5f);padding:22px;color:#fff">' +
+          '<div style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase;opacity:0.75">H.E.L.P. Center</div>' +
+          '<div style="font-size:20px;font-weight:700;margin-top:4px">New website inquiry</div>' +
+        '</div>' +
+        '<div style="padding:24px;color:#1F2937;font-size:15px;line-height:1.7">' +
+          '<table style="width:100%;border-collapse:collapse">' +
+            '<tr><td style="padding:8px 0;font-weight:700;width:120px;color:#64748B;font-size:13px">Name</td><td style="padding:8px 0">' + escH(name) + '</td></tr>' +
+            '<tr><td style="padding:8px 0;font-weight:700;color:#64748B;font-size:13px">Email</td><td style="padding:8px 0"><a href="mailto:' + escH(email) + '" style="color:#1E5BC0">' + escH(email) + '</a></td></tr>' +
+            (phone ? '<tr><td style="padding:8px 0;font-weight:700;color:#64748B;font-size:13px">Phone</td><td style="padding:8px 0">' + escH(phone) + '</td></tr>' : '') +
+            (service ? '<tr><td style="padding:8px 0;font-weight:700;color:#64748B;font-size:13px">Service</td><td style="padding:8px 0">' + escH(service) + '</td></tr>' : '') +
+          '</table>' +
+          (message ? '<div style="margin-top:18px;padding:14px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:8px;font-size:13.5px;color:#475569"><strong style="color:#0F172A">Message from ' + escH(name) + ':</strong><br>' + escH(message).replace(/\n/g, '<br>') + '</div>' : '') +
+          '<div style="margin-top:24px;font-size:13px;color:#64748B">Reply directly to this email to respond to ' + escH(name) + '.</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  if (!process.env.RESEND_API_KEY) {
+    console.warn('[contact] No Resend key; lead stored but no email sent');
+    return res.json({ ok: true, emailed: false });
+  }
+  try {
+    const r = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + process.env.RESEND_API_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: 'H.E.L.P. Center <' + ownerEmail + '>',
+        to: [ownerEmail],
+        subject: 'New website inquiry from ' + name + (service ? ' - ' + service : ''),
+        html,
+        reply_to: [name + ' <' + email + '>']
+      })
+    });
+    if (!r.ok) {
+      const data = await r.json().catch(() => ({}));
+      const msg = (data && (data.message || data.error || data.name)) || ('Resend HTTP ' + r.status);
+      console.error('[contact resend]', msg);
+      return res.json({ ok: true, emailed: false, emailError: String(msg) });
+    }
+  } catch (e) {
+    console.error('[contact send]', e.message);
     return res.json({ ok: true, emailed: false, emailError: e.message });
   }
 

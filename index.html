@@ -1575,46 +1575,20 @@ footer ul li a:hover { color: white; }
       <div class="section-lbl">Let's Talk</div>
       <h3>LET'S BUILD<br>YOUR <span class="g">VISION</span><br><span class="o">TOGETHER!</span></h3>
       <p id="contact-desc">
-        Real solutions. Real support. Real results. Tell us what you need and we'll respond within 24 hours.
+        Real solutions. Real support. Real results. Tell us what you need and we'll respond within 48 hours.
       </p>
       <p style="font-size:13.5px;color:var(--muted);margin:-4px 0 18px">
         <strong style="color:#fff">Already worked with us?</strong> <a href="mailto:joy@thehelpctr.com?subject=I'd%20like%20to%20leave%20a%20review&body=Hi%20Joy%2C%20I%20worked%20with%20H.E.L.P.%20Center%20and%20want%20to%20leave%20a%20review.%20Please%20send%20me%20my%20portal%20link." style="color:var(--brand-green-lt);font-weight:700;text-decoration:none">Leave a review →</a>
       </p>
-
-      <div class="contact-detail">
-        <div class="cd-icon" style="background:rgba(30,91,192,0.15);">📧</div>
-        <div>
-          <div class="cd-label">Email</div>
-          <div class="cd-value" id="contact-email">info@thehelpctr.com</div>
-        </div>
-      </div>
-      <div class="contact-detail">
-        <div class="cd-icon" style="background:rgba(22,163,74,0.15);">📱</div>
-        <div>
-          <div class="cd-label">Phone / Text</div>
-          <div class="cd-value" id="contact-phone">(904) 555-0100</div>
-        </div>
-      </div>
-      <div class="contact-detail">
-        <div class="cd-icon" style="background:rgba(249,115,22,0.15);">📍</div>
-        <div>
-          <div class="cd-label">Location</div>
-          <div class="cd-value" id="contact-location"></div>
-        </div>
-      </div>
-      <div class="contact-detail">
-        <div class="cd-icon" style="background:rgba(201,168,76,0.15);">🕐</div>
-        <div>
-          <div class="cd-label">Hours</div>
-          <div class="cd-value" id="contact-hours">Mon–Fri, 9AM–6PM EST</div>
-        </div>
-      </div>
+      <p style="font-size:13.5px;color:var(--muted);margin:-4px 0 18px">
+        <strong style="color:#fff">Ready to do business?</strong> <a href="booking.html" style="color:var(--brand-orange);font-weight:700;text-decoration:none">Book a call →</a> and we'll plan your next steps together.
+      </p>
     </div>
 
     <div class="contact-form">
       <div style="margin-bottom:22px;">
         <h4 style="font-size:18px;font-weight:700;color:white;margin-bottom:6px;">Get Started Today</h4>
-        <p style="font-size:13px;color:var(--muted);">Fill out the form and we'll reach out within 24 hours.</p>
+        <p style="font-size:13px;color:var(--muted);">Fill out the form and we'll reach out within 48 hours.</p>
       </div>
 
       <div class="form-row">
@@ -1648,7 +1622,7 @@ footer ul li a:hover { color: white; }
       <button class="form-submit" onclick="submitContactForm()">Send Message →</button>
 
       <div class="form-success" id="form-success">
-        ✅ Message sent! We'll be in touch within 24 hours.
+        ✅ Message sent! We'll be in touch within 48 hours.
       </div>
     </div>
   </div>
@@ -1693,7 +1667,7 @@ footer ul li a:hover { color: white; }
       <h5>Company</h5>
       <ul>
         <li><a href="#contact">Contact Us</a></li>
-        <li><a href="#contact">Book a Call</a></li>
+        <li><a href="booking.html">Book a Call</a></li>
       </ul>
     </div>
   </div>
@@ -1760,7 +1734,7 @@ function saveLeadToAdmin(data) {
 }
 
 // ─── CONTACT FORM SUBMIT ─────────────────────────────────────────────────────
-function submitContactForm() {
+async function submitContactForm() {
   const name    = document.getElementById('cf-name').value.trim();
   const email   = document.getElementById('cf-email').value.trim();
   const phone   = document.getElementById('cf-phone').value.trim();
@@ -1774,15 +1748,36 @@ function submitContactForm() {
     showToast('Please enter a valid email address.'); return;
   }
 
+  // Local mirror — if this site and the admin dashboard share a browser
+  // (same origin), the lead also shows in the dashboard's Leads list.
   saveLeadToAdmin({ name, email, phone, service, message });
+
+  const btn = document.querySelector('#contact .form-submit');
+  const orig = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+
+  // Send to the backend so Joy actually gets an email (joy@thehelpctr.com).
+  try {
+    const r = await fetch(location.origin + '/api/owner/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone, service, message })
+    });
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || ('HTTP ' + r.status)); }
+  } catch (e) {
+    if (btn) { btn.disabled = false; btn.textContent = orig || 'Send Message →'; }
+    showToast('Couldn\'t send just now — please email joy@thehelpctr.com directly.');
+    return;
+  }
 
   document.getElementById('form-success').style.display = 'block';
   ['cf-name','cf-email','cf-phone','cf-message'].forEach(id => {
     document.getElementById(id).value = '';
   });
   document.getElementById('cf-service').value = '';
+  if (btn) { btn.disabled = false; btn.textContent = orig || 'Send Message →'; }
 
-  showToast('✅ Message received! We\'ll be in touch within 24 hours.');
+  showToast('✅ Message sent! We\'ll be in touch within 48 hours.');
 }
 
 // ─── TOAST ───────────────────────────────────────────────────────────────────

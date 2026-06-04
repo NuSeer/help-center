@@ -7944,14 +7944,14 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
               <div class="card">
                 <h3 style="font-size:16px;font-weight:700;margin-bottom:16px">Invoice / Receipt Details</h3>
-                <div class="form-group"><label class="form-label">Select Client (optional)</label><select id="inv-client-select" class="form-input" style="margin:0" onchange="fillReportClient('inv')"><option value="">— Select a client —</option></select></div>
+                <div class="form-group"><label class="form-label">Select Client (optional)</label><select id="inv-client-select" class="form-input" style="margin:0" onchange="fillReportClient('inv');genInvoiceNumber()"><option value="">— Select a client —</option></select></div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
                   <div class="form-group"><label class="form-label">Client Name</label><input id="inv-client" class="form-input" style="margin:0" placeholder="Client name"></div>
                   <div class="form-group"><label class="form-label">Client Email</label><input id="inv-email" class="form-input" style="margin:0" placeholder="email@example.com"></div>
                 </div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
                   <div class="form-group"><label class="form-label">Invoice #</label><input id="inv-number" class="form-input" style="margin:0" placeholder="INV-001"></div>
-                  <div class="form-group"><label class="form-label">Invoice Date</label><input id="inv-date" type="date" class="form-input" style="margin:0"></div>
+                  <div class="form-group"><label class="form-label">Invoice Date</label><input id="inv-date" type="date" class="form-input" style="margin:0" onchange="genInvoiceNumber()"></div>
                 </div>
                 <div class="form-group"><label class="form-label">Due Date</label><input id="inv-due" type="date" class="form-input" style="margin:0"></div>
                 <div style="margin:12px 0 6px;font-size:13px;font-weight:700">Line Items</div>
@@ -24275,6 +24275,36 @@ async function sendForSignature(previewId, docType) {
 // ── END EMAIL / E-SIGN ─────────────────────────────────────────────────────
 
 // ── REPORTS: CLIENT DROPDOWNS & AUTO-FILL ──────────────────────────────────
+
+// Auto-build the invoice number: [4-letter prefix][YYYYMMDD].
+// Prefix = first 4 letters of the business name, else first-2 of first name +
+// first-2 of last name. Date from the Invoice Date field (defaults to today).
+function genInvoiceNumber() {
+  const dateVal = document.getElementById('inv-date')?.value || new Date().toISOString().slice(0, 10);
+  const ymd = dateVal.replace(/-/g, '');
+  let biz = '', name = '';
+  const sel = document.getElementById('inv-client-select');
+  if (sel && sel.value) {
+    const c = (getData('clients') || []).find(cl => cl.id === sel.value);
+    if (c) { biz = c.businessName || ''; name = c.name || ''; }
+  }
+  if (!biz && !name) {
+    const typed = (document.getElementById('inv-client')?.value || '').trim();
+    if (typed.includes(' — ')) { const p = typed.split(' — '); name = p[0]; biz = p[1] || ''; }
+    else name = typed;
+  }
+  const clean = s => (s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  let prefix = '';
+  if (clean(biz)) {
+    prefix = clean(biz).slice(0, 4);
+  } else if (clean(name)) {
+    const w = name.trim().split(/\s+/);
+    prefix = (clean(w[0]).slice(0, 2) + clean(w[1] || w[0]).slice(0, 2)).slice(0, 4);
+  }
+  if (!prefix) prefix = 'INV';
+  const el = document.getElementById('inv-number');
+  if (el) el.value = prefix + ymd;
+}
 
 function populateReportClientDropdowns() {
   const clients = getData('clients') || [];

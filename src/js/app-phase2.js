@@ -5364,6 +5364,36 @@ async function sendForSignature(previewId, docType) {
 
 // ── REPORTS: CLIENT DROPDOWNS & AUTO-FILL ──────────────────────────────────
 
+// Auto-build the invoice number: [4-letter prefix][YYYYMMDD].
+// Prefix = first 4 letters of the business name, else first-2 of first name +
+// first-2 of last name. Date from the Invoice Date field (defaults to today).
+function genInvoiceNumber() {
+  const dateVal = document.getElementById('inv-date')?.value || new Date().toISOString().slice(0, 10);
+  const ymd = dateVal.replace(/-/g, '');
+  let biz = '', name = '';
+  const sel = document.getElementById('inv-client-select');
+  if (sel && sel.value) {
+    const c = (getData('clients') || []).find(cl => cl.id === sel.value);
+    if (c) { biz = c.businessName || ''; name = c.name || ''; }
+  }
+  if (!biz && !name) {
+    const typed = (document.getElementById('inv-client')?.value || '').trim();
+    if (typed.includes(' — ')) { const p = typed.split(' — '); name = p[0]; biz = p[1] || ''; }
+    else name = typed;
+  }
+  const clean = s => (s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  let prefix = '';
+  if (clean(biz)) {
+    prefix = clean(biz).slice(0, 4);
+  } else if (clean(name)) {
+    const w = name.trim().split(/\s+/);
+    prefix = (clean(w[0]).slice(0, 2) + clean(w[1] || w[0]).slice(0, 2)).slice(0, 4);
+  }
+  if (!prefix) prefix = 'INV';
+  const el = document.getElementById('inv-number');
+  if (el) el.value = prefix + ymd;
+}
+
 function populateReportClientDropdowns() {
   const clients = getData('clients') || [];
   const opts = '<option value="">— Select a client —</option>' +

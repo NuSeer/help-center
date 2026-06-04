@@ -5572,7 +5572,7 @@
       }
     }
 
-    const CLIENT_SERVICES = ['Website Design','Ecommerce Website','Business Dashboard & Page','Domain','Website Hosting','Church Website Maintenance','Monthly Website Maintenance','SEO & Digital Marketing','Social Media Management','Promotional Materials','Consulting','Business Formation','Credit Repair Coaching','Grant Writing','Program Development','Nonprofit Formation','Bookkeeping','Other (custom)'];
+    const CLIENT_SERVICES = ['Website Design','Ecommerce Website','Business Dashboard & Page','Domain','Website Hosting','Church Website Maintenance','Monthly Website Maintenance','SEO & Digital Marketing','Social Media Management','Promotional Materials','Athlete NIL Branding','Consulting','Business Formation','Credit Repair Coaching','Grant Writing','Program Development','Nonprofit Formation','Bookkeeping','Other (custom)'];
 
     function cfServiceRowHTML(svc, price, idx, billingType, paidBy, description) {
       const bt = billingType || 'flat';
@@ -5689,6 +5689,7 @@
     function cfSvcChange(sel, idx) {
       const customEl = document.querySelector(`.cf-svc-custom[data-idx="${idx}"]`);
       if (customEl) customEl.style.display = sel.value === 'Other (custom)' ? 'block' : 'none';
+      cfCheckAthlete();
     }
 
     function cfAddSvc() {
@@ -5698,6 +5699,7 @@
       const div = document.createElement('div');
       div.innerHTML = cfServiceRowHTML('Website Design', 0, idx, 'flat', '', '');
       container.appendChild(div.firstChild);
+      cfCheckAthlete();
     }
 
     function cfRemoveSvc(idx) {
@@ -5706,6 +5708,37 @@
       if (row && container && container.children.length > 1) row.remove();
       else showToast('At least one service is required');
       cfUpdateTotal();
+      cfCheckAthlete();
+    }
+
+    // Reveal the Athlete's Name field whenever any service row is "Athlete NIL Branding".
+    function cfCheckAthlete() {
+      const has = [...document.querySelectorAll('.cf-svc-select')].some(s => s.value === 'Athlete NIL Branding');
+      const wrap = document.getElementById('cf-athlete-wrap');
+      if (wrap) wrap.style.display = has ? 'block' : 'none';
+    }
+
+    // Additional people (more than one contact) on a client.
+    function cfPersonRowHTML(name, contact, idx) {
+      const esc = v => (v || '').replace(/"/g, '&quot;');
+      return `<div class="cf-person-row" id="cf-person-row-${idx}" style="display:grid;grid-template-columns:1fr 1fr auto;gap:8px;margin-bottom:8px">
+        <input type="text" class="form-input cf-person-name" style="margin:0" placeholder="Name" value="${esc(name)}">
+        <input type="text" class="form-input cf-person-contact" style="margin:0" placeholder="Email or phone" value="${esc(contact)}">
+        <button type="button" onclick="document.getElementById('cf-person-row-${idx}').remove()" style="background:none;border:none;cursor:pointer;color:var(--gray-400);font-size:20px;line-height:1;padding:4px" title="Remove">×</button>
+      </div>`;
+    }
+    function cfAddPerson(name, contact) {
+      const list = document.getElementById('cf-people-list');
+      if (!list) return;
+      const div = document.createElement('div');
+      div.innerHTML = cfPersonRowHTML(name || '', contact || '', Date.now() + '' + Math.floor(Math.random() * 1000));
+      list.appendChild(div.firstChild);
+    }
+    function cfGetPeople() {
+      return [...document.querySelectorAll('.cf-person-row')].map(r => ({
+        name: r.querySelector('.cf-person-name')?.value.trim() || '',
+        contact: r.querySelector('.cf-person-contact')?.value.trim() || ''
+      })).filter(p => p.name || p.contact);
     }
 
     function cfUpdateTotal() {
@@ -5750,6 +5783,8 @@
       const existingServices = client?.services?.length
         ? client.services.map(s => ({ ...s, paidBy: s.paidBy ?? '' }))
         : (client?.service ? [{ name: client.service, price: client?.price||0, billingType:'flat', paidBy:'' }] : [{ name:'Website Design', price:250, billingType:'flat', paidBy:'' }]);
+      const showAthlete = existingServices.some(s => s.name === 'Athlete NIL Branding') || !!client?.athleteName;
+      const people = client?.additionalContacts || [];
       return `
         <div class="form-row">
           <div class="form-group"><label class="form-label">Status <span style="color:#999;font-weight:400">(Lead = not a paying client yet)</span></label>
@@ -5760,7 +5795,7 @@
         <div class="form-row">
           <div class="form-group"><label class="form-label">Full Name *</label>
             <input type="text" id="cf-name" class="form-input" style="margin:0" value="${client?.name||''}" placeholder="Full Name"></div>
-          <div class="form-group"><label class="form-label">Business Name</label>
+          <div class="form-group"><label class="form-label">Business Name <span style="color:#999;font-weight:400">(optional)</span></label>
             <input type="text" id="cf-biz" class="form-input" style="margin:0" value="${client?.businessName||''}" placeholder="Business Name"></div>
         </div>
         <div class="form-row">
@@ -5768,6 +5803,16 @@
             <input type="email" id="cf-email" class="form-input" style="margin:0" value="${client?.email||''}" placeholder="email@example.com"></div>
           <div class="form-group"><label class="form-label">Phone</label>
             <input type="tel" id="cf-phone" class="form-input" style="margin:0" value="${client?.phone||''}" placeholder="(000) 000-0000"></div>
+        </div>
+
+        <div class="form-group" style="margin-bottom:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <label class="form-label" style="margin:0">Additional People <span style="color:#999;font-weight:400">(optional — extra contacts on this client)</span></label>
+            <button type="button" onclick="cfAddPerson()" style="background:none;border:1px solid var(--brand-primary);color:var(--brand-primary);border-radius:6px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer">+ Add Person</button>
+          </div>
+          <div id="cf-people-list">
+            ${people.map((p,i)=>cfPersonRowHTML(p.name, p.contact, 'init'+i)).join('')}
+          </div>
         </div>
 
         <div class="form-group" id="cf-services-wrap" style="margin-bottom:6px">
@@ -5788,6 +5833,11 @@
               <span style="font-size:13px;font-weight:700;color:#0F172A">Total: <span id="cf-total-display">$${Math.max(0, existingServices.filter(s=>s.paidBy!=='client').reduce((a,s)=>a+(s.price||0),0) - existingServices.filter(s=>s.paidBy==='client').reduce((a,s)=>a+(s.price||0),0)).toLocaleString('en-US',{minimumFractionDigits:2})}</span></span>
             </div>
           </div>
+        </div>
+
+        <div class="form-group" id="cf-athlete-wrap" style="display:${showAthlete?'block':'none'};margin-bottom:6px">
+          <label class="form-label">Athlete's Name <span style="color:#999;font-weight:400">(for NIL branding)</span></label>
+          <input type="text" id="cf-athlete" class="form-input" style="margin:0" value="${(client?.athleteName||'').replace(/"/g,'&quot;')}" placeholder="Athlete's full name">
         </div>
 
         <div class="form-group"><label class="form-label">Project Description <span style="color:#999;font-weight:400">(used on proposals)</span></label>
@@ -5848,7 +5898,9 @@
         projectDescription: document.getElementById('cf-project-desc')?.value.trim() || '',
         timeline: document.getElementById('cf-timeline')?.value.trim() || '',
         depositRequired: !!document.getElementById('cf-deposit-required')?.checked,
-        depositAmount: document.getElementById('cf-deposit-amount')?.value.trim() || ''
+        depositAmount: document.getElementById('cf-deposit-amount')?.value.trim() || '',
+        athleteName: document.getElementById('cf-athlete')?.value.trim() || '',
+        additionalContacts: (typeof cfGetPeople === 'function' ? cfGetPeople() : [])
       };
       const clients = getData('clients');
       let revenue = getData('revenue');

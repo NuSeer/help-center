@@ -61,6 +61,33 @@
         const m = document.getElementById('hc-manifest'); if (m) m.href = URL.createObjectURL(blob);
       } catch (e) { console.warn('[PWA] icon/manifest setup skipped:', e && e.message); }
     })();
+    // 👁 Reveal toggle on every password field (login, settings, API keys) so you
+    // can verify what you typed. Auto-wires existing + any dynamically-rendered fields.
+    (function(){
+      function wireEyes(){
+        document.querySelectorAll('input[type="password"]').forEach(function(inp){
+          if (inp.dataset.eyeWired) return;
+          inp.dataset.eyeWired = '1';
+          var wrap = document.createElement('span');
+          wrap.style.cssText = 'position:relative;display:block';
+          if (!inp.parentNode) return;
+          inp.parentNode.insertBefore(wrap, inp); wrap.appendChild(inp);
+          inp.style.paddingRight = '40px';
+          var btn = document.createElement('button');
+          btn.type = 'button'; btn.textContent = '👁';
+          btn.setAttribute('aria-label','Show or hide password'); btn.title = 'Show / hide';
+          btn.style.cssText = 'position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;opacity:0.55;padding:2px;line-height:1;z-index:3';
+          btn.addEventListener('click', function(){
+            var showing = inp.type === 'text';
+            inp.type = showing ? 'password' : 'text';
+            btn.style.opacity = showing ? '0.55' : '1';
+          });
+          wrap.appendChild(btn);
+        });
+      }
+      function start(){ try { wireEyes(); new MutationObserver(wireEyes).observe(document.body, {childList:true, subtree:true}); } catch(e){} }
+      if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+    })();
     // Theme bootstrap (must run before paint)
     (function(){var t=localStorage.getItem('hc-theme')||'light';document.documentElement.setAttribute('data-theme',t);})();
     // One-time AI model migration: bump default-Llama users to GPT OSS 120B

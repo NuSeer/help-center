@@ -10111,7 +10111,22 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       const ownerName = (remoteBranding && remoteBranding.ownerName) || settings.name || DEFAULT_SETTINGS.name;
       const initials = (client.name||'?').split(/\s+/).map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'C';
       const deliverables = client.deliverables || [];
-      const messages = (client.messages||[]).slice().sort((a,b) => (a.timestamp||'').localeCompare(b.timestamp||''));
+      // Merge in client messages sent through portal.html (stored server-side as
+      // portal-msgs:<token> and synced down), so portal replies show in the thread
+      // — not just in email/push. Owner side reads its synced localStorage; remote
+      // client view reads the snapshot copy if present.
+      const _portalMsgs = (function(){
+        try {
+          const tok = client.portalToken || '';
+          const rec = window._portalRemote
+            ? (window._portalRemote.portalMsgs || null)
+            : JSON.parse(localStorage.getItem('portal-msgs:' + tok) || '{}');
+          const arr = rec && Array.isArray(rec.msgs) ? rec.msgs : [];
+          return arr.map(m => ({ from: 'client', message: m.message, timestamp: m.at, fromPortal: true }));
+        } catch (e) { return []; }
+      })();
+      const messages = (client.messages||[]).concat(_portalMsgs)
+        .slice().sort((a,b) => (a.timestamp||'').localeCompare(b.timestamp||''));
       const docs = window._portalRemote ? (window._portalRemote.documents||[]) : getDocsForClient(client.id);
       const unsignedDocs = docs.filter(d => d.status !== 'signed').length;
       const status = client.status || 'Active';

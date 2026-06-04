@@ -9132,6 +9132,87 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
     }
     function syncNow() { pbSyncAll({ toast: true }).then(() => _pbRenderBadge()); }
 
+    // ── Calendar reminders (Tier A — in-app) ───────────────────────────────
+    // While the dashboard is open, every 30s we check calEvents and fire a
+    // sound + browser notification + toast a set lead time before each timed
+    // event. Background/app-closed push (Tier B) is a separate future build.
+    let _reminderTimer = null;
+    const _firedReminders = new Set();   // event ids already alerted this session
+    let _remAudioCtx = null;
+    // Audio needs a user gesture to be allowed to play later from a timer, so we
+    // unlock a shared AudioContext on the first interaction after login.
+    function _unlockReminderAudio() {
+      try {
+        const C = window.AudioContext || window.webkitAudioContext;
+        if (!C) return;
+        if (!_remAudioCtx) _remAudioCtx = new C();
+        if (_remAudioCtx.state === 'suspended') _remAudioCtx.resume();
+      } catch (e) {}
+    }
+    function _reminderLeadMin() {
+      const s = JSON.parse(localStorage.getItem('settings') || '{}');
+      const n = parseInt(s.reminderLeadMin, 10);
+      return (isNaN(n) || n < 0) ? 15 : n;
+    }
+    function _playReminderChime() {
+      try {
+        _unlockReminderAudio();
+        const ctx = _remAudioCtx;
+        if (!ctx) return;
+        const beep = (freq, start, dur) => {
+          const o = ctx.createOscillator(), g = ctx.createGain();
+          o.type = 'sine'; o.frequency.value = freq;
+          o.connect(g); g.connect(ctx.destination);
+          g.gain.setValueAtTime(0.0001, ctx.currentTime + start);
+          g.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + start + 0.02);
+          g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + start + dur);
+          o.start(ctx.currentTime + start); o.stop(ctx.currentTime + start + dur + 0.02);
+        };
+        beep(880, 0, 0.18); beep(1175, 0.22, 0.28); // pleasant two-tone chime
+      } catch (e) {}
+    }
+    function _fireReminder(ev, minsAway) {
+      _playReminderChime();
+      const when = minsAway <= 0 ? 'now' : ('in ' + minsAway + ' min');
+      const timeLabel = ev.time ? (typeof formatTime === 'function' ? formatTime(ev.time) : ev.time) : '';
+      const title = '⏰ ' + (ev.title || 'Event') + ' — ' + when;
+      const body = timeLabel ? ('Scheduled for ' + timeLabel) : '';
+      try {
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification(title, { body: body, tag: 'cal-' + ev.id });
+        }
+      } catch (e) {}
+      if (typeof showToast === 'function') showToast(title + (body ? ' · ' + body : ''), 'info');
+    }
+    function checkReminders() {
+      try {
+        if (typeof getEvents !== 'function') return;
+        const lead = _reminderLeadMin();
+        const now = Date.now();
+        getEvents().forEach(ev => {
+          if (!ev || !ev.date || !ev.time || _firedReminders.has(ev.id)) return;
+          const hhmm = (ev.time.length === 5 ? ev.time : '00:00');
+          const t = new Date(ev.date + 'T' + hhmm + ':00').getTime();
+          if (isNaN(t)) return;
+          const minsAway = Math.round((t - now) / 60000);
+          if (minsAway <= lead && minsAway >= -1) {   // within lead window, not long past
+            _firedReminders.add(ev.id);
+            _fireReminder(ev, Math.max(0, minsAway));
+          }
+        });
+      } catch (e) {}
+    }
+    function startReminders() {
+      if (_reminderTimer) return;
+      try { if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission(); } catch (e) {}
+      ['click', 'keydown', 'touchstart'].forEach(evt => document.addEventListener(evt, _unlockReminderAudio, { once: true }));
+      checkReminders();
+      _reminderTimer = setInterval(() => { if (!document.hidden) checkReminders(); }, 30000);
+    }
+    function stopReminders() {
+      if (_reminderTimer) { clearInterval(_reminderTimer); _reminderTimer = null; }
+    }
+
     // Sidebar badge: shows "Synced 2m ago" / "Syncing…" / "Sync error" with a
     // manual Sync now button. Re-rendered every 15s so the relative time stays
     // fresh without needing a sync to fire.
@@ -9339,7 +9420,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         if (typeof checkOnboarding === 'function') checkOnboarding();
         // Resume cross-device sync on refresh so the badge updates and any
         // edits made elsewhere flow in within the next 30s tick.
-        try { pbSyncAll(); startBackgroundSync(); _pbRenderBadge(); } catch(e) {}
+        try { pbSyncAll(); startBackgroundSync(); startReminders(); _pbRenderBadge(); } catch(e) {}
       }
     }
 
@@ -9443,7 +9524,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
           document.getElementById('login-page').classList.add('hidden');
           document.getElementById('app').classList.remove('hidden');
           await pbSyncAll();
-          startBackgroundSync();
+          startBackgroundSync(); startReminders();
           if (typeof updateDashboard === 'function') updateDashboard();
           if (typeof checkOnboarding === 'function') checkOnboarding();
           setTimeout(checkModelHealth, 2000);
@@ -9467,7 +9548,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         document.getElementById('login-page').classList.add('hidden');
         document.getElementById('app').classList.remove('hidden');
         pbSyncAll();
-        startBackgroundSync();
+        startBackgroundSync(); startReminders();
         if (typeof updateDashboard === 'function') updateDashboard();
         if (typeof checkOnboarding === 'function') checkOnboarding();
         setTimeout(checkModelHealth, 2000);
@@ -9616,7 +9697,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
 
     function logout() {
       localStorage.removeItem('loggedIn');
-      stopBackgroundSync();
+      stopBackgroundSync(); stopReminders();
       document.getElementById('app').classList.add('hidden');
       document.getElementById('login-page').classList.remove('hidden');
       document.getElementById('password-input').value = '';
@@ -16226,7 +16307,7 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         // page load and won't notice that PB is now enabled until the next
         // refresh otherwise. Same goes for the sidebar sync badge.
         try { _renderSyncStatusBadge(); } catch(e) {}
-        try { startBackgroundSync(); pbSyncAll().then(()=>_pbRenderBadge()); } catch(e) {}
+        try { startBackgroundSync(); startReminders(); pbSyncAll().then(()=>_pbRenderBadge()); } catch(e) {}
       } else {
         // Don't disable or wipe — just show error. Credentials stay in LS so
         // the user can fix one field (e.g. password) without re-entering all.

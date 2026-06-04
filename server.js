@@ -6,6 +6,13 @@ require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
 const fetch   = (...a) => import('node-fetch').then(({default:f}) => f(...a));
+const webpush = require('web-push');
+try {
+  if (process.env.VAPID_PUBLIC && process.env.VAPID_PRIVATE) {
+    webpush.setVapidDetails(process.env.VAPID_SUBJECT || 'mailto:joy@thehelpctr.com', process.env.VAPID_PUBLIC, process.env.VAPID_PRIVATE);
+    console.log('[push] VAPID configured');
+  } else { console.warn('[push] VAPID keys missing — push disabled'); }
+} catch (e) { console.error('[push] VAPID setup failed:', e.message); }
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -888,6 +895,51 @@ app.post('/api/owner/review', async (req, res) => {
   }
 
   res.json({ ok: true, emailed: true });
+});
+
+// ─── WEB PUSH NOTIFICATIONS ───────────────────────────────────────────────
+// Browser push subscriptions stored in PB ('push-subscriptions'). Reusable:
+// any feature can call _sendPushAll({title, body, url}) to alert all devices.
+function _pushRec() { const r = _pbGet('push-subscriptions') || { subs: [] }; if (!Array.isArray(r.subs)) r.subs = []; return r; }
+async function _sendPushAll(payload) {
+  if (!process.env.VAPID_PUBLIC) return { sent: 0, removed: 0, error: 'no VAPID' };
+  const rec = _pushRec();
+  const body = JSON.stringify(payload || {});
+  let sent = 0; const dead = [];
+  for (const s of rec.subs) {
+    try { await webpush.sendNotification(s.sub, body); sent++; }
+    catch (e) {
+      if (e && (e.statusCode === 404 || e.statusCode === 410)) dead.push(s.id);
+      else console.error('[push] send error:', (e && e.message) || e);
+    }
+  }
+  if (dead.length) { rec.subs = rec.subs.filter(x => !dead.includes(x.id)); try { _pbUpsert('push-subscriptions', rec); } catch (e) {} }
+  return { sent, removed: dead.length };
+}
+
+// Public VAPID key — client needs it to subscribe (public, safe to expose).
+app.get('/api/owner/push/key', (req, res) => res.json({ key: process.env.VAPID_PUBLIC || '' }));
+
+// Save a device's push subscription (owner-gated; dedup by endpoint).
+app.post('/api/owner/push/subscribe', (req, res) => {
+  if (!_verifyOwner(req)) return res.status(401).json({ error: 'Invalid owner password' });
+  const sub = req.body && req.body.subscription;
+  if (!sub || !sub.endpoint) return res.status(400).json({ error: 'subscription required' });
+  try {
+    const rec = _pushRec();
+    rec.subs = rec.subs.filter(x => x.sub && x.sub.endpoint !== sub.endpoint);
+    rec.subs.push({ id: 'ps-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), sub, label: (req.body.label || ''), addedAt: new Date().toISOString() });
+    rec.subs = rec.subs.slice(-50);
+    _pbUpsert('push-subscriptions', rec);
+    res.json({ ok: true, count: rec.subs.length });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// Send a test push to all subscribed devices (owner-gated).
+app.post('/api/owner/push/test', async (req, res) => {
+  if (!_verifyOwner(req)) return res.status(401).json({ error: 'Invalid owner password' });
+  const r = await _sendPushAll({ title: '🔔 H.E.L.P. Center', body: 'Push notifications are working!', url: 'https://thehelpctr.com/help-center-system.html' });
+  res.json({ ok: true, ...r });
 });
 
 // POST /api/owner/invoice/send - persist invoice in portal-extras + email client with Stripe pay link

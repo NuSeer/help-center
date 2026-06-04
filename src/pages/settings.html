@@ -26,6 +26,14 @@
             <div style="display:flex;justify-content:flex-end;margin-top:12px"><button onclick="saveSettings()" class="btn btn-solid">Save Profile</button></div>
           </div>
           <div class="card" style="margin-bottom:20px">
+            <div class="settings-section-title">🔔 Notifications</div>
+            <p style="font-size:13px;color:var(--gray-500);margin:0 0 14px;line-height:1.6">Get push alerts on this device for new leads, bookings, reviews, and calendar reminders — even when the app is closed. Tap <strong>Enable</strong> on each device (phone + desktop) you want notified, then send a test.</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button onclick="enablePush()" class="btn btn-solid">Enable Notifications on This Device</button>
+              <button onclick="testPush()" class="btn btn-outline">Send Test Push</button>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:20px">
             <div class="settings-section-title">Change Password</div>
             <div class="form-row">
               <div class="form-group"><label class="form-label">Current Password</label><input type="password" id="set-pw-current" class="form-input" style="margin:0" placeholder="Current password"></div>

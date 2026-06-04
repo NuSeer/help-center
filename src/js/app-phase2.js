@@ -3204,6 +3204,49 @@ function resetActionChecklist() {
 // REPORTS & DOCUMENTS
 // ══════════════════════════════════════════════════════════════
 
+// ── Web Push (Tier B notifications) ────────────────────────────────────────
+// Registers the service worker, subscribes the device, and stores the
+// subscription server-side. Reusable channel for any alert (leads, reminders…).
+function _urlB64ToUint8(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64); const arr = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
+  return arr;
+}
+async function enablePush() {
+  try {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) { showToast('Push not supported on this browser', 'error'); return; }
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') { showToast('Notifications blocked — allow them in your browser settings', 'error'); return; }
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    await navigator.serviceWorker.ready;
+    const keyRes = await fetch(location.origin + '/api/owner/push/key').then(r => r.json());
+    const key = keyRes && keyRes.key;
+    if (!key) { showToast('Server push key missing', 'error'); return; }
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: _urlB64ToUint8(key) });
+    const password = (JSON.parse(localStorage.getItem('settings') || '{}').password) || '';
+    const r = await fetch(location.origin + '/api/owner/push/subscribe', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password, subscription: sub.toJSON(), label: (navigator.userAgent || '').slice(0, 60) })
+    });
+    if (!r.ok) { const j = await r.json().catch(() => ({})); throw new Error(j.error || ('HTTP ' + r.status)); }
+    showToast('✅ Notifications enabled on this device', 'success');
+  } catch (e) { showToast('Enable failed: ' + e.message, 'error'); }
+}
+async function testPush() {
+  try {
+    const password = (JSON.parse(localStorage.getItem('settings') || '{}').password) || '';
+    const r = await fetch(location.origin + '/api/owner/push/test', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password })
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+    showToast('Test push sent to ' + (j.sent || 0) + ' device(s)', j.sent ? 'success' : 'info');
+  } catch (e) { showToast('Test failed: ' + e.message, 'error'); }
+}
+
 // ── Domain Email template (Reports → 📧 Domain Email) ──────────────────────
 // Reusable generator for the informal "your domain is available" client note.
 // Two pricing versions chosen via dm-version: managed (markup) vs transparent

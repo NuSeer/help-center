@@ -637,6 +637,9 @@ app.post('/api/owner/booking/request', async (req, res) => {
     // Continue and email even if store failed
   }
 
+  // Instant push alert to the owner's devices.
+  _sendPushAll({ title: '📅 New booking request', body: name + ' — ' + date + (time ? ' ' + time : ''), url: 'https://thehelpctr.com/help-center-system.html' }).catch(() => {});
+
   // Email the owner
   const ownerEmail = process.env.RESEND_FROM_EMAIL || 'joy@thehelpctr.com';
   const ownerName = process.env.RESEND_FROM_NAME || 'Joy Watford';
@@ -765,6 +768,9 @@ app.post('/api/owner/contact', async (req, res) => {
     // Continue and email even if store failed
   }
 
+  // Instant push alert to the owner's devices.
+  _sendPushAll({ title: '🔔 New website inquiry', body: name + (service ? ' — ' + service : ''), url: 'https://thehelpctr.com/help-center-system.html' }).catch(() => {});
+
   // Email the owner
   const ownerEmail = process.env.RESEND_FROM_EMAIL || 'joy@thehelpctr.com';
   const escH = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -843,6 +849,9 @@ app.post('/api/owner/review', async (req, res) => {
     existing.reviews = existing.reviews.slice(0, 500);
     _pbUpsert(key, existing);
   } catch (e) { console.error('[review store]', e.message); }
+
+  // Instant push alert to the owner's devices.
+  _sendPushAll({ title: '⭐ New review', body: name + ' (' + rate + '★)', url: 'https://thehelpctr.com/help-center-system.html' }).catch(() => {});
 
   const ownerEmail = process.env.RESEND_FROM_EMAIL || 'joy@thehelpctr.com';
   const escH = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

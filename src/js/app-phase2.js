@@ -3204,6 +3204,63 @@ function resetActionChecklist() {
 // REPORTS & DOCUMENTS
 // ══════════════════════════════════════════════════════════════
 
+// ── Domain Email template (Reports → 📧 Domain Email) ──────────────────────
+// Reusable generator for the informal "your domain is available" client note.
+// Two pricing versions chosen via dm-version: managed (markup) vs transparent
+// (pass the at-cost Namecheap price). Not a formal proposal — a friendly letter.
+function genDomainEmail() {
+  const g = id => (document.getElementById(id)?.value || '').trim();
+  const s = JSON.parse(localStorage.getItem('settings') || '{}');
+  const owner = s.name || 'Joy Watford';
+  const biz = s.businessName || 'H.E.L.P. Center';
+  const phone = s.phone || '(470) 541-2514';
+  const client = g('dm-client') || '[Client name]';
+  const first = client.split(' ')[0];
+  const domain = g('dm-domain') || '[domain]';
+  const cost = g('dm-cost') || '15';
+  const managed = g('dm-managed') || '30';
+  const years = g('dm-years'); // '' => ask the client
+  const version = g('dm-version') || 'managed';
+
+  const priceBlock = version === 'managed'
+    ? 'I can purchase and manage it for you — $' + managed + '/year. That covers registration plus keeping it renewed each year so it never lapses, all rolled into your invoice.'
+    : 'It runs about $' + cost + '/year through Namecheap. I can purchase it on your behalf and simply pass the cost along on your invoice.';
+
+  const yearsLine = years
+    ? 'I\'ll set it up for ' + years + ' year' + (years === '1' ? '' : 's') + '.'
+    : 'Just let me know how many years you\'d like (registering 2–3 up front locks in the name and saves the yearly renewal).';
+
+  const body =
+    'Subject: Good news — ' + domain + ' is available\n\n' +
+    'Hi ' + first + ',\n\n' +
+    'Great news — ' + domain + ' is available!\n\n' +
+    priceBlock + '\n\n' +
+    yearsLine + '\n\n' +
+    'Once you give me the go-ahead, I\'ll send over an invoice and get it secured right away.\n\n' +
+    'Warm regards,\n' + owner + '\n' + biz + ' · ' + phone;
+
+  const out = document.getElementById('domain-preview');
+  if (out) out.value = body;
+}
+
+// Save the generated domain email into the Reports (📄 Reports) bucket as a
+// styled doc (white-space preserved so it renders cleanly in the viewer).
+function saveDomainEmailToReports() {
+  const text = (document.getElementById('domain-preview')?.value || '').trim();
+  if (!text) { if (typeof showToast === 'function') showToast('Generate the email first', 'error'); else alert('Generate the email first.'); return; }
+  const client = (document.getElementById('dm-client')?.value || '').trim();
+  const title = 'Domain Email' + (client ? ' — ' + client : '');
+  const esc = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>' + esc(title) +
+    '</title><style>body{font-family:Calibri,Arial,sans-serif;max-width:700px;margin:24px auto;padding:0 22px;color:#0F172A;line-height:1.7;white-space:pre-wrap;font-size:13.5pt}</style></head><body>' +
+    esc(text) + '</body></html>';
+  if (typeof saveToBusinessFile === 'function') {
+    saveToBusinessFile({ type: 'Domain Email', title: title, content: html, meta: { showAsReport: true, source: 'Domain Email' }, skipPortalConfirm: true });
+    if (typeof showToast === 'function') showToast('Saved to Reports ✓', 'success');
+    if (typeof renderReportsReports === 'function') renderReportsReports();
+  }
+}
+
 function generateReportDoc(type) {
   const _cfg = JSON.parse(localStorage.getItem('settings')) || DEFAULT_SETTINGS;
   const _ownerName  = _cfg.name  || DEFAULT_SETTINGS.name;

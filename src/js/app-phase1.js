@@ -2683,9 +2683,27 @@
     window.addEventListener('load', init);
     // Mobile tabs often resume from a frozen state rather than a full reload;
     // retry queued writes when the page becomes visible again.
+    // On resume (reopening the PWA / switching back to the tab), pull the latest
+    // from PocketBase and re-render the current page — otherwise the app shows
+    // the stale state it had when it was backgrounded instead of the live sync.
+    function _resyncOnResume() {
+      if (localStorage.getItem('loggedIn') !== 'true') return;
+      try {
+        Promise.resolve(pbSyncAll()).then(() => {
+          if (typeof _pbRenderBadge === 'function') _pbRenderBadge();
+          const visible = document.querySelector('#app .page:not(.hidden)');
+          if (visible && /-page$/.test(visible.id) && typeof showPage === 'function') {
+            showPage(visible.id.replace(/-page$/, ''));
+          }
+        });
+      } catch (e) {}
+    }
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && localStorage.getItem('loggedIn') === 'true') pbDrainQueue();
+      if (document.visibilityState === 'visible') _resyncOnResume();
     });
+    // iOS/Safari restores the PWA from the back-forward cache without firing
+    // visibilitychange — pageshow catches that case.
+    window.addEventListener('pageshow', (e) => { if (e.persisted) _resyncOnResume(); });
 
     // ══════════════════════════════════════════════════════════════
     // PHASE 2 — DASHBOARD, CLIENTS, MY IDEAS, PORTAL LINKS

@@ -8000,6 +8000,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
                   <button onclick="copyDocText('receipt-preview')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="clipboard" style="margin-right:6px;vertical-align:-2px"></span>Copy</button>
                   <button onclick="emailDoc('receipt-preview','Invoice','inv')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="send" style="margin-right:6px;vertical-align:-2px"></span>Email</button>
                   <button onclick="saveDocToBusinessFile('receipt-preview','Invoice','inv')" class="btn btn-outline" style="flex:1;padding:8px">💾 Save to File</button>
+                  <button onclick="sendDocToPortal('receipt-preview','Invoice','inv')" class="btn btn-outline" style="flex:1;padding:8px;border-color:#10B981;color:#10B981"><span class="icon icon-sm" data-icon="upload" style="margin-right:6px;vertical-align:-2px"></span>Send to Portal</button>
                 </div>
                 <textarea id="receipt-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" placeholder="Fill in the form and click Generate Invoice / Receipt..." spellcheck="true" lang="en"></textarea>
               </div>
@@ -8042,6 +8043,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
                   <button onclick="copyDocText('domain-preview')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="clipboard" style="margin-right:6px;vertical-align:-2px"></span>Copy</button>
                   <button onclick="downloadDoc('domain-preview','domain-email')" class="btn btn-outline" style="flex:1;padding:8px"><span class="icon icon-sm" data-icon="download" style="margin-right:6px;vertical-align:-2px"></span>Download</button>
                   <button onclick="saveDomainEmailToReports()" class="btn btn-solid" style="flex:1;padding:8px">💾 Save to Reports</button>
+                  <button onclick="sendDocToPortal('domain-preview','Domain Email','dm')" class="btn btn-outline" style="flex:1;padding:8px;border-color:#10B981;color:#10B981"><span class="icon icon-sm" data-icon="upload" style="margin-right:6px;vertical-align:-2px"></span>Send to Portal</button>
                 </div>
                 <textarea id="domain-preview" class="form-input" style="flex:1;min-height:460px;font-size:12px;font-family:monospace;resize:none" placeholder="Pick a version, fill in the details, and click Generate Domain Email..." spellcheck="true" lang="en"></textarea>
               </div>
@@ -23640,6 +23642,9 @@ function sendDocToPortal(previewId, docType, formPrefix) {
   } else if (formPrefix === 'inv') {
     clientId   = document.getElementById('inv-client-select')?.value || '';
     clientName = document.getElementById('inv-client')?.value || '';
+  } else if (formPrefix === 'dm') {
+    clientId   = document.getElementById('dm-client-select')?.value || '';
+    clientName = document.getElementById('dm-client')?.value || '';
   }
   if (!clientId) {
     alert('Pick a client from the dropdown above first — the portal needs to know who this is for.');

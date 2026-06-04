@@ -4710,6 +4710,9 @@ function sendDocToPortal(previewId, docType, formPrefix) {
   } else if (formPrefix === 'inv') {
     clientId   = document.getElementById('inv-client-select')?.value || '';
     clientName = document.getElementById('inv-client')?.value || '';
+  } else if (formPrefix === 'dm') {
+    clientId   = document.getElementById('dm-client-select')?.value || '';
+    clientName = document.getElementById('dm-client')?.value || '';
   }
   if (!clientId) {
     alert('Pick a client from the dropdown above first — the portal needs to know who this is for.');

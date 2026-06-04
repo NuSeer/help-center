@@ -434,17 +434,18 @@ async function sendMessage(){
     </div>`;
 
   try {
-    const r = await fetch(API_BASE + '/email', {
+    const r = await fetch(API_BASE + '/portal/message', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        to: p.ownerEmail,
-        subject: subject,
-        html: html,
-        // Resend requires sender on the verified domain — let the server pick the
-        // default and route the client's address through replyTo instead.
-        replyToEmail: email,
-        replyToName: name
+        name: name,
+        email: email,
+        message: body,
+        attachmentUrl: attachmentUrl,
+        clientId: p.clientId || '',
+        token: token
+        // Server stores the message, pushes the owner's devices, and emails
+        // the owner (reply-to the client) — so a portal reply pings instantly.
       })
     });
     if(!r.ok){

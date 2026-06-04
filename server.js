@@ -951,6 +951,51 @@ app.post('/api/owner/push/test', async (req, res) => {
   res.json({ ok: true, ...r });
 });
 
+// POST /api/portal/message - a client message from portal.html. Stores it,
+// PUSHES the owner instantly, and emails the owner (reply-to the client).
+app.post('/api/portal/message', async (req, res) => {
+  const { name, email, message, attachmentUrl, clientId, token } = req.body || {};
+  if (!name || !email || !message) return res.status(400).json({ error: 'name, email, and message are required' });
+  try {
+    const key = 'portal-msgs:' + (token || clientId || 'unknown');
+    const rec = _pbGet(key) || { msgs: [] };
+    if (!Array.isArray(rec.msgs)) rec.msgs = [];
+    rec.msgs.push({ from: 'client', name, email, message, attachmentUrl: attachmentUrl || '', at: new Date().toISOString() });
+    rec.msgs = rec.msgs.slice(-200);
+    _pbUpsert(key, rec);
+  } catch (e) { console.error('[portal/message store]', e.message); }
+
+  _sendPushAll({ title: '💬 New portal message', body: name + ': ' + String(message).slice(0, 90), url: 'https://thehelpctr.com/help-center-system.html' }).catch(() => {});
+
+  const ownerEmail = process.env.RESEND_FROM_EMAIL || 'joy@thehelpctr.com';
+  const escH = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const html =
+    '<div style="font-family:Helvetica,Arial,sans-serif;background:#F1F5F9;padding:20px">' +
+      '<div style="max-width:560px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(15,23,42,0.08)">' +
+        '<div style="background:linear-gradient(135deg,#0F172A,#312E81);padding:22px;color:#fff">' +
+          '<div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;opacity:0.8">Client Portal — Incoming Message</div>' +
+          '<div style="font-size:20px;font-weight:700;margin-top:4px">' + escH(name) + '</div>' +
+          '<div style="font-size:13px;opacity:0.85;margin-top:2px">' + escH(email) + '</div>' +
+        '</div>' +
+        '<div style="padding:24px;color:#1F2937;font-size:15px;line-height:1.7">' +
+          '<div style="white-space:pre-wrap">' + escH(message) + '</div>' +
+          (attachmentUrl ? '<div style="margin-top:18px;font-size:13px">📎 <a href="' + escH(attachmentUrl) + '" style="color:#1E5BC0">' + escH(attachmentUrl) + '</a></div>' : '') +
+          '<div style="margin-top:24px;font-size:12px;color:#64748B">Reply to this email to respond directly to ' + escH(name) + '.</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + process.env.RESEND_API_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from: 'H.E.L.P. Center <' + ownerEmail + '>', to: [ownerEmail], subject: '💬 Portal message from ' + name, html, reply_to: [name + ' <' + email + '>'] })
+      });
+    } catch (e) { console.error('[portal/message email]', e.message); }
+  }
+  res.json({ ok: true });
+});
+
 // POST /api/owner/invoice/send - persist invoice in portal-extras + email client with Stripe pay link
 app.post('/api/owner/invoice/send', async (req, res) => {
   if (!_verifyOwner(req)) return res.status(401).json({ error: 'Invalid owner password' });

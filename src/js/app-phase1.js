@@ -4556,7 +4556,7 @@
         const r = await fetch(API_BASE + '/api/email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ to, subject, body, html: true })
+          body: JSON.stringify({ to, subject, html: body })
         });
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
@@ -4786,7 +4786,7 @@
       try {
         await fetch(API_BASE + '/api/email', {
           method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ to: ownerEmail, subject: '[Tenant: ' + TENANT + '] ' + subject, body: emailHtml, html: true })
+          body: JSON.stringify({ to: ownerEmail, subject: '[Tenant: ' + TENANT + '] ' + subject, html: emailHtml })
         });
       } catch (e) {}
       document.getElementById('contact-owner-overlay').remove();
@@ -5146,7 +5146,7 @@
       try {
         const r = await fetch(API_BASE + '/api/email', {
           method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ to: t.email, subject, body: html, html: true })
+          body: JSON.stringify({ to: t.email, subject, html: html })
         });
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
@@ -5155,7 +5155,7 @@
           const copyHtml = '<p style="color:#64748B;font-size:12px;margin:0 0 12px">Copy of credentials sent to <strong>' + t.email.replace(/</g,'&lt;') + '</strong></p>' + html;
           fetch(API_BASE + '/api/email', {
             method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ to: bccAddr, subject: '[Copy] ' + subject, body: copyHtml, html: true })
+            body: JSON.stringify({ to: bccAddr, subject: '[Copy] ' + subject, html: copyHtml })
           }).then(() => _logEmail && _logEmail({ to: bccAddr, subject:'[Copy] '+subject, body, context:'tenant-credentials-copy', clientName: t.name, status:'sent' }))
             .catch(() => {});
         }
@@ -5399,7 +5399,7 @@
         const r = await fetch(API_BASE + '/api/email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ to, subject, body: html, html: true })
+          body: JSON.stringify({ to, subject, html: html })
         });
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
@@ -5411,7 +5411,7 @@
           const copyHtml = '<p style="color:#64748B;font-size:12px;margin:0 0 12px">Copy of email sent to <strong>' + to.replace(/</g,'&lt;') + '</strong></p>' + html;
           fetch(API_BASE + '/api/email', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ to: bccAddr, subject: '[Copy] ' + subject, body: copyHtml, html: true })
+            body: JSON.stringify({ to: bccAddr, subject: '[Copy] ' + subject, html: copyHtml })
           }).then(() => _logEmail({ to: bccAddr, subject: '[Copy] ' + subject, body, context: 'team-member-copy', clientId, clientName: client.name || '', status: 'sent' }))
             .catch(() => {});
         }

@@ -13094,7 +13094,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         const r = await fetch(API_BASE + '/api/email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ to, subject, body, html: true })
+          body: JSON.stringify({ to, subject, html: body })
         });
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
@@ -13324,7 +13324,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       try {
         await fetch(API_BASE + '/api/email', {
           method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ to: ownerEmail, subject: '[Tenant: ' + TENANT + '] ' + subject, body: emailHtml, html: true })
+          body: JSON.stringify({ to: ownerEmail, subject: '[Tenant: ' + TENANT + '] ' + subject, html: emailHtml })
         });
       } catch (e) {}
       document.getElementById('contact-owner-overlay').remove();
@@ -13684,7 +13684,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       try {
         const r = await fetch(API_BASE + '/api/email', {
           method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ to: t.email, subject, body: html, html: true })
+          body: JSON.stringify({ to: t.email, subject, html: html })
         });
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
@@ -13693,7 +13693,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
           const copyHtml = '<p style="color:#64748B;font-size:12px;margin:0 0 12px">Copy of credentials sent to <strong>' + t.email.replace(/</g,'&lt;') + '</strong></p>' + html;
           fetch(API_BASE + '/api/email', {
             method:'POST', headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ to: bccAddr, subject: '[Copy] ' + subject, body: copyHtml, html: true })
+            body: JSON.stringify({ to: bccAddr, subject: '[Copy] ' + subject, html: copyHtml })
           }).then(() => _logEmail && _logEmail({ to: bccAddr, subject:'[Copy] '+subject, body, context:'tenant-credentials-copy', clientName: t.name, status:'sent' }))
             .catch(() => {});
         }
@@ -13937,7 +13937,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         const r = await fetch(API_BASE + '/api/email', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ to, subject, body: html, html: true })
+          body: JSON.stringify({ to, subject, html: html })
         });
         const j = await r.json().catch(() => ({}));
         if (!r.ok || j.error) throw new Error(j.error || ('HTTP ' + r.status));
@@ -13949,7 +13949,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
           const copyHtml = '<p style="color:#64748B;font-size:12px;margin:0 0 12px">Copy of email sent to <strong>' + to.replace(/</g,'&lt;') + '</strong></p>' + html;
           fetch(API_BASE + '/api/email', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ to: bccAddr, subject: '[Copy] ' + subject, body: copyHtml, html: true })
+            body: JSON.stringify({ to: bccAddr, subject: '[Copy] ' + subject, html: copyHtml })
           }).then(() => _logEmail({ to: bccAddr, subject: '[Copy] ' + subject, body, context: 'team-member-copy', clientId, clientName: client.name || '', status: 'sent' }))
             .catch(() => {});
         }
@@ -22045,7 +22045,7 @@ function generateSaasReviewDoc() {
       fetch('${(JSON.parse(localStorage.getItem('settings')||'{}').stripeProxyUrl || 'https://thehelpctr.com').replace(/\/$/,'')}/api/email',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({to: consultantEmail, subject: ${JSON.stringify(biz + ' — SaaS Business Model · Consultant Review')}, body: html, html: true})
+        body: JSON.stringify({to: consultantEmail, subject: ${JSON.stringify(biz + ' — SaaS Business Model · Consultant Review')}, html: html})
       })
       .then(r=>r.json()).then(j=>{ if(j.error) throw new Error(j.error); alert('Sent to '+consultantEmail+'.'); })
       .catch(e=>alert('Email failed: '+e.message+'. You can still download and attach manually.'));

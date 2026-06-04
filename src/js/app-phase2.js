@@ -3113,7 +3113,7 @@ function generateSaasReviewDoc() {
       fetch('${(JSON.parse(localStorage.getItem('settings')||'{}').stripeProxyUrl || 'https://thehelpctr.com').replace(/\/$/,'')}/api/email',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({to: consultantEmail, subject: ${JSON.stringify(biz + ' — SaaS Business Model · Consultant Review')}, body: html, html: true})
+        body: JSON.stringify({to: consultantEmail, subject: ${JSON.stringify(biz + ' — SaaS Business Model · Consultant Review')}, html: html})
       })
       .then(r=>r.json()).then(j=>{ if(j.error) throw new Error(j.error); alert('Sent to '+consultantEmail+'.'); })
       .catch(e=>alert('Email failed: '+e.message+'. You can still download and attach manually.'));

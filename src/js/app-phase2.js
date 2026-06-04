@@ -5368,7 +5368,7 @@ function populateReportClientDropdowns() {
   const clients = getData('clients') || [];
   const opts = '<option value="">— Select a client —</option>' +
     clients.map(c => `<option value="${c.id}">${c.name}${c.businessName?' — '+c.businessName:''}</option>`).join('');
-  ['rp-client-select','ct-client-select','inv-client-select'].forEach(id => {
+  ['rp-client-select','ct-client-select','inv-client-select','dm-client-select'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = opts;
   });
@@ -5382,6 +5382,8 @@ function fillReportClient(prefix) {
   if (!c) return;
   const setVal = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
   const services = c.services || (c.service ? [{ name: c.service, price: c.price||0, billingType:'flat', paidBy:'client' }] : []);
+
+  if (prefix === 'dm') { setVal('dm-client', c.name || ''); setVal('dm-email', c.email || ''); return; }
 
   if (prefix === 'rp') {
     setVal('rp-client', c.name + (c.businessName ? ' — ' + c.businessName : ''));
@@ -5473,7 +5475,7 @@ function openClientDocs(clientId) {
   showPage('reports', null);
   setTimeout(() => {
     populateReportClientDropdowns();
-    ['rp-client-select','ct-client-select','inv-client-select'].forEach(id => {
+    ['rp-client-select','ct-client-select','inv-client-select','dm-client-select'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = clientId;
     });

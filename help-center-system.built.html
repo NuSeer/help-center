@@ -8012,6 +8012,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
               <div class="card">
                 <h3 style="font-size:16px;font-weight:700;margin-bottom:6px">📧 Domain Email</h3>
                 <p style="font-size:12.5px;color:var(--gray-500);margin-bottom:14px">A friendly "your domain is available" note — not a formal proposal. Pick a pricing version, fill in the details, and Generate.</p>
+                <div class="form-group"><label class="form-label">Select Client <span style="color:#999;font-weight:400">(optional)</span></label><select id="dm-client-select" class="form-input" style="margin:0" onchange="fillReportClient('dm')"><option value="">— Select a client —</option></select></div>
                 <div class="form-group"><label class="form-label">Client / Contact Name</label><input id="dm-client" class="form-input" style="margin:0" placeholder="e.g. Patrick"></div>
                 <div class="form-group"><label class="form-label">Client Email (optional)</label><input id="dm-email" class="form-input" style="margin:0" placeholder="email@example.com"></div>
                 <div class="form-group"><label class="form-label">Domain Name</label><input id="dm-domain" class="form-input" style="margin:0" placeholder="e.g. stayouttaharmsway.com"></div>
@@ -24279,7 +24280,7 @@ function populateReportClientDropdowns() {
   const clients = getData('clients') || [];
   const opts = '<option value="">— Select a client —</option>' +
     clients.map(c => `<option value="${c.id}">${c.name}${c.businessName?' — '+c.businessName:''}</option>`).join('');
-  ['rp-client-select','ct-client-select','inv-client-select'].forEach(id => {
+  ['rp-client-select','ct-client-select','inv-client-select','dm-client-select'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.innerHTML = opts;
   });
@@ -24293,6 +24294,8 @@ function fillReportClient(prefix) {
   if (!c) return;
   const setVal = (id, val) => { const el = document.getElementById(id); if (el && val != null) el.value = val; };
   const services = c.services || (c.service ? [{ name: c.service, price: c.price||0, billingType:'flat', paidBy:'client' }] : []);
+
+  if (prefix === 'dm') { setVal('dm-client', c.name || ''); setVal('dm-email', c.email || ''); return; }
 
   if (prefix === 'rp') {
     setVal('rp-client', c.name + (c.businessName ? ' — ' + c.businessName : ''));
@@ -24384,7 +24387,7 @@ function openClientDocs(clientId) {
   showPage('reports', null);
   setTimeout(() => {
     populateReportClientDropdowns();
-    ['rp-client-select','ct-client-select','inv-client-select'].forEach(id => {
+    ['rp-client-select','ct-client-select','inv-client-select','dm-client-select'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.value = clientId;
     });

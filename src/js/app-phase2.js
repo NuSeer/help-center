@@ -5370,26 +5370,35 @@ async function sendForSignature(previewId, docType) {
 function genInvoiceNumber() {
   const dateVal = document.getElementById('inv-date')?.value || new Date().toISOString().slice(0, 10);
   const ymd = dateVal.replace(/-/g, '');
-  let biz = '', name = '';
+  const clean = s => (s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  // Base 4-letter prefix from a client's business (or first/last name).
+  const prefixOf = (biz, name) => {
+    const b = clean(biz);
+    if (b) return b.slice(0, 4);
+    const w = (name || '').trim().split(/\s+/);
+    return (clean(w[0]).slice(0, 2) + clean(w[1] || w[0]).slice(0, 2)).slice(0, 4) || 'INV';
+  };
+  let biz = '', name = '', clientId = '';
   const sel = document.getElementById('inv-client-select');
   if (sel && sel.value) {
     const c = (getData('clients') || []).find(cl => cl.id === sel.value);
-    if (c) { biz = c.businessName || ''; name = c.name || ''; }
+    if (c) { biz = c.businessName || ''; name = c.name || ''; clientId = c.id; }
   }
   if (!biz && !name) {
     const typed = (document.getElementById('inv-client')?.value || '').trim();
     if (typed.includes(' — ')) { const p = typed.split(' — '); name = p[0]; biz = p[1] || ''; }
     else name = typed;
   }
-  const clean = s => (s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-  let prefix = '';
-  if (clean(biz)) {
-    prefix = clean(biz).slice(0, 4);
-  } else if (clean(name)) {
-    const w = name.trim().split(/\s+/);
-    prefix = (clean(w[0]).slice(0, 2) + clean(w[1] || w[0]).slice(0, 2)).slice(0, 4);
+  let prefix = prefixOf(biz, name);
+  // Collision handling: if other clients share this same 4-letter prefix, give
+  // each a stable disambiguator letter (oldest keeps the plain prefix, then B, C…).
+  if (clientId) {
+    const same = (getData('clients') || [])
+      .filter(c => prefixOf(c.businessName || '', c.name || '') === prefix)
+      .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0) || String(a.id).localeCompare(String(b.id)));
+    const idx = same.findIndex(c => c.id === clientId);
+    if (idx > 0) prefix += String.fromCharCode(65 + idx); // 2nd client → B, 3rd → C…
   }
-  if (!prefix) prefix = 'INV';
   const el = document.getElementById('inv-number');
   if (el) el.value = prefix + ymd;
 }

@@ -28315,6 +28315,15 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
 
   // Runs an AI turn assuming the latest user message is already on _chatHistory.
   // Used by sendProjectMsg AND by the context-bridge auto-trigger in openProjectChat.
+  // If a weaker model parrots the internal kickoff/continue directive back
+  // instead of following it, strip it so the user never sees the meta-text.
+  function _stripKickoffEcho(s) {
+    if (!s) return s;
+    s = s.replace(/Start the session now per the FULL instructions[\s\S]*?welcome flow\.?/gi, '');
+    s = s.replace(/Continue per your project instructions\.[\s\S]*?next actions\.?/gi, '');
+    return s.replace(/^[\s>"'*_–-]+/, '');
+  }
+
   async function _runProjectAiTurn() {
     if (!_chatProjectKey) return;
     const msgs = document.getElementById('proj-chat-msgs');
@@ -28339,11 +28348,11 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
         onChunk: (delta, full) => {
           if (!streamBubble) { typing.remove(); streamBubble = _appendMsg('assistant', ''); }
           streamBubble.classList.add('md-content');
-          streamBubble.innerHTML = mdRender(full);
+          streamBubble.innerHTML = mdRender(_stripKickoffEcho(full));
           if (msgs) msgs.scrollTop = msgs.scrollHeight;
         }
       });
-      const reply = cleanGroqResponse(text) || 'No response.';
+      const reply = _stripKickoffEcho(cleanGroqResponse(text)) || 'No response.';
       if (!streamBubble) { typing.remove(); streamBubble = _appendMsg('assistant', ''); }
       streamBubble.classList.add('md-content');
       streamBubble.innerHTML = mdRender(reply);

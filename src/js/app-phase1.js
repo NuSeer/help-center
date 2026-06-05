@@ -5594,7 +5594,7 @@
     }
 
     function deleteTenant(slug) {
-      if (!confirm('Delete tenant "' + slug + '"?\n\nTheir data in your PocketBase will REMAIN (you can recover it). The tenant entry itself will be removed and their URL will stop working.')) return;
+      if (!confirm('⚠️ Delete tenant "' + slug + '"?\n\nThis is PERMANENT — the tenant entry is removed and their login URL stops working. (Their stored data in your PocketBase remains and can be recovered.)\n\nAre you sure you want to delete?')) return;
       const tenants = getTenants().filter(t => t.slug !== slug);
       setTenants(tenants);
       renderTenantsList();
@@ -6449,7 +6449,7 @@
     }
 
     function deleteClient(id) {
-      if (!confirm('Delete this client and all their data? Cannot be undone.')) return;
+      if (!confirm('⚠️ Delete this client?\n\nThis permanently removes the client and their revenue records. This is PERMANENT and cannot be undone.\n\nAre you sure you want to delete?')) return;
       let clients = getData('clients');
       const client = clients.find(c => c.id === id);
       clients = clients.filter(c => c.id !== id);

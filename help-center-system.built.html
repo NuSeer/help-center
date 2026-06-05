@@ -7821,13 +7821,24 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
   <div class="content">
     <div class="path-tabs-container">
       <div class="path-tabs-nav">
-        <button class="path-tab active" onclick="pTab('strategy','saas',this)">SaaS Launch Plan</button>
-        <button class="path-tab" onclick="pTab('strategy','outreach',this)">Church Outreach</button>
-        <button class="path-tab" onclick="pTab('strategy','checklist',this)">48-Hr Action List</button>
+        <button class="path-tab active" id="stab-model" onclick="pTab('strategy','model',this)">📋 Business Model</button>
+        <button class="path-tab" id="stab-saas" onclick="pTab('strategy','saas',this)">SaaS Launch Plan</button>
+        <button class="path-tab" id="stab-outreach" onclick="pTab('strategy','outreach',this)">Church Outreach</button>
+        <button class="path-tab" id="stab-checklist" onclick="pTab('strategy','checklist',this)">48-Hr Action List</button>
+      </div>
+
+      <!-- TAB: BUSINESS MODEL (blank builder — this is the tenant's Business section) -->
+      <div id="strategy-tab-model" class="path-tab-content active">
+        <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(124,58,237,0.06),rgba(124,58,237,0.02));border:1px solid rgba(124,58,237,0.18)">
+          <div style="font-size:16px;font-weight:700;color:#0F172A;margin-bottom:6px">📋 Your Business Model</div>
+          <div style="font-size:13.5px;color:#475569;line-height:1.7">Build out your business model here — one card per piece. Useful pieces to capture: <strong>What you sell</strong> (your offer), <strong>Who it's for</strong> (target customer), <strong>How you make money</strong> (pricing / revenue), <strong>How you reach customers</strong> (marketing channels), <strong>What makes you different</strong>, and <strong>Your costs</strong>. Add as many as you need — edit or delete any of them anytime.</div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button onclick="openBusinessModelForm()" class="btn btn-solid">+ Add Entry</button></div>
+        <div id="business-model-list"></div>
       </div>
 
       <!-- TAB: SAAS LAUNCH PLAN -->
-      <div id="strategy-tab-saas" class="path-tab-content active">
+      <div id="strategy-tab-saas" class="path-tab-content">
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
           <div class="card" style="text-align:center;border-top:3px solid var(--gold)"><div style="font-size:22px;font-weight:800;color:var(--gold)">$490</div><div style="font-size:12px;color:var(--gray-500)">10 users @ $49/mo</div></div>
           <div class="card" style="text-align:center;border-top:3px solid var(--gold)"><div style="font-size:22px;font-weight:800;color:var(--gold)">$980</div><div style="font-size:12px;color:var(--gray-500)">20 users @ $49/mo</div></div>
@@ -14217,7 +14228,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
     }
 
     function deleteTenant(slug) {
-      if (!confirm('Delete tenant "' + slug + '"?\n\nTheir data in your PocketBase will REMAIN (you can recover it). The tenant entry itself will be removed and their URL will stop working.')) return;
+      if (!confirm('⚠️ Delete tenant "' + slug + '"?\n\nThis is PERMANENT — the tenant entry is removed and their login URL stops working. (Their stored data in your PocketBase remains and can be recovered.)\n\nAre you sure you want to delete?')) return;
       const tenants = getTenants().filter(t => t.slug !== slug);
       setTenants(tenants);
       renderTenantsList();
@@ -15072,7 +15083,7 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
     }
 
     function deleteClient(id) {
-      if (!confirm('Delete this client and all their data? Cannot be undone.')) return;
+      if (!confirm('⚠️ Delete this client?\n\nThis permanently removes the client and their revenue records. This is PERMANENT and cannot be undone.\n\nAre you sure you want to delete?')) return;
       let clients = getData('clients');
       const client = clients.find(c => c.id === id);
       clients = clients.filter(c => c.id !== id);
@@ -22705,7 +22716,91 @@ function generateSaasReviewDoc() {
   w.focus();
 }
 
+// ── BUSINESS MODEL BUILDER ────────────────────────────────────────────────────
+// A blank, owner-and-tenant editable list of business-model entries. Stored under
+// the (tenant-prefixed) 'businessModel' key, so each tenant gets their own empty
+// builder. Add / Edit / Delete, with a permanent-delete confirmation.
+function _bmEsc(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function renderBusinessModel() {
+  const list = document.getElementById('business-model-list');
+  if (!list) return;
+  const items = getData('businessModel') || [];
+  if (!items.length) {
+    list.innerHTML = '<div class="card" style="text-align:center;padding:40px 24px;color:#64748B"><div style="font-size:34px;margin-bottom:10px">🧩</div><div style="font-weight:700;color:#0F172A;margin-bottom:4px">No entries yet</div><div style="font-size:13.5px">Click <strong>+ Add Entry</strong> to start building your business model — your offer, audience, pricing, channels, and more.</div></div>';
+    return;
+  }
+  list.innerHTML = items.map(it => '<div class="card" style="margin-bottom:12px">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">'
+    +   '<div style="font-size:16px;font-weight:700;color:#0F172A">'+_bmEsc(it.title)+'</div>'
+    +   '<div style="display:flex;gap:6px;flex-shrink:0">'
+    +     '<button onclick="openBusinessModelForm(\''+it.id+'\')" class="btn btn-outline" style="padding:5px 11px;font-size:12px">Edit</button>'
+    +     '<button onclick="deleteBusinessModelEntry(\''+it.id+'\')" style="padding:5px 11px;font-size:12px;background:none;border:1px solid #FCA5A5;border-radius:6px;color:#DC2626;cursor:pointer;font-weight:600">Delete</button>'
+    +   '</div>'
+    + '</div>'
+    + (it.content ? '<div style="font-size:13.5px;color:#334155;line-height:1.65;margin-top:8px;white-space:pre-wrap">'+_bmEsc(it.content)+'</div>' : '')
+    + '</div>').join('');
+}
+function openBusinessModelForm(id) {
+  const items = getData('businessModel') || [];
+  const existing = id ? items.find(x => x.id === id) : null;
+  const attrEsc = s => (s||'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  const old = document.getElementById('bm-form-overlay'); if (old) old.remove();
+  const ov = document.createElement('div');
+  ov.id = 'bm-form-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:10004;background:rgba(15,23,42,0.55);display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.onclick = e => { if (e.target === ov) ov.remove(); };
+  ov.innerHTML = '<div style="background:#fff;border-radius:14px;max-width:520px;width:100%;box-shadow:0 16px 50px rgba(0,0,0,0.25);overflow:hidden;max-height:92vh;display:flex;flex-direction:column">'
+    + '<div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;flex:0 0 auto"><h3 style="font-size:17px;font-weight:700;margin:0">'+(existing?'Edit entry':'Add entry')+'</h3></div>'
+    + '<div style="padding:16px 22px;overflow-y:auto;flex:1 1 auto;min-height:0">'
+    +   '<label class="form-label">Title</label><input id="bm-title" class="form-input" style="margin:0 0 12px" placeholder="e.g. What I sell" value="'+attrEsc(existing?existing.title:'')+'">'
+    +   '<label class="form-label">Details</label><textarea id="bm-content" class="form-input" style="margin:0;min-height:160px;resize:vertical;font-family:inherit;line-height:1.55" placeholder="Describe this part of your business model…">'+_bmEsc(existing?existing.content:'')+'</textarea>'
+    + '</div>'
+    + '<div style="padding:12px 22px;border-top:1px solid #e5e7eb;background:#F8FAFC;display:flex;justify-content:flex-end;gap:8px;flex:0 0 auto">'
+    +   '<button onclick="document.getElementById(\'bm-form-overlay\').remove()" class="btn btn-outline" style="padding:8px 16px">Cancel</button>'
+    +   '<button onclick="saveBusinessModelEntry('+(existing?('\''+existing.id+'\''):'null')+')" class="btn btn-solid" style="padding:8px 16px">'+(existing?'Save changes':'Add entry')+'</button>'
+    + '</div></div>';
+  document.body.appendChild(ov);
+  setTimeout(()=>document.getElementById('bm-title')?.focus(),60);
+}
+function saveBusinessModelEntry(id) {
+  const title = (document.getElementById('bm-title')?.value || '').trim();
+  const content = (document.getElementById('bm-content')?.value || '').trim();
+  if (!title) { alert('Please enter a title.'); return; }
+  const items = getData('businessModel') || [];
+  if (id) {
+    const it = items.find(x => x.id === id);
+    if (it) { it.title = title; it.content = content; it.updatedAt = new Date().toISOString(); }
+  } else {
+    items.push({ id: (typeof generateId==='function'?generateId():String(Date.now())), title, content, updatedAt: new Date().toISOString() });
+  }
+  setData('businessModel', items);
+  document.getElementById('bm-form-overlay')?.remove();
+  renderBusinessModel();
+  if (typeof showToast==='function') showToast(id?'Entry updated':'Entry added','success');
+}
+function deleteBusinessModelEntry(id) {
+  if (!confirm('Delete this business model entry?\n\n⚠️ This is PERMANENT and cannot be undone. Are you sure?')) return;
+  const items = (getData('businessModel') || []).filter(x => x.id !== id);
+  setData('businessModel', items);
+  renderBusinessModel();
+  if (typeof showToast==='function') showToast('Entry deleted','warn');
+}
+
 function renderStrategyPage() {
+  if (typeof renderBusinessModel === 'function') renderBusinessModel();
+  // In a tenant copy, the Business section is ONLY the blank Business Model
+  // builder — hide the owner's strategy tabs (SaaS plan, outreach, checklist).
+  if (typeof TENANT !== 'undefined' && TENANT) {
+    [['stab-saas','strategy-tab-saas'],['stab-outreach','strategy-tab-outreach'],['stab-checklist','strategy-tab-checklist']].forEach(([btnId,paneId]) => {
+      const b = document.getElementById(btnId); if (b) b.style.display = 'none';
+      const p = document.getElementById(paneId); if (p) { p.classList.remove('active'); p.style.display = 'none'; }
+    });
+    const mb = document.getElementById('stab-model'); if (mb) mb.classList.add('active');
+    const mp = document.getElementById('strategy-tab-model'); if (mp) { mp.classList.add('active'); mp.style.display = ''; }
+    const sub = document.querySelector('#strategy-page .page-subtitle'); if (sub) sub.textContent = 'Build your business model — add, edit, and organize the pieces of your business.';
+    const title = document.querySelector('#strategy-page .page-title'); if (title) title.textContent = 'Business';
+    return; // skip owner-only roadmap/niche/script rendering below
+  }
   const rmap = document.getElementById('roadmap-phases');
   if (rmap) rmap.innerHTML = ROADMAP_PHASES.map((p,i) => `
     <div style="display:grid;grid-template-columns:90px 1fr;gap:20px;margin-bottom:24px;position:relative">

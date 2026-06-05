@@ -6,13 +6,24 @@
   <div class="content">
     <div class="path-tabs-container">
       <div class="path-tabs-nav">
-        <button class="path-tab active" onclick="pTab('strategy','saas',this)">SaaS Launch Plan</button>
-        <button class="path-tab" onclick="pTab('strategy','outreach',this)">Church Outreach</button>
-        <button class="path-tab" onclick="pTab('strategy','checklist',this)">48-Hr Action List</button>
+        <button class="path-tab active" id="stab-model" onclick="pTab('strategy','model',this)">📋 Business Model</button>
+        <button class="path-tab" id="stab-saas" onclick="pTab('strategy','saas',this)">SaaS Launch Plan</button>
+        <button class="path-tab" id="stab-outreach" onclick="pTab('strategy','outreach',this)">Church Outreach</button>
+        <button class="path-tab" id="stab-checklist" onclick="pTab('strategy','checklist',this)">48-Hr Action List</button>
+      </div>
+
+      <!-- TAB: BUSINESS MODEL (blank builder — this is the tenant's Business section) -->
+      <div id="strategy-tab-model" class="path-tab-content active">
+        <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(124,58,237,0.06),rgba(124,58,237,0.02));border:1px solid rgba(124,58,237,0.18)">
+          <div style="font-size:16px;font-weight:700;color:#0F172A;margin-bottom:6px">📋 Your Business Model</div>
+          <div style="font-size:13.5px;color:#475569;line-height:1.7">Build out your business model here — one card per piece. Useful pieces to capture: <strong>What you sell</strong> (your offer), <strong>Who it's for</strong> (target customer), <strong>How you make money</strong> (pricing / revenue), <strong>How you reach customers</strong> (marketing channels), <strong>What makes you different</strong>, and <strong>Your costs</strong>. Add as many as you need — edit or delete any of them anytime.</div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button onclick="openBusinessModelForm()" class="btn btn-solid">+ Add Entry</button></div>
+        <div id="business-model-list"></div>
       </div>
 
       <!-- TAB: SAAS LAUNCH PLAN -->
-      <div id="strategy-tab-saas" class="path-tab-content active">
+      <div id="strategy-tab-saas" class="path-tab-content">
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
           <div class="card" style="text-align:center;border-top:3px solid var(--gold)"><div style="font-size:22px;font-weight:800;color:var(--gold)">$490</div><div style="font-size:12px;color:var(--gray-500)">10 users @ $49/mo</div></div>
           <div class="card" style="text-align:center;border-top:3px solid var(--gold)"><div style="font-size:22px;font-weight:800;color:var(--gold)">$980</div><div style="font-size:12px;color:var(--gray-500)">20 users @ $49/mo</div></div>

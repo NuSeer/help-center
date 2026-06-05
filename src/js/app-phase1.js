@@ -7498,13 +7498,36 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       if(!panel)return;
       panel.classList.toggle('hidden');
       if(!panel.classList.contains('hidden')) {
-        document.getElementById('ai-input')?.focus();
+        const inp=document.getElementById('ai-input');
+        // Restore any draft the user was typing (survives a page refresh).
+        try { const d=localStorage.getItem('aiCoachDraft'); if(d && inp && !inp.value){ inp.value=d; inp.style.height='auto'; inp.style.height=Math.min(inp.scrollHeight,140)+'px'; } } catch(_){}
+        inp?.focus();
         const ai=getAiSettings();
         const titleEl=document.getElementById('ai-panel-title');
         if(titleEl)titleEl.textContent=ai.coachName;
         // Re-clamp into viewport in case the window was resized while hidden.
         if (typeof _aiCoachClamp === 'function') _aiCoachClamp(panel);
       }
+    }
+
+    // Autosave the coach draft as the user types so a refresh never loses it.
+    function aiCoachDraftSave(el){
+      if(!el) return;
+      el.style.height='auto'; el.style.height=Math.min(el.scrollHeight,140)+'px';
+      try { localStorage.setItem('aiCoachDraft', el.value); } catch(_){}
+    }
+
+    // Start a fresh conversation — clears history + the chat pane + the draft.
+    function newAiCoachChat(){
+      aiChatHistory=[];
+      const ai=(typeof getAiSettings==='function')?getAiSettings():{coachName:'AI Coach'};
+      const name=(ai&&ai.coachName)?ai.coachName:'AI Coach';
+      const msgsEl=document.getElementById('ai-messages');
+      if(msgsEl) msgsEl.innerHTML='<div class="ai-msg ai-msg-ai" id="ai-greeting-msg">Hey 👋 I\'m your '+name.replace(/</g,'&lt;')+'. What are you working on?</div>';
+      const inp=document.getElementById('ai-input');
+      if(inp){ inp.value=''; inp.style.height='auto'; }
+      try { localStorage.removeItem('aiCoachDraft'); } catch(_){}
+      inp?.focus();
     }
 
     // ── Draggable AI Coach (FAB + Panel) ──────────────────────────────────────
@@ -7678,6 +7701,7 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       const input=document.getElementById('ai-input');
       const msg=input?.value.trim(); if(!msg)return;
       input.value=''; input.style.height='auto';
+      try { localStorage.removeItem('aiCoachDraft'); } catch(_){}
       const msgsEl=document.getElementById('ai-messages');
       // append user bubble
       const uDiv=document.createElement('div');

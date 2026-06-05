@@ -794,6 +794,7 @@
     <div class="ai-panel-header">
       <span class="icon" data-icon="spark" style="width:20px;height:20px;color:#fff"></span>
       <div class="ai-panel-title" id="ai-panel-title">H.E.L.P. AI Coach</div>
+      <button class="ai-panel-new" onclick="newAiCoachChat()" title="Start a new conversation">+ New</button>
       <button class="ai-panel-close" onclick="toggleAiPanel()">×</button>
     </div>
     <div class="ai-context-bar" id="ai-context-bar">Ask me anything about your business journey</div>
@@ -801,7 +802,7 @@
       <div class="ai-msg ai-msg-ai" id="ai-greeting-msg">Hey 👋 I'm your AI Coach. What are you working on?</div>
     </div>
     <div class="ai-input-row">
-      <textarea class="ai-input" id="ai-input" rows="1" placeholder="Ask your AI coach..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiMessage()}"></textarea>
+      <textarea class="ai-input" id="ai-input" rows="1" placeholder="Ask your AI coach..." oninput="aiCoachDraftSave(this)" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiMessage()}"></textarea>
       <button class="ai-send" onclick="sendAiMessage()" title="Send"><span class="icon" data-icon="send" style="width:16px;height:16px;color:#fff"></span></button>
     </div>
     <div class="ai-resize-handle" id="ai-resize-handle" title="Drag to resize"></div>

@@ -8444,9 +8444,55 @@ Current year: 2026.${_QUALITY}`
     }
   }
 
+  // ── TENANT AI-PROJECT GATING ───────────────────────────────────────────────
+  // A tenant only gets the AI tools the owner explicitly enabled for them
+  // (stored in PB as <slug>:tenantOfferedProjects, read here as a prefixed key).
+  // Default = none, so the owner's personal projects never leak into a tenant.
+  function _tenantAllowedProjects() {
+    if (typeof TENANT === 'undefined' || !TENANT) return Object.keys(PROJECTS);
+    try { const list = (typeof getData === 'function') ? getData('tenantOfferedProjects') : null; return Array.isArray(list) ? list : []; }
+    catch (_) { return []; }
+  }
+  function _tenantProjectAllowed(key) {
+    if (typeof TENANT === 'undefined' || !TENANT) return true;
+    return _tenantAllowedProjects().indexOf(key) !== -1;
+  }
+  function _applyTenantAiProjectGating() {
+    if (typeof TENANT === 'undefined' || !TENANT) return;
+    const allowed = _tenantAllowedProjects();
+    let shown = 0;
+    document.querySelectorAll('.ai-project-card, .ai-project-card-featured').forEach(card => {
+      const btn = card.querySelector('[onclick^="launchProject"]');
+      const m = btn && (btn.getAttribute('onclick') || '').match(/launchProject\(\s*['"]([^'"]+)['"]/);
+      const key = m ? m[1] : null;
+      if (key && allowed.indexOf(key) !== -1) { card.style.display = ''; shown++; }
+      else { card.style.display = 'none'; }
+    });
+    const page = document.getElementById('ai-projects-page');
+    if (page) {
+      let note = document.getElementById('tenant-ai-empty');
+      if (!shown) {
+        if (!note) {
+          note = document.createElement('div');
+          note.id = 'tenant-ai-empty';
+          note.style.cssText = 'margin:18px;padding:32px 24px;text-align:center;color:#64748B;background:#fff;border:1px dashed #CBD5E1;border-radius:12px';
+          note.innerHTML = '<div style="font-size:34px;margin-bottom:10px">🤖</div><div style="font-weight:700;color:#0F172A;margin-bottom:4px">No AI tools enabled yet</div><div style="font-size:13.5px">Your provider hasn\'t added any AI tools to your plan yet. Reach out if you\'d like access.</div>';
+          const firstCard = page.querySelector('.ai-project-card, .ai-project-card-featured');
+          (firstCard && firstCard.parentElement ? firstCard.parentElement : page).appendChild(note);
+        }
+        note.style.display = '';
+      } else if (note) { note.style.display = 'none'; }
+    }
+  }
+
   function launchProject(projectKey) {
     const project = PROJECTS[projectKey];
     if (!project) return;
+    if (!_tenantProjectAllowed(projectKey)) {
+      if (typeof showToast === 'function') showToast("This AI tool isn't included in your plan.", 'warn');
+      else alert("This AI tool isn't included in your plan.");
+      return;
+    }
     logProjectLaunch(projectKey);
     openProjectChat(projectKey);
   }
@@ -8456,6 +8502,10 @@ Current year: 2026.${_QUALITY}`
     opts = opts || {};
     const project = PROJECTS[projectKey];
     if (!project) return;
+    if (!_tenantProjectAllowed(projectKey)) {
+      if (typeof showToast === 'function') showToast("This AI tool isn't included in your plan.", 'warn');
+      return;
+    }
 
     // Save outgoing session and update back-stack (skip duplicates / self).
     if (_chatProjectKey && _chatProjectKey !== projectKey) {
@@ -10390,6 +10440,7 @@ You have tools to:
       const el = document.getElementById('skills-' + key);
       if (el) el.innerHTML = renderSkillBadges(key);
     });
+    _applyTenantAiProjectGating();
   }
 
   // ══════════════════════════════════════════════════════════════════════════════

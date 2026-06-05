@@ -69,6 +69,33 @@
         document.body.style.paddingTop = '32px';
       });
     }
+    // ── TENANT GATING ─────────────────────────────────────────────────────────
+    // In a tenant copy (?tenant=slug) the workspace is restricted to the SaaS
+    // feature set. Owner-only tools AND the owner's personal AI projects stay
+    // hidden. Data is already isolated by the prefix layer; this hides the UI
+    // surface so a tenant only sees what they're meant to. (Client-side gating —
+    // the real data wall is the PB collection rules; this is the visibility wall.)
+    const TENANT_ALLOWED_PAGES = ['dashboard','my-ideas','calendar','revenue','clients','client-portal','booking','messages','strategy','pricing','ai-projects','settings','my-profile'];
+    function _tenantPageAllowed(pageId){ return !TENANT || TENANT_ALLOWED_PAGES.indexOf(pageId) !== -1; }
+    function _applyTenantNavGating(){
+      if (!TENANT) return;
+      try {
+        document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+          const oc = link.getAttribute('onclick') || '';
+          if (/openAssistantChat\(/.test(oc)) return;  // keep the AI Assistant launcher
+          const m = oc.match(/showPage\(\s*['"]([^'"]+)['"]/);
+          const pid = m ? m[1] : null;
+          if (!pid || !_tenantPageAllowed(pid)) link.style.display = 'none';
+        });
+        document.querySelectorAll('.sidebar .nav-section').forEach(sec => {
+          const links = sec.querySelectorAll('.nav-link');
+          const anyVisible = Array.prototype.some.call(links, l => l.style.display !== 'none');
+          if (links.length && !anyVisible) sec.style.display = 'none';
+        });
+      } catch(_){}
+    }
+    if (TENANT) window.addEventListener('DOMContentLoaded', _applyTenantNavGating);
+
     function _pbKey(key) {
       if (!TENANT_PREFIX || _UNPREFIXED_RE.test(key)) return key;
       return TENANT_PREFIX + key;
@@ -2297,6 +2324,8 @@
 
     // ── NAVIGATION ─────────────────────────────────────────────────────────────
     function showPage(pageId, event) {
+      // Tenant gate: block navigation to owner-only pages in a tenant copy.
+      if (TENANT && !_tenantPageAllowed(pageId)) { pageId = 'dashboard'; event = null; }
       // Exit voice studio fullscreen overlay if navigating elsewhere — the
       // exit button is appended to document.body and would linger otherwise.
       if (pageId !== 'voice-studio') {
@@ -5217,9 +5246,18 @@
             '<label class="form-label">Login password (you give this to them)</label>' +
             '<input id="tn-pass" class="form-input" style="margin:0 0 12px" placeholder="' + (existing ? '(leave blank to keep current)' : 'set initial password') + '" value="">' +
             '<label class="form-label">Plan</label>' +
-            '<select id="tn-plan" class="form-input" style="margin:0 0 6px">' +
+            '<select id="tn-plan" class="form-input" style="margin:0 0 12px">' +
               ['Discounted','Trial','Pro','Elite','Comped'].map(p => '<option' + ((e.plan||'Discounted') === p ? ' selected' : '') + '>' + p + '</option>').join('') +
             '</select>' +
+            '<label class="form-label">AI Tools this tenant can use <span style="font-weight:400;color:#94A3B8">— your personal projects stay hidden unless checked</span></label>' +
+            '<div style="border:1px solid #e5e7eb;border-radius:8px;padding:8px 12px;max-height:172px;overflow:auto;margin:0 0 4px">' +
+              ((typeof PROJECTS === 'object' && PROJECTS) ? Object.keys(PROJECTS).map(k => {
+                const checked = ((e.aiProjects||[]).indexOf(k) !== -1) ? ' checked' : '';
+                const nm = (PROJECTS[k] && PROJECTS[k].name) ? PROJECTS[k].name : k;
+                return '<label style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px;cursor:pointer"><input type="checkbox" class="tn-aiproj" value="' + k + '"' + checked + '><span>' + nm.replace(/</g,'&lt;') + '</span></label>';
+              }).join('') : '<div style="font-size:12px;color:#94A3B8;padding:6px 0">AI project list unavailable.</div>') +
+            '</div>' +
+            '<div style="font-size:11.5px;color:#94A3B8;margin:0 0 4px">None checked = tenant sees no AI tools (default).</div>' +
           '</div>' +
           '<div style="padding:12px 22px;border-top:1px solid #e5e7eb;background:#F8FAFC;display:flex;justify-content:flex-end;gap:8px">' +
             '<button onclick="document.getElementById(\'tenant-form-overlay\').remove()" class="btn btn-outline" style="padding:8px 16px">Cancel</button>' +
@@ -5247,6 +5285,7 @@
       const existing = idx >= 0 ? tenants[idx] : null;
       if (!existingSlug && existing) { alert('A tenant with this slug already exists.'); return; }
       const password = pass || (existing && existing.password) || 'changeme';
+      const aiProjects = Array.prototype.map.call(document.querySelectorAll('.tn-aiproj:checked'), c => c.value);
       const tenant = {
         slug,
         name,
@@ -5254,6 +5293,7 @@
         businessName: biz || (name + "'s Workspace"),
         password,
         plan,
+        aiProjects,
         active: existing ? existing.active !== false : true,
         createdAt: existing ? existing.createdAt : new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -5337,6 +5377,21 @@
             } else {
               await fetch(pb.url + '/api/collections/store/records', {
                 method:'POST', headers:{'Content-Type':'application/json','Authorization':tk}, body: sBody
+              });
+            }
+            // Write the gated AI-tools list to the tenant's own readable key so
+            // their copy shows ONLY the projects checked above (default none).
+            const offerKey = slug + ':tenantOfferedProjects';
+            const oFilterUrl = pb.url + '/api/collections/store/records?filter=' + encodeURIComponent(`key="${offerKey}"`) + '&perPage=1';
+            const oItems = ((await (await fetch(oFilterUrl, { headers: {'Authorization': tk} })).json()).items) || [];
+            const oBody = JSON.stringify({ key: offerKey, value: aiProjects, tenantSlug: slug });
+            if (oItems.length) {
+              await fetch(pb.url + '/api/collections/store/records/' + oItems[0].id, {
+                method:'PATCH', headers:{'Content-Type':'application/json','Authorization':tk}, body: oBody
+              });
+            } else {
+              await fetch(pb.url + '/api/collections/store/records', {
+                method:'POST', headers:{'Content-Type':'application/json','Authorization':tk}, body: oBody
               });
             }
           }

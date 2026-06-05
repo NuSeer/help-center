@@ -7608,6 +7608,59 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         makeDraggable(panel, panelHeader, 'aiCoachPanelPos');
       }
 
+      // ── Resizable panel (drag the bottom-right grip; size persists) ──────────
+      const resizeHandle = panel && panel.querySelector('#ai-resize-handle');
+      if (panel && resizeHandle) {
+        // Restore a previously saved size.
+        try {
+          const s = getData('aiCoachPanelSize');
+          if (s && typeof s.w === 'number' && typeof s.h === 'number') {
+            panel.style.width  = s.w + 'px';
+            panel.style.height = s.h + 'px';
+          }
+        } catch (_) {}
+        let rsx, rsy, rw, rh, rleft, rtop, resizing = false;
+        function rdown(e) {
+          const t = e.touches ? e.touches[0] : e;
+          const r = panel.getBoundingClientRect();
+          rsx = t.clientX; rsy = t.clientY; rw = r.width; rh = r.height; rleft = r.left; rtop = r.top;
+          resizing = true;
+          // Pin the top-left corner so the panel grows toward the grip.
+          panel.style.left = rleft + 'px';
+          panel.style.top  = rtop + 'px';
+          panel.style.right = 'auto';
+          panel.style.bottom = 'auto';
+          document.addEventListener('mousemove', rmove);
+          document.addEventListener('mouseup', rup);
+          document.addEventListener('touchmove', rmove, { passive: false });
+          document.addEventListener('touchend', rup);
+          if (e.cancelable) e.preventDefault();
+          e.stopPropagation();
+        }
+        function rmove(e) {
+          if (!resizing) return;
+          const t = e.touches ? e.touches[0] : e;
+          if (e.cancelable) e.preventDefault();
+          const maxW = window.innerWidth  - rleft - PAD;
+          const maxH = window.innerHeight - rtop  - PAD;
+          let w = Math.max(320, Math.min(maxW, rw + (t.clientX - rsx)));
+          let h = Math.max(360, Math.min(maxH, rh + (t.clientY - rsy)));
+          panel.style.width  = w + 'px';
+          panel.style.height = h + 'px';
+        }
+        function rup() {
+          document.removeEventListener('mousemove', rmove);
+          document.removeEventListener('mouseup', rup);
+          document.removeEventListener('touchmove', rmove);
+          document.removeEventListener('touchend', rup);
+          if (!resizing) return;
+          resizing = false;
+          try { setData('aiCoachPanelSize', { w: panel.offsetWidth, h: panel.offsetHeight }); } catch (_) {}
+        }
+        resizeHandle.addEventListener('mousedown', rdown);
+        resizeHandle.addEventListener('touchstart', rdown, { passive: false });
+      }
+
       window.addEventListener('resize', () => {
         _aiCoachClamp(fab);
         _aiCoachClamp(panel);

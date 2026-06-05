@@ -2122,9 +2122,10 @@
         } catch (_) {}
         if (!msgs.length) return;
         msgs.sort((a, b) => (a.ts || '').localeCompare(b.ts || ''));
-        const lr = lastRead[c.id] || '';
-        const unread = msgs.filter(m => m.from === 'client' && (m.ts || '') > lr).length;
-        threads.push({ type:'client', key:'client:'+c.id, id:c.id, name:c.name||'Client', email:c.email||'', portalToken:tok, msgs, last:msgs[msgs.length-1], unread });
+        const ckey = 'client:'+c.id;
+        const last = msgs[msgs.length-1];
+        const unread = msgs.filter(m => m.from !== 'owner' && (m.ts || '') > (lastRead[ckey] || '')).length;
+        threads.push({ type:'client', key:ckey, id:c.id, name:c.name||'Client', email:c.email||'', portalToken:tok, msgs, last, unread });
       });
       // 2) SaaS tenants — group admin:tenant-messages by tenant slug
       const tmsgs = getData('admin:tenant-messages') || [];
@@ -2135,8 +2136,10 @@
         const arr = bySlug[slug].slice().sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
         const tn = tenants.find(t => t.slug === slug) || {};
         const msgs = arr.map(m => ({ from: (m.from === 'owner' ? 'owner' : 'client'), message: (m.subject && m.from !== 'owner' ? (m.subject + '\n') : '') + (m.body||''), ts: m.ts || '' }));
-        const unread = arr.filter(m => m.from !== 'owner' && !m.read).length;
-        threads.push({ type:'saas', key:'saas:'+slug, id:slug, slug, name: tn.businessName || tn.name || slug, email: tn.email || (arr[arr.length-1]||{}).fromEmail || '', msgs, last:msgs[msgs.length-1], unread });
+        const skey = 'saas:'+slug;
+        const last = msgs[msgs.length-1];
+        const unread = msgs.filter(m => m.from !== 'owner' && (m.ts || '') > (lastRead[skey] || '')).length;
+        threads.push({ type:'saas', key:skey, id:slug, slug, name: tn.businessName || tn.name || slug, email: tn.email || (arr[arr.length-1]||{}).fromEmail || '', msgs, last, unread });
       });
       threads.sort((a, b) => ((b.last&&b.last.ts)||'').localeCompare((a.last&&a.last.ts)||''));
       return threads;
@@ -2237,12 +2240,18 @@
     function _toggleMsgDoneGroup(){ _msgShowDone = !_msgShowDone; renderMessagesInbox(); }
 
     function _markThreadRead(key) {
-      if (key.indexOf('client:') === 0) {
-        const id = key.slice(7);
-        const lastRead = getData('msgLastRead') || {};
-        lastRead[id] = new Date().toISOString();
-        setData('msgLastRead', lastRead);
-      } else if (key.indexOf('saas:') === 0) {
+      // Unified, LOCAL read marker keyed by the thread key. Read state lives only
+      // in msgLastRead (never inside synced message data), so a background sync
+      // can't revert it. We store the newest message's OWN timestamp (same source
+      // the unread test compares against), so every current message ends up <=
+      // the marker and the thread reads as fully caught up.
+      const t = (typeof _gatherAllThreads === 'function') ? _gatherAllThreads().find(x => x.key === key) : null;
+      const marker = (t && t.last && t.last.ts) ? t.last.ts : new Date().toISOString();
+      const lastRead = getData('msgLastRead') || {};
+      lastRead[key] = marker;
+      setData('msgLastRead', lastRead);
+      // Keep the old Settings → tenant inbox consistent for SaaS threads.
+      if (key.indexOf('saas:') === 0) {
         const slug = key.slice(5);
         const list = getData('admin:tenant-messages') || [];
         let changed = false;

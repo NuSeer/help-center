@@ -2157,7 +2157,7 @@
     setInterval(updateMessagesBadge, 15000);
 
     let _openMsgThreadKey = null;
-    let _msgShowDone = false;
+    let _msgShowDone = true;
     function _renderMsgThreadCard(t, isDone) {
       const sendBtnStyle = 'white-space:nowrap;padding:10px 16px;background:linear-gradient(135deg,var(--brand-primary),#7C3AED);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px';
       const openBtnStyle = 'font-size:13px;padding:8px 14px;background:#fff;border:1px solid #E2E8F0;border-radius:8px;color:#475569;cursor:pointer;font-weight:600;font-family:inherit';
@@ -2176,7 +2176,7 @@
         + '<div onclick="toggleMsgThread(\''+t.key+'\')" style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;cursor:pointer">'
         +   '<div style="width:44px;height:44px;border-radius:50%;background:'+avatarBg+';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">'+initials+'</div>'
         +   '<div style="flex:1;min-width:0">'
-        +     '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+tag+'<span style="font-weight:700;color:#0F172A">'+_msgEsc(t.name)+'</span>'+(t.unread?'<span style="background:#4F46E5;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px">'+t.unread+' NEW</span>':'')+'</div>'
+        +     '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+tag+'<span style="font-weight:700'+(isDone?';text-decoration:line-through;color:#94A3B8':';color:#0F172A')+'">'+_msgEsc(t.name)+'</span>'+(isDone?'<span style="font-size:10px;font-weight:700;color:#10B981">✓ DONE</span>':'')+(t.unread?'<span style="background:#4F46E5;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px">'+t.unread+' NEW</span>':'')+'</div>'
         +     '<div style="font-size:13px;color:'+(t.unread?'#0F172A':'#64748B')+';margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+((t.last&&t.last.from==='owner')?'<span style="color:#94A3B8">You: </span>':'')+snippet+'</div>'
         +   '</div>'
         +   '<div style="text-align:right;flex-shrink:0"><div style="font-size:12px;color:#94A3B8">'+_msgTimeAgo(t.last&&t.last.ts)+'</div><div style="font-size:11px;color:#CBD5E1;margin-top:4px">'+(open?'▲':'▼')+'</div></div>'
@@ -5242,12 +5242,12 @@
       const e = existing || {};
       const escH = s => (s||'').toString().replace(/"/g,'&quot;');
       overlay.innerHTML =
-        '<div style="background:#fff;border-radius:14px;max-width:520px;width:100%;box-shadow:0 16px 50px rgba(0,0,0,0.25);overflow:hidden">' +
-          '<div style="padding:18px 22px;border-bottom:1px solid #e5e7eb">' +
+        '<div style="background:#fff;border-radius:14px;max-width:520px;width:100%;box-shadow:0 16px 50px rgba(0,0,0,0.25);overflow:hidden;max-height:92vh;display:flex;flex-direction:column">' +
+          '<div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;flex:0 0 auto">' +
             '<h3 style="font-size:17px;font-weight:700;margin:0">' + (existing ? 'Edit tenant' : 'Add new tenant') + '</h3>' +
             '<p style="font-size:12.5px;color:#64748B;margin:4px 0 0">' + (existing ? 'Updates take effect on the tenant\'s next page load.' : 'Creates a new isolated workspace under your PocketBase.') + '</p>' +
           '</div>' +
-          '<div style="padding:16px 22px">' +
+          '<div style="padding:16px 22px;overflow-y:auto;flex:1 1 auto;min-height:0">' +
             '<label class="form-label">Slug (URL identifier — letters, numbers, dashes only)</label>' +
             '<input id="tn-slug" class="form-input" style="margin:0 0 12px;font-family:monospace" placeholder="toby" value="' + escH(e.slug || '') + '"' + (existing ? ' readonly' : '') + '>' +
             '<label class="form-label">Owner name</label>' +
@@ -5272,7 +5272,7 @@
             '</div>' +
             '<div style="font-size:11.5px;color:#94A3B8;margin:0 0 4px">None checked = tenant sees no AI tools (default).</div>' +
           '</div>' +
-          '<div style="padding:12px 22px;border-top:1px solid #e5e7eb;background:#F8FAFC;display:flex;justify-content:flex-end;gap:8px">' +
+          '<div style="padding:12px 22px;border-top:1px solid #e5e7eb;background:#F8FAFC;display:flex;justify-content:flex-end;gap:8px;flex:0 0 auto">' +
             '<button onclick="document.getElementById(\'tenant-form-overlay\').remove()" class="btn btn-outline" style="padding:8px 16px">Cancel</button>' +
             '<button onclick="_saveTenantForm(' + (existing ? '\'' + escH(existing.slug) + '\'' : 'null') + ')" id="tn-save-btn" class="btn btn-solid" style="padding:8px 16px">' + (existing ? 'Save changes' : 'Create tenant') + '</button>' +
           '</div>' +

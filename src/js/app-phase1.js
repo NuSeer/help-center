@@ -1739,8 +1739,11 @@
               <div class="pp-section-head"><div class="pp-section-title">📄 Documents <span class="pp-count">${docs.length}</span></div></div>
               ${docs.length ? docs.sort((a,b)=>(b.sentAt||'').localeCompare(a.sentAt||'')).map(d => {
                 const sentDate = d.sentAt ? new Date(d.sentAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '';
-                const badgeClass = d.status === 'signed' ? 'signed' : d.status === 'viewed' ? 'viewed' : 'sent';
-                const badgeText = d.status === 'signed' ? '✓ SIGNED' : d.status === 'viewed' ? 'VIEWED' : 'NEEDS YOUR SIGNATURE';
+                const isInv = /invoice|receipt/i.test(d.type||'');
+                const badgeClass = (d.status === 'signed' || d.status === 'paid') ? 'signed' : d.status === 'viewed' ? 'viewed' : 'sent';
+                const badgeText = isInv
+                  ? (d.status === 'paid' ? '✓ PAID' : d.status === 'viewed' ? 'VIEWED' : 'INVOICE — VIEW & PAY')
+                  : (d.status === 'signed' ? '✓ SIGNED' : d.status === 'viewed' ? 'VIEWED' : 'NEEDS YOUR SIGNATURE');
                 const ownerSigned = d.ownerSignedBy ? '<span class="pp-badge signed" style="margin-left:6px">✓ '+escH(d.ownerSignedBy||(JSON.parse(localStorage.getItem('settings'))||DEFAULT_SETTINGS).name||'PROVIDER')+' SIGNED</span>' : '';
                 return `<div class="pp-row">
                   <div style="flex:1;min-width:200px">
@@ -1748,7 +1751,7 @@
                     <div class="pp-row-sub">Sent ${sentDate} · <span class="pp-badge ${badgeClass}">${badgeText}</span> ${d.ownerSignedBy?'<span class="pp-badge signed" style="margin-left:6px">✓ PROVIDER SIGNED</span>':''}</div>
                   </div>
                   <div style="display:flex;gap:6px;flex-wrap:wrap">
-                    <button class="pp-btn pp-btn-primary" onclick="openPortalDoc('${d.id}')">${d.status==='signed'?'View Signed':'Review &amp; Sign →'}</button>
+                    <button class="pp-btn pp-btn-primary" onclick="openPortalDoc('${d.id}')">${isInv?(d.status==='paid'?'View Invoice':'View &amp; Pay →'):(d.status==='signed'?'View Signed':'Review &amp; Sign →')}</button>
                     <button class="pp-btn pp-btn-outline" onclick="ppPrintDoc('${d.id}')"><span class="icon icon-sm" data-icon="print" style="margin-right:6px;vertical-align:-2px"></span>Print</button>
                     <button class="pp-btn pp-btn-outline" onclick="ownerDeleteClientDoc('${d.id}')" style="border-color:#DC2626;color:#DC2626" title="Remove this document from the client portal">× Remove</button>
                   </div>
@@ -7295,14 +7298,21 @@ ${biz} clients are serious, ambitious people building real businesses and real l
     // Render markdown to styled HTML using marked.js
     function mdRender(text) {
       const clean = cleanGroqResponse(text || '');
+      let html = null;
       if (typeof marked !== 'undefined') {
         try {
           marked.setOptions({ breaks: true, gfm: true });
-          return marked.parse(clean);
-        } catch(e) {}
+          html = marked.parse(clean);
+        } catch(e) { html = null; }
       }
-      // Fallback if marked not loaded
-      return clean.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+      if (html == null) {
+        html = clean.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+      }
+      // [[PAGEBREAK]] marker → a real page break (invisible on screen, a new sheet
+      // in Word/print). Lets AI projects (e.g. Legal Shield) keep the clean
+      // document up front and push completion/modification notes to later pages.
+      return html.replace(/<p>\s*\[\[PAGEBREAK\]\]\s*<\/p>/gi, '<div style="page-break-before:always"></div>')
+                 .replace(/\[\[PAGEBREAK\]\]/gi, '<div style="page-break-before:always"></div>');
     }
 
     async function callAI(messages, onChunk) {

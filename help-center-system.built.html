@@ -19864,7 +19864,7 @@ For each of 8 names, provide:
 
       window._invoiceDraft = {
         clientId,
-        number: (existing && existing.number) || client.invoiceNumber || ('INV-' + String(Date.now()).slice(-5)),
+        number: (existing && existing.number) || client.invoiceNumber || _invoiceNumberFor(client, (existing && existing.issuedDate) || new Date().toISOString().slice(0, 10)),
         issuedDate: (existing && existing.issuedDate) || new Date().toISOString().slice(0,10),
         dueDate: (existing && existing.dueDate) || '',
         items: JSON.parse(JSON.stringify(seedItems)),
@@ -24314,20 +24314,33 @@ async function sendForSignature(previewId, docType) {
 
 // ── REPORTS: CLIENT DROPDOWNS & AUTO-FILL ──────────────────────────────────
 
-// Auto-build the invoice number: [4-letter prefix][YYYYMMDD].
+// Build an invoice number [4-letter prefix][YYYYMMDD] from a client + date.
 // Prefix = first 4 letters of the business name, else first-2 of first name +
-// first-2 of last name. Date from the Invoice Date field (defaults to today).
-function genInvoiceNumber() {
-  const dateVal = document.getElementById('inv-date')?.value || new Date().toISOString().slice(0, 10);
-  const ymd = dateVal.replace(/-/g, '');
+// first-2 of last name. Clients sharing a prefix get a stable letter (B, C…).
+// Shared by the Reports tab AND the client-portal invoice editor so both match.
+function _invoiceNumberFor(client, dateStr) {
+  const ymd = (dateStr || new Date().toISOString().slice(0, 10)).replace(/-/g, '');
   const clean = s => (s || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-  // Base 4-letter prefix from a client's business (or first/last name).
   const prefixOf = (biz, name) => {
     const b = clean(biz);
     if (b) return b.slice(0, 4);
     const w = (name || '').trim().split(/\s+/);
     return (clean(w[0]).slice(0, 2) + clean(w[1] || w[0]).slice(0, 2)).slice(0, 4) || 'INV';
   };
+  let prefix = prefixOf(client.businessName || '', client.name || '');
+  if (client.id) {
+    const same = (getData('clients') || [])
+      .filter(c => prefixOf(c.businessName || '', c.name || '') === prefix)
+      .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0) || String(a.id).localeCompare(String(b.id)));
+    const idx = same.findIndex(c => c.id === client.id);
+    if (idx > 0) prefix += String.fromCharCode(65 + idx);
+  }
+  return prefix + ymd;
+}
+
+// Auto-fill the Reports → Invoice number field from the selected/typed client + date.
+function genInvoiceNumber() {
+  const dateVal = document.getElementById('inv-date')?.value || new Date().toISOString().slice(0, 10);
   let biz = '', name = '', clientId = '';
   const sel = document.getElementById('inv-client-select');
   if (sel && sel.value) {
@@ -24339,18 +24352,8 @@ function genInvoiceNumber() {
     if (typed.includes(' — ')) { const p = typed.split(' — '); name = p[0]; biz = p[1] || ''; }
     else name = typed;
   }
-  let prefix = prefixOf(biz, name);
-  // Collision handling: if other clients share this same 4-letter prefix, give
-  // each a stable disambiguator letter (oldest keeps the plain prefix, then B, C…).
-  if (clientId) {
-    const same = (getData('clients') || [])
-      .filter(c => prefixOf(c.businessName || '', c.name || '') === prefix)
-      .sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0) || String(a.id).localeCompare(String(b.id)));
-    const idx = same.findIndex(c => c.id === clientId);
-    if (idx > 0) prefix += String.fromCharCode(65 + idx); // 2nd client → B, 3rd → C…
-  }
   const el = document.getElementById('inv-number');
-  if (el) el.value = prefix + ymd;
+  if (el) el.value = _invoiceNumberFor({ businessName: biz, name: name, id: clientId }, dateVal);
 }
 
 function populateReportClientDropdowns() {

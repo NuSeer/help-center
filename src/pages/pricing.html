@@ -6,14 +6,25 @@
   <div class="content">
     <div class="path-tabs-container">
       <div class="path-tabs-nav">
-        <button class="path-tab active" onclick="pTab('pricing','grid',this)">Pricing</button>
-        <button class="path-tab" onclick="pTab('pricing','retainers',this)">Retainers</button>
-        <button class="path-tab" onclick="pTab('pricing','proposal',this)">Proposal Builder</button>
-        <button class="path-tab" onclick="pTab('pricing','policies',this)">Client Policies</button>
+        <button class="path-tab active" id="ptab-myservices" onclick="pTab('pricing','myservices',this)">📋 My Services &amp; Pricing</button>
+        <button class="path-tab" id="ptab-grid" onclick="pTab('pricing','grid',this)">Pricing</button>
+        <button class="path-tab" id="ptab-retainers" onclick="pTab('pricing','retainers',this)">Retainers</button>
+        <button class="path-tab" id="ptab-proposal" onclick="pTab('pricing','proposal',this)">Proposal Builder</button>
+        <button class="path-tab" id="ptab-policies" onclick="pTab('pricing','policies',this)">Client Policies</button>
+      </div>
+
+      <!-- TAB: MY SERVICES & PRICING (blank builder — the tenant's rate card) -->
+      <div id="pricing-tab-myservices" class="path-tab-content active">
+        <div class="card" style="margin-bottom:16px;background:linear-gradient(135deg,rgba(124,58,237,0.06),rgba(124,58,237,0.02));border:1px solid rgba(124,58,237,0.18)">
+          <div style="font-size:16px;font-weight:700;color:#0F172A;margin-bottom:6px">📋 Your Services &amp; Pricing</div>
+          <div style="font-size:13.5px;color:#475569;line-height:1.7">Add the services you offer and what you charge — one card per service. Include a name, a price (e.g. <em>$500</em>, <em>$150/mo</em>, or <em>$75/hr</em>), and a short description of what's included. You can edit or delete any of them anytime.</div>
+        </div>
+        <div style="display:flex;justify-content:flex-end;margin-bottom:14px"><button onclick="openServiceForm()" class="btn btn-solid">+ Add Service</button></div>
+        <div id="services-pricing-list"></div>
       </div>
 
       <!-- TAB: PRICING GRID -->
-      <div id="pricing-tab-grid" class="path-tab-content active">
+      <div id="pricing-tab-grid" class="path-tab-content">
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px" id="pricing-cards"></div>
       </div>
 

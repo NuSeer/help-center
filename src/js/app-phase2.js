@@ -2703,7 +2703,93 @@ const POLICIES = [
   { icon:'🤝', name:'Scope Changes', desc:'Changes beyond agreed scope require a new quote. May affect timeline.' },
 ];
 
+// ── SERVICES & PRICING BUILDER ────────────────────────────────────────────────
+// A blank, owner-and-tenant editable rate card. Stored under the (tenant-prefixed)
+// 'servicesPricing' key, so each tenant gets their own empty builder.
+function renderServicesPricing() {
+  const list = document.getElementById('services-pricing-list');
+  if (!list) return;
+  const esc = s => (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const items = getData('servicesPricing') || [];
+  if (!items.length) {
+    list.innerHTML = '<div class="card" style="text-align:center;padding:40px 24px;color:#64748B"><div style="font-size:34px;margin-bottom:10px">🏷️</div><div style="font-weight:700;color:#0F172A;margin-bottom:4px">No services yet</div><div style="font-size:13.5px">Click <strong>+ Add Service</strong> to build your rate card — name, price, and what\'s included.</div></div>';
+    return;
+  }
+  list.innerHTML = '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px">' + items.map(it => '<div class="card">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+    +   '<div style="font-size:16px;font-weight:700;color:#0F172A">'+esc(it.name)+'</div>'
+    +   '<div style="display:flex;gap:6px;flex-shrink:0">'
+    +     '<button onclick="openServiceForm(\''+it.id+'\')" class="btn btn-outline" style="padding:4px 9px;font-size:11.5px">Edit</button>'
+    +     '<button onclick="deleteServiceEntry(\''+it.id+'\')" style="padding:4px 9px;font-size:11.5px;background:none;border:1px solid #FCA5A5;border-radius:6px;color:#DC2626;cursor:pointer;font-weight:600">Delete</button>'
+    +   '</div>'
+    + '</div>'
+    + (it.price ? '<div style="font-size:20px;font-weight:800;color:var(--gold,#C9A84C);margin:6px 0 4px">'+esc(it.price)+'</div>' : '')
+    + (it.desc ? '<div style="font-size:13px;color:#475569;line-height:1.6;white-space:pre-wrap">'+esc(it.desc)+'</div>' : '')
+    + '</div>').join('') + '</div>';
+}
+function openServiceForm(id) {
+  const items = getData('servicesPricing') || [];
+  const existing = id ? items.find(x => x.id === id) : null;
+  const attrEsc = s => (s||'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  const bodyEsc = s => (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const old = document.getElementById('svc-form-overlay'); if (old) old.remove();
+  const ov = document.createElement('div');
+  ov.id = 'svc-form-overlay';
+  ov.style.cssText = 'position:fixed;inset:0;z-index:10004;background:rgba(15,23,42,0.55);display:flex;align-items:center;justify-content:center;padding:20px';
+  ov.onclick = e => { if (e.target === ov) ov.remove(); };
+  ov.innerHTML = '<div style="background:#fff;border-radius:14px;max-width:520px;width:100%;box-shadow:0 16px 50px rgba(0,0,0,0.25);overflow:hidden;max-height:92vh;display:flex;flex-direction:column">'
+    + '<div style="padding:18px 22px;border-bottom:1px solid #e5e7eb;flex:0 0 auto"><h3 style="font-size:17px;font-weight:700;margin:0">'+(existing?'Edit service':'Add service')+'</h3></div>'
+    + '<div style="padding:16px 22px;overflow-y:auto;flex:1 1 auto;min-height:0">'
+    +   '<label class="form-label">Service name</label><input id="svc-name" class="form-input" style="margin:0 0 12px" placeholder="e.g. 1:1 Coaching Package" value="'+attrEsc(existing?existing.name:'')+'">'
+    +   '<label class="form-label">Price</label><input id="svc-price" class="form-input" style="margin:0 0 12px" placeholder="e.g. $500, $150/mo, $75/hr" value="'+attrEsc(existing?existing.price:'')+'">'
+    +   '<label class="form-label">What\'s included</label><textarea id="svc-desc" class="form-input" style="margin:0;min-height:130px;resize:vertical;font-family:inherit;line-height:1.55" placeholder="Describe what the client gets…">'+bodyEsc(existing?existing.desc:'')+'</textarea>'
+    + '</div>'
+    + '<div style="padding:12px 22px;border-top:1px solid #e5e7eb;background:#F8FAFC;display:flex;justify-content:flex-end;gap:8px;flex:0 0 auto">'
+    +   '<button onclick="document.getElementById(\'svc-form-overlay\').remove()" class="btn btn-outline" style="padding:8px 16px">Cancel</button>'
+    +   '<button onclick="saveServiceEntry('+(existing?('\''+existing.id+'\''):'null')+')" class="btn btn-solid" style="padding:8px 16px">'+(existing?'Save changes':'Add service')+'</button>'
+    + '</div></div>';
+  document.body.appendChild(ov);
+  setTimeout(()=>document.getElementById('svc-name')?.focus(),60);
+}
+function saveServiceEntry(id) {
+  const name = (document.getElementById('svc-name')?.value || '').trim();
+  const price = (document.getElementById('svc-price')?.value || '').trim();
+  const desc = (document.getElementById('svc-desc')?.value || '').trim();
+  if (!name) { alert('Please enter a service name.'); return; }
+  const items = getData('servicesPricing') || [];
+  if (id) {
+    const it = items.find(x => x.id === id);
+    if (it) { it.name = name; it.price = price; it.desc = desc; it.updatedAt = new Date().toISOString(); }
+  } else {
+    items.push({ id: (typeof generateId==='function'?generateId():String(Date.now())), name, price, desc, updatedAt: new Date().toISOString() });
+  }
+  setData('servicesPricing', items);
+  document.getElementById('svc-form-overlay')?.remove();
+  renderServicesPricing();
+  if (typeof showToast==='function') showToast(id?'Service updated':'Service added','success');
+}
+function deleteServiceEntry(id) {
+  if (!confirm('Delete this service?\n\n⚠️ This is PERMANENT and cannot be undone. Are you sure?')) return;
+  const items = (getData('servicesPricing') || []).filter(x => x.id !== id);
+  setData('servicesPricing', items);
+  renderServicesPricing();
+  if (typeof showToast==='function') showToast('Service deleted','warn');
+}
+
 function renderPricingPage() {
+  if (typeof renderServicesPricing === 'function') renderServicesPricing();
+  // In a tenant copy, Services & Pricing is ONLY their own blank builder — hide
+  // the owner's rate card, retainers, proposal templates, and policies.
+  if (typeof TENANT !== 'undefined' && TENANT) {
+    [['ptab-grid','pricing-tab-grid'],['ptab-retainers','pricing-tab-retainers'],['ptab-proposal','pricing-tab-proposal'],['ptab-policies','pricing-tab-policies']].forEach(([btnId,paneId]) => {
+      const b = document.getElementById(btnId); if (b) b.style.display = 'none';
+      const p = document.getElementById(paneId); if (p) { p.classList.remove('active'); p.style.display = 'none'; }
+    });
+    const mb = document.getElementById('ptab-myservices'); if (mb) mb.classList.add('active');
+    const mp = document.getElementById('pricing-tab-myservices'); if (mp) { mp.classList.add('active'); mp.style.display = ''; }
+    const sub = document.querySelector('#pricing-page .page-subtitle'); if (sub) sub.textContent = 'Build your own rate card — add, edit, and price the services you offer.';
+    return; // skip the owner-only rate card / retainer / policy rendering below
+  }
   const grid = document.getElementById('pricing-cards');
   if (grid) grid.innerHTML = SERVICES.map(s => `
     <div class="card" style="${s.featured?'border:2px solid var(--gold);background:var(--gold-dim)':''}">

@@ -893,7 +893,7 @@
         if (typeof checkOnboarding === 'function') checkOnboarding();
         // Resume cross-device sync on refresh so the badge updates and any
         // edits made elsewhere flow in within the next 30s tick.
-        try { pbSyncAll(); startBackgroundSync(); startReminders(); _pbRenderBadge(); } catch(e) {}
+        try { pbSyncAll().then(()=>{ try{updateMessagesBadge();}catch(_){} }); startBackgroundSync(); startReminders(); _pbRenderBadge(); updateMessagesBadge(); } catch(e) {}
       }
     }
 
@@ -2047,6 +2047,152 @@
       if (tok && typeof showPortal === 'function') setTimeout(()=>showPortal(tok), 600);
     }
 
+    // ── MESSAGES INBOX (owner-side) ─────────────────────────────────────────────
+    // Aggregates every client conversation (portal.html replies stored as
+    // portal-msgs:<token> + in-portal messages on the client record) into one
+    // place, so the owner can read and reply without opening each portal.
+    function _gatherClientThreads() {
+      const clients = (typeof getData === 'function' ? getData('clients') : null) || [];
+      const lastRead = getData('msgLastRead') || {};
+      const threads = [];
+      clients.forEach(c => {
+        const tok = c.portalToken || '';
+        const msgs = [];
+        (c.messages || []).forEach(m => msgs.push({ from: (m.from === 'owner' ? 'owner' : 'client'), message: m.message, ts: m.timestamp || '' }));
+        try {
+          const rec = JSON.parse(localStorage.getItem('portal-msgs:' + tok) || '{}');
+          (rec.msgs || []).forEach(m => msgs.push({ from: 'client', message: m.message, ts: m.at || '' }));
+        } catch (_) {}
+        if (!msgs.length) return;
+        msgs.sort((a, b) => (a.ts || '').localeCompare(b.ts || ''));
+        const last = msgs[msgs.length - 1];
+        const lr = lastRead[c.id] || '';
+        const unread = msgs.filter(m => m.from === 'client' && (m.ts || '') > lr).length;
+        threads.push({ client: c, msgs, last, unread });
+      });
+      threads.sort((a, b) => (b.last.ts || '').localeCompare(a.last.ts || ''));
+      return threads;
+    }
+
+    function updateMessagesBadge() {
+      try {
+        const totalUnread = _gatherClientThreads().reduce((n, t) => n + t.unread, 0);
+        const badge = document.getElementById('nav-msg-badge');
+        if (!badge) return;
+        if (totalUnread > 0) { badge.textContent = totalUnread > 99 ? '99+' : String(totalUnread); badge.style.display = 'inline-block'; }
+        else { badge.style.display = 'none'; }
+      } catch (_) {}
+    }
+    setInterval(updateMessagesBadge, 15000);
+
+    function _msgEsc(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function _msgTimeAgo(ts){
+      if(!ts) return '';
+      const d = new Date(ts); if(isNaN(d.getTime())) return '';
+      const diff = (Date.now() - d.getTime())/1000;
+      if(diff < 60) return 'just now';
+      if(diff < 3600) return Math.floor(diff/60)+'m ago';
+      if(diff < 86400) return Math.floor(diff/3600)+'h ago';
+      if(diff < 604800) return Math.floor(diff/86400)+'d ago';
+      return d.toLocaleDateString();
+    }
+
+    let _openMsgThreadId = null;
+    function renderMessagesInbox() {
+      const wrap = document.getElementById('messages-inbox');
+      if (!wrap) return;
+      const threads = _gatherClientThreads();
+      updateMessagesBadge();
+      if (!threads.length) {
+        wrap.innerHTML = '<div class="card" style="text-align:center;padding:48px 24px;color:#64748B"><div style="font-size:40px;margin-bottom:12px">💬</div><div style="font-weight:700;color:#0F172A;margin-bottom:6px">No messages yet</div><div style="font-size:14px">When a client replies from their portal, the conversation shows up here.</div></div>';
+        return;
+      }
+      const sendBtnStyle = 'white-space:nowrap;padding:10px 16px;background:linear-gradient(135deg,var(--brand-primary),#7C3AED);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px';
+      const openBtnStyle = 'font-size:13px;padding:8px 14px;background:#fff;border:1px solid #E2E8F0;border-radius:8px;color:#475569;cursor:pointer;font-weight:600;font-family:inherit';
+      let html = '';
+      threads.forEach(t => {
+        const c = t.client;
+        const open = _openMsgThreadId === c.id;
+        const initials = (c.name||'?').split(/\s+/).map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'C';
+        const lastMsg = t.last.message || '';
+        const snippet = _msgEsc(lastMsg.slice(0,90)) + (lastMsg.length>90?'…':'');
+        html += '<div class="card" style="padding:0;overflow:hidden;margin-bottom:12px;border:1px solid '+(t.unread?'#C7D2FE':'#E2E8F0')+'">';
+        html += '<div onclick="toggleMsgThread(\''+c.id+'\')" style="display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;'+(t.unread?'background:#F5F7FF':'')+'">'
+          + '<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--brand-primary),#7C3AED);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">'+initials+'</div>'
+          + '<div style="flex:1;min-width:0">'
+          +   '<div style="display:flex;align-items:center;gap:8px"><span style="font-weight:700;color:#0F172A">'+_msgEsc(c.name)+'</span>'+(t.unread?'<span style="background:#4F46E5;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px">'+t.unread+' NEW</span>':'')+'</div>'
+          +   '<div style="font-size:13px;color:'+(t.unread?'#0F172A':'#64748B')+';margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(t.last.from==='owner'?'<span style="color:#94A3B8">You: </span>':'')+snippet+'</div>'
+          + '</div>'
+          + '<div style="text-align:right;flex-shrink:0"><div style="font-size:12px;color:#94A3B8">'+_msgTimeAgo(t.last.ts)+'</div><div style="font-size:11px;color:#CBD5E1;margin-top:4px">'+(open?'▲':'▼')+'</div></div>'
+          + '</div>';
+        if (open) {
+          html += '<div style="padding:6px 18px 18px;border-top:1px solid #F1F5F9">';
+          html += '<div style="max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:14px 0">';
+          t.msgs.forEach(m => {
+            const mine = m.from === 'owner';
+            html += '<div style="align-self:'+(mine?'flex-end':'flex-start')+';max-width:78%;background:'+(mine?'linear-gradient(135deg,var(--brand-primary),#7C3AED)':'#F1F5F9')+';color:'+(mine?'#fff':'#0F172A')+';padding:9px 13px;border-radius:14px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word">'+_msgEsc(m.message)+'<div style="font-size:10px;opacity:0.7;margin-top:4px">'+_msgTimeAgo(m.ts)+'</div></div>';
+          });
+          html += '</div>';
+          html += '<div style="display:flex;gap:8px;align-items:flex-end;margin-top:8px">'
+            + '<textarea id="msg-reply-'+c.id+'" rows="1" placeholder="Type a reply to '+_msgEsc(c.name)+'…" style="flex:1;padding:10px 12px;border:1px solid #CBD5E1;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none" oninput="this.style.height=\'auto\';this.style.height=Math.min(this.scrollHeight,120)+\'px\'"></textarea>'
+            + '<button onclick="replyToClientThread(\''+c.id+'\')" style="'+sendBtnStyle+'">Send ✉</button>'
+            + '</div>';
+          html += '<div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
+            + '<button onclick="showPortal(\''+(c.portalToken||'')+'\')" style="'+openBtnStyle+'">Open Portal →</button>'
+            + (c.email
+                ? '<span style="font-size:12px;color:#94A3B8">Replies email '+_msgEsc(c.email)+' and post to their portal.</span>'
+                : '<span style="font-size:12px;color:#F59E0B">No email on file — reply will only post to their portal.</span>')
+            + '</div>';
+          html += '</div>';
+        }
+        html += '</div>';
+      });
+      wrap.innerHTML = html;
+    }
+
+    function toggleMsgThread(clientId) {
+      if (_openMsgThreadId === clientId) {
+        _openMsgThreadId = null;
+      } else {
+        _openMsgThreadId = clientId;
+        const lastRead = getData('msgLastRead') || {};
+        lastRead[clientId] = new Date().toISOString();
+        setData('msgLastRead', lastRead);
+      }
+      renderMessagesInbox();
+    }
+
+    async function replyToClientThread(clientId) {
+      const ta = document.getElementById('msg-reply-' + clientId);
+      const text = (ta && ta.value || '').trim();
+      if (!text) return;
+      const clients = getData('clients') || [];
+      const client = clients.find(c => c.id === clientId);
+      if (!client) return;
+      client.messages = client.messages || [];
+      client.messages.push({ id: (typeof generateId==='function'?generateId():String(Date.now())), from: 'owner', message: text, timestamp: new Date().toISOString(), read: true });
+      setData('clients', clients);
+      // Republish the portal snapshot so the reply appears in the client's portal.
+      try { if (typeof pbPushPortalSnapshot === 'function') pbPushPortalSnapshot(client); } catch (_) {}
+      // Email fallback so they're notified even if the portal isn't open.
+      if (client.email && typeof sendPortalNotificationEmail === 'function') {
+        const biz = (JSON.parse(localStorage.getItem('settings'))||{}).businessName || 'your provider';
+        sendPortalNotificationEmail(client, {
+          subject: 'New message from ' + biz,
+          heading: 'You have a new message',
+          body: _msgEsc(text).replace(/\n/g,'<br>'),
+          ctaLabel: 'Open Your Portal & Reply'
+        });
+      }
+      if (ta) { ta.value = ''; ta.style.height = 'auto'; }
+      const lastRead = getData('msgLastRead') || {};
+      lastRead[clientId] = new Date().toISOString();
+      setData('msgLastRead', lastRead);
+      _openMsgThreadId = clientId;
+      renderMessagesInbox();
+      if (typeof showToast === 'function') showToast('Reply sent to ' + client.name, 'success');
+    }
+
     // ── NAVIGATION ─────────────────────────────────────────────────────────────
     function showPage(pageId, event) {
       // Exit voice studio fullscreen overlay if navigating elsewhere — the
@@ -2076,7 +2222,7 @@
         event.currentTarget.setAttribute('aria-current', 'page');
       }
       if (window.innerWidth <= 768) closeSidebar();
-      const renders = { dashboard: updateDashboard, clients: renderClients, 'my-ideas': renderIdeasKanban, notes: renderNotes, 'business-file': renderBusinessFile, 'client-portal': renderPortalLinks, 'income-pathway': renderIncomeWizard, 'credit-pathway': renderBizCreditChecklist, settings: () => { loadSettingsPage(); loadIntegrationSettingsUI(); loadCalendarSubscriptionUI(); }, revenue: renderRevenue, calendar: renderCalendar, 'state-resources': renderStates, library: renderLibrary, guides: renderGuides,
+      const renders = { dashboard: updateDashboard, clients: renderClients, messages: renderMessagesInbox, 'my-ideas': renderIdeasKanban, notes: renderNotes, 'business-file': renderBusinessFile, 'client-portal': renderPortalLinks, 'income-pathway': renderIncomeWizard, 'credit-pathway': renderBizCreditChecklist, settings: () => { loadSettingsPage(); loadIntegrationSettingsUI(); loadCalendarSubscriptionUI(); }, revenue: renderRevenue, calendar: renderCalendar, 'state-resources': renderStates, library: renderLibrary, guides: renderGuides,
   'career-pathway': () => { renderJobApps(); restoreCareerChecks(); loadCareerGoals(); if (typeof _a10xRefreshBfDropdown === 'function') _a10xRefreshBfDropdown(); },
   'youth-pathway': () => { renderCurriculum(); renderOutreach(); restoreYouthChecks(); loadYouthProgram(); loadYouthPlatform(); },
   'course-pathway': loadCoursePathway,
@@ -2709,6 +2855,7 @@
       try {
         Promise.resolve(pbSyncAll()).then(() => {
           if (typeof _pbRenderBadge === 'function') _pbRenderBadge();
+          if (typeof updateMessagesBadge === 'function') updateMessagesBadge();
           const visible = document.querySelector('#app .page:not(.hidden)');
           if (visible && /-page$/.test(visible.id) && typeof showPage === 'function') {
             showPage(visible.id.replace(/-page$/, ''));

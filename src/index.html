@@ -401,6 +401,10 @@
           <button type="button" class="nav-link" onclick="showPage('clients', event)">
             <span class="nav-icon" style="font-size:13px">▸</span><span>Client Manager</span>
           </button>
+          <button type="button" class="nav-link" onclick="showPage('messages', event)">
+            <span class="nav-icon">💬</span><span>Messages</span>
+            <span id="nav-msg-badge" style="display:none;margin-left:auto;background:#EF4444;color:#fff;font-size:10px;font-weight:700;min-width:18px;height:18px;padding:0 5px;border-radius:99px;line-height:18px;text-align:center">0</span>
+          </button>
           <button type="button" class="nav-link" onclick="showPage('client-portal', event)">
             <span class="nav-icon" style="font-size:13px">▸</span><span>Client Portal</span>
           </button>
@@ -589,6 +593,7 @@
 
       <!-- CLIENTS -->
       <!-- INCLUDE: pages/clients.html -->
+      <!-- INCLUDE: pages/messages.html -->
 
       <!-- PATHWAYS -->
       <!-- INCLUDE: pages/income-pathway.html -->

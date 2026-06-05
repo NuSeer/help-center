@@ -7308,11 +7308,18 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       if (html == null) {
         html = clean.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
       }
-      // [[PAGEBREAK]] marker → a real page break (invisible on screen, a new sheet
-      // in Word/print). Lets AI projects (e.g. Legal Shield) keep the clean
-      // document up front and push completion/modification notes to later pages.
-      return html.replace(/<p>\s*\[\[PAGEBREAK\]\]\s*<\/p>/gi, '<div style="page-break-before:always"></div>')
-                 .replace(/\[\[PAGEBREAK\]\]/gi, '<div style="page-break-before:always"></div>');
+      // Page-break marker → a divider that is VISIBLE on screen (so the user can
+      // see the document and its trailing notes are separated) AND forces a real
+      // new sheet in Word/print. Lenient about how the AI writes the marker:
+      // [[PAGEBREAK]], {{PAGE BREAK}}, <PAGEBREAK>, ---PAGEBREAK---, or a lone line.
+      // Lets AI projects (e.g. Legal Shield) keep the clean document up front and
+      // push completion/modification notes onto later pages.
+      const PB = '<div class="pagebreak" style="page-break-before:always;break-before:page;margin:22px 0;border-top:2px dashed #CBD5E1;padding-top:7px;text-align:center;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:#94A3B8">— new page —</div>';
+      return html
+        // a lone marker line that marked wrapped in its own <p>…</p>
+        .replace(/<p>\s*[-*=_ ]*\[?\[?\{?\{?<?\s*page\s*[-_ ]?break\s*>?\}?\}?\]?\]?[-*=_ ]*\s*<\/p>/gi, PB)
+        // bracketed / angled marker appearing inline anywhere
+        .replace(/[\[\{<]{1,2}\s*page\s*[-_ ]?break\s*[\]\}>]{1,2}/gi, PB);
     }
 
     async function callAI(messages, onChunk) {

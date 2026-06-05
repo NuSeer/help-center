@@ -570,7 +570,15 @@
     .ai-panel-title{font-weight:700;font-size:14px;color:#fff;flex:1;}
     .ai-panel-new{background:rgba(255,255,255,0.16);border:1px solid rgba(255,255,255,0.25);color:#fff;cursor:pointer;font-size:11.5px;font-weight:700;line-height:1;padding:5px 10px;border-radius:14px;white-space:nowrap;}
     .ai-panel-new:hover{background:rgba(255,255,255,0.28);}
+    .ai-panel-min{background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:22px;line-height:1;padding:0 2px;font-weight:700;}
+    .ai-panel-min:hover{color:#fff;}
     .ai-panel-close{background:none;border:none;color:rgba(255,255,255,0.7);cursor:pointer;font-size:20px;line-height:1;}
+    /* Minimized (rolled-up) coach — only the header bar shows. */
+    .ai-panel.ai-collapsed{height:auto!important;min-height:0!important;}
+    .ai-panel.ai-collapsed .ai-context-bar,
+    .ai-panel.ai-collapsed .ai-messages,
+    .ai-panel.ai-collapsed .ai-input-row,
+    .ai-panel.ai-collapsed .ai-resize-handle{display:none!important;}
     .ai-panel-close:hover{color:#fff;}
     .ai-context-bar{padding:6px 18px;background:#EEF2FF;font-size:10px;color:var(--brand-primary);font-weight:700;letter-spacing:0.6px;text-transform:uppercase;border-bottom:1px solid #E8ECF1;}
     .ai-messages{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-height:120px;}
@@ -8598,7 +8606,8 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       <span class="icon" data-icon="spark" style="width:20px;height:20px;color:#fff"></span>
       <div class="ai-panel-title" id="ai-panel-title">H.E.L.P. AI Coach</div>
       <button class="ai-panel-new" onclick="newAiCoachChat()" title="Start a new conversation">+ New</button>
-      <button class="ai-panel-close" onclick="toggleAiPanel()">×</button>
+      <button class="ai-panel-min" id="ai-panel-min-btn" onclick="toggleAiMinimize(event)" title="Minimize">–</button>
+      <button class="ai-panel-close" onclick="toggleAiPanel()" title="Close">×</button>
     </div>
     <div class="ai-context-bar" id="ai-context-bar">Ask me anything about your business journey</div>
     <div class="ai-messages" id="ai-messages">
@@ -16505,6 +16514,9 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       if(!panel)return;
       panel.classList.toggle('hidden');
       if(!panel.classList.contains('hidden')) {
+        // Always open expanded (clear any prior minimized state).
+        panel.classList.remove('ai-collapsed');
+        const _mb=document.getElementById('ai-panel-min-btn'); if(_mb){ _mb.textContent='–'; _mb.title='Minimize'; }
         const inp=document.getElementById('ai-input');
         // Restore any draft the user was typing (survives a page refresh).
         try { const d=localStorage.getItem('aiCoachDraft'); if(d && inp && !inp.value){ inp.value=d; inp.style.height='auto'; inp.style.height=Math.min(inp.scrollHeight,140)+'px'; } } catch(_){}
@@ -16515,6 +16527,18 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         // Re-clamp into viewport in case the window was resized while hidden.
         if (typeof _aiCoachClamp === 'function') _aiCoachClamp(panel);
       }
+    }
+
+    // Minimize / restore the coach: rolls the panel up to just its header bar
+    // (conversation + draft are preserved) and back. The header stays draggable.
+    function toggleAiMinimize(e){
+      if (e) { e.stopPropagation(); e.preventDefault(); }
+      const panel = document.getElementById('ai-panel');
+      if (!panel) return;
+      const collapsed = panel.classList.toggle('ai-collapsed');
+      const btn = document.getElementById('ai-panel-min-btn');
+      if (btn) { btn.textContent = collapsed ? '▢' : '–'; btn.title = collapsed ? 'Expand' : 'Minimize'; }
+      if (!collapsed) { document.getElementById('ai-input')?.focus(); if (typeof _aiCoachClamp === 'function') _aiCoachClamp(panel); }
     }
 
     // Autosave the coach draft as the user types so a refresh never loses it.

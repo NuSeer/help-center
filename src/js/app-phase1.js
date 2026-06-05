@@ -7891,6 +7891,9 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       if(!panel)return;
       panel.classList.toggle('hidden');
       if(!panel.classList.contains('hidden')) {
+        // Always open expanded (clear any prior minimized state).
+        panel.classList.remove('ai-collapsed');
+        const _mb=document.getElementById('ai-panel-min-btn'); if(_mb){ _mb.textContent='–'; _mb.title='Minimize'; }
         const inp=document.getElementById('ai-input');
         // Restore any draft the user was typing (survives a page refresh).
         try { const d=localStorage.getItem('aiCoachDraft'); if(d && inp && !inp.value){ inp.value=d; inp.style.height='auto'; inp.style.height=Math.min(inp.scrollHeight,140)+'px'; } } catch(_){}
@@ -7901,6 +7904,18 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         // Re-clamp into viewport in case the window was resized while hidden.
         if (typeof _aiCoachClamp === 'function') _aiCoachClamp(panel);
       }
+    }
+
+    // Minimize / restore the coach: rolls the panel up to just its header bar
+    // (conversation + draft are preserved) and back. The header stays draggable.
+    function toggleAiMinimize(e){
+      if (e) { e.stopPropagation(); e.preventDefault(); }
+      const panel = document.getElementById('ai-panel');
+      if (!panel) return;
+      const collapsed = panel.classList.toggle('ai-collapsed');
+      const btn = document.getElementById('ai-panel-min-btn');
+      if (btn) { btn.textContent = collapsed ? '▢' : '–'; btn.title = collapsed ? 'Expand' : 'Minimize'; }
+      if (!collapsed) { document.getElementById('ai-input')?.focus(); if (typeof _aiCoachClamp === 'function') _aiCoachClamp(panel); }
     }
 
     // Autosave the coach draft as the user types so a refresh never loses it.

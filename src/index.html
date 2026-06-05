@@ -800,7 +800,8 @@
       <span class="icon" data-icon="spark" style="width:20px;height:20px;color:#fff"></span>
       <div class="ai-panel-title" id="ai-panel-title">H.E.L.P. AI Coach</div>
       <button class="ai-panel-new" onclick="newAiCoachChat()" title="Start a new conversation">+ New</button>
-      <button class="ai-panel-close" onclick="toggleAiPanel()">×</button>
+      <button class="ai-panel-min" id="ai-panel-min-btn" onclick="toggleAiMinimize(event)" title="Minimize">–</button>
+      <button class="ai-panel-close" onclick="toggleAiPanel()" title="Close">×</button>
     </div>
     <div class="ai-context-bar" id="ai-context-bar">Ask me anything about your business journey</div>
     <div class="ai-messages" id="ai-messages">

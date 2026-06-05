@@ -1892,6 +1892,7 @@ function loadServices() {
         ${s.icon || '⚙️'}
       </div>
       <h3>${s.name}</h3>
+      ${s.price ? `<div class="svc-price" style="font-weight:800;color:${s.color || '#1E5BC0'};margin:2px 0 6px;font-size:18px">${s.price}</div>` : ''}
       <p>${s.desc || s.description || ''}</p>
       <div class="svc-tags">
         ${(s.tags || []).map(t => `<span class="svc-tag">${t}</span>`).join('')}

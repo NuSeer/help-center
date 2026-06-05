@@ -731,6 +731,10 @@ function renderServices(){
         </div>
       </div>
       <div class="field">
+        <label>Price (optional — shows on the card)</label>
+        <input type="text" oninput="updServ(${i},'price',this.value)" value="${escapeAttr(s.price||'')}" placeholder="e.g. $500, $150/mo, $75/hr">
+      </div>
+      <div class="field">
         <label>Description</label>
         <textarea oninput="updServ(${i},'desc',this.value)">${escapeHtml(s.desc||'')}</textarea>
       </div>

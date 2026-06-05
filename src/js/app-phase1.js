@@ -507,7 +507,8 @@
       'clients','ideas','revenue','settings','activity','events','calEvents',
       'notes','sentEmails','businessFile','personalFiles','clientDocuments',
       'wbBuilds','vibeProjects','bookingSettings','stripeSettings','aiProjects',
-      'myProfile','reportDrafts','clientFeedback'
+      'myProfile','reportDrafts','clientFeedback',
+      'siteServices','sitePricing','businessModel'
     ];
 
     // pb_localTs: { [key]: ISO timestamp of last local write }. Used to decide

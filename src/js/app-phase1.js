@@ -2278,6 +2278,24 @@
       renderMessagesInbox();
     }
 
+    // Send the owner a copy of an outbound portal reply, so it also lands in
+    // their regular email inbox (portal replies go out via Resend and otherwise
+    // never appear in the owner's mailbox).
+    function _emailOwnerCopy(toLabel, text){
+      try {
+        const _s = JSON.parse(localStorage.getItem('settings'))||{};
+        const ownerEmail = _s.email || '';
+        if (!ownerEmail || typeof HC_BACKEND === 'undefined') return;
+        const copyHtml = '<div style="font-family:-apple-system,Segoe UI,sans-serif;color:#1F2937">'
+          + '<p style="color:#64748B;font-size:12px;margin:0 0 8px">Copy of your portal reply to <strong>'+_msgEsc(toLabel)+'</strong>:</p>'
+          + '<div style="border-left:3px solid #7C3AED;padding:4px 0 4px 12px;white-space:pre-wrap;font-size:15px;line-height:1.6">'+_msgEsc(text)+'</div></div>';
+        fetch(HC_BACKEND + '/api/email', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ to: ownerEmail, subject: '[Copy] Your reply to ' + toLabel, html: copyHtml })
+        }).then(()=>{ if (typeof _logEmail==='function') _logEmail({ to: ownerEmail, subject:'[Copy] Your reply to '+toLabel, body:text, context:'portal-reply-copy', status:'sent' }); }).catch(()=>{});
+      } catch(_){}
+    }
+
     async function replyToClientThread(clientId) {
       const ta = document.getElementById('msg-reply-client_' + clientId.replace(/[^a-z0-9]/gi,'_'));
       const text = (ta && ta.value || '').trim();
@@ -2300,6 +2318,7 @@
           ctaLabel: 'Open Your Portal & Reply'
         });
       }
+      _emailOwnerCopy(client.name, text);
       if (ta) { ta.value = ''; ta.style.height = 'auto'; }
       _markThreadRead('client:' + clientId);
       _openMsgThreadKey = 'client:' + clientId;
@@ -2335,6 +2354,7 @@
           });
         } catch (_) {}
       }
+      _emailOwnerCopy(tn.name || slug, text);
       if (ta) { ta.value = ''; ta.style.height = 'auto'; }
       _markThreadRead('saas:' + slug);
       _openMsgThreadKey = 'saas:' + slug;

@@ -7371,16 +7371,30 @@ Requirements:
           </div>
           <div class="card" style="margin-bottom:20px;border:2px solid rgba(66,103,178,0.2)">
             <div class="settings-section-title">AI Integration</div>
-            <p style="font-size:14px;color:var(--gray-500);margin-bottom:20px;line-height:1.7">Choose your preferred AI provider and model. AI is powered securely through the H.E.L.P. Center server — no API key required.</p>
-            <div style="background:linear-gradient(135deg,rgba(66,103,178,0.08),rgba(66,103,178,0.04));border:1px solid rgba(66,103,178,0.2);border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+            <p id="ai-owner-note" style="font-size:14px;color:var(--gray-500);margin-bottom:20px;line-height:1.7">Choose your preferred AI provider and model. AI is powered securely through the H.E.L.P. Center server — no API key required.</p>
+            <div id="ai-owner-banner" style="background:linear-gradient(135deg,rgba(66,103,178,0.08),rgba(66,103,178,0.04));border:1px solid rgba(66,103,178,0.2);border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
               <span style="font-size:18px">✨</span>
               <span style="font-size:13px;color:var(--accent);font-weight:600">AI powered by H.E.L.P. Center — no API key required</span>
             </div>
-            <div class="form-group"><label class="form-label">AI Provider</label>
+            <div id="ai-tenant-note" style="display:none;background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(124,58,237,0.04));border:1px solid rgba(124,58,237,0.25);border-radius:8px;padding:14px 16px;margin-bottom:16px">
+              <div style="font-size:13.5px;color:#5B21B6;font-weight:700;margin-bottom:4px">🔑 You run AI on your own account</div>
+              <div style="font-size:13px;color:#475569;line-height:1.6">Pick a provider below and paste in your own API key. Your key stays in your workspace and powers your AI Assistant + tools. New to this? See <a href="#" onclick="document.getElementById('ai-key-help').scrollIntoView({behavior:'smooth'});return false" style="color:var(--brand-primary);font-weight:600">How to get your keys</a> at the bottom of this card.</div>
+            </div>
+            <div class="form-group"><label class="form-label">AI Provider <span style="font-size:11px;color:var(--gray-400);font-weight:400">(primary — tried first)</span></label>
               <select id="set-ai-provider" class="form-select" onchange="updateAiModelOptions()">
-                <option value="groq">Groq (Recommended — Fast, Capable)</option>
+                <option value="groq">Groq (Recommended — Fast, Free)</option>
+                <option value="gemini">Google Gemini (Free tier)</option>
                 <option value="openai">OpenAI</option>
                 <option value="claude">Claude (Anthropic) — Most Capable, Advanced Reasoning</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Fallback Provider <span style="font-size:11px;color:var(--gray-400);font-weight:400">(used if your primary is rate-limited or down)</span></label>
+              <select id="set-ai-fallback" class="form-select">
+                <option value="">None (or auto — any other key you add below)</option>
+                <option value="groq">Groq</option>
+                <option value="gemini">Google Gemini</option>
+                <option value="openai">OpenAI</option>
+                <option value="claude">Claude (Anthropic)</option>
               </select>
             </div>
             <div class="form-row">
@@ -7405,6 +7419,30 @@ Requirements:
               <div class="form-group" style="margin:0">
                 <label class="form-label">Gemini API Key <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — leave blank to skip)</span></label>
                 <input type="password" id="set-gemini-key" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="AIza...">
+              </div>
+            </div>
+
+            <div style="margin-top:14px;padding:14px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:11px;font-weight:700;color:#C2410C;background:rgba(234,88,12,0.10);padding:2px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase">Premium</span>
+                <strong style="font-size:14px;color:#0F172A">Claude (Anthropic)</strong>
+              </div>
+              <p style="font-size:12.5px;color:var(--gray-600);margin:0 0 10px;line-height:1.6">Most capable for legal docs, contracts, and long reasoning. Get a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--brand-primary)">console.anthropic.com</a> (add billing first).</p>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Anthropic API Key <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — sk-ant-...)</span></label>
+                <input type="password" id="set-claude-key" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="sk-ant-...">
+              </div>
+            </div>
+
+            <div style="margin-top:14px;padding:14px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:11px;font-weight:700;color:#0F766E;background:rgba(13,148,136,0.10);padding:2px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase">Premium</span>
+                <strong style="font-size:14px;color:#0F172A">OpenAI (GPT)</strong>
+              </div>
+              <p style="font-size:12.5px;color:var(--gray-600);margin:0 0 10px;line-height:1.6">GPT-4o / GPT-4o-mini. Get a key at <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--brand-primary)">platform.openai.com</a> (add billing first).</p>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">OpenAI API Key <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — sk-...)</span></label>
+                <input type="password" id="set-openai-key" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="sk-...">
               </div>
             </div>
 
@@ -7437,9 +7475,19 @@ Requirements:
               <div id="ollama-status" style="font-size:12px;color:var(--gray-500);margin-top:6px;min-height:16px"></div>
             </div>
 
+            <div id="ai-key-help" style="margin-top:18px;padding:16px 18px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px">
+              <div style="font-size:14px;font-weight:800;color:#92400E;margin-bottom:8px">📘 How to get your own API keys (free options first)</div>
+              <ol style="margin:0;padding-left:20px;font-size:13px;color:#475569;line-height:1.75">
+                <li><strong>Groq (free, recommended to start):</strong> Go to <a href="https://console.groq.com/keys" target="_blank" style="color:var(--brand-primary)">console.groq.com/keys</a> → sign up → "Create API Key" → copy the <code style="background:#fff;padding:1px 5px;border-radius:4px;border:1px solid #E2E8F0">gsk_...</code> value into the <em>Groq API Key — Primary</em> box above.</li>
+                <li><strong>Google Gemini (free ~1M tokens/day):</strong> <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--brand-primary)">aistudio.google.com/apikey</a> → "Create API key" → paste the <code style="background:#fff;padding:1px 5px;border-radius:4px;border:1px solid #E2E8F0">AIza...</code> key into the Gemini box.</li>
+                <li><strong>Claude (paid, most capable):</strong> <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--brand-primary)">console.anthropic.com</a> → add a payment method under Billing → "Create Key" → paste the <code style="background:#fff;padding:1px 5px;border-radius:4px;border:1px solid #E2E8F0">sk-ant-...</code> key.</li>
+                <li><strong>OpenAI (paid):</strong> <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--brand-primary)">platform.openai.com/api-keys</a> → add billing → "Create new secret key" → paste the <code style="background:#fff;padding:1px 5px;border-radius:4px;border:1px solid #E2E8F0">sk-...</code> key.</li>
+              </ol>
+              <div style="font-size:12.5px;color:#92400E;margin-top:10px;line-height:1.6">💡 Tip: start with <strong>Groq + Gemini</strong> (both free). Add a paid key only when you need heavier reasoning. Set your <em>Primary</em> to the one you want used first and a <em>Fallback</em> for when it's busy. Keys are stored only in your own workspace.</div>
+            </div>
             <div style="display:flex;justify-content:flex-end;margin-top:12px"><button onclick="saveAiSettings()" class="btn btn-solid">Save AI Settings</button></div>
           </div>
-          <div class="card" style="margin-bottom:20px;border:2px solid rgba(16,185,129,0.2)">
+          <div id="pb-backend-card" class="card" style="margin-bottom:20px;border:2px solid rgba(16,185,129,0.2)">
             <div class="settings-section-title">PocketBase Backend — VPS Hosting</div>
             <p style="font-size:14px;color:var(--gray-500);margin-bottom:16px;line-height:1.7">Connect to a self-hosted <strong>PocketBase</strong> server on your VPS so all client and business data is stored server-side — not just in your browser. <a href="https://pocketbase.io" target="_blank" style="color:var(--accent)">pocketbase.io</a> is a free, single-file Go backend. Once set up, create a collection named <code style="background:var(--gray-100);padding:1px 5px;border-radius:4px">store</code> with fields: <code style="background:var(--gray-100);padding:1px 5px;border-radius:4px">key</code> (Text, unique) and <code style="background:var(--gray-100);padding:1px 5px;border-radius:4px">value</code> (JSON).</p>
             <div class="form-row">
@@ -7465,7 +7513,16 @@ Requirements:
           </div>
           <div class="card">
             <div class="settings-section-title">📧 Resend Email Integration</div>
-            <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">Send branded confirmation emails to clients after booking. <strong>Note:</strong> Your sender email must be verified in your Resend dashboard at resend.com.</p>
+            <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Send branded emails to your clients (booking confirmations, portal replies, invoices). <strong>Your sender email must be verified in Resend first.</strong></p>
+            <div style="margin-bottom:16px;padding:14px 16px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px">
+              <div style="font-size:13.5px;font-weight:800;color:#92400E;margin-bottom:6px">📘 How to set up Resend</div>
+              <ol style="margin:0;padding-left:20px;font-size:13px;color:#475569;line-height:1.75">
+                <li>Sign up free at <a href="https://resend.com" target="_blank" style="color:var(--brand-primary)">resend.com</a> (free tier = 3,000 emails/mo).</li>
+                <li><strong>API key:</strong> <a href="https://resend.com/api-keys" target="_blank" style="color:var(--brand-primary)">resend.com/api-keys</a> → "Create API Key" → paste the <code style="background:#fff;padding:1px 5px;border-radius:4px;border:1px solid #E2E8F0">re_...</code> value below.</li>
+                <li><strong>Verify your domain:</strong> <a href="https://resend.com/domains" target="_blank" style="color:var(--brand-primary)">resend.com/domains</a> → add your domain → add the DNS records it shows you (at your domain registrar) → wait for "Verified." Your <em>Sender Email</em> must use that domain (e.g. <code style="background:#fff;padding:1px 5px;border-radius:4px;border:1px solid #E2E8F0">hello@yourbusiness.com</code>).</li>
+                <li>No domain yet? You can still test using Resend's <code style="background:#fff;padding:1px 5px;border-radius:4px;border:1px solid #E2E8F0">onboarding@resend.dev</code> sender, but get your own domain verified before emailing real clients.</li>
+              </ol>
+            </div>
             <div style="display:grid;gap:12px">
               <div>
                 <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Resend API Key</label>
@@ -8652,6 +8709,19 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       } catch(_){}
     }
     if (TENANT) window.addEventListener('DOMContentLoaded', _applyTenantNavGating);
+
+    // In a tenant copy, the Settings page swaps the "powered by H.E.L.P. — no key
+    // required" message for the bring-your-own-key note, and hides the PocketBase
+    // backend card (their backend is auto-wired, not self-configured).
+    function _applyTenantAiSettingsCopy(){
+      if (!TENANT) return;
+      try {
+        const ownerNote = document.getElementById('ai-owner-note'); if (ownerNote) ownerNote.style.display = 'none';
+        const ownerBanner = document.getElementById('ai-owner-banner'); if (ownerBanner) ownerBanner.style.display = 'none';
+        const tenantNote = document.getElementById('ai-tenant-note'); if (tenantNote) tenantNote.style.display = 'block';
+        const pbCard = document.getElementById('pb-backend-card'); if (pbCard) pbCard.style.display = 'none';
+      } catch(_){}
+    }
 
     function _pbKey(key) {
       if (!TENANT_PREFIX || _UNPREFIXED_RE.test(key)) return key;
@@ -16183,10 +16253,65 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         .replace(/[\[\{<]{1,2}\s*page\s*[-_ ]?break\s*[\]\}>]{1,2}/gi, PB);
     }
 
+    // ── Claude (Anthropic) direct, browser-streamed. Returns text or null. ──────
+    async function _aiStreamClaude(messages, onChunk, apiKey, model) {
+      if (!apiKey) return null;
+      try {
+        let system = ''; const msgs = [];
+        for (const m of (messages || [])) {
+          if (m.role === 'system') { system += (system ? '\n\n' : '') + (m.content || ''); continue; }
+          msgs.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content || '') });
+        }
+        // Map the dropdown choice to a stable Anthropic alias so a tenant's key
+        // always resolves (speculative dated IDs can 404 on some accounts).
+        const mdl = /opus/i.test(model||'') ? 'claude-3-opus-latest'
+                  : /haiku/i.test(model||'') ? 'claude-3-5-haiku-latest'
+                  : 'claude-3-5-sonnet-latest';
+        const resp = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+          body: JSON.stringify({ model: mdl, max_tokens: 4096, system: system || undefined, messages: msgs, stream: true })
+        });
+        if (!resp.ok) { const t = await resp.text().catch(()=> ''); console.warn('[claude] HTTP', resp.status, t.slice(0,200)); return null; }
+        const reader = resp.body.getReader(), dec = new TextDecoder(); let full = '', buf = '';
+        const handle = (line) => {
+          if (!line.startsWith('data: ')) return; const d = line.slice(6); if (d === '[DONE]') return;
+          try { const ev = JSON.parse(d); if (ev.type === 'content_block_delta' && ev.delta && ev.delta.text) { full += ev.delta.text; if (onChunk) onChunk(ev.delta.text, full); } } catch {}
+        };
+        while (true) { const { done, value } = await reader.read(); if (done) { if (buf) handle(buf); break; } buf += dec.decode(value, { stream: true }); const lines = buf.split('\n'); buf = lines.pop() || ''; for (const l of lines) handle(l); }
+        return full ? cleanGroqResponse(full) : null;
+      } catch (e) { console.warn('[claude] error', e.message); return null; }
+    }
+
+    // ── OpenAI direct, browser-streamed. Returns text or null. ──────────────────
+    async function _aiStreamOpenAI(messages, onChunk, apiKey, model) {
+      if (!apiKey) return null;
+      try {
+        const mdl = (model && /^(gpt|o\d|chatgpt)/i.test(model)) ? model : 'gpt-4o-mini';
+        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+          body: JSON.stringify({ model: mdl, messages: (messages || []).map(m => ({ role: m.role, content: String(m.content || '') })), max_tokens: 4096, temperature: 0.4, stream: true })
+        });
+        if (!resp.ok) { const t = await resp.text().catch(()=> ''); console.warn('[openai] HTTP', resp.status, t.slice(0,200)); return null; }
+        const reader = resp.body.getReader(), dec = new TextDecoder(); let full = '', buf = '';
+        const handle = (line) => {
+          if (!line.startsWith('data: ')) return; const d = line.slice(6); if (d === '[DONE]') return;
+          try { const ev = JSON.parse(d); const delta = (ev.choices && ev.choices[0] && ev.choices[0].delta && ev.choices[0].delta.content) || ''; if (delta) { full += delta; if (onChunk) onChunk(delta, full); } } catch {}
+        };
+        while (true) { const { done, value } = await reader.read(); if (done) { if (buf) handle(buf); break; } buf += dec.decode(value, { stream: true }); const lines = buf.split('\n'); buf = lines.pop() || ''; for (const l of lines) handle(l); }
+        return full ? cleanGroqResponse(full) : null;
+      } catch (e) { console.warn('[openai] error', e.message); return null; }
+    }
+
     async function callAI(messages, onChunk) {
       const ai = getAiSettings();
       const cfg = JSON.parse(localStorage.getItem('settings')) || {};
       const groqKey = cfg.groqApiKey || '';
+      const anthropicKey = cfg.anthropicApiKey || '';
+      const openaiKey = cfg.openaiApiKey || '';
+      const _primary = ai.provider || 'groq';
+      const _fallbackProv = cfg.aiFallbackProvider || '';
 
       // Safety: trim oversized message contents so the request body fits Groq's
       // ~1MB gateway limit. Long resumes / pasted documents are the usual cause
@@ -16199,6 +16324,14 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         console.warn('[callAI] truncated a message from', c.length, 'to', trimmed.length, 'chars to avoid 413');
         return Object.assign({}, m, { content: trimmed });
       });
+
+      // ── Premium providers (Claude / OpenAI): try the chosen primary first, then
+      // the chosen fallback. These run direct from the browser with the user's
+      // own key — this is how tenants run AI on their own accounts. ──
+      if (_primary === 'claude' && anthropicKey) { const r = await _aiStreamClaude(safeMessages, onChunk, anthropicKey, ai.model); if (r) return r; }
+      if (_primary === 'openai' && openaiKey)   { const r = await _aiStreamOpenAI(safeMessages, onChunk, openaiKey, ai.model); if (r) return r; }
+      if (_fallbackProv === 'claude' && anthropicKey) { const r = await _aiStreamClaude(safeMessages, onChunk, anthropicKey, ai.model); if (r) return r; }
+      if (_fallbackProv === 'openai' && openaiKey)    { const r = await _aiStreamOpenAI(safeMessages, onChunk, openaiKey, ai.model); if (r) return r; }
 
       // ── PRIMARY: Try Gemini 2.5 Flash first (higher daily cap than Groq) ──
       const geminiKey = cfg.geminiApiKey || '';
@@ -16307,7 +16440,20 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         }
       }
 
-      // ── FALLBACK: VPS backend ─────────────────────────────────────────
+      // ── Premium providers as last-resort fallback (key present, not yet tried) ──
+      if (anthropicKey) { const r = await _aiStreamClaude(safeMessages, onChunk, anthropicKey, ai.model); if (r) return r; }
+      if (openaiKey)    { const r = await _aiStreamOpenAI(safeMessages, onChunk, openaiKey, ai.model); if (r) return r; }
+
+      // Tenants run on THEIR OWN keys only — never fall through to the owner's
+      // shared H.E.L.P. Center server. If nothing above produced a reply, tell
+      // them to add a key.
+      if (typeof TENANT !== 'undefined' && TENANT) {
+        const msg = '⚠️ No AI response yet. Add your own AI key in Settings → AI Integration (Groq, Gemini, Claude, or OpenAI). The "How to get your keys" guide right there walks you through it.';
+        if (onChunk) onChunk(msg, msg);
+        return msg;
+      }
+
+      // ── FALLBACK: VPS backend (owner only) ────────────────────────────
       const sysMsg = messages.find(m => m.role === 'system');
       const chatMsgs = messages.filter(m => m.role !== 'system');
       try {
@@ -16709,10 +16855,14 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
       sv('set-name',s.name); sv('set-email',s.email); sv('set-biz',s.businessName); sv('set-tagline',s.tagline); sv('set-portal-url',s.portalBaseUrl||'');
       sv('set-ai-provider',s.aiProvider||'groq'); sv('set-ai-name',s.aiCoachName||'H.E.L.P. AI Coach');
+      sv('set-ai-fallback',s.aiFallbackProvider||'');
       if(s.groqApiKey) sv('set-groq-key',s.groqApiKey);
       if(s.groqApiKey2) sv('set-groq-key-2',s.groqApiKey2);
       if(s.geminiApiKey) sv('set-gemini-key',s.geminiApiKey);
+      if(s.anthropicApiKey) sv('set-claude-key',s.anthropicApiKey);
+      if(s.openaiApiKey) sv('set-openai-key',s.openaiApiKey);
       if(s.openRouterApiKey) sv('set-openrouter-key',s.openRouterApiKey);
+      if (typeof _applyTenantAiSettingsCopy === 'function') _applyTenantAiSettingsCopy();
       sv('set-ollama-url',s.ollamaUrl||'');
       sv('set-ollama-model',s.ollamaModel||'');
       const ollEnabled=document.getElementById('set-ollama-enabled'); if(ollEnabled) ollEnabled.checked=!!s.ollamaEnabled;
@@ -16797,9 +16947,12 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       showToast('Switched to local storage only');
     }
 
+    const GEMINI_MODELS = [
+      { id:'gemini-2.5-flash', label:'Gemini 2.5 Flash — Fast, Free tier' }
+    ];
     function updateAiModelOptions() {
       const provider=document.getElementById('set-ai-provider')?.value||'groq';
-      const models=provider==='groq'?GROQ_MODELS:provider==='claude'?CLAUDE_MODELS:OPENAI_MODELS;
+      const models=provider==='groq'?GROQ_MODELS:provider==='claude'?CLAUDE_MODELS:provider==='gemini'?GEMINI_MODELS:OPENAI_MODELS;
       const el=document.getElementById('set-ai-model');
       if(el)el.innerHTML=models.map(m=>`<option value="${m.id}">${m.label}</option>`).join('');
     }
@@ -16817,12 +16970,17 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       s.aiProvider=document.getElementById('set-ai-provider')?.value||'groq';
       s.aiModel=document.getElementById('set-ai-model')?.value||'llama-3.3-70b-versatile';
       s.aiCoachName=document.getElementById('set-ai-name')?.value.trim()||'H.E.L.P. AI Coach';
+      s.aiFallbackProvider=document.getElementById('set-ai-fallback')?.value||'';
       const gk=document.getElementById('set-groq-key')?.value.trim();
       if(gk) s.groqApiKey=gk;
       const gk2=document.getElementById('set-groq-key-2')?.value.trim();
       if(gk2!==undefined) s.groqApiKey2=gk2;
       const gmk=document.getElementById('set-gemini-key')?.value.trim();
       if(gmk!==undefined) s.geminiApiKey=gmk;
+      const clk=document.getElementById('set-claude-key')?.value.trim();
+      if(clk!==undefined) s.anthropicApiKey=clk;
+      const opk=document.getElementById('set-openai-key')?.value.trim();
+      if(opk!==undefined) s.openaiApiKey=opk;
       const ork=document.getElementById('set-openrouter-key')?.value.trim();
       if(ork!==undefined) s.openRouterApiKey=ork;
       s.ollamaUrl=(document.getElementById('set-ollama-url')?.value.trim() || '').replace(/\/$/,'');

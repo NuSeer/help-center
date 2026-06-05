@@ -96,6 +96,19 @@
     }
     if (TENANT) window.addEventListener('DOMContentLoaded', _applyTenantNavGating);
 
+    // In a tenant copy, the Settings page swaps the "powered by H.E.L.P. — no key
+    // required" message for the bring-your-own-key note, and hides the PocketBase
+    // backend card (their backend is auto-wired, not self-configured).
+    function _applyTenantAiSettingsCopy(){
+      if (!TENANT) return;
+      try {
+        const ownerNote = document.getElementById('ai-owner-note'); if (ownerNote) ownerNote.style.display = 'none';
+        const ownerBanner = document.getElementById('ai-owner-banner'); if (ownerBanner) ownerBanner.style.display = 'none';
+        const tenantNote = document.getElementById('ai-tenant-note'); if (tenantNote) tenantNote.style.display = 'block';
+        const pbCard = document.getElementById('pb-backend-card'); if (pbCard) pbCard.style.display = 'none';
+      } catch(_){}
+    }
+
     function _pbKey(key) {
       if (!TENANT_PREFIX || _UNPREFIXED_RE.test(key)) return key;
       return TENANT_PREFIX + key;
@@ -7626,10 +7639,65 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         .replace(/[\[\{<]{1,2}\s*page\s*[-_ ]?break\s*[\]\}>]{1,2}/gi, PB);
     }
 
+    // ── Claude (Anthropic) direct, browser-streamed. Returns text or null. ──────
+    async function _aiStreamClaude(messages, onChunk, apiKey, model) {
+      if (!apiKey) return null;
+      try {
+        let system = ''; const msgs = [];
+        for (const m of (messages || [])) {
+          if (m.role === 'system') { system += (system ? '\n\n' : '') + (m.content || ''); continue; }
+          msgs.push({ role: m.role === 'assistant' ? 'assistant' : 'user', content: String(m.content || '') });
+        }
+        // Map the dropdown choice to a stable Anthropic alias so a tenant's key
+        // always resolves (speculative dated IDs can 404 on some accounts).
+        const mdl = /opus/i.test(model||'') ? 'claude-3-opus-latest'
+                  : /haiku/i.test(model||'') ? 'claude-3-5-haiku-latest'
+                  : 'claude-3-5-sonnet-latest';
+        const resp = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+          body: JSON.stringify({ model: mdl, max_tokens: 4096, system: system || undefined, messages: msgs, stream: true })
+        });
+        if (!resp.ok) { const t = await resp.text().catch(()=> ''); console.warn('[claude] HTTP', resp.status, t.slice(0,200)); return null; }
+        const reader = resp.body.getReader(), dec = new TextDecoder(); let full = '', buf = '';
+        const handle = (line) => {
+          if (!line.startsWith('data: ')) return; const d = line.slice(6); if (d === '[DONE]') return;
+          try { const ev = JSON.parse(d); if (ev.type === 'content_block_delta' && ev.delta && ev.delta.text) { full += ev.delta.text; if (onChunk) onChunk(ev.delta.text, full); } } catch {}
+        };
+        while (true) { const { done, value } = await reader.read(); if (done) { if (buf) handle(buf); break; } buf += dec.decode(value, { stream: true }); const lines = buf.split('\n'); buf = lines.pop() || ''; for (const l of lines) handle(l); }
+        return full ? cleanGroqResponse(full) : null;
+      } catch (e) { console.warn('[claude] error', e.message); return null; }
+    }
+
+    // ── OpenAI direct, browser-streamed. Returns text or null. ──────────────────
+    async function _aiStreamOpenAI(messages, onChunk, apiKey, model) {
+      if (!apiKey) return null;
+      try {
+        const mdl = (model && /^(gpt|o\d|chatgpt)/i.test(model)) ? model : 'gpt-4o-mini';
+        const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + apiKey },
+          body: JSON.stringify({ model: mdl, messages: (messages || []).map(m => ({ role: m.role, content: String(m.content || '') })), max_tokens: 4096, temperature: 0.4, stream: true })
+        });
+        if (!resp.ok) { const t = await resp.text().catch(()=> ''); console.warn('[openai] HTTP', resp.status, t.slice(0,200)); return null; }
+        const reader = resp.body.getReader(), dec = new TextDecoder(); let full = '', buf = '';
+        const handle = (line) => {
+          if (!line.startsWith('data: ')) return; const d = line.slice(6); if (d === '[DONE]') return;
+          try { const ev = JSON.parse(d); const delta = (ev.choices && ev.choices[0] && ev.choices[0].delta && ev.choices[0].delta.content) || ''; if (delta) { full += delta; if (onChunk) onChunk(delta, full); } } catch {}
+        };
+        while (true) { const { done, value } = await reader.read(); if (done) { if (buf) handle(buf); break; } buf += dec.decode(value, { stream: true }); const lines = buf.split('\n'); buf = lines.pop() || ''; for (const l of lines) handle(l); }
+        return full ? cleanGroqResponse(full) : null;
+      } catch (e) { console.warn('[openai] error', e.message); return null; }
+    }
+
     async function callAI(messages, onChunk) {
       const ai = getAiSettings();
       const cfg = JSON.parse(localStorage.getItem('settings')) || {};
       const groqKey = cfg.groqApiKey || '';
+      const anthropicKey = cfg.anthropicApiKey || '';
+      const openaiKey = cfg.openaiApiKey || '';
+      const _primary = ai.provider || 'groq';
+      const _fallbackProv = cfg.aiFallbackProvider || '';
 
       // Safety: trim oversized message contents so the request body fits Groq's
       // ~1MB gateway limit. Long resumes / pasted documents are the usual cause
@@ -7642,6 +7710,14 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         console.warn('[callAI] truncated a message from', c.length, 'to', trimmed.length, 'chars to avoid 413');
         return Object.assign({}, m, { content: trimmed });
       });
+
+      // ── Premium providers (Claude / OpenAI): try the chosen primary first, then
+      // the chosen fallback. These run direct from the browser with the user's
+      // own key — this is how tenants run AI on their own accounts. ──
+      if (_primary === 'claude' && anthropicKey) { const r = await _aiStreamClaude(safeMessages, onChunk, anthropicKey, ai.model); if (r) return r; }
+      if (_primary === 'openai' && openaiKey)   { const r = await _aiStreamOpenAI(safeMessages, onChunk, openaiKey, ai.model); if (r) return r; }
+      if (_fallbackProv === 'claude' && anthropicKey) { const r = await _aiStreamClaude(safeMessages, onChunk, anthropicKey, ai.model); if (r) return r; }
+      if (_fallbackProv === 'openai' && openaiKey)    { const r = await _aiStreamOpenAI(safeMessages, onChunk, openaiKey, ai.model); if (r) return r; }
 
       // ── PRIMARY: Try Gemini 2.5 Flash first (higher daily cap than Groq) ──
       const geminiKey = cfg.geminiApiKey || '';
@@ -7750,7 +7826,20 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         }
       }
 
-      // ── FALLBACK: VPS backend ─────────────────────────────────────────
+      // ── Premium providers as last-resort fallback (key present, not yet tried) ──
+      if (anthropicKey) { const r = await _aiStreamClaude(safeMessages, onChunk, anthropicKey, ai.model); if (r) return r; }
+      if (openaiKey)    { const r = await _aiStreamOpenAI(safeMessages, onChunk, openaiKey, ai.model); if (r) return r; }
+
+      // Tenants run on THEIR OWN keys only — never fall through to the owner's
+      // shared H.E.L.P. Center server. If nothing above produced a reply, tell
+      // them to add a key.
+      if (typeof TENANT !== 'undefined' && TENANT) {
+        const msg = '⚠️ No AI response yet. Add your own AI key in Settings → AI Integration (Groq, Gemini, Claude, or OpenAI). The "How to get your keys" guide right there walks you through it.';
+        if (onChunk) onChunk(msg, msg);
+        return msg;
+      }
+
+      // ── FALLBACK: VPS backend (owner only) ────────────────────────────
       const sysMsg = messages.find(m => m.role === 'system');
       const chatMsgs = messages.filter(m => m.role !== 'system');
       try {
@@ -8152,10 +8241,14 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
       sv('set-name',s.name); sv('set-email',s.email); sv('set-biz',s.businessName); sv('set-tagline',s.tagline); sv('set-portal-url',s.portalBaseUrl||'');
       sv('set-ai-provider',s.aiProvider||'groq'); sv('set-ai-name',s.aiCoachName||'H.E.L.P. AI Coach');
+      sv('set-ai-fallback',s.aiFallbackProvider||'');
       if(s.groqApiKey) sv('set-groq-key',s.groqApiKey);
       if(s.groqApiKey2) sv('set-groq-key-2',s.groqApiKey2);
       if(s.geminiApiKey) sv('set-gemini-key',s.geminiApiKey);
+      if(s.anthropicApiKey) sv('set-claude-key',s.anthropicApiKey);
+      if(s.openaiApiKey) sv('set-openai-key',s.openaiApiKey);
       if(s.openRouterApiKey) sv('set-openrouter-key',s.openRouterApiKey);
+      if (typeof _applyTenantAiSettingsCopy === 'function') _applyTenantAiSettingsCopy();
       sv('set-ollama-url',s.ollamaUrl||'');
       sv('set-ollama-model',s.ollamaModel||'');
       const ollEnabled=document.getElementById('set-ollama-enabled'); if(ollEnabled) ollEnabled.checked=!!s.ollamaEnabled;
@@ -8240,9 +8333,12 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       showToast('Switched to local storage only');
     }
 
+    const GEMINI_MODELS = [
+      { id:'gemini-2.5-flash', label:'Gemini 2.5 Flash — Fast, Free tier' }
+    ];
     function updateAiModelOptions() {
       const provider=document.getElementById('set-ai-provider')?.value||'groq';
-      const models=provider==='groq'?GROQ_MODELS:provider==='claude'?CLAUDE_MODELS:OPENAI_MODELS;
+      const models=provider==='groq'?GROQ_MODELS:provider==='claude'?CLAUDE_MODELS:provider==='gemini'?GEMINI_MODELS:OPENAI_MODELS;
       const el=document.getElementById('set-ai-model');
       if(el)el.innerHTML=models.map(m=>`<option value="${m.id}">${m.label}</option>`).join('');
     }
@@ -8260,12 +8356,17 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       s.aiProvider=document.getElementById('set-ai-provider')?.value||'groq';
       s.aiModel=document.getElementById('set-ai-model')?.value||'llama-3.3-70b-versatile';
       s.aiCoachName=document.getElementById('set-ai-name')?.value.trim()||'H.E.L.P. AI Coach';
+      s.aiFallbackProvider=document.getElementById('set-ai-fallback')?.value||'';
       const gk=document.getElementById('set-groq-key')?.value.trim();
       if(gk) s.groqApiKey=gk;
       const gk2=document.getElementById('set-groq-key-2')?.value.trim();
       if(gk2!==undefined) s.groqApiKey2=gk2;
       const gmk=document.getElementById('set-gemini-key')?.value.trim();
       if(gmk!==undefined) s.geminiApiKey=gmk;
+      const clk=document.getElementById('set-claude-key')?.value.trim();
+      if(clk!==undefined) s.anthropicApiKey=clk;
+      const opk=document.getElementById('set-openai-key')?.value.trim();
+      if(opk!==undefined) s.openaiApiKey=opk;
       const ork=document.getElementById('set-openrouter-key')?.value.trim();
       if(ork!==undefined) s.openRouterApiKey=ork;
       s.ollamaUrl=(document.getElementById('set-ollama-url')?.value.trim() || '').replace(/\/$/,'');

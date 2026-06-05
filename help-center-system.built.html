@@ -5945,7 +5945,7 @@ function makeExtendedSections(template, content, pages) {
       <div id="messages-page" class="page hidden">
         <div class="page-header">
           <h1 class="page-title">Messages</h1>
-          <p class="page-subtitle">All your client conversations in one place — read and reply without opening each portal</p>
+          <p class="page-subtitle">Clients and SaaS tenants in one place — read, reply, and check off what's handled</p>
         </div>
         <div class="content">
           <div id="messages-inbox"></div>
@@ -10605,43 +10605,13 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
     }
 
     // ── MESSAGES INBOX (owner-side) ─────────────────────────────────────────────
-    // Aggregates every client conversation (portal.html replies stored as
-    // portal-msgs:<token> + in-portal messages on the client record) into one
-    // place, so the owner can read and reply without opening each portal.
-    function _gatherClientThreads() {
-      const clients = (typeof getData === 'function' ? getData('clients') : null) || [];
-      const lastRead = getData('msgLastRead') || {};
-      const threads = [];
-      clients.forEach(c => {
-        const tok = c.portalToken || '';
-        const msgs = [];
-        (c.messages || []).forEach(m => msgs.push({ from: (m.from === 'owner' ? 'owner' : 'client'), message: m.message, ts: m.timestamp || '' }));
-        try {
-          const rec = JSON.parse(localStorage.getItem('portal-msgs:' + tok) || '{}');
-          (rec.msgs || []).forEach(m => msgs.push({ from: 'client', message: m.message, ts: m.at || '' }));
-        } catch (_) {}
-        if (!msgs.length) return;
-        msgs.sort((a, b) => (a.ts || '').localeCompare(b.ts || ''));
-        const last = msgs[msgs.length - 1];
-        const lr = lastRead[c.id] || '';
-        const unread = msgs.filter(m => m.from === 'client' && (m.ts || '') > lr).length;
-        threads.push({ client: c, msgs, last, unread });
-      });
-      threads.sort((a, b) => (b.last.ts || '').localeCompare(a.last.ts || ''));
-      return threads;
-    }
-
-    function updateMessagesBadge() {
-      try {
-        const totalUnread = _gatherClientThreads().reduce((n, t) => n + t.unread, 0);
-        const badge = document.getElementById('nav-msg-badge');
-        if (!badge) return;
-        if (totalUnread > 0) { badge.textContent = totalUnread > 99 ? '99+' : String(totalUnread); badge.style.display = 'inline-block'; }
-        else { badge.style.display = 'none'; }
-      } catch (_) {}
-    }
-    setInterval(updateMessagesBadge, 15000);
-
+    // One unified inbox for BOTH conversation types:
+    //   • Clients  — portal.html replies (portal-msgs:<token>) + in-portal messages
+    //                on the client record (key 'client:<id>')
+    //   • SaaS     — tenant messages in 'admin:tenant-messages', grouped by tenant
+    //                slug (key 'saas:<slug>')
+    // Read state is auto-set on open; a manual "Done" check-off lets the owner
+    // file a handled thread away into the Done group.
     function _msgEsc(s){ return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     function _msgTimeAgo(ts){
       if(!ts) return '';
@@ -10654,73 +10624,170 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
       return d.toLocaleDateString();
     }
 
-    let _openMsgThreadId = null;
+    function _gatherAllThreads() {
+      const threads = [];
+      // 1) Regular clients
+      const clients = (typeof getData === 'function' ? getData('clients') : null) || [];
+      const lastRead = getData('msgLastRead') || {};
+      clients.forEach(c => {
+        const tok = c.portalToken || '';
+        const msgs = [];
+        (c.messages || []).forEach(m => msgs.push({ from: (m.from === 'owner' ? 'owner' : 'client'), message: m.message, ts: m.timestamp || '' }));
+        try {
+          const rec = JSON.parse(localStorage.getItem('portal-msgs:' + tok) || '{}');
+          (rec.msgs || []).forEach(m => msgs.push({ from: 'client', message: m.message, ts: m.at || '' }));
+        } catch (_) {}
+        if (!msgs.length) return;
+        msgs.sort((a, b) => (a.ts || '').localeCompare(b.ts || ''));
+        const lr = lastRead[c.id] || '';
+        const unread = msgs.filter(m => m.from === 'client' && (m.ts || '') > lr).length;
+        threads.push({ type:'client', key:'client:'+c.id, id:c.id, name:c.name||'Client', email:c.email||'', portalToken:tok, msgs, last:msgs[msgs.length-1], unread });
+      });
+      // 2) SaaS tenants — group admin:tenant-messages by tenant slug
+      const tmsgs = getData('admin:tenant-messages') || [];
+      const tenants = (typeof getTenants === 'function' ? getTenants() : []) || [];
+      const bySlug = {};
+      tmsgs.forEach(m => { const s = m.tenant || '(unknown)'; (bySlug[s] = bySlug[s] || []).push(m); });
+      Object.keys(bySlug).forEach(slug => {
+        const arr = bySlug[slug].slice().sort((a,b) => (a.ts||'').localeCompare(b.ts||''));
+        const tn = tenants.find(t => t.slug === slug) || {};
+        const msgs = arr.map(m => ({ from: (m.from === 'owner' ? 'owner' : 'client'), message: (m.subject && m.from !== 'owner' ? (m.subject + '\n') : '') + (m.body||''), ts: m.ts || '' }));
+        const unread = arr.filter(m => m.from !== 'owner' && !m.read).length;
+        threads.push({ type:'saas', key:'saas:'+slug, id:slug, slug, name: tn.businessName || tn.name || slug, email: tn.email || (arr[arr.length-1]||{}).fromEmail || '', msgs, last:msgs[msgs.length-1], unread });
+      });
+      threads.sort((a, b) => ((b.last&&b.last.ts)||'').localeCompare((a.last&&a.last.ts)||''));
+      return threads;
+    }
+
+    function updateMessagesBadge() {
+      try {
+        const done = getData('msgThreadDone') || {};
+        const totalUnread = _gatherAllThreads()
+          .filter(t => !done[t.key] || t.unread > 0)
+          .reduce((n, t) => n + t.unread, 0);
+        const badge = document.getElementById('nav-msg-badge');
+        if (!badge) return;
+        if (totalUnread > 0) { badge.textContent = totalUnread > 99 ? '99+' : String(totalUnread); badge.style.display = 'inline-block'; }
+        else { badge.style.display = 'none'; }
+      } catch (_) {}
+    }
+    setInterval(updateMessagesBadge, 15000);
+
+    let _openMsgThreadKey = null;
+    let _msgShowDone = false;
+    function _renderMsgThreadCard(t, isDone) {
+      const sendBtnStyle = 'white-space:nowrap;padding:10px 16px;background:linear-gradient(135deg,var(--brand-primary),#7C3AED);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px';
+      const openBtnStyle = 'font-size:13px;padding:8px 14px;background:#fff;border:1px solid #E2E8F0;border-radius:8px;color:#475569;cursor:pointer;font-weight:600;font-family:inherit';
+      const open = _openMsgThreadKey === t.key;
+      const initials = (t.name||'?').split(/\s+/).map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'C';
+      const lastMsg = (t.last && t.last.message) || '';
+      const snippet = _msgEsc(lastMsg.slice(0,90)).replace(/\n/g,' ') + (lastMsg.length>90?'…':'');
+      const isSaas = t.type === 'saas';
+      const tag = isSaas
+        ? '<span style="background:#EDE9FE;color:#7C3AED;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:99px;letter-spacing:.4px">SAAS</span>'
+        : '<span style="background:#E0F2FE;color:#0369A1;font-size:9.5px;font-weight:700;padding:2px 7px;border-radius:99px;letter-spacing:.4px">CLIENT</span>';
+      const avatarBg = isSaas ? 'linear-gradient(135deg,#7C3AED,#4F46E5)' : 'linear-gradient(135deg,var(--brand-primary),#7C3AED)';
+      let html = '<div class="card" style="padding:0;overflow:hidden;margin-bottom:12px;border:1px solid '+(t.unread?'#C7D2FE':'#E2E8F0')+';'+(isDone?'opacity:0.72':'')+'">';
+      html += '<div style="display:flex;align-items:center;gap:14px;padding:16px 18px;'+(t.unread?'background:#F5F7FF':'')+'">'
+        + '<div onclick="toggleMsgDone(\''+t.key+'\')" title="'+(isDone?'Mark not done':'Check off as done')+'" style="width:24px;height:24px;border-radius:6px;border:2px solid '+(isDone?'#10B981':'#CBD5E1')+';background:'+(isDone?'#10B981':'#fff')+';color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:14px;font-weight:800">'+(isDone?'✓':'')+'</div>'
+        + '<div onclick="toggleMsgThread(\''+t.key+'\')" style="display:flex;align-items:center;gap:14px;flex:1;min-width:0;cursor:pointer">'
+        +   '<div style="width:44px;height:44px;border-radius:50%;background:'+avatarBg+';color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">'+initials+'</div>'
+        +   '<div style="flex:1;min-width:0">'
+        +     '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+tag+'<span style="font-weight:700;color:#0F172A">'+_msgEsc(t.name)+'</span>'+(t.unread?'<span style="background:#4F46E5;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px">'+t.unread+' NEW</span>':'')+'</div>'
+        +     '<div style="font-size:13px;color:'+(t.unread?'#0F172A':'#64748B')+';margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+((t.last&&t.last.from==='owner')?'<span style="color:#94A3B8">You: </span>':'')+snippet+'</div>'
+        +   '</div>'
+        +   '<div style="text-align:right;flex-shrink:0"><div style="font-size:12px;color:#94A3B8">'+_msgTimeAgo(t.last&&t.last.ts)+'</div><div style="font-size:11px;color:#CBD5E1;margin-top:4px">'+(open?'▲':'▼')+'</div></div>'
+        + '</div>'
+        + '</div>';
+      if (open) {
+        html += '<div style="padding:6px 18px 18px;border-top:1px solid #F1F5F9">';
+        html += '<div style="max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:14px 0">';
+        (t.msgs||[]).forEach(m => {
+          const mine = m.from === 'owner';
+          html += '<div style="align-self:'+(mine?'flex-end':'flex-start')+';max-width:78%;background:'+(mine?'linear-gradient(135deg,var(--brand-primary),#7C3AED)':'#F1F5F9')+';color:'+(mine?'#fff':'#0F172A')+';padding:9px 13px;border-radius:14px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word">'+_msgEsc(m.message)+'<div style="font-size:10px;opacity:0.7;margin-top:4px">'+_msgTimeAgo(m.ts)+'</div></div>';
+        });
+        html += '</div>';
+        const replyFn = isSaas ? ('replyToSaasThread(\''+t.slug+'\')') : ('replyToClientThread(\''+t.id+'\')');
+        html += '<div style="display:flex;gap:8px;align-items:flex-end;margin-top:8px">'
+          + '<textarea id="msg-reply-'+t.key.replace(/[^a-z0-9]/gi,'_')+'" rows="1" placeholder="Type a reply to '+_msgEsc(t.name)+'…" style="flex:1;padding:10px 12px;border:1px solid #CBD5E1;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none" oninput="this.style.height=\'auto\';this.style.height=Math.min(this.scrollHeight,120)+\'px\'"></textarea>'
+          + '<button onclick="'+replyFn+'" style="'+sendBtnStyle+'">Send ✉</button>'
+          + '</div>';
+        html += '<div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">';
+        if (!isSaas) html += '<button onclick="showPortal(\''+(t.portalToken||'')+'\')" style="'+openBtnStyle+'">Open Portal →</button>';
+        html += (t.email
+            ? '<span style="font-size:12px;color:#94A3B8">Replies email '+_msgEsc(t.email)+(isSaas?'.':' and post to their portal.')+'</span>'
+            : '<span style="font-size:12px;color:#F59E0B">No email on file'+(isSaas?' — add one on the tenant.':' — reply will only post to their portal.')+'</span>');
+        html += '</div>';
+        html += '</div>';
+      }
+      html += '</div>';
+      return html;
+    }
+
     function renderMessagesInbox() {
       const wrap = document.getElementById('messages-inbox');
       if (!wrap) return;
-      const threads = _gatherClientThreads();
+      const all = _gatherAllThreads();
       updateMessagesBadge();
-      if (!threads.length) {
-        wrap.innerHTML = '<div class="card" style="text-align:center;padding:48px 24px;color:#64748B"><div style="font-size:40px;margin-bottom:12px">💬</div><div style="font-weight:700;color:#0F172A;margin-bottom:6px">No messages yet</div><div style="font-size:14px">When a client replies from their portal, the conversation shows up here.</div></div>';
+      if (!all.length) {
+        wrap.innerHTML = '<div class="card" style="text-align:center;padding:48px 24px;color:#64748B"><div style="font-size:40px;margin-bottom:12px">💬</div><div style="font-weight:700;color:#0F172A;margin-bottom:6px">No messages yet</div><div style="font-size:14px">When a client or SaaS tenant sends you a message, the conversation shows up here.</div></div>';
         return;
       }
-      const sendBtnStyle = 'white-space:nowrap;padding:10px 16px;background:linear-gradient(135deg,var(--brand-primary),#7C3AED);color:#fff;border:none;border-radius:10px;font-weight:700;cursor:pointer;font-family:inherit;font-size:14px';
-      const openBtnStyle = 'font-size:13px;padding:8px 14px;background:#fff;border:1px solid #E2E8F0;border-radius:8px;color:#475569;cursor:pointer;font-weight:600;font-family:inherit';
+      const doneMap = getData('msgThreadDone') || {};
+      // A thread with new unread resurfaces from Done automatically.
+      const active = all.filter(t => !doneMap[t.key] || t.unread > 0);
+      const done = all.filter(t => doneMap[t.key] && t.unread === 0);
       let html = '';
-      threads.forEach(t => {
-        const c = t.client;
-        const open = _openMsgThreadId === c.id;
-        const initials = (c.name||'?').split(/\s+/).map(w=>w[0]).filter(Boolean).slice(0,2).join('').toUpperCase() || 'C';
-        const lastMsg = t.last.message || '';
-        const snippet = _msgEsc(lastMsg.slice(0,90)) + (lastMsg.length>90?'…':'');
-        html += '<div class="card" style="padding:0;overflow:hidden;margin-bottom:12px;border:1px solid '+(t.unread?'#C7D2FE':'#E2E8F0')+'">';
-        html += '<div onclick="toggleMsgThread(\''+c.id+'\')" style="display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;'+(t.unread?'background:#F5F7FF':'')+'">'
-          + '<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--brand-primary),#7C3AED);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">'+initials+'</div>'
-          + '<div style="flex:1;min-width:0">'
-          +   '<div style="display:flex;align-items:center;gap:8px"><span style="font-weight:700;color:#0F172A">'+_msgEsc(c.name)+'</span>'+(t.unread?'<span style="background:#4F46E5;color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:99px">'+t.unread+' NEW</span>':'')+'</div>'
-          +   '<div style="font-size:13px;color:'+(t.unread?'#0F172A':'#64748B')+';margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(t.last.from==='owner'?'<span style="color:#94A3B8">You: </span>':'')+snippet+'</div>'
-          + '</div>'
-          + '<div style="text-align:right;flex-shrink:0"><div style="font-size:12px;color:#94A3B8">'+_msgTimeAgo(t.last.ts)+'</div><div style="font-size:11px;color:#CBD5E1;margin-top:4px">'+(open?'▲':'▼')+'</div></div>'
-          + '</div>';
-        if (open) {
-          html += '<div style="padding:6px 18px 18px;border-top:1px solid #F1F5F9">';
-          html += '<div style="max-height:360px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:14px 0">';
-          t.msgs.forEach(m => {
-            const mine = m.from === 'owner';
-            html += '<div style="align-self:'+(mine?'flex-end':'flex-start')+';max-width:78%;background:'+(mine?'linear-gradient(135deg,var(--brand-primary),#7C3AED)':'#F1F5F9')+';color:'+(mine?'#fff':'#0F172A')+';padding:9px 13px;border-radius:14px;font-size:14px;line-height:1.5;white-space:pre-wrap;word-break:break-word">'+_msgEsc(m.message)+'<div style="font-size:10px;opacity:0.7;margin-top:4px">'+_msgTimeAgo(m.ts)+'</div></div>';
-          });
-          html += '</div>';
-          html += '<div style="display:flex;gap:8px;align-items:flex-end;margin-top:8px">'
-            + '<textarea id="msg-reply-'+c.id+'" rows="1" placeholder="Type a reply to '+_msgEsc(c.name)+'…" style="flex:1;padding:10px 12px;border:1px solid #CBD5E1;border-radius:10px;font-size:14px;font-family:inherit;resize:none;outline:none" oninput="this.style.height=\'auto\';this.style.height=Math.min(this.scrollHeight,120)+\'px\'"></textarea>'
-            + '<button onclick="replyToClientThread(\''+c.id+'\')" style="'+sendBtnStyle+'">Send ✉</button>'
-            + '</div>';
-          html += '<div style="margin-top:10px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
-            + '<button onclick="showPortal(\''+(c.portalToken||'')+'\')" style="'+openBtnStyle+'">Open Portal →</button>'
-            + (c.email
-                ? '<span style="font-size:12px;color:#94A3B8">Replies email '+_msgEsc(c.email)+' and post to their portal.</span>'
-                : '<span style="font-size:12px;color:#F59E0B">No email on file — reply will only post to their portal.</span>')
-            + '</div>';
-          html += '</div>';
-        }
-        html += '</div>';
-      });
+      if (!active.length) {
+        html += '<div class="card" style="text-align:center;padding:28px 24px;color:#64748B;margin-bottom:12px"><div style="font-size:28px;margin-bottom:6px">✅</div><div style="font-weight:600;color:#0F172A">All caught up</div><div style="font-size:13px;margin-top:2px">No open conversations. Nicely done.</div></div>';
+      } else {
+        active.forEach(t => { html += _renderMsgThreadCard(t, false); });
+      }
+      if (done.length) {
+        html += '<div onclick="_toggleMsgDoneGroup()" style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:18px 4px 10px;color:#64748B;font-size:13px;font-weight:700;user-select:none">'
+          + '<span>'+(_msgShowDone?'▼':'▶')+'</span><span>Done ('+done.length+')</span>'
+          + '<span style="flex:1;height:1px;background:#E2E8F0"></span></div>';
+        if (_msgShowDone) done.forEach(t => { html += _renderMsgThreadCard(t, true); });
+      }
       wrap.innerHTML = html;
     }
+    function _toggleMsgDoneGroup(){ _msgShowDone = !_msgShowDone; renderMessagesInbox(); }
 
-    function toggleMsgThread(clientId) {
-      if (_openMsgThreadId === clientId) {
-        _openMsgThreadId = null;
-      } else {
-        _openMsgThreadId = clientId;
+    function _markThreadRead(key) {
+      if (key.indexOf('client:') === 0) {
+        const id = key.slice(7);
         const lastRead = getData('msgLastRead') || {};
-        lastRead[clientId] = new Date().toISOString();
+        lastRead[id] = new Date().toISOString();
         setData('msgLastRead', lastRead);
+      } else if (key.indexOf('saas:') === 0) {
+        const slug = key.slice(5);
+        const list = getData('admin:tenant-messages') || [];
+        let changed = false;
+        list.forEach(m => { if ((m.tenant||'(unknown)') === slug && m.from !== 'owner' && !m.read) { m.read = true; changed = true; } });
+        if (changed) setData('admin:tenant-messages', list);
+      }
+    }
+
+    function toggleMsgThread(key) {
+      if (_openMsgThreadKey === key) {
+        _openMsgThreadKey = null;
+      } else {
+        _openMsgThreadKey = key;
+        _markThreadRead(key);
       }
       renderMessagesInbox();
     }
 
+    function toggleMsgDone(key) {
+      const done = getData('msgThreadDone') || {};
+      if (done[key]) { delete done[key]; }
+      else { done[key] = true; _markThreadRead(key); if (_openMsgThreadKey === key) _openMsgThreadKey = null; }
+      setData('msgThreadDone', done);
+      renderMessagesInbox();
+    }
+
     async function replyToClientThread(clientId) {
-      const ta = document.getElementById('msg-reply-' + clientId);
+      const ta = document.getElementById('msg-reply-client_' + clientId.replace(/[^a-z0-9]/gi,'_'));
       const text = (ta && ta.value || '').trim();
       if (!text) return;
       const clients = getData('clients') || [];
@@ -10742,12 +10809,47 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
         });
       }
       if (ta) { ta.value = ''; ta.style.height = 'auto'; }
-      const lastRead = getData('msgLastRead') || {};
-      lastRead[clientId] = new Date().toISOString();
-      setData('msgLastRead', lastRead);
-      _openMsgThreadId = clientId;
+      _markThreadRead('client:' + clientId);
+      _openMsgThreadKey = 'client:' + clientId;
       renderMessagesInbox();
       if (typeof showToast === 'function') showToast('Reply sent to ' + client.name, 'success');
+    }
+
+    async function replyToSaasThread(slug) {
+      const ta = document.getElementById('msg-reply-saas_' + slug.replace(/[^a-z0-9]/gi,'_'));
+      const text = (ta && ta.value || '').trim();
+      if (!text) return;
+      const tenants = (typeof getTenants === 'function' ? getTenants() : []) || [];
+      const tn = tenants.find(t => t.slug === slug) || {};
+      // Record the owner's reply in the thread (also shows in Settings → tenant inbox).
+      const list = getData('admin:tenant-messages') || [];
+      list.push({ id: (typeof generateId==='function'?generateId():String(Date.now())), tenant: slug, from: 'owner', fromName: 'You', subject: '(your reply)', body: text, ts: new Date().toISOString(), read: true });
+      setData('admin:tenant-messages', list);
+      // Email the tenant if we have an address.
+      const to = tn.email || '';
+      if (to && typeof HC_BACKEND !== 'undefined') {
+        const settings = JSON.parse(localStorage.getItem('settings'))||{};
+        const integrations = getData('integrationSettings') || {};
+        const biz = settings.businessName || 'H.E.L.P. Center';
+        const html = '<!doctype html><html><body style="font-family:-apple-system,Segoe UI,sans-serif;background:#F1F5F9;margin:0;padding:24px">'
+          + '<table cellpadding="0" cellspacing="0" width="100%" style="max-width:560px;margin:auto;background:#fff;border-radius:14px;overflow:hidden">'
+          + '<tr><td style="background:linear-gradient(135deg,#0F172A,#312E81);padding:22px;color:#fff;font-size:20px;font-weight:700">'+_msgEsc(biz)+'</td></tr>'
+          + '<tr><td style="padding:26px 24px;color:#1F2937;font-size:15px;line-height:1.6">'+_msgEsc(text).replace(/\n/g,'<br>')+'</td></tr>'
+          + '</table></body></html>';
+        try {
+          await fetch(HC_BACKEND + '/api/email', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ to, subject:'Message from '+biz, html, fromName: integrations.resendSenderName || biz, fromEmail: integrations.resendSenderEmail || undefined })
+          });
+        } catch (_) {}
+      }
+      if (ta) { ta.value = ''; ta.style.height = 'auto'; }
+      _markThreadRead('saas:' + slug);
+      _openMsgThreadKey = 'saas:' + slug;
+      // Keep the old Settings inbox view in sync if it's on screen.
+      if (typeof renderTenantInbox === 'function') { try { renderTenantInbox(); } catch(_){} }
+      renderMessagesInbox();
+      if (typeof showToast === 'function') showToast('Reply sent' + (to ? ' to ' + (tn.name||slug) : ''), 'success');
     }
 
     // ── NAVIGATION ─────────────────────────────────────────────────────────────

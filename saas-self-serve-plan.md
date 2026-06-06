@@ -47,7 +47,7 @@ You touch none of it unless something breaks.
 ---
 
 ## 4. The pieces we need to build
-Think of it as five connected parts:
+Think of it as seven connected parts (A–E are the core "cash register"; F–G are run-the-business + growth, folded in from the SaaS-boilerplate review):
 
 | # | Part | What it does | Where it lives |
 |---|------|--------------|----------------|
@@ -56,6 +56,8 @@ Think of it as five connected parts:
 | C | **Webhook + auto-provision** | "Payment succeeded" → create tenant automatically | VPS backend (server.js) |
 | D | **Welcome + first login** | Email them their link + set-password flow | Resend + a small set-password page |
 | E | **Plan enforcement + billing portal** | Gate features by tier; let them manage/cancel | Dashboard code + Stripe Customer Portal |
+| F | **Owner KPI dashboard** | See MRR, active tenants, trials, churn, new signups at a glance | New owner-only page in the dashboard |
+| G | **Affiliate / referral program** | Others refer customers for a commission — growth engine | Referral links + tracking + payout report |
 
 ---
 
@@ -103,7 +105,24 @@ Before code, lock these down (see Section 8). Pricing, what each plan includes, 
   - reactivate on recovery.
 - **Deliverable:** the money side runs itself, including churn.
 
-### Phase 7 — Hardening (do once it's earning)
+### Phase 7 — Owner KPI dashboard (run it by the numbers)
+*Folded in from the boilerplate's "Super-Admin KPIs" idea.*
+- A new **owner-only page** (think of it as the upgrade to your SaaS Clients page) showing, in real time:
+  - **MRR** (monthly recurring revenue) + projected annual,
+  - **Active tenants**, **trials in progress**, **past-due**, **canceled**,
+  - **New signups** this week/month, and simple **churn** (cancels ÷ active).
+- Numbers come from the data Phases 2–6 already store (`plan`, `planStatus`, Stripe IDs) — this phase mostly **reads and visualizes** what's already there.
+- **Deliverable:** one screen that tells you if the business is growing or leaking — so you make decisions on facts, not vibes.
+
+### Phase 8 — Affiliate / referral program (growth engine)
+*Folded in from the boilerplate's "Affiliate system with commission payments."*
+- Give each tenant (or outside partner) a **unique referral link** (e.g. `thehelpctr.com/start?ref=joycoach`).
+- On signup, **record who referred them**; on successful paid conversion, **credit a commission** (e.g. 20% recurring or a flat first-month bounty).
+- An **affiliate view**: their link, clicks, signups, earnings; and an **owner payout report** so you know who to pay.
+- Start simple (manual payouts from the report); automate payouts later if it takes off.
+- **Deliverable:** other people sell your SaaS for you — the cheapest growth there is.
+
+### Phase 9 — Hardening (do once it's earning)
 - Move tenants to a **separate SaaS PocketBase** (blueprint step 5) so they're not on your personal instance.
 - Move the **sensitive gating/IP server-side** so the AI-project logic isn't fully shipped in the browser.
 - Tenant-own **Resend** sending (already on the remembered list).
@@ -118,6 +137,8 @@ On each tenant record / PB user, store:
 - `currentPeriodEnd` (when access lapses if unpaid)
 
 A new **plan → features map** (one small config): clients limit, AI tools included, feature flags per tier.
+
+For the **affiliate program** (Phase 8): store `referredBy` on each tenant + a small `affiliates` record (link code, clicks, signups, commission owed/paid).
 
 ---
 
@@ -137,6 +158,7 @@ A new **plan → features map** (one small config): clients limit, AI tools incl
 4. **Signup domain** — where the signup page lives (e.g., `thehelpctr.com/start`).
 5. **Tenant URL style** — keep `?tenant=slug` for now, or invest in subdomains later (`name.thehelpctr.com`).
 6. **Who picks the slug** — auto from business name (recommended) or let them choose at signup.
+7. **Affiliate commission** (for Phase 8) — what do you pay referrers? e.g. **20% recurring** for as long as the customer stays, or a **flat first-month bounty** (e.g. $25). Who can be an affiliate — any tenant, or hand-picked partners?
 
 ---
 
@@ -147,11 +169,20 @@ A new **plan → features map** (one small config): clients limit, AI tools incl
 - Phase 4 (welcome + set password): small.
 - Phase 5 (plan enforcement): medium (depends how many limits).
 - Phase 6 (billing portal + lifecycle): medium.
-- Phase 7 (hardening): larger, deferrable.
+- Phase 7 (owner KPI dashboard): small–medium (mostly reads data Phases 2–6 already store).
+- Phase 8 (affiliate program): medium.
+- Phase 9 (hardening): larger, deferrable.
 
-**Minimum to be "a real self-serve SaaS": Phases 1–4.** Phases 5–6 make it polished and churn-proof. Phase 7 is for scale.
+**Minimum to be "a real self-serve SaaS": Phases 1–4.** Phases 5–6 make it polished and churn-proof. **Phase 7 (KPIs)** is a small add once billing exists and pays for itself in clarity. **Phase 8 (affiliates)** is your cheapest growth lever. Phase 9 is for scale.
 
 ---
 
-## 10. Recommended first move
-Do **Phase 0 decisions**, then build **Phases 1 → 4 as one push** (signup → pay → auto-provision → welcome). That's the smallest slice that flips the whole thing from "I onboard people" to "people onboard themselves." Everything after that is refinement.
+## 10. Recommended order
+1. **Phase 0 decisions** (you, ~30 min).
+2. Build **Phases 1 → 4 as one push** (signup → pay → auto-provision → welcome) — this is the milestone that flips "I onboard people" → "people onboard themselves."
+3. **Phase 5 → 6** (plan limits + self-service billing/churn) so it runs itself.
+4. **Phase 7 (KPI dashboard)** — quick win once billing data exists; now you run by the numbers.
+5. **Phase 8 (affiliates)** — turn customers/partners into a sales force.
+6. **Phase 9 (hardening)** — when revenue justifies it.
+
+The three things the SaaS-boilerplate review flagged as your biggest upgrades — **(1) subscriptions + self-serve signup**, **(2) the KPI/MRR dashboard**, **(3) the affiliate program** — are now Phases 1–6, 7, and 8 respectively. One master roadmap, in order.

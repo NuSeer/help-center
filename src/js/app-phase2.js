@@ -9453,8 +9453,24 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
 
     const outlineList = outline.sections.map((x,j)=>`${j+1}. ${x.title} — ${x.brief||''}`).join('\n');
 
+    // Pace the calls so the free Gemini tier's per-minute request limit (~15/min)
+    // isn't tripped mid-manual. ~4.5s between sections keeps us safely under it.
+    const SECTION_DELAY_MS = 4500;
+
     for (let i = 0; i < outline.sections.length; i++) {
       const s = outline.sections[i];
+      // Space out requests (skip the wait before the first section).
+      if (i > 0) {
+        for (let waitLeft = Math.round(SECTION_DELAY_MS/1000); waitLeft > 0; waitLeft--) {
+          progressBubble.innerHTML =
+            '<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:14px">' +
+              '<div style="font-size:13px;font-weight:700;color:#9A3412;margin-bottom:6px">📚 Building manual…</div>' +
+              '<div style="font-size:12px;color:#475569">✓ ' + i + ' of ' + outline.sections.length + ' sections done · pacing to avoid rate limits — next in ' + waitLeft + 's…</div>' +
+            '</div>';
+          if (msgs) msgs.scrollTop = msgs.scrollHeight;
+          await new Promise(r => setTimeout(r, 1000));
+        }
+      }
       const progress = Math.round(((i) / outline.sections.length) * 100);
       progressBubble.innerHTML =
         '<div style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:10px;padding:14px">' +

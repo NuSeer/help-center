@@ -4249,8 +4249,22 @@
           };
           const typeBg = {
             'Proposal': '#e6f1fb', 'Contract': '#f3e8ff', 'Invoice': '#f0fdf4',
-            'Receipt': '#f0fdf4', 'Brand Package': '#fff7ed', 'Business Plan': '#eff6ff'
+            'Receipt': '#f0fdf4', 'Brand Package': '#fff7ed', 'Business Plan': '#eff6ff', 'Upload': '#eef2ff'
           };
+          const _escA = s => (s||'').toString().replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+          const isUpload = d.kind === 'upload' || (!d.content && d.url);
+          const actions = isUpload
+            ? ('<a href="'+_escA(d.url)+'" target="_blank" rel="noopener" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:var(--brand-primary);font-weight:500;text-decoration:none">View ↗</a>'
+              + '<a href="'+_escA(d.url)+'" download="'+_escA(d.name||d.title)+'" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:#666;font-weight:500;margin-left:4px;text-decoration:none">Download</a>'
+              + '<button onclick="bfSendToPortal(\''+d.id+'\')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid #10B981;border-radius:6px;cursor:pointer;color:#10B981;font-weight:600;margin-left:4px">Portal</button>'
+              + '<button onclick="bfDelete(\''+d.id+'\')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:#dc2626;font-weight:500;margin-left:4px">Delete</button>')
+            : ('<button onclick="bfView(\''+d.id+'\')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:var(--brand-primary);font-weight:500">View</button>'
+              + '<button onclick="bfPrint(\''+d.id+'\')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:#666;font-weight:500;margin-left:4px">Print</button>'
+              + '<button onclick="bfDownload(\''+d.id+'\')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:#666;font-weight:500;margin-left:4px"><span class="icon icon-sm" data-icon="download" style="margin-right:4px;vertical-align:-2px"></span>Download</button>'
+              + '<button onclick="bfEmail(\''+d.id+'\')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid var(--brand-primary);border-radius:6px;cursor:pointer;color:var(--brand-primary);font-weight:600;margin-left:4px"><span class="icon icon-sm" data-icon="send" style="margin-right:4px;vertical-align:-2px"></span>Email</button>'
+              + '<button onclick="bfSendToPortal(\''+d.id+'\')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid #10B981;border-radius:6px;cursor:pointer;color:#10B981;font-weight:600;margin-left:4px"><span class="icon icon-sm" data-icon="upload" style="margin-right:4px;vertical-align:-2px"></span>Portal</button>'
+              + '<button onclick="bfReSign(\''+d.id+'\')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid #7C3AED;border-radius:6px;cursor:pointer;color:#7C3AED;font-weight:600;margin-left:4px">Re-sign</button>'
+              + '<button onclick="bfDelete(\''+d.id+'\')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:#dc2626;font-weight:500;margin-left:4px">Delete</button>');
           return `<tr style="border-bottom:0.5px solid rgba(0,0,0,0.06);transition:background .12s"
             onmouseenter="this.style.background='#fafafa'" onmouseleave="this.style.background='#fff'">
             <td style="padding:12px 14px;font-size:13px;color:#666;white-space:nowrap">${dateStr}</td>
@@ -4260,15 +4274,7 @@
               <div style="margin-top:5px">${_folderBadgeHTML('bf', d)}</div>
             </td>
             <td style="padding:12px 14px;font-size:13px;color:#666">${d.clientName || '—'}</td>
-            <td style="padding:12px 14px;text-align:right;white-space:nowrap">
-              <button onclick="bfView('${d.id}')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:var(--brand-primary);font-weight:500">View</button>
-              <button onclick="bfPrint('${d.id}')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:#666;font-weight:500;margin-left:4px">Print</button>
-              <button onclick="bfDownload('${d.id}')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:#666;font-weight:500;margin-left:4px"><span class="icon icon-sm" data-icon="download" style="margin-right:4px;vertical-align:-2px"></span>Download</button>
-              <button onclick="bfEmail('${d.id}')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid var(--brand-primary);border-radius:6px;cursor:pointer;color:var(--brand-primary);font-weight:600;margin-left:4px"><span class="icon icon-sm" data-icon="send" style="margin-right:4px;vertical-align:-2px"></span>Email</button>
-              <button onclick="bfSendToPortal('${d.id}')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid #10B981;border-radius:6px;cursor:pointer;color:#10B981;font-weight:600;margin-left:4px"><span class="icon icon-sm" data-icon="upload" style="margin-right:4px;vertical-align:-2px"></span>Portal</button>
-              <button onclick="bfReSign('${d.id}')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid #7C3AED;border-radius:6px;cursor:pointer;color:#7C3AED;font-weight:600;margin-left:4px">Re-sign</button>
-              <button onclick="bfDelete('${d.id}')" style="padding:5px 10px;font-size:12px;background:none;border:0.5px solid rgba(0,0,0,0.15);border-radius:6px;cursor:pointer;color:#dc2626;font-weight:500;margin-left:4px">Delete</button>
-            </td>
+            <td style="padding:12px 14px;text-align:right;white-space:nowrap">${actions}</td>
           </tr>`;
         }).join('')}</tbody>
       </table>`;
@@ -4916,8 +4922,13 @@
     function bfSendToPortal(id) {
       const doc = (getData('businessFile')||[]).find(d => d.id === id);
       if (!doc) { showToast('Document not found'); return; }
+      const isUpload = doc.kind === 'upload' || (!doc.content && doc.url);
       // Reuse openSendChatToPortalModal but seed it with this doc's metadata.
-      openSendChatToPortalModal(doc.content || '');
+      // For uploaded files there's no text body — send a link to the file instead.
+      const seed = isUpload
+        ? ('📎 ' + (doc.name || doc.title || 'Attached file') + '\n\nDownload: ' + (doc.url || ''))
+        : (doc.content || '');
+      openSendChatToPortalModal(seed);
       // After the modal is built, pre-select client + type
       setTimeout(() => {
         const sel = document.getElementById('sp-client');
@@ -10390,6 +10401,44 @@ Write a complete brief they can send to a Fiverr designer: style, colors, must-h
         if (status) status.innerHTML = '<span style="color:var(--error)">⚠ Upload failed: ' + e.message + '</span>';
       }
     }
+    // Upload a file straight into the Business File (same upload backend as
+    // Personal Files). Stored as a businessFile entry with kind:'upload' so it
+    // lists alongside saved documents with View/Download.
+    async function _bfHandleFile(f) {
+      const status = document.getElementById('bf-status');
+      if (!f) return;
+      if (f.size > 50 * 1024 * 1024) { if (status) status.innerHTML = '<span style="color:var(--error)">File too large (50MB max)</span>'; return; }
+      if (status) status.innerHTML = '⏳ Uploading ' + f.name + ' (' + Math.round(f.size/1024) + ' KB)…';
+      const cid = (typeof _pfId === 'function') ? _pfId() : ('bf-' + Date.now().toString(36));
+      const fd = new FormData();
+      fd.append('clientId', cid);
+      fd.append('file', f);
+      try {
+        const r = await fetch(HC_BACKEND + '/api/upload?clientId=' + encodeURIComponent(cid), { method:'POST', body: fd });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        const docs = getData('businessFile') || [];
+        docs.unshift({
+          id: generateId(),
+          kind: 'upload',
+          type: 'Upload',
+          title: f.name,
+          name: f.name,
+          url: j.url,
+          size: f.size,
+          mime: j.mime || f.type,
+          createdAt: new Date().toISOString(),
+          uploadedAt: new Date().toISOString()
+        });
+        setData('businessFile', docs);
+        if (status) status.innerHTML = '<span style="color:#10B981">✓ Uploaded ' + f.name + '</span>';
+        renderBusinessFile();
+        setTimeout(() => { if (status) status.innerHTML = ''; }, 4000);
+      } catch (e) {
+        if (status) status.innerHTML = '<span style="color:var(--error)">⚠ Upload failed: ' + e.message + '</span>';
+      }
+    }
+
     function renderPersonalFiles() {
       const list = document.getElementById('pf-list');
       if (!list) return;

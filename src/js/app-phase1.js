@@ -8298,7 +8298,7 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       const s=JSON.parse(localStorage.getItem('settings'))||{};
       const sv=(id,v)=>{const el=document.getElementById(id);if(el)el.value=v||'';};
       sv('set-name',s.name); sv('set-email',s.email); sv('set-biz',s.businessName); sv('set-tagline',s.tagline); sv('set-portal-url',s.portalBaseUrl||'');
-      sv('set-ai-provider',s.aiProvider||'groq'); sv('set-ai-name',s.aiCoachName||'H.E.L.P. AI Coach');
+      sv('set-ai-provider',s.aiProvider||'gemini'); sv('set-ai-name',s.aiCoachName||'H.E.L.P. AI Coach');
       sv('set-ai-fallback',s.aiFallbackProvider||'');
       if(s.groqApiKey) sv('set-groq-key',s.groqApiKey);
       if(s.groqApiKey2) sv('set-groq-key-2',s.groqApiKey2);

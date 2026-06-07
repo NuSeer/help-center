@@ -9701,72 +9701,76 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
     let lastErr = '';
     let minWait = Infinity;
 
-    // ── Pass 1: Gemini 2.5 Flash (PRIMARY — much higher daily cap than Groq)
-    if (cfg.geminiApiKey) {
-      try {
-        const text = await _attemptGemini({ messages, key: cfg.geminiApiKey, temperature, maxTokens, onChunk });
-        return { text, providerUsed: 'gemini', modelUsed: 'gemini-2.5-flash' };
-      } catch (e) { lastErr = 'Gemini: ' + e.message; console.warn('[askAI] Gemini → ' + e.message); }
-    }
-
-    // ── Pass 2 & 3: Groq chain (fallback when Gemini unavailable)
-    // On Groq failure, ALWAYS fall through to OpenRouter / Ollama —
-    // never throw mid-chain. If the error is auth-related (bad key), skip the
-    // rest of the Groq chain (retrying other models with a bad key is wasted),
-    // but still try the cloud backups.
-    const groqKey = cfg.groqApiKey || '';
-    let skipRemainingGroq = false;
-    if (groqKey) {
-      const tryChain = [startingModel, ...GROQ_FALLBACK_CHAIN.filter(m => m !== startingModel)];
-      for (let pass = 1; pass <= 2 && !skipRemainingGroq; pass++) {
-        let usedModel = null, gotText = '';
-        for (const m of tryChain) {
-          const r = await _attemptGroq({ messages, model: m, key: groqKey, temperature, maxTokens, onChunk });
-          if (r.ok) { usedModel = m; gotText = r.text; break; }
-          lastErr = r.error;
-          if (r.waitS && r.waitS < minWait) minWait = r.waitS;
-          console.warn('[askAI] Groq ' + m + ' → ' + r.error);
-          // Conditions where retrying other Groq models is pointless — skip to cloud backups:
-          //   • auth errors (every model fails the same way)
-          //   • "request too large" / 413 (smaller models have LOWER TPM, not higher)
-          if (/invalid[ _]?api[ _]?key|unauthorized|401|authentication|request too large|too large for model|413/i.test(r.error)) {
-            skipRemainingGroq = true; break;
+    // Each provider attempt returns { text, providerUsed, modelUsed } on success,
+    // or null to skip (no key / soft failure). The ORDER is driven by the user's
+    // Settings → AI Integration choices: Primary first, then Fallback, then the
+    // rest of the configured providers as automatic safety nets.
+    const _try = {
+      gemini: async () => {
+        if (!cfg.geminiApiKey) return null;
+        try { const text = await _attemptGemini({ messages, key: cfg.geminiApiKey, temperature, maxTokens, onChunk }); return { text, providerUsed:'gemini', modelUsed:'gemini-2.5-flash' }; }
+        catch (e) { lastErr = 'Gemini: ' + e.message; console.warn('[askAI] Gemini → ' + e.message); return null; }
+      },
+      groq: async () => {
+        const groqKey = cfg.groqApiKey || '';
+        if (!groqKey) return null;
+        const tryChain = [startingModel, ...GROQ_FALLBACK_CHAIN.filter(m => m !== startingModel)];
+        let skipRemainingGroq = false;
+        for (let pass = 1; pass <= 2 && !skipRemainingGroq; pass++) {
+          let usedModel = null, gotText = '';
+          for (const m of tryChain) {
+            const r = await _attemptGroq({ messages, model: m, key: groqKey, temperature, maxTokens, onChunk });
+            if (r.ok) { usedModel = m; gotText = r.text; break; }
+            lastErr = r.error;
+            if (r.waitS && r.waitS < minWait) minWait = r.waitS;
+            console.warn('[askAI] Groq ' + m + ' → ' + r.error);
+            if (/invalid[ _]?api[ _]?key|unauthorized|401|authentication|request too large|too large for model|413/i.test(r.error)) { skipRemainingGroq = true; break; }
           }
+          if (usedModel) return { text: gotText, providerUsed:'groq', modelUsed: usedModel };
+          if (pass === 1 && Number.isFinite(minWait) && minWait > 0 && minWait <= 60) {
+            _aiBanner(msgsEl, _BANNER_AMBER, '⏳ All Groq models are rate-limited. Waiting ' + Math.ceil(minWait) + 's then retrying…');
+            await new Promise(r => setTimeout(r, Math.ceil(minWait * 1000) + 500));
+          } else break;
         }
-        if (usedModel) {
-          if (cfg.geminiApiKey) {
-            _aiBanner(msgsEl, _BANNER_AMBER, '⚡ Gemini unavailable — used <strong>Groq</strong> for this reply only.');
-          } else if (usedModel !== startingModel) {
-            const orig = (GROQ_MODELS.find(x=>x.id===startingModel)?.label || startingModel).replace(/[⭐🦙⚡💨🌐🧠]/g,'').trim();
-            const used = (GROQ_MODELS.find(x=>x.id===usedModel)?.label || usedModel).replace(/[⭐🦙⚡💨🌐🧠]/g,'').trim();
-            _aiBanner(msgsEl, _BANNER_AMBER, '⚡ ' + orig + ' was rate-limited — used <strong>' + used + '</strong> for this reply only.');
-          }
-          return { text: gotText, providerUsed: 'groq', modelUsed: usedModel };
-        }
-        if (pass === 1 && Number.isFinite(minWait) && minWait > 0 && minWait <= 60) {
-          _aiBanner(msgsEl, _BANNER_AMBER, '⏳ All Groq models are rate-limited. Waiting ' + Math.ceil(minWait) + 's then retrying…');
-          await new Promise(r => setTimeout(r, Math.ceil(minWait * 1000) + 500));
-        } else break;
+        return null;
+      },
+      claude: async () => {
+        if (!cfg.anthropicApiKey || typeof _aiStreamClaude !== 'function') return null;
+        try { const text = await _aiStreamClaude(messages, onChunk, cfg.anthropicApiKey, cfg.aiModel); return (text && text.trim()) ? { text, providerUsed:'claude', modelUsed:'claude' } : null; }
+        catch (e) { lastErr = (lastErr ? lastErr + ' · ' : '') + 'Claude: ' + e.message; return null; }
+      },
+      openai: async () => {
+        if (!cfg.openaiApiKey || typeof _aiStreamOpenAI !== 'function') return null;
+        try { const text = await _aiStreamOpenAI(messages, onChunk, cfg.openaiApiKey, cfg.aiModel); return (text && text.trim()) ? { text, providerUsed:'openai', modelUsed:'openai' } : null; }
+        catch (e) { lastErr = (lastErr ? lastErr + ' · ' : '') + 'OpenAI: ' + e.message; return null; }
+      },
+      openrouter: async () => {
+        if (!cfg.openRouterApiKey) return null;
+        try { const text = await _attemptOpenRouter({ messages, key: cfg.openRouterApiKey, temperature, maxTokens, onChunk }); return { text, providerUsed:'openrouter', modelUsed:'llama-3.3-70b:free' }; }
+        catch (e) { lastErr = (lastErr ? lastErr + ' · OpenRouter: ' : 'OpenRouter: ') + e.message; console.warn('[askAI] OpenRouter → ' + e.message); return null; }
+      },
+      ollama: async () => {
+        if (!_ollamaConfigured()) return null;
+        try { const text = await callOllama(messages, { temperature, task: 'general' }); if (onChunk) onChunk(text, text); return { text, providerUsed:'ollama', modelUsed: cfg.ollamaModel || 'ollama' }; }
+        catch (e) { lastErr = (lastErr ? lastErr + ' · Ollama: ' : 'Ollama: ') + e.message; console.warn('[askAI] Ollama → ' + e.message); return null; }
       }
-    }
+    };
 
-    // ── Pass 4: OpenRouter free models
-    if (cfg.openRouterApiKey) {
-      try {
-        _aiBanner(msgsEl, _BANNER_PURPLE, '🛡️ Falling back to <strong>OpenRouter</strong> (free Llama 3.3 70B) for this reply only.');
-        const text = await _attemptOpenRouter({ messages, key: cfg.openRouterApiKey, temperature, maxTokens, onChunk });
-        return { text, providerUsed: 'openrouter', modelUsed: 'llama-3.3-70b:free' };
-      } catch (e) { lastErr = (lastErr ? lastErr + ' · OpenRouter: ' : 'OpenRouter: ') + e.message; console.warn('[askAI] OpenRouter → ' + e.message); }
-    }
+    // Build the order: Primary → Fallback → the rest (deduped). Primary defaults
+    // to Gemini when unset. THIS is what the Settings dropdowns now control.
+    const _order = [];
+    const _add = p => { if (p && _try[p] && _order.indexOf(p) === -1) _order.push(p); };
+    _add(cfg.aiProvider || 'gemini'); _add(cfg.aiFallbackProvider);
+    ['gemini','groq','claude','openai','openrouter','ollama'].forEach(_add);
 
-    // ── Pass 5: Ollama (local) — non-streaming, emit final result via onChunk
-    if (_ollamaConfigured()) {
-      try {
-        _aiBanner(msgsEl, _BANNER_GREEN, '🦙 Cloud AI unavailable — using <strong>local Ollama</strong> for this reply only.');
-        const text = await callOllama(messages, { temperature, task: 'general' });
-        if (onChunk) onChunk(text, text);
-        return { text, providerUsed: 'ollama', modelUsed: cfg.ollamaModel || 'ollama' };
-      } catch (e) { lastErr = (lastErr ? lastErr + ' · Ollama: ' : 'Ollama: ') + e.message; console.warn('[askAI] Ollama → ' + e.message); }
+    const _niceName = { gemini:'Gemini', groq:'Groq', claude:'Claude', openai:'OpenAI', openrouter:'OpenRouter', ollama:'Ollama' };
+    for (let oi = 0; oi < _order.length; oi++) {
+      const name = _order[oi];
+      const res = await _try[name]();
+      if (res && res.text && res.text.trim()) {
+        if (oi > 0) _aiBanner(msgsEl, _BANNER_AMBER, '⚡ ' + _niceName[_order[0]] + ' was unavailable — used <strong>' + _niceName[name] + '</strong> for this reply only.');
+        return res;
+      }
     }
 
     // ── Pass 6: VPS server (/api/ai) — owner only, never tenants ───────────────

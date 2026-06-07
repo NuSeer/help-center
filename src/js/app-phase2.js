@@ -9753,6 +9753,38 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
       } catch (e) { lastErr = (lastErr ? lastErr + ' · Ollama: ' : 'Ollama: ') + e.message; console.warn('[askAI] Ollama → ' + e.message); }
     }
 
+    // ── Pass 6: VPS server (/api/ai) — owner only, never tenants ───────────────
+    // The chat Coach (callAI) already falls back to the server when direct keys
+    // fail (e.g. a browser-direct Gemini key returns 403). AI projects use askAI,
+    // which previously had NO server fallback — so a 403 surfaced instead of
+    // quietly using the server. Mirror callAI's fallback here.
+    if (!(typeof TENANT !== 'undefined' && TENANT) && typeof API_BASE !== 'undefined') {
+      try {
+        const sysMsg = (messages || []).find(m => m.role === 'system');
+        const chatMsgs = (messages || []).filter(m => m.role !== 'system');
+        const resp = await fetch(API_BASE + '/api/ai', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ provider: cfg.aiProvider || 'groq', model: startingModel, messages: chatMsgs, systemPrompt: sysMsg ? sysMsg.content : undefined })
+        });
+        if (resp.ok && resp.body) {
+          const reader = resp.body.getReader(), dec = new TextDecoder();
+          let full = '', buf = '';
+          const handle = (line) => {
+            if (!line.startsWith('data: ')) return;
+            const d = line.slice(6); if (d === '[DONE]') return;
+            try { const ev = JSON.parse(d); if (ev.error) return; const delta = ev.delta || ''; if (delta) { full += delta; if (onChunk) onChunk(delta, full); } } catch {}
+          };
+          while (true) { const { done, value } = await reader.read(); if (done) { if (buf) handle(buf); break; } buf += dec.decode(value, { stream: true }); const lines = buf.split('\n'); buf = lines.pop() || ''; for (const l of lines) handle(l); }
+          if (full.trim()) {
+            if (lastErr) _aiBanner(msgsEl, _BANNER_AMBER, '⚡ Your direct AI key was unavailable — used the H.E.L.P. Center server for this reply.');
+            return { text: full, providerUsed: 'server', modelUsed: startingModel };
+          }
+        } else {
+          lastErr = (lastErr ? lastErr + ' · ' : '') + 'Server: HTTP ' + resp.status;
+        }
+      } catch (e) { lastErr = (lastErr ? lastErr + ' · ' : '') + 'Server: ' + e.message; }
+    }
+
     throw new Error('All AI providers failed. Last error: ' + lastErr + (Number.isFinite(minWait) ? ' (wait ~'+Math.ceil(minWait)+'s and try again)' : ''));
   }
 

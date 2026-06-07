@@ -28992,17 +28992,47 @@ Generate a detailed table of contents for a comprehensive manual on this topic. 
 }
 
 Decide the section count based on the topic — small SOP = 5-8 sections, full curriculum = 15-25 sections. Each section will become 800-1500 words of detailed content. Order sections logically. Return ONLY the JSON object.`;
-    let outline;
-    try {
-      const { text } = await askAI({
-        messages: [{role:'system', content: sysPrompt}, {role:'user', content: outlinePrompt}],
-        project: _chatProjectKey
-      });
-      const cleaned = String(text||'').replace(/^[^{]*/, '').replace(/[^}]*$/, '').trim();
-      outline = JSON.parse(cleaned);
-      if (!outline.sections || !Array.isArray(outline.sections) || !outline.sections.length) throw new Error('No sections in outline');
-    } catch (e) {
-      outlineBubble.innerHTML = '<div style="color:#dc2626;padding:12px;background:#fef2f2;border-radius:8px">⚠️ Could not parse outline: ' + e.message + '. Try a more specific request.</div>';
+    // Pull a JSON object out of a model reply that may be wrapped in ``` fences
+    // or have stray commentary around it.
+    const _extractJson = (t) => {
+      let s = String(t || '').trim();
+      if (!s) return null;
+      s = s.replace(/```+\s*json/gi, '').replace(/```+/g, '').trim();
+      const a = s.indexOf('{'), b = s.lastIndexOf('}');
+      if (a === -1 || b === -1 || b < a) return null;
+      return s.slice(a, b + 1);
+    };
+    // For the outline we need PURE JSON — so we use the specialist's expertise
+    // but OVERRIDE the "ask clarifying questions first" behavior from the project
+    // rules (that's what makes the model reply with questions instead of JSON).
+    const outlineSys = (PROJECT_SYSTEM_PROMPTS[_chatProjectKey] || 'You are an expert.')
+      + '\n\n## STRUCTURED OUTPUT MODE (this request only)\n'
+      + 'Do NOT greet, do NOT ask clarifying questions, do NOT add any commentary or markdown. '
+      + 'Use your expertise and best judgment to fill any gaps yourself. '
+      + 'Respond with ONLY the requested JSON object — it must start with { and end with } and contain nothing else.';
+    let outline = null, rawText = '';
+    // Up to 2 attempts — models occasionally return an empty/truncated reply.
+    for (let attempt = 0; attempt < 2 && !outline; attempt++) {
+      if (attempt > 0) outlineBubble.innerHTML = '⏳ Retrying outline…';
+      try {
+        const { text } = await askAI({
+          messages: [{role:'system', content: outlineSys}, {role:'user', content: outlinePrompt}],
+          project: _chatProjectKey
+        });
+        rawText = String(text || '').trim();
+        const cleaned = _extractJson(rawText);
+        if (!cleaned) continue;
+        const parsed = JSON.parse(cleaned);
+        if (parsed && Array.isArray(parsed.sections) && parsed.sections.length) outline = parsed;
+      } catch (e) { /* try again, or fall through to the message below */ }
+    }
+    if (!outline) {
+      const reason = rawText
+        ? 'the AI didn\'t return a usable outline this time'
+        : 'the AI returned an empty response — usually a missing/rate-limited AI key (check Settings → AI Integration) or a busy moment';
+      outlineBubble.innerHTML = '<div style="color:#dc2626;padding:12px;background:#fef2f2;border-radius:8px">⚠️ Couldn\'t build the manual outline: ' + reason + '.<br><br>Please try again'
+        + (rawText ? ', or rephrase a bit more specifically (e.g. "Build a career-choices manual for ISFP personality types — strengths, ideal fields, and a job-search plan").' : '.')
+        + '</div>';
       return;
     }
 

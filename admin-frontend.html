@@ -352,6 +352,16 @@ input[type=file]{display:none}
       <button class="add-btn" onclick="addRow('siteReviews')">+ Add review</button>
     </section>
 
+    <!-- ════════════════════════════════════════════════
+         FAQ
+    ═══════════════════════════════════════════════════ -->
+    <section class="card">
+      <h2>❓ FAQ</h2>
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px">These questions appear in the FAQ section on your public site. Add, edit, reorder, or delete them — changes go live when you Publish.</p>
+      <div class="row-list" id="faq-rows"></div>
+      <button class="add-btn" onclick="addRow('siteFaq')">+ Add question</button>
+    </section>
+
   </main>
 
 </div>
@@ -362,7 +372,7 @@ input[type=file]{display:none}
 /* ════════════════════════════════════════════════
    DATA / STATE
 ═══════════════════════════════════════════════════ */
-const KEYS = ['settings','siteHero','siteColors','siteServices','siteMockups','sitePrograms','sitePricing','sitePricingEnabled','siteReviews'];
+const KEYS = ['settings','siteHero','siteColors','siteServices','siteMockups','sitePrograms','sitePricing','sitePricingEnabled','siteReviews','siteFaq'];
 
 const DEFAULTS = {
   settings: {
@@ -432,7 +442,15 @@ const DEFAULTS = {
       features:['Unlimited pages','Booking / scheduler','Client portal','E-commerce ready','Custom animations','Unlimited revisions','90-day support','Monthly maintenance'] }
   ],
   sitePricingEnabled: false,
-  siteReviews: []
+  siteReviews: [],
+  siteFaq: [
+    { q:'What kinds of businesses do you work with?', a:'Coaches, consultants, and service-based businesses of all kinds — faith-based, nonprofit, or for-profit. If you have clients (or members or participants) to manage, we can help.' },
+    { q:'What services do you offer?', a:'Custom websites, graphic design, business consulting, and ready-to-use programs and business ideas. We also build all-in-one client dashboards so you can run your business from one place.' },
+    { q:'How long does a typical project take?', a:'Most websites and design projects are delivered within 4–7 business days. We confirm a timeline with you up front before any work begins.' },
+    { q:'How much do your services cost?', a:'It depends on scope. We offer flat-rate packages and monthly plans. Tell us what you need through the contact form and we\'ll send clear pricing — no surprises.' },
+    { q:'Do you offer ongoing support?', a:'Yes. We offer monthly care plans for updates, maintenance, and priority support so your site and systems stay current as you grow.' },
+    { q:'How do I get started?', a:'Use the contact form — tell us a little about your business and what you need, and we\'ll respond within 48 hours.' }
+  ]
 };
 
 let state = {};
@@ -627,6 +645,7 @@ function renderAll(){
   renderPrograms();
   renderPricing();
   renderReviews();
+  renderFaq();
 }
 
 function renderPricingToggle(){
@@ -685,6 +704,10 @@ function addRow(target){
     state.siteReviews = state.siteReviews || [];
     state.siteReviews.unshift({ id:'rev-'+Date.now().toString(36), name:'', businessName:'', rating:5, text:'', websiteUrl:'', graphicUrl:'', approved:true, submittedAt:new Date().toISOString(), source:'manual' });
     renderReviews();
+  } else if(target === 'siteFaq'){
+    state.siteFaq = state.siteFaq || [];
+    state.siteFaq.push({ q:'New question', a:'' });
+    renderFaq();
   }
   setDirty(true);
 }
@@ -898,6 +921,29 @@ function updReview(i, key, val){ state.siteReviews[i][key] = val; setDirty(true)
 function moveReviewRow(i, d){ moveRow(state.siteReviews, i, d); renderReviews(); setDirty(true); }
 function delReviewRow(i){ if(deleteRow(state.siteReviews, i)){ renderReviews(); setDirty(true); } }
 
+function renderFaq(){
+  const root = document.getElementById('faq-rows');
+  if(!root) return;
+  const arr = state.siteFaq || (state.siteFaq = []);
+  if(!arr.length){
+    root.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:13px;background:#F8FAFC;border-radius:8px">No questions yet. Click <strong>+ Add question</strong> to create one.</div>';
+    return;
+  }
+  root.innerHTML = arr.map((f, i) => `
+    <div class="row">
+      <div class="row-head">
+        <strong>${escapeHtml(f.q || '(no question)')}</strong>
+        ${rowActions(i, arr.length, `moveFaqRow(${i},-1)`, `moveFaqRow(${i},1)`, `delFaqRow(${i})`)}
+      </div>
+      <div class="field"><label>Question</label><input type="text" oninput="updFaq(${i},'q',this.value)" value="${escapeAttr(f.q||'')}" placeholder="e.g. How long does a project take?"></div>
+      <div class="field"><label>Answer</label><textarea oninput="updFaq(${i},'a',this.value)" placeholder="Write the answer…">${escapeHtml(f.a||'')}</textarea></div>
+    </div>
+  `).join('');
+}
+function updFaq(i, key, val){ state.siteFaq[i][key] = val; setDirty(true); }
+function moveFaqRow(i, d){ moveRow(state.siteFaq, i, d); renderFaq(); setDirty(true); }
+function delFaqRow(i){ if(deleteRow(state.siteFaq, i)){ renderFaq(); setDirty(true); } }
+
 /* ════════════════════════════════════════════════
    TAGS INPUT (reusable)
 ═══════════════════════════════════════════════════ */
@@ -937,6 +983,7 @@ function rerenderFor(arrayKey){
   else if(arrayKey === 'sitePricing') renderPricing();
   else if(arrayKey === 'siteMockupsCards') renderMockups();
   else if(arrayKey === 'siteReviews') renderReviews();
+  else if(arrayKey === 'siteFaq') renderFaq();
 }
 
 /* ════════════════════════════════════════════════

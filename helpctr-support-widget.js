@@ -359,9 +359,9 @@ Personality:
 
   /* ── WELCOME ─────────────────────────────────────────────── */
   function welcome() {
-    addBubble("bot", `👋 Welcome to <strong>${CONFIG.BUSINESS_NAME}</strong>!<br><br>
-We help businesses, churches, athletes & nonprofits grow online with custom websites, branding, consulting & more.<br><br>
-How can we help you today?`);
+    addBubble("bot", `👋 Welcome to <strong>${CONFIG.BUSINESS_NAME}</strong> — <em>${CONFIG.BUSINESS_TAGLINE}</em>.<br><br>
+We help everyday leaders prosper — turning bold dreams into thriving businesses with custom websites, branding, consulting, and growth programs.<br><br>
+How can we help you grow today?`);
   }
 
   /* ── SEND ────────────────────────────────────────────────── */

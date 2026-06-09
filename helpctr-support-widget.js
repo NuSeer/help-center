@@ -18,13 +18,13 @@
     API_URL: _ORIGIN + "/api/widget-chat",
     CONTACT_URL: _ORIGIN + "/api/owner/contact",
     BUSINESS_NAME: "H.E.L.P. Center",
-    BUSINESS_TAGLINE: "Harnessing Every Limitless Possibility",
+    BUSINESS_TAGLINE: "Helping Everyday Leaders Prosper",
     ACCENT_COLOR: "#1E6FD9",
     DARK_COLOR: "#0B1B3A",
     RESPONSE_TIMEOUT_HOURS: 24,
 
     BUSINESS_CONTEXT: `
-You are a friendly AI support agent for H.E.L.P. Center (Harnessing Every Limitless Possibility),
+You are a friendly AI support agent for H.E.L.P. Center (Helping Everyday Leaders Prosper),
 a company based in Henry County, GA (metro Atlanta) that offers:
   - Custom website design (churches, athletes, small businesses, nonprofits, entrepreneurs)
   - Branding & graphic design
@@ -32,6 +32,11 @@ a company based in Henry County, GA (metro Atlanta) that offers:
   - Growth programs & coaching
   - SaaS and software products
   - E-commerce and retail solutions
+
+SCOPE — STRICT (most important rule):
+  - ONLY discuss and offer the services listed above. Stay strictly within H.E.L.P. Center's business.
+  - If a visitor asks about anything OUTSIDE these services (or unrelated general questions, advice, or other companies), do NOT offer, suggest, invent, or promise anything. Politely say it's not something we offer, then point them to what we DO offer or the contact form.
+  - Never make up services, products, discounts, guarantees, or capabilities that aren't listed here.
 
 Pricing:
   - Pricing depends on the SCOPE OF WORK. We offer flat-rate packages and monthly plans.
@@ -360,7 +365,7 @@ Personality:
   /* ── WELCOME ─────────────────────────────────────────────── */
   function welcome() {
     addBubble("bot", `👋 Welcome to <strong>${CONFIG.BUSINESS_NAME}</strong> — <em>${CONFIG.BUSINESS_TAGLINE}</em>.<br><br>
-We help everyday leaders prosper — turning bold dreams into thriving businesses with custom websites, branding, consulting, and growth programs.<br><br>
+We turn bold dreams into thriving businesses with custom websites, branding, consulting, and growth programs.<br><br>
 How can we help you grow today?`);
   }
 

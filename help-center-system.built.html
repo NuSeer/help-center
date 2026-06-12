@@ -5177,6 +5177,8 @@ function makeExtendedSections(template, content, pages) {
       'revenue':         'dollar',
       'settings':        'settings',
       'ai-projects':     'bot',
+      'lvs-studio':      'wand',
+      'agent-os':        'bot',
       'my-profile':      'user'
     };
     // Mount any [data-icon="name"] placeholder with its SVG markup.
@@ -5412,6 +5414,12 @@ function makeExtendedSections(template, content, pages) {
           <div class="nav-section-title">AI Tools</div>
           <button type="button" class="nav-link" onclick="showPage('ai-projects', event)">
             <span class="nav-icon">🤖</span><span>AI Projects</span>
+          </button>
+          <button type="button" class="nav-link" onclick="showPage('lvs-studio', event)">
+            <span class="nav-icon">✨</span><span>Limitless Vision Studio</span>
+          </button>
+          <button type="button" class="nav-link" onclick="showPage('agent-os', event)">
+            <span class="nav-icon">🧠</span><span>Agent OS</span>
           </button>
           <button type="button" class="nav-link" onclick="showPage('my-profile', event)">
             <span class="nav-icon">🌟</span><span>My Profile</span>
@@ -8449,6 +8457,512 @@ H.E.L.P. Center | joy@thehelpctr.com</textarea>
 
           </div>
         </div>
+      </div>
+
+      <!-- ── LIMITLESS VISION STUDIO PAGE ── -->
+      <!-- ═══════════════════════════════════════════════════════════
+           LIMITLESS VISION STUDIO — Standalone Dashboard
+           Dark cosmic aesthetic. LVS creates; agents extend.
+           ═══════════════════════════════════════════════════════════ -->
+      <div id="lvs-studio-page" class="page hidden" style="background:#0A0F1E;min-height:100%;padding:0;display:flex;flex-direction:column;">
+
+        <style>
+          /* ── LVS scoped styles ───────────────────────────────── */
+          .lvs-category-tile {
+            background:rgba(255,255,255,0.04);
+            border:1px solid rgba(201,168,76,0.18);
+            border-radius:10px;
+            padding:14px 12px;
+            cursor:pointer;
+            transition:all 0.18s ease;
+            text-align:center;
+            display:flex;flex-direction:column;align-items:center;gap:6px;
+          }
+          .lvs-category-tile:hover {
+            background:rgba(201,168,76,0.1);
+            border-color:rgba(201,168,76,0.5);
+            transform:translateY(-2px);
+          }
+          .lvs-category-tile.active {
+            background:rgba(201,168,76,0.15);
+            border-color:#C9A84C;
+          }
+          .lvs-mode-btn {
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.12);
+            color:rgba(255,255,255,0.65);
+            border-radius:20px;
+            padding:6px 14px;
+            font-size:12px;
+            font-weight:600;
+            cursor:pointer;
+            transition:all 0.15s;
+            white-space:nowrap;
+          }
+          .lvs-mode-btn:hover, .lvs-mode-btn.active {
+            background:rgba(201,168,76,0.15);
+            border-color:#C9A84C;
+            color:#C9A84C;
+          }
+          .lvs-msg-user {
+            align-self:flex-end;
+            background:rgba(201,168,76,0.15);
+            border:1px solid rgba(201,168,76,0.3);
+            color:#F1F5F9;
+            padding:10px 15px;
+            border-radius:16px 16px 4px 16px;
+            max-width:80%;
+            font-size:14px;
+            line-height:1.6;
+          }
+          .lvs-msg-ai {
+            align-self:flex-start;
+            background:rgba(255,255,255,0.05);
+            border:1px solid rgba(255,255,255,0.08);
+            color:#E2E8F0;
+            padding:12px 16px;
+            border-radius:4px 16px 16px 16px;
+            max-width:90%;
+            font-size:14px;
+            line-height:1.7;
+            border-left:3px solid #C9A84C;
+          }
+          .lvs-msg-agent {
+            align-self:flex-start;
+            background:rgba(255,255,255,0.03);
+            border:1px solid rgba(255,255,255,0.06);
+            color:#CBD5E1;
+            padding:12px 16px;
+            border-radius:4px 16px 16px 16px;
+            max-width:90%;
+            font-size:14px;
+            line-height:1.7;
+          }
+          #lvs-chat-msgs .md-content h1,
+          #lvs-chat-msgs .md-content h2,
+          #lvs-chat-msgs .md-content h3 { color:#C9A84C; margin:12px 0 6px; }
+          #lvs-chat-msgs .md-content p { margin:6px 0; }
+          #lvs-chat-msgs .md-content ul,
+          #lvs-chat-msgs .md-content ol { padding-left:20px; margin:6px 0; }
+          #lvs-chat-msgs .md-content code { background:rgba(255,255,255,0.08); padding:1px 5px; border-radius:4px; font-size:0.9em; }
+          #lvs-chat-msgs .md-content pre { background:#070B14; border:1px solid rgba(255,255,255,0.1); border-radius:8px; padding:12px; overflow:auto; margin:8px 0; }
+          #lvs-chat-msgs .md-content strong { color:#fff; }
+          #lvs-chat-msgs .md-content blockquote { border-left:3px solid #C9A84C; margin:8px 0; padding:4px 12px; color:rgba(255,255,255,0.5); }
+        </style>
+
+        <!-- ── HEADER ──────────────────────────────────────────── -->
+        <div style="background:linear-gradient(135deg,#0F172A 0%,#16213e 100%);border-bottom:1px solid rgba(201,168,76,0.25);padding:20px 24px;flex-shrink:0">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="width:44px;height:44px;border-radius:12px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;font-size:22px">✨</div>
+              <div>
+                <div style="font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.02em">Limitless Vision Studio</div>
+                <div style="font-size:12px;color:rgba(201,168,76,0.8);margin-top:1px;font-style:italic">You can do anything… except be GOD.</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div id="lvs-status-dot" style="width:8px;height:8px;border-radius:50%;background:#22C55E;box-shadow:0 0 6px #22C55E55"></div>
+              <span style="font-size:12px;color:rgba(255,255,255,0.4)">Ready to create</span>
+              <button onclick="lvsReset()" title="Start a new session" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">↺ New</button>
+              <button onclick="lvsSaveCurrent()" title="Save session as Markdown" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">💾 Save</button>
+              <button onclick="lvsPrintReport()" title="Print full report / manual" style="background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);color:rgba(255,255,255,0.5);padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">🖨️ Print</button>
+              <button onclick="showPage('agent-os',event)" style="background:rgba(201,168,76,0.15);border:1px solid rgba(201,168,76,0.4);color:#C9A84C;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700">🤖 Agent OS →</button>
+            </div>
+          </div>
+
+          <!-- Creation Mode strip -->
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:14px;align-items:center">
+            <span style="font-size:11px;color:rgba(255,255,255,0.3);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-right:4px">Mode:</span>
+            <button class="lvs-mode-btn active" id="lvs-mode-fast" onclick="lvsSetMode('Fast Mode',this)">⚡ Fast</button>
+            <button class="lvs-mode-btn" id="lvs-mode-step" onclick="lvsSetMode('Step-by-Step Mode',this)">📋 Step-by-Step</button>
+            <button class="lvs-mode-btn" id="lvs-mode-explainer" onclick="lvsSetMode('Explainer Mode',this)">💡 Explainer</button>
+            <button class="lvs-mode-btn" id="lvs-mode-remix" onclick="lvsSetMode('Remix Mode',this)">🔀 Remix</button>
+            <button class="lvs-mode-btn" id="lvs-mode-prototype" onclick="lvsSetMode('Prototype Mode',this)">🔧 Prototype</button>
+            <button class="lvs-mode-btn" id="lvs-mode-complex" onclick="lvsSetMode('Complex Mode',this)">🧠 Complex</button>
+            <button class="lvs-mode-btn" id="lvs-mode-dark" onclick="lvsSetMode('Dark Mode',this)">🌑 Dark</button>
+            <button class="lvs-mode-btn" onclick="lvsUnlockHidden()" title="Password protected">🔐 Hidden</button>
+            <button class="lvs-mode-btn" onclick="lvsUnlockSoul()" title="Password protected">🌌 Soul</button>
+          </div>
+        </div>
+
+        <!-- ── MAIN BODY ───────────────────────────────────────── -->
+        <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
+
+          <!-- Category grid (shown when chat is empty) -->
+          <div id="lvs-categories" style="padding:20px 24px;overflow-y:auto">
+            <div style="text-align:center;margin-bottom:20px">
+              <div style="font-size:26px;font-weight:800;color:#fff;letter-spacing:-0.02em">What are you creating?</div>
+              <div style="font-size:14px;color:rgba(255,255,255,0.4);margin-top:6px">Select a category — or describe your vision below and let LVS find the path.</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;max-width:900px;margin:0 auto">
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🔧 Inventions')"><span style="font-size:24px">🔧</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Inventions</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('💡 Science & Innovation')"><span style="font-size:24px">💡</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Science & Innovation</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🤖 AI, Software & Web Development')"><span style="font-size:24px">🤖</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">AI & Software</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('💼 Business & Finance')"><span style="font-size:24px">💼</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Business & Finance</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🌍 African & African American Knowledge')"><span style="font-size:24px">🌍</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">African Knowledge</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🌿 Holistic Health & Medicine')"><span style="font-size:24px">🌿</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Holistic Health</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('⚖️ Law, Government & Policy')"><span style="font-size:24px">⚖️</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Law & Policy</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🕊️ Spirituality & World Religions')"><span style="font-size:24px">🕊️</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Spirituality</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🗺️ Geography, Languages & Global Data')"><span style="font-size:24px">🗺️</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Geography & Languages</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🛠️ DIY & Craftsmanship')"><span style="font-size:24px">🛠️</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">DIY & Crafts</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🎨 Art, Music & Storytelling')"><span style="font-size:24px">🎨</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Art & Storytelling</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('📚 General Education')"><span style="font-size:24px">📚</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">General Education</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🧩 Games & Strategies')"><span style="font-size:24px">🧩</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Games & Strategy</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🛸 Futurism & Sci-Fi Concepts')"><span style="font-size:24px">🛸</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Futurism & Sci-Fi</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🎭 Theater & Stage Production')"><span style="font-size:24px">🎭</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Theater & Stage</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🛤️ Engineering & Infrastructure')"><span style="font-size:24px">🛤️</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Engineering</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🏡 Home & Lifestyle')"><span style="font-size:24px">🏡</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Home & Lifestyle</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🌐 Social Sciences & Psychology')"><span style="font-size:24px">🌐</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Social Sciences</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('📈 Marketing & Content Creation')"><span style="font-size:24px">📈</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Marketing & Content</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🛡️ Survival Skills & Preparedness')"><span style="font-size:24px">🛡️</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Survival Skills</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('🌌 Mythology & Legends')"><span style="font-size:24px">🌌</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Mythology & Legends</span></div>
+              <div class="lvs-category-tile" onclick="lvsSelectCategory('📊 Data Science & Analytics')"><span style="font-size:24px">📊</span><span style="font-size:12px;font-weight:600;color:#F1F5F9">Data Science</span></div>
+            </div>
+            <!-- Free-form vision input -->
+            <div style="max-width:700px;margin:24px auto 0">
+              <div style="position:relative">
+                <textarea id="lvs-vision-input" rows="2" placeholder="Or tell me your vision… speak it and I'll help you build it." style="width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(201,168,76,0.3);color:#F1F5F9;border-radius:12px;padding:12px 120px 12px 16px;font-size:14px;font-family:inherit;resize:none;outline:none;transition:border-color 0.2s;line-height:1.5;box-sizing:border-box" onfocus="this.style.borderColor='#C9A84C'" onblur="this.style.borderColor='rgba(201,168,76,0.3)'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();lvsStartWithVision()}"></textarea>
+                <button onclick="lvsStartWithVision()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:#C9A84C;color:#0F172A;border:none;padding:8px 16px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;white-space:nowrap">Create →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chat messages (hidden until active) -->
+          <div id="lvs-chat-msgs" style="display:none;flex:1;overflow-y:auto;padding:20px 24px;display:none;flex-direction:column;gap:10px;max-width:900px;width:100%;margin:0 auto;box-sizing:border-box"></div>
+
+          <!-- Send to Agent OS banner (shown after LVS creates something) -->
+          <div id="lvs-agent-bridge" style="display:none;background:rgba(201,168,76,0.08);border-top:1px solid rgba(201,168,76,0.2);border-bottom:1px solid rgba(201,168,76,0.2);padding:10px 24px;flex-shrink:0">
+            <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:900px;margin:0 auto">
+              <span style="font-size:13px;color:rgba(255,255,255,0.6)">✨ Vision created —</span>
+              <span style="font-size:13px;color:#C9A84C;font-weight:600">Send to Agent OS to bring it to life</span>
+              <button onclick="lvsSendToAgentOS()" style="background:#C9A84C;color:#0F172A;border:none;padding:6px 16px;border-radius:8px;font-weight:700;font-size:12px;cursor:pointer">🤖 Send to Agents →</button>
+              <button onclick="document.getElementById('lvs-agent-bridge').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,0.3);cursor:pointer;font-size:18px;line-height:1">×</button>
+            </div>
+          </div>
+
+          <!-- Chat input bar -->
+          <div id="lvs-input-bar" style="background:#0F172A;border-top:1px solid rgba(201,168,76,0.2);padding:12px 24px;flex-shrink:0">
+            <div style="display:flex;gap:8px;align-items:flex-end;max-width:900px;margin:0 auto">
+              <textarea id="lvs-chat-input" rows="1" placeholder="Continue creating… or type 'Menu' to return to categories." style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(201,168,76,0.25);color:#F1F5F9;border-radius:12px;padding:10px 14px;font-size:14px;font-family:inherit;resize:none;height:42px;max-height:120px;outline:none;transition:border-color 0.2s;line-height:1.5" onfocus="this.style.borderColor='#C9A84C'" onblur="this.style.borderColor='rgba(201,168,76,0.25)'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();lvsSendMessage()}" oninput="this.style.height='42px';this.style.height=Math.min(this.scrollHeight,120)+'px'"></textarea>
+              <button onclick="lvsSendMessage()" style="background:#C9A84C;color:#0F172A;border:none;padding:0 20px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;height:42px;white-space:nowrap;flex-shrink:0">Send ↑</button>
+            </div>
+          </div>
+        </div>
+
+        <script>
+        // ── LVS DASHBOARD LOGIC ──────────────────────────────────
+        var _lvsHistory = [];
+        var _lvsMode = 'Fast Mode';
+        var _lvsActive = false;
+        var _LVS_STORE = 'lvs_standalone_session';
+
+        function lvsSetMode(mode, btn) {
+          _lvsMode = mode;
+          document.querySelectorAll('.lvs-mode-btn').forEach(function(b){ b.classList.remove('active'); });
+          if (btn) btn.classList.add('active');
+        }
+
+        function lvsSelectCategory(cat) {
+          document.querySelectorAll('.lvs-category-tile').forEach(function(t){ t.classList.remove('active'); });
+          var tiles = document.querySelectorAll('.lvs-category-tile');
+          tiles.forEach(function(t){ if(t.querySelector('span:last-child') && t.getAttribute('onclick') && t.getAttribute('onclick').indexOf(cat.substring(0,6)) !== -1) t.classList.add('active'); });
+          _lvsActivateChat();
+          var msg = 'I want to explore: ' + cat + '\n\nPlease present the Creation Mode menu and help me build something amazing.';
+          _lvsAppendUser(cat);
+          _lvsHistory.push({ role:'user', content: msg });
+          _lvsAiTurn();
+        }
+
+        function lvsStartWithVision() {
+          var inp = document.getElementById('lvs-vision-input');
+          var text = (inp ? inp.value.trim() : '');
+          if (!text) return;
+          inp.value = '';
+          _lvsActivateChat();
+          _lvsAppendUser(text);
+          _lvsHistory.push({ role:'user', content: text });
+          _lvsAiTurn();
+        }
+
+        function _lvsActivateChat() {
+          _lvsActive = true;
+          var cats = document.getElementById('lvs-categories');
+          var msgs = document.getElementById('lvs-chat-msgs');
+          if (cats) cats.style.display = 'none';
+          if (msgs) { msgs.style.display = 'flex'; }
+        }
+
+        function _lvsShowCategories() {
+          _lvsActive = false;
+          var cats = document.getElementById('lvs-categories');
+          var msgs = document.getElementById('lvs-chat-msgs');
+          if (cats) cats.style.display = '';
+          if (msgs) msgs.style.display = 'none';
+          document.getElementById('lvs-agent-bridge').style.display = 'none';
+        }
+
+        function _lvsAppendUser(text) {
+          var msgs = document.getElementById('lvs-chat-msgs');
+          if (!msgs) return;
+          var d = document.createElement('div');
+          d.className = 'lvs-msg-user';
+          d.textContent = text;
+          msgs.appendChild(d);
+          msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        function _lvsAppendAI(text) {
+          var msgs = document.getElementById('lvs-chat-msgs');
+          if (!msgs) return null;
+          var d = document.createElement('div');
+          d.className = 'lvs-msg-ai md-content';
+          if (typeof mdRender === 'function') d.innerHTML = mdRender(text); else d.textContent = text;
+          msgs.appendChild(d);
+          msgs.scrollTop = msgs.scrollHeight;
+          return d;
+        }
+
+        async function _lvsAiTurn() {
+          var msgs = document.getElementById('lvs-chat-msgs');
+          var sysDot = document.getElementById('lvs-status-dot');
+          if (sysDot) { sysDot.style.background='#F59E0B'; sysDot.style.boxShadow='0 0 6px #F59E0B55'; }
+
+          var typing = document.createElement('div');
+          typing.className = 'lvs-msg-ai';
+          typing.style.color = 'rgba(255,255,255,0.4)';
+          typing.textContent = '✨ Creating…';
+          if (msgs) { msgs.appendChild(typing); msgs.scrollTop = msgs.scrollHeight; }
+
+          var sysPrompt = (typeof PROJECT_SYSTEM_PROMPTS !== 'undefined' && PROJECT_SYSTEM_PROMPTS['lvs'])
+            ? PROJECT_SYSTEM_PROMPTS['lvs']
+            : 'You are Limitless Vision Studio — a creative super-intelligence. Help the user build their vision.';
+          if (_lvsMode && _lvsMode !== 'Fast Mode') {
+            sysPrompt += '\n\nCurrent creation mode: ' + _lvsMode + '. Apply this mode to your response.';
+          }
+
+          var messages = [{ role:'system', content: sysPrompt }].concat(_lvsHistory);
+          var bubble = null;
+
+          try {
+            var result = await (typeof askAI === 'function'
+              ? askAI({ messages: messages, project: 'lvs', msgsEl: msgs, onChunk: function(delta, full) {
+                  if (!bubble) { typing.remove(); bubble = _lvsAppendAI(''); }
+                  if (typeof mdRender === 'function') bubble.innerHTML = mdRender(full);
+                  else bubble.textContent = full;
+                  if (msgs) msgs.scrollTop = msgs.scrollHeight;
+                }})
+              : Promise.reject(new Error('askAI not available')));
+
+            if (!bubble) { typing.remove(); bubble = _lvsAppendAI(''); }
+            var reply = result.text || 'No response.';
+            if (typeof mdRender === 'function') bubble.innerHTML = mdRender(reply);
+            else bubble.textContent = reply;
+            _lvsHistory.push({ role:'assistant', content: reply });
+            _lvsSaveSession();
+
+            // Show "Send to Agents" bridge after first LVS creation
+            if (_lvsHistory.filter(function(m){ return m.role==='assistant'; }).length === 1) {
+              document.getElementById('lvs-agent-bridge').style.display = '';
+            }
+          } catch(e) {
+            typing.remove();
+            _lvsAppendAI('⚠️ ' + e.message);
+          }
+
+          if (sysDot) { sysDot.style.background='#22C55E'; sysDot.style.boxShadow='0 0 6px #22C55E55'; }
+        }
+
+        function lvsSendMessage() {
+          var inp = document.getElementById('lvs-chat-input');
+          var text = (inp ? inp.value.trim() : '');
+          if (!text) return;
+          inp.value = ''; inp.style.height = '42px';
+
+          // Handle "Menu" command
+          if (/^menu$/i.test(text)) { _lvsHistory = []; _lvsShowCategories(); return; }
+
+          if (!_lvsActive) _lvsActivateChat();
+          _lvsAppendUser(text);
+          _lvsHistory.push({ role:'user', content: text });
+          _lvsAiTurn();
+        }
+
+        function lvsReset() {
+          _lvsHistory = [];
+          _lvsActive = false;
+          var msgs = document.getElementById('lvs-chat-msgs');
+          if (msgs) msgs.innerHTML = '';
+          _lvsShowCategories();
+          localStorage.removeItem(_LVS_STORE);
+        }
+
+        function _lvsSaveSession() {
+          try { localStorage.setItem(_LVS_STORE, JSON.stringify({ history: _lvsHistory, mode: _lvsMode })); } catch(_){}
+        }
+
+        function lvsLoadSession() {
+          try {
+            var saved = JSON.parse(localStorage.getItem(_LVS_STORE) || 'null');
+            if (!saved || !saved.history || !saved.history.length) return;
+            _lvsHistory = saved.history;
+            _lvsMode = saved.mode || 'Fast Mode';
+            _lvsActivateChat();
+            var msgs = document.getElementById('lvs-chat-msgs');
+            if (!msgs) return;
+            _lvsHistory.forEach(function(m) {
+              if (m.role === 'user') _lvsAppendUser(m.content);
+              else if (m.role === 'assistant') _lvsAppendAI(m.content);
+            });
+            if (_lvsHistory.some(function(m){ return m.role==='assistant'; })) {
+              document.getElementById('lvs-agent-bridge').style.display = '';
+            }
+          } catch(_){}
+        }
+
+        function lvsSaveCurrent() {
+          if (!_lvsHistory.length) { if(typeof showToast==='function') showToast('Nothing to save yet.','warn'); return; }
+          var md = _lvsHistory.map(function(m){
+            return '## ' + (m.role === 'user' ? 'You' : 'Limitless Vision Studio') + '\n\n' + m.content;
+          }).join('\n\n---\n\n');
+          var blob = new Blob(['# Limitless Vision Studio Session\n\n' + md], { type:'text/markdown' });
+          var url = URL.createObjectURL(blob);
+          var a = document.createElement('a'); a.href = url; a.download = 'lvs-session-' + Date.now() + '.md';
+          document.body.appendChild(a); a.click(); a.remove(); setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+        }
+
+        function lvsPrintReport() {
+          if (!_lvsHistory.length) { if(typeof showToast==='function') showToast('Nothing to print yet.','warn'); return; }
+          var title = 'Limitless Vision Studio — Vision Report';
+          var date = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+          var bodyHtml = _lvsHistory.map(function(m) {
+            var isUser = m.role === 'user';
+            var label = isUser ? 'You' : 'Limitless Vision Studio';
+            var content = m.content
+              .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+              .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+              .replace(/^#{3}\s+(.+)$/gm,'<h3>$1</h3>')
+              .replace(/^#{2}\s+(.+)$/gm,'<h2>$1</h2>')
+              .replace(/^#{1}\s+(.+)$/gm,'<h1>$1</h1>')
+              .replace(/^[-*]\s+(.+)$/gm,'<li>$1</li>')
+              .replace(/(<li>[\s\S]*?<\/li>)/g,'<ul>$1</ul>')
+              .replace(/\n{2,}/g,'</p><p>')
+              .replace(/\n/g,'<br>');
+            return '<div class="entry ' + (isUser ? 'user-entry' : 'ai-entry') + '">' +
+              '<div class="entry-label">' + label + '</div>' +
+              '<div class="entry-body"><p>' + content + '</p></div>' +
+              '</div>';
+          }).join('');
+          var html = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>' + title + '</title><style>' +
+            '*{box-sizing:border-box;margin:0;padding:0}' +
+            'body{font:16px/1.75 Georgia,serif;background:#fff;color:#1a1a2e;padding:0}' +
+            '.cover{background:linear-gradient(135deg,#0A0F1E,#16213e);color:#fff;padding:72px 64px;min-height:260px;display:flex;flex-direction:column;justify-content:center}' +
+            '.cover h1{font-size:36px;font-weight:800;letter-spacing:-0.02em;margin-bottom:10px}' +
+            '.cover .tagline{font-size:15px;color:rgba(201,168,76,0.9);font-style:italic;margin-bottom:18px}' +
+            '.cover .meta{font-size:13px;color:rgba(255,255,255,0.45)}' +
+            '.gold{color:#C9A84C}' +
+            '.content{max-width:780px;margin:0 auto;padding:48px 48px 80px}' +
+            '.entry{margin-bottom:32px;page-break-inside:avoid}' +
+            '.entry-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px}' +
+            '.user-entry .entry-label{color:#64748B}' +
+            '.ai-entry .entry-label{color:#C9A84C}' +
+            '.user-entry .entry-body{background:#F8FAFC;border-left:3px solid #CBD5E1;padding:14px 18px;border-radius:0 8px 8px 0;color:#475569}' +
+            '.ai-entry .entry-body{background:#FAFAF7;border-left:3px solid #C9A84C;padding:16px 20px;border-radius:0 8px 8px 0}' +
+            '.entry-body p{margin:6px 0}' +
+            '.entry-body h1,.entry-body h2,.entry-body h3{margin:14px 0 6px;color:#0A0F1E}' +
+            '.entry-body ul{padding-left:20px;margin:8px 0}' +
+            '.entry-body strong{color:#0A0F1E;font-weight:700}' +
+            'hr.divider{border:0;border-top:1px solid #E2E8F0;margin:40px 0}' +
+            '.footer{text-align:center;font-size:12px;color:#94A3B8;margin-top:48px;padding-top:24px;border-top:1px solid #E2E8F0}' +
+            '@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}.cover{background:linear-gradient(135deg,#0A0F1E,#16213e) !important}}' +
+            '</style></head><body>' +
+            '<div class="cover"><h1>✨ <span class="gold">Limitless Vision Studio</span></h1>' +
+            '<div class="tagline">You can do anything… except be GOD.</div>' +
+            '<div class="meta">Vision Report &nbsp;·&nbsp; ' + date + ' &nbsp;·&nbsp; Mode: ' + _lvsMode + ' &nbsp;·&nbsp; ' + _lvsHistory.filter(function(m){return m.role==='assistant';}).length + ' creation(s)</div>' +
+            '</div>' +
+            '<div class="content">' + bodyHtml +
+            '<div class="footer">Generated by Limitless Vision Studio &nbsp;·&nbsp; H.E.L.P. Center</div>' +
+            '</div></body></html>';
+          var w = window.open('','_blank','width=900,height=700');
+          if (!w) { if(typeof showToast==='function') showToast('Allow popups to print.','warn'); return; }
+          w.document.write(html);
+          w.document.close();
+          w.onload = function(){ w.focus(); w.print(); };
+        }
+
+        function lvsSendToAgentOS() {
+          // Store LVS context in localStorage for Agent OS to pick up
+          var lastAsst = null;
+          for (var i = _lvsHistory.length - 1; i >= 0; i--) {
+            if (_lvsHistory[i].role === 'assistant') { lastAsst = _lvsHistory[i]; break; }
+          }
+          var lastUser = null;
+          for (var j = _lvsHistory.length - 1; j >= 0; j--) {
+            if (_lvsHistory[j].role === 'user') { lastUser = _lvsHistory[j]; break; }
+          }
+          if (!lastAsst) { if(typeof showToast==='function') showToast('Create something with LVS first.','warn'); return; }
+          try {
+            localStorage.setItem('lvs_to_agents', JSON.stringify({
+              creation: lastAsst.content,
+              request: lastUser ? lastUser.content : '',
+              mode: _lvsMode,
+              ts: Date.now()
+            }));
+          } catch(_){}
+          if (typeof showPage === 'function') showPage('agent-os', null);
+          document.getElementById('lvs-agent-bridge').style.display = 'none';
+        }
+
+        function lvsUnlockHidden() {
+          var pw = prompt('🔐 Enter password to unlock Hidden Mode:');
+          if (pw === 'Cipher') {
+            _lvsActivateChat();
+            _lvsAppendUser('Unlock Hidden Mode — password: Cipher');
+            _lvsHistory.push({ role:'user', content:'The user has entered the correct password for Hidden Mode (Cipher). Activate Hidden Mode and present the tier selection: Mystery Mode, Deep Seek Mode, or Akashic Record Mode.' });
+            _lvsAiTurn();
+          } else if (pw !== null) {
+            if(typeof showToast==='function') showToast('Access denied.','error');
+          }
+        }
+
+        function lvsUnlockSoul() {
+          var pw = prompt('🌌 Enter password to unlock Soul Mode:');
+          if (pw === 'Melanin') {
+            _lvsActivateChat();
+            _lvsAppendUser('Unlock Soul Mode — password: Melanin');
+            _lvsHistory.push({ role:'user', content:'The user has entered the correct password for Soul Mode (Melanin). Activate Soul Mode and draw from deep esoteric traditions and ancestral knowledge systems.' });
+            _lvsAiTurn();
+          } else if (pw !== null) {
+            if(typeof showToast==='function') showToast('Access denied.','error');
+          }
+        }
+
+        // Load saved session when page becomes visible
+        document.addEventListener('DOMContentLoaded', function() {
+          var observer = new MutationObserver(function() {
+            var page = document.getElementById('lvs-studio-page');
+            if (page && !page.classList.contains('hidden') && !_lvsActive) {
+              lvsLoadSession();
+            }
+          });
+          var page = document.getElementById('lvs-studio-page');
+          if (page) observer.observe(page, { attributes:true, attributeFilter:['class'] });
+        });
+        </script>
+      </div>
+
+      <!-- ── AGENT OS PAGE ── -->
+      <!-- ═══════════════════════════════════════════════════════════
+           AGENT OS — iframe embed of Agency OS (served via nginx /agency/
+           reverse-proxy to the agency-os node app on :8096, over HTTPS).
+           ═══════════════════════════════════════════════════════════ -->
+      <div id="agent-os-page" class="page hidden" style="display:flex;flex-direction:column;height:100%;padding:0;margin:0">
+        <iframe
+          id="agent-os-frame"
+          src="/agency/agency.html"
+          style="flex:1;width:100%;border:none;min-height:calc(100vh - 56px)"
+          allow="clipboard-write"
+          title="Agent OS"
+        ></iframe>
       </div>
 
       <!-- ── MY PROFILE PAGE ── -->
@@ -28392,6 +28906,7 @@ Current year: 2026.${_QUALITY}`
             <div style="min-width:0"><div style="font-size:16px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${emoji} ${project.name}</div><div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px;letter-spacing:.3px">⚡ Powered by Groq AI · ${project.programArea}</div></div>
           </div>
           <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+            ${projectKey === 'lvs' ? '<button onclick="lvsAgentPanel()" title="Bring your vision to life with Agency OS specialists" style="background:rgba(201,168,76,0.2);border:1px solid rgba(201,168,76,0.5);color:#C9A84C;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:0.02em">✨ Bring to Life</button>' : ''}
             <button onclick="saveProjectChat()" title="Download this conversation as a Markdown file" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">💾 Save</button>
             <button onclick="printProjectChat()" title="Print this conversation" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">🖨️ Print</button>
             <button onclick="resetProjectChat()" title="Clear this project's chat" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">↺ New</button>
@@ -31067,6 +31582,215 @@ Be fast. Don't over-explain. Ship working code.`;
     const wrap = document.getElementById('vc-frame-wrap');
     if (wrap && wrap.dataset.expanded === '1') vcExpand();
   });
+
+  // ── LVS × AGENCY OS COLLABORATION ─────────────────────────────────────────
+  // LVS creates the vision; Agency OS specialists bring it to life.
+  // agents.json is fetched once and cached; loaded only when the user clicks
+  // "✨ Bring to Life" in the LVS chat overlay — never on page load.
+
+  let _lvsAgentsCache = null;
+
+  async function _lvsLoadAgents() {
+    if (_lvsAgentsCache) return _lvsAgentsCache;
+    for (const url of ['agency-agents.json', '/agency-agents.json', 'agents.json', '/agents.json']) {
+      try {
+        const r = await fetch(url);
+        if (r.ok) { _lvsAgentsCache = await r.json(); return _lvsAgentsCache; }
+      } catch (_) {}
+    }
+    return [];
+  }
+
+  function _lvsMatchAgents(agents, lvsText) {
+    const t = (lvsText || '').toLowerCase();
+    const DIVISION_KEYS = {
+      'Academic':           ['history','culture','story','science','knowledge','ancient','society','myth','language','geography','psychology','research','education','art','music','spirituality','philosophy','narrative','anthropology'],
+      'Design':             ['design','visual','brand','art','image','color','style','aesthetic','logo','creative','illustration','fashion','typography','graphic'],
+      'Engineering':        ['build','engineer','system','technical','machine','code','software','hardware','mechanism','infrastructure','invention','technology','construct','blueprint','architecture','develop'],
+      'Finance':            ['business','money','finance','revenue','profit','investment','budget','economic','funding','startup','pricing','income','wealth','financial'],
+      'Game Development':   ['game','play','mechanic','level','player','world','simulation','interactive','virtual','quest','character','rules','gamification'],
+      'Gis':                ['map','geography','terrain','location','spatial','land','region','place','coordinate'],
+      'Integrations':       ['api','integration','connect','data','automate','workflow','pipeline','system'],
+      'Marketing':          ['market','launch','audience','promote','content','campaign','viral','social','reach','brand awareness','growth','marketing'],
+      'Paid Media':         ['advertise','ads','paid','ppc','campaign','traffic','conversion','media'],
+      'Product':            ['product','feature','user','ux','interface','prototype','roadmap','design'],
+      'Project Management': ['plan','project','timeline','milestone','team','manage','organize','schedule'],
+      'Sales':              ['sell','sales','customer','pitch','proposal','deal','client','revenue','close'],
+      'Security':           ['security','protect','safe','privacy','threat','risk','defense','cyber'],
+      'Spatial Computing':  ['space','3d','ar','vr','spatial','environment','metaverse','immersive','xr'],
+      'Specialized':        ['health','medicine','law','legal','policy','holistic','survival','craft','diy','niche'],
+      'Support':            ['support','help','user','service','experience','customer'],
+      'Testing':            ['test','quality','bug','verify','validate','qa'],
+    };
+    return agents
+      .map(a => {
+        const kws = DIVISION_KEYS[a.division] || [];
+        const blurb = (a.blurb || '').toLowerCase();
+        let score = kws.reduce((s, kw) => s + (t.includes(kw) ? 2 : 0) + (blurb.includes(kw) ? 1 : 0), 0);
+        if (t.includes(a.name.toLowerCase())) score += 3;
+        return { ...a, _score: score };
+      })
+      .filter(a => a._score > 0)
+      .sort((a, b) => b._score - a._score)
+      .slice(0, 15);
+  }
+
+  const _LVS_DCOLORS = {
+    'Academic':'#8B5CF6','Design':'#EC4899','Engineering':'#3B82F6','Finance':'#10B981',
+    'Game Development':'#F59E0B','Gis':'#84CC16','Integrations':'#06B6D4',
+    'Marketing':'#EF4444','Paid Media':'#F97316','Product':'#0EA5E9',
+    'Project Management':'#22C55E','Sales':'#14B8A6','Security':'#E11D48',
+    'Spatial Computing':'#A855F7','Specialized':'#C9A84C','Support':'#64748B','Testing':'#78716C',
+  };
+
+  function _lvsAgentCard(a) {
+    const c = _LVS_DCOLORS[a.division] || '#C9A84C';
+    return `<label style="display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor='${c}55'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
+      <input type="checkbox" value="${a.id}" style="margin-top:3px;flex-shrink:0;accent-color:${c}">
+      <div style="min-width:0">
+        <div style="font-size:13px;font-weight:700;color:#F1F5F9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.name}</div>
+        <div style="font-size:10px;font-weight:700;color:${c};text-transform:uppercase;letter-spacing:0.06em;margin:2px 0">${a.division}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${(a.blurb||'').slice(0,90)}</div>
+      </div>
+    </label>`;
+  }
+
+  async function lvsAgentPanel() {
+    const existing = document.getElementById('lvs-agent-panel');
+    if (existing) { existing.remove(); return; }
+
+    const overlay = document.getElementById('proj-chat-overlay');
+    const sheet = overlay && overlay.querySelector('.chat-sheet');
+    if (!sheet) return;
+
+    const panel = document.createElement('div');
+    panel.id = 'lvs-agent-panel';
+    panel.style.cssText = 'background:#0A0F1E;border-bottom:1px solid rgba(201,168,76,0.25);padding:14px 16px;max-height:55vh;overflow-y:auto';
+    panel.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);font-size:13px;padding:20px 0">⏳ Loading specialists…</div>';
+    sheet.children[0].insertAdjacentElement('afterend', panel);
+
+    const agents = await _lvsLoadAgents();
+    if (!agents.length) {
+      panel.innerHTML = '<div style="text-align:center;padding:20px;color:#EF4444;font-size:13px">⚠️ Could not load agents. Place <code>agency-agents.json</code> in the help center root folder.</div>';
+      return;
+    }
+
+    const lastAsst = [..._chatHistory].reverse().find(m => m.role === 'assistant');
+    const matched = lastAsst ? _lvsMatchAgents(agents, lastAsst.content) : [];
+    const displayed = matched.length >= 3 ? matched : agents.slice(0, 12);
+
+    panel.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <div style="color:#C9A84C;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">✨ Bring to Life</div>
+          <div style="color:rgba(255,255,255,0.4);font-size:11px;margin-top:2px">Select specialists to develop your vision</div>
+        </div>
+        <button onclick="document.getElementById('lvs-agent-panel')?.remove()" style="background:none;border:none;color:rgba(255,255,255,0.35);cursor:pointer;font-size:22px;line-height:1;padding:0 4px">×</button>
+      </div>
+      <div id="lvs-agent-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:12px">
+        ${displayed.map(_lvsAgentCard).join('')}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <input id="lvs-agent-search" placeholder="Search all 233 agents…" style="flex:1;min-width:160px;padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#F1F5F9;border-radius:8px;font-size:13px;outline:none" oninput="_lvsSearchAgents(this.value)">
+        <button onclick="document.getElementById('lvs-agent-panel')?.remove()" style="background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px">Cancel</button>
+        <button onclick="_invokeSelectedAgents()" style="background:#C9A84C;color:#0F172A;border:none;padding:8px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">✨ Bring to Life</button>
+      </div>`;
+  }
+
+  async function _lvsSearchAgents(query) {
+    const agents = await _lvsLoadAgents();
+    const q = (query || '').toLowerCase().trim();
+    const grid = document.getElementById('lvs-agent-grid');
+    if (!grid) return;
+    const lastAsst = [..._chatHistory].reverse().find(m => m.role === 'assistant');
+    const filtered = q
+      ? agents.filter(a => (a.name + ' ' + a.division + ' ' + (a.blurb||'')).toLowerCase().includes(q)).slice(0, 15)
+      : (lastAsst ? _lvsMatchAgents(agents, lastAsst.content) : agents.slice(0, 12));
+    grid.innerHTML = filtered.length
+      ? filtered.map(_lvsAgentCard).join('')
+      : '<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:12px;text-align:center;grid-column:1/-1">No agents match "' + query + '"</div>';
+  }
+
+  async function _invokeSelectedAgents() {
+    const grid = document.getElementById('lvs-agent-grid');
+    if (!grid) return;
+    const checked = [...grid.querySelectorAll('input[type=checkbox]:checked')];
+    if (!checked.length) { if (typeof showToast === 'function') showToast('Select at least one specialist.', 'warn'); return; }
+
+    document.getElementById('lvs-agent-panel')?.remove();
+
+    const agents = await _lvsLoadAgents();
+    const selected = checked.map(cb => agents.find(a => a.id === cb.value)).filter(Boolean);
+
+    const lastAsst = [..._chatHistory].reverse().find(m => m.role === 'assistant');
+    const lastUser = [..._chatHistory].reverse().find(m => m.role === 'user');
+    const contextBrief = `You are collaborating with **Limitless Vision Studio (LVS)**, a creative super-intelligence. LVS has generated the following vision in response to the user's request.
+
+**Original request:**
+${(lastUser?.content || '').slice(0, 400)}
+
+**LVS's creation:**
+${(lastAsst?.content || '').slice(0, 3000)}
+
+Your task: Take this vision and **develop it from your specific expertise**. Do not summarize or repeat what LVS said. Build on it — add depth, specificity, and expert knowledge to make it real. Be practical, detailed, and true to your discipline.`;
+
+    const msgs = document.getElementById('proj-chat-msgs');
+    if (msgs) {
+      const divider = document.createElement('div');
+      divider.style.cssText = 'display:flex;align-items:center;gap:10px;margin:18px 0 6px';
+      divider.innerHTML = '<div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.5),transparent)"></div><span style="color:#C9A84C;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap">✨ BRINGING TO LIFE</span><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(201,168,76,0.5),transparent)"></div>';
+      msgs.appendChild(divider);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    for (const agent of selected) {
+      await _runAgentContribution(agent, contextBrief);
+    }
+  }
+
+  async function _runAgentContribution(agent, contextBrief) {
+    const msgs = document.getElementById('proj-chat-msgs');
+    if (!msgs) return;
+    const color = _LVS_DCOLORS[agent.division] || '#C9A84C';
+
+    const label = document.createElement('div');
+    label.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 12px 6px 10px;border-left:3px solid '+color+';background:rgba(0,0,0,0.03);border-radius:0 6px 6px 0;margin:10px 0 2px';
+    label.innerHTML = `<span style="font-size:12px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:0.06em">${agent.name}</span><span style="font-size:11px;color:#94A3B8">— ${agent.division}</span>`;
+    msgs.appendChild(label);
+
+    const typing = document.createElement('div');
+    typing.style.cssText = 'display:flex;justify-content:flex-start;margin-bottom:4px';
+    typing.innerHTML = `<div style="padding:10px 14px;border-radius:18px 18px 18px 4px;background:#fff;color:#94A3B8;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,0.08);border-left:2px solid ${color}">⏳ Developing your vision…</div>`;
+    msgs.appendChild(typing);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    const sysPrompt = (agent.systemPrompt || 'You are a helpful expert.') + '\n\n' + (_EXECUTION_RULES || '');
+    const messages = [{ role: 'system', content: sysPrompt }, { role: 'user', content: contextBrief }];
+
+    let bubble = null;
+    try {
+      const { text } = await askAI({
+        messages,
+        project: 'lvs',
+        msgsEl: msgs,
+        onChunk: (delta, full) => {
+          if (!bubble) { typing.remove(); bubble = _appendMsg('assistant', ''); }
+          bubble.classList.add('md-content');
+          bubble.innerHTML = mdRender(full);
+          msgs.scrollTop = msgs.scrollHeight;
+        }
+      });
+      if (!bubble) { typing.remove(); bubble = _appendMsg('assistant', ''); }
+      bubble.classList.add('md-content');
+      bubble.innerHTML = mdRender(text || 'No response.');
+      _addAssistantActions(bubble, text || '');
+      _chatHistory.push({ role: 'assistant', content: `[${agent.name} — ${agent.division}]\n\n${text}` });
+      _saveCurrentSession();
+    } catch (e) {
+      typing.remove();
+      _appendMsg('assistant', `⚠️ ${agent.name} could not respond: ${e.message}`);
+    }
+  }
   // ══════════════════════════════════════════════════════════════════════════════
 
   </script>

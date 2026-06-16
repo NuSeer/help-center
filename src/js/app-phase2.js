@@ -11817,5 +11817,182 @@ Your task: Take this vision and **develop it from your specific expertise**. Do 
       _appendMsg('assistant', `⚠️ ${agent.name} could not respond: ${e.message}`);
     }
   }
+
+  // ══════════════════════════════════════════════════════════════════════════════
+  // CAREER ACCELERATOR — Interview Prep · Learning Advisor · LinkedIn & Indeed
+  // New Career-page modes. All AI runs through a10xStreamFetch (Gemini→Groq,
+  // user's saved keys + full fallback) — no new keys. JSON modes parse a single
+  // completion; the mock interview keeps a plain-text transcript to avoid
+  // role-mapping issues across providers.
+  // ══════════════════════════════════════════════════════════════════════════════
+  var ivBank = {}, ivTranscript = [], ivMockDone = false, ivMockRunning = false;
+
+  function _careerAI(messages, maxTokens) { return a10xStreamFetch(messages, null, maxTokens || 2048); }
+  function _careerShowErr(id, msg) { const el = document.getElementById(id); if (!el) return; el.textContent = msg || ''; el.style.display = msg ? 'block' : 'none'; }
+  function _cesc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function _careerCopy(btn, enc) { navigator.clipboard.writeText(decodeURIComponent(enc)).then(() => { const o = btn.textContent; btn.textContent = '✅ Copied!'; setTimeout(() => btn.textContent = o, 1600); }); }
+  function _careerParseJSON(txt) {
+    if (!txt) return null;
+    let s = String(txt).trim();
+    const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    if (fence) s = fence[1].trim();
+    const fObj = s.indexOf('{'), fArr = s.indexOf('[');
+    let start = (fObj === -1) ? fArr : (fArr === -1) ? fObj : Math.min(fObj, fArr);
+    if (start >= 0) { const end = Math.max(s.lastIndexOf('}'), s.lastIndexOf(']')); if (end > start) s = s.slice(start, end + 1); }
+    try { return JSON.parse(s); } catch (e) { return null; }
+  }
+
+  // ── Interview Prep ──────────────────────────────────────────────────────────
+  function ivPullResume() {
+    const r = (document.getElementById('a10x-resume') || {}).value || '';
+    const note = document.getElementById('iv-resume-note');
+    if (note) note.textContent = r.trim() ? '✓ Using your resume (' + r.trim().length.toLocaleString() + ' chars)' : 'No resume found in Apply 10x — add one there first.';
+  }
+  async function ivGenBank() {
+    const role = ((document.getElementById('iv-role') || {}).value || '').trim();
+    if (!role) { _careerShowErr('iv-err', 'Enter a target role first.'); return; }
+    _careerShowErr('iv-err', '');
+    const resume = (document.getElementById('a10x-resume') || {}).value || '';
+    const bankEl = document.getElementById('iv-bank');
+    if (bankEl) { bankEl.style.display = 'block'; bankEl.innerHTML = '<div class="card"><div style="color:var(--brand-primary);font-weight:600">🎤 Building your question bank…</div></div>'; }
+    try {
+      const txt = await _careerAI([
+        { role: 'system', content: 'You are an expert interviewer. Return ONLY valid JSON (no markdown, no commentary) with exactly this shape: {"behavioral":[],"technical":[],"role_specific":[],"tips":[]}. 5-6 concise items per array.' },
+        { role: 'user', content: 'Target role: ' + role + (resume.trim() ? '\n\nCandidate resume (tailor questions to it):\n' + resume.slice(0, 3000) : '') }
+      ], 2048);
+      const data = _careerParseJSON(txt);
+      if (!data) throw new Error('Could not parse the question bank — please try again.');
+      ivBank = data; ivRenderBank(role);
+    } catch (e) { _careerShowErr('iv-err', e.message); if (bankEl) bankEl.innerHTML = ''; }
+  }
+  function ivRenderBank(role) {
+    const secs = [['behavioral', 'Behavioral', '#2563EB'], ['technical', 'Technical', '#D97706'], ['role_specific', 'Role-specific', '#7C3AED'], ['tips', 'Prep tips', '#059669']];
+    let html = '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px"><h4 style="font-weight:700;margin:0">Question bank — ' + _cesc(role) + '</h4><button class="btn btn-solid" onclick="ivStartMock()">Start mock interview →</button></div>';
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">';
+    secs.forEach(([k, label, color]) => {
+      html += '<div><div style="font-weight:700;font-size:13px;color:' + color + ';margin-bottom:8px">' + label + '</div>';
+      (ivBank[k] || []).forEach((q, i) => { html += '<div style="font-size:12.5px;padding:6px 0;border-bottom:1px solid #F1F4F8;color:#334155;line-height:1.5">' + (i + 1) + '. ' + _cesc(q) + '</div>'; });
+      html += '</div>';
+    });
+    html += '</div></div>';
+    const el = document.getElementById('iv-bank'); if (el) el.innerHTML = html;
+  }
+  async function ivStartMock() {
+    const role = ((document.getElementById('iv-role') || {}).value || '').trim() || 'the role';
+    ivTranscript = []; ivMockDone = false; ivMockRunning = false;
+    const card = document.getElementById('iv-mock-card'), chat = document.getElementById('iv-chat'), row = document.getElementById('iv-input-row');
+    if (card) card.style.display = 'block';
+    if (row) row.style.display = 'flex';
+    if (chat) chat.innerHTML = '<div style="font-size:12px;color:var(--gray-400)">Starting…</div>';
+    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    try {
+      const reply = await _careerAI([
+        { role: 'system', content: 'You are a professional interviewer for: ' + role + '. Conduct a realistic mock interview one question at a time. Briefly welcome the candidate and ask your first question. Under 60 words.' },
+        { role: 'user', content: 'Begin the interview.' }
+      ], 600);
+      ivTranscript.push({ who: 'Interviewer', text: reply });
+      if (chat) chat.innerHTML = ''; ivAddMsg('Interviewer', reply);
+    } catch (e) { if (chat) chat.innerHTML = ''; ivAddMsg('Interviewer', 'Error: ' + e.message); }
+  }
+  function ivAddMsg(who, txt) {
+    const chat = document.getElementById('iv-chat'); if (!chat) return;
+    const isYou = who === 'You';
+    const d = document.createElement('div');
+    d.style.cssText = 'max-width:85%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.55;' + (isYou ? 'align-self:flex-end;background:var(--brand-primary);color:#fff' : 'align-self:flex-start;background:#F1F5F9;color:#0F172A');
+    d.innerHTML = '<div style="font-size:10px;font-weight:700;opacity:.7;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em">' + _cesc(who) + '</div>' + _cesc(txt).replace(/\n/g, '<br>');
+    chat.appendChild(d); chat.scrollTop = chat.scrollHeight;
+  }
+  async function ivSendMock() {
+    if (ivMockDone || ivMockRunning) return;
+    const input = document.getElementById('iv-input'); if (!input) return;
+    const txt = input.value.trim(); if (!txt) return;
+    input.value = '';
+    ivAddMsg('You', txt); ivTranscript.push({ who: 'You', text: txt });
+    ivMockRunning = true;
+    const role = ((document.getElementById('iv-role') || {}).value || '').trim() || 'the role';
+    const isDone = /\bdone\b/i.test(txt) || ivTranscript.length >= 16;
+    const sys = isDone
+      ? 'You are a professional interviewer for: ' + role + '. The mock interview is over. Give a thorough evaluation: strengths, areas to improve, and a score out of 10. Short paragraphs.'
+      : 'You are a professional interviewer for: ' + role + '. Continue the mock interview. Ask ONE focused follow-up or next question based on the transcript. Under 60 words.';
+    const transcript = ivTranscript.map(m => m.who + ': ' + m.text).join('\n');
+    try {
+      const reply = await _careerAI([{ role: 'system', content: sys }, { role: 'user', content: 'Transcript so far:\n' + transcript + '\n\n' + (isDone ? 'Now give your final evaluation.' : 'Your next message:') }], isDone ? 1200 : 600);
+      ivTranscript.push({ who: 'Interviewer', text: reply }); ivAddMsg('Interviewer', reply);
+      if (isDone) { ivMockDone = true; const row = document.getElementById('iv-input-row'); if (row) row.style.display = 'none'; }
+    } catch (e) { ivAddMsg('Interviewer', 'Error: ' + e.message); }
+    ivMockRunning = false;
+  }
+  function ivResetMock() { ivStartMock(); }
+
+  // ── Learning Advisor ──────────────────────────────────────────────────────────
+  async function lnGenerate() {
+    const topic = ((document.getElementById('ln-topic') || {}).value || '').trim();
+    const level = (document.getElementById('ln-level') || {}).value || 'intermediate';
+    if (!topic) { _careerShowErr('ln-err', 'Enter a topic first.'); return; }
+    _careerShowErr('ln-err', '');
+    const out = document.getElementById('ln-results');
+    if (out) out.innerHTML = '<div class="card"><div style="color:var(--brand-primary);font-weight:600">📚 Building your learning path…</div></div>';
+    try {
+      const txt = await _careerAI([
+        { role: 'system', content: 'You are a senior learning advisor. Return ONLY valid JSON (no markdown): {"overview":"","learning_path":[{"step":1,"title":"","description":"","resources":[]}],"key_concepts":[],"milestones":[],"next_steps":[]}. 4-6 steps, real resource names.' },
+        { role: 'user', content: 'Topic: ' + topic + '\nLevel: ' + level }
+      ], 2600);
+      const d = _careerParseJSON(txt);
+      if (!d) throw new Error('Could not parse the learning path — please try again.');
+      lnRender(d, topic);
+    } catch (e) { _careerShowErr('ln-err', e.message); if (out) out.innerHTML = ''; }
+  }
+  function lnRender(d, topic) {
+    const steps = (d.learning_path || []).map(s => {
+      const res = (s.resources || []).map(r => '<div style="font-size:11.5px;color:var(--gray-500);padding-left:2px">→ ' + _cesc(r) + '</div>').join('');
+      return '<div style="margin-bottom:16px;padding-left:14px;border-left:3px solid #7C3AED"><div style="font-size:13.5px;font-weight:700;color:#0F172A;margin-bottom:3px">Step ' + _cesc(s.step) + ': ' + _cesc(s.title) + '</div><div style="font-size:12.5px;color:#475569;line-height:1.6;margin-bottom:5px">' + _cesc(s.description) + '</div>' + res + '</div>';
+    }).join('');
+    const list = (arr) => (arr || []).map(x => '<div style="font-size:12.5px;padding:4px 0;color:#334155">· ' + _cesc(x) + '</div>').join('') || '<div style="font-size:12px;color:var(--gray-400)">—</div>';
+    const out = document.getElementById('ln-results');
+    if (out) out.innerHTML =
+      '<div class="card" style="margin-bottom:16px"><div style="font-weight:700;font-size:13px;color:#2563EB;margin-bottom:6px">Overview — ' + _cesc(topic) + '</div><div style="font-size:13px;color:#334155;line-height:1.7">' + _cesc(d.overview || '') + '</div></div>' +
+      '<div class="card" style="margin-bottom:16px"><div style="font-weight:700;font-size:13px;color:#7C3AED;margin-bottom:12px">Learning path</div>' + steps + '</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px">' +
+        '<div class="card"><div style="font-weight:700;font-size:13px;color:#059669;margin-bottom:8px">Key concepts</div>' + list(d.key_concepts) + '</div>' +
+        '<div class="card"><div style="font-weight:700;font-size:13px;color:#D97706;margin-bottom:8px">Milestones</div>' + list(d.milestones) + '</div>' +
+        '<div class="card"><div style="font-weight:700;font-size:13px;color:#2563EB;margin-bottom:8px">Next steps</div>' + list(d.next_steps) + '</div>' +
+      '</div>';
+  }
+
+  // ── LinkedIn Optimizer + Indeed ────────────────────────────────────────────────
+  function liPullResume() {
+    const r = (document.getElementById('a10x-resume') || {}).value || '';
+    const box = document.getElementById('li-resume'), note = document.getElementById('li-resume-note');
+    if (r.trim()) { if (box) box.value = r; if (note) note.textContent = '✓ Pulled ' + r.trim().length.toLocaleString() + ' chars'; }
+    else if (note) note.textContent = 'No resume found in Apply 10x — add one there first.';
+  }
+  async function liGenerate() {
+    const resume = ((document.getElementById('li-resume') || {}).value || '').trim();
+    if (!resume) { _careerShowErr('li-err', 'Add your resume first (paste it or pull from Apply 10x).'); return; }
+    _careerShowErr('li-err', '');
+    const out = document.getElementById('li-results');
+    if (out) { out.style.display = 'block'; out.innerHTML = '<div class="card"><div style="color:var(--brand-primary);font-weight:600">🔗 Writing your LinkedIn profile…</div></div>'; }
+    try {
+      const txt = await _careerAI([
+        { role: 'system', content: 'You are a LinkedIn branding expert. Return ONLY valid JSON (no markdown): {"headline":"","about":"","skills":[],"connection_note":""}. headline under 220 chars; about = 3-4 short first-person paragraphs; skills = 10 strings; connection_note under 300 chars.' },
+        { role: 'user', content: 'Resume:\n' + resume.slice(0, 4000) }
+      ], 2200);
+      const d = _careerParseJSON(txt);
+      if (!d) throw new Error('Could not parse the profile — please try again.');
+      const skills = (d.skills || []).map(s => '<span style="display:inline-block;background:#EFF6FF;color:#1E40AF;border:1px solid #BFDBFE;border-radius:999px;padding:3px 11px;font-size:12px;margin:0 6px 6px 0">' + _cesc(s) + '</span>').join('');
+      const sec = (label, color, content, copy) => '<div class="card" style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:10px"><div style="font-weight:700;font-size:13px;color:' + color + '">' + label + '</div>' + (copy != null ? '<button class="btn btn-outline" style="font-size:11.5px;padding:5px 11px" onclick="_careerCopy(this,\'' + encodeURIComponent(copy) + '\')">📋 Copy</button>' : '') + '</div>' + content + '</div>';
+      if (out) out.innerHTML =
+        sec('Headline', '#2563EB', '<div style="font-size:13.5px;color:#0F172A;line-height:1.6">' + _cesc(d.headline || '') + '</div>', d.headline || '') +
+        sec('About', '#2563EB', '<div style="font-size:13px;color:#334155;line-height:1.7;white-space:pre-wrap">' + _cesc(d.about || '') + '</div>', d.about || '') +
+        sec('Top skills', '#059669', '<div>' + skills + '</div>', (d.skills || []).join(', ')) +
+        sec('Connection note', '#D97706', '<div style="font-size:13px;color:#92400E;font-style:italic;line-height:1.6">"' + _cesc(d.connection_note || '') + '"</div>', d.connection_note || '');
+    } catch (e) { _careerShowErr('li-err', e.message); if (out) out.style.display = 'none'; }
+  }
+  function indeedSearch() {
+    const t = ((document.getElementById('indeed-title') || {}).value || '').trim();
+    const l = ((document.getElementById('indeed-loc') || {}).value || '').trim();
+    if (!t) { alert('Enter a job title or keywords.'); return; }
+    window.open('https://www.indeed.com/jobs?q=' + encodeURIComponent(t) + '&l=' + encodeURIComponent(l), '_blank');
+  }
   // ══════════════════════════════════════════════════════════════════════════════
 

@@ -10,6 +10,9 @@
               <button class="path-tab" onclick="pTab('career','goals',this)">Goal Framework</button>
               <button class="path-tab" onclick="pTab('career','toolkit',this)">Job Search Toolkit</button>
               <button class="path-tab" onclick="pTab('career','apply10x',this)" style="background:linear-gradient(135deg,var(--brand-primary),#7C3AED);color:#fff;border-radius:6px;font-weight:700">⚡ Apply 10x Faster</button>
+              <button class="path-tab" onclick="pTab('career','interview',this)">🎤 Interview Prep</button>
+              <button class="path-tab" onclick="pTab('career','learn',this)">📚 Learning Advisor</button>
+              <button class="path-tab" onclick="pTab('career','linkedin',this)">🔗 LinkedIn &amp; Indeed</button>
               <button class="path-tab" onclick="pTab('career','resources',this)">Resources</button>
             </div>
             <div id="career-tab-assessment" class="path-tab-content active">
@@ -223,6 +226,91 @@ Certifications: Notary Public (2016), QuickBooks ProAdvisor (2017)"></textarea>
               <div id="a10x-resume-result" class="md-content" style="display:none;margin-bottom:20px;padding:24px;background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;font-size:14px;line-height:1.75"></div>
               <div id="a10x-cover-result" class="md-content" style="display:none;margin-bottom:20px;padding:24px;background:#fff;border:0.5px solid rgba(0,0,0,0.1);border-radius:12px;font-size:14px;line-height:1.75"></div>
 
+            </div>
+
+            <!-- 🎤 INTERVIEW PREP -->
+            <div id="career-tab-interview" class="path-tab-content">
+              <div class="card" style="margin-bottom:16px">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:4px">🎤 Interview Prep</h3>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">Generate a tailored question bank for your target role, then run a live mock interview that scores your answers.</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+                  <div class="form-group" style="flex:1;min-width:220px;margin:0">
+                    <label class="form-label">Target role</label>
+                    <input id="iv-role" class="form-input" style="margin:0" placeholder="e.g. Product Manager at Stripe">
+                  </div>
+                  <button class="btn btn-solid" onclick="ivGenBank()">Generate question bank</button>
+                </div>
+                <div style="margin-top:8px"><button class="btn btn-outline" style="font-size:12px;padding:6px 12px" onclick="ivPullResume()">↓ Use my Apply 10x resume (tailors questions)</button> <span id="iv-resume-note" style="font-size:11px;color:var(--gray-400)"></span></div>
+                <div id="iv-err" style="display:none;color:var(--error);font-size:13px;margin-top:10px"></div>
+              </div>
+              <div id="iv-bank" style="display:none;margin-bottom:16px"></div>
+              <div id="iv-mock-card" class="card" style="display:none">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                  <h4 style="font-weight:700;margin:0">Mock interview</h4>
+                  <button class="btn btn-outline" style="font-size:12px;padding:6px 12px" onclick="ivResetMock()">Reset</button>
+                </div>
+                <div id="iv-chat" style="max-height:340px;overflow-y:auto;margin-bottom:12px;display:flex;flex-direction:column;gap:10px"></div>
+                <div id="iv-input-row" style="display:flex;gap:8px">
+                  <input id="iv-input" class="form-input" style="margin:0;flex:1" placeholder='Type your answer… say "done" to finish &amp; get scored' onkeydown="if(event.key==='Enter')ivSendMock()">
+                  <button class="btn btn-solid" onclick="ivSendMock()">Send</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 📚 LEARNING ADVISOR -->
+            <div id="career-tab-learn" class="path-tab-content">
+              <div class="card" style="margin-bottom:16px">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:4px">📚 Learning Advisor</h3>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">Get a structured learning path for any skill — modules, resources, and milestones tuned to your level.</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+                  <div class="form-group" style="flex:1;min-width:220px;margin:0">
+                    <label class="form-label">Topic or skill</label>
+                    <input id="ln-topic" class="form-input" style="margin:0" placeholder="e.g. Data analysis with SQL, Public speaking, Project management">
+                  </div>
+                  <div class="form-group" style="margin:0">
+                    <label class="form-label">Level</label>
+                    <select id="ln-level" class="form-input" style="margin:0">
+                      <option value="beginner">Beginner</option>
+                      <option value="intermediate" selected>Intermediate</option>
+                      <option value="advanced">Advanced</option>
+                    </select>
+                  </div>
+                  <button class="btn btn-solid" onclick="lnGenerate()">Generate learning path</button>
+                </div>
+                <div id="ln-err" style="display:none;color:var(--error);font-size:13px;margin-top:10px"></div>
+              </div>
+              <div id="ln-results"></div>
+            </div>
+
+            <!-- 🔗 LINKEDIN & INDEED -->
+            <div id="career-tab-linkedin" class="path-tab-content">
+              <div class="card" style="margin-bottom:16px">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:4px">🔗 LinkedIn Profile Optimizer</h3>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">AI writes your headline, About section, top skills, and a connection note — straight from your resume.</p>
+                <div style="margin-bottom:10px"><button class="btn btn-outline" style="font-size:12px;padding:6px 12px" onclick="liPullResume()">↓ Use my Apply 10x resume</button> <span id="li-resume-note" style="font-size:11px;color:var(--gray-400)"></span></div>
+                <textarea id="li-resume" class="form-textarea" style="min-height:120px;font-size:12px;font-family:monospace" placeholder="Paste your resume here, or pull it from the Apply 10x tab above…"></textarea>
+                <div style="display:flex;gap:10px;margin-top:10px">
+                  <button class="btn btn-solid" onclick="liGenerate()">Generate LinkedIn profile</button>
+                  <a href="https://www.linkedin.com/in/" target="_blank" class="btn btn-outline" style="text-decoration:none">Open LinkedIn ↗</a>
+                </div>
+                <div id="li-err" style="display:none;color:var(--error);font-size:13px;margin-top:10px"></div>
+              </div>
+              <div id="li-results" style="display:none;margin-bottom:16px"></div>
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:4px">🔍 Indeed Job Search</h3>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">Search live Indeed listings for your target role and location.</p>
+                <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+                  <div class="form-group" style="flex:1;min-width:180px;margin:0">
+                    <label class="form-label">Job title / keywords</label>
+                    <input id="indeed-title" class="form-input" style="margin:0" placeholder="e.g. Operations Manager">
+                  </div>
+                  <div class="form-group" style="flex:1;min-width:160px;margin:0">
+                    <label class="form-label">Location</label>
+                    <input id="indeed-loc" class="form-input" style="margin:0" placeholder="e.g. Atlanta, GA or Remote">
+                  </div>
+                  <button class="btn btn-solid" onclick="indeedSearch()">Search Indeed ↗</button>
+                </div>
+              </div>
             </div>
 
             <div id="career-tab-resources" class="path-tab-content">

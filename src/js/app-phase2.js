@@ -5852,7 +5852,10 @@ async function _attemptGeminiNonStreaming(messages, apiKey, opts) {
     contents,
     generationConfig: {
       temperature: opts.temperature == null ? 0.4 : opts.temperature,
-      maxOutputTokens: opts.max_tokens || 4096
+      maxOutputTokens: opts.max_tokens || 8192,
+      // Disable Gemini 2.5 Flash thinking — its thinking tokens count against
+      // maxOutputTokens and were truncating answers mid-sentence.
+      thinkingConfig: { thinkingBudget: 0 }
     }
   };
   if (systemInstruction) body.systemInstruction = systemInstruction;
@@ -8728,14 +8731,19 @@ Current year: 2026.${_QUALITY}`
             <div style="min-width:0"><div style="font-size:16px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${emoji} ${project.name}</div><div style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:2px;letter-spacing:.3px">⚡ Powered by Groq AI · ${project.programArea}</div></div>
           </div>
           <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+            ${projectKey === 'lvs' ? '<button onclick="lvsAgentPanel()" title="Bring your vision to life with Agency OS specialists" style="background:rgba(201,168,76,0.2);border:1px solid rgba(201,168,76,0.5);color:#C9A84C;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;letter-spacing:0.02em">✨ Bring to Life</button>' : ''}
+            <button onclick="genProjectReport()" title="Compile this whole conversation into a structured report (summary, key findings, next steps) and save it to Reports" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">📄 Generate Report</button>
             <button onclick="saveProjectChat()" title="Download this conversation as a Markdown file" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">💾 Save</button>
             <button onclick="printProjectChat()" title="Print this conversation" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">🖨️ Print</button>
             <button onclick="resetProjectChat()" title="Clear this project's chat" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:12px;font-weight:600">↺ New</button>
             <button onclick="closeProjectChat()" title="Close (your progress is saved)" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center">×</button>
           </div>
         </div>
-        <div id="proj-chat-msgs" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;background:#F8FAFC"></div>
+        <div id="proj-chat-msgs" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px;background:#F8FAFC" ondragover="event.preventDefault();this.style.background='#EFF6FF'" ondragleave="this.style.background='#F8FAFC'" ondrop="event.preventDefault();this.style.background='#F8FAFC';if(event.dataTransfer.files&&event.dataTransfer.files[0])projChatAttach(event.dataTransfer.files[0])"></div>
+        <div id="proj-chat-attach-chip" style="display:none;padding:8px 14px 0;background:#fff;flex-shrink:0;flex-wrap:wrap;gap:8px;align-items:center"></div>
+        <input type="file" id="proj-chat-file" accept=".pdf,.docx,.txt,application/pdf,text/plain,application/vnd.openxmlformats-officedocument.wordprocessingml.document" style="display:none" onchange="projChatAttach(this.files[0]); this.value=''">
         <div style="padding:12px 14px;border-top:1px solid #E2E8F0;display:flex;gap:8px;background:#fff;flex-shrink:0;align-items:flex-end">
+          <button onclick="document.getElementById('proj-chat-file').click()" title="Attach a PDF, DOCX, or TXT for the AI to read" style="background:#fff;color:#64748B;border:1.5px solid #CBD5E1;padding:0 12px;border-radius:12px;font-weight:700;font-size:16px;cursor:pointer;height:44px;flex-shrink:0;line-height:1">📎</button>
           <textarea id="proj-chat-input" style="flex:1;padding:10px 14px;border:1.5px solid #CBD5E1;border-radius:12px;font-size:14px;font-family:inherit;resize:none;height:44px;max-height:140px;outline:none;line-height:1.5;transition:border .2s;overflow:hidden" placeholder="Type your question and press Enter…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendProjectMsg()}" oninput="this.style.height='44px';this.style.height=Math.min(this.scrollHeight,140)+'px'"></textarea>
           <button onclick="genFullManual()" title="Generate a multi-section manual (outline → expand each section → auto-save to Reports)" style="background:#fff;color:${color};border:1.5px solid ${color};padding:0 14px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;height:44px;white-space:nowrap;flex-shrink:0">📚 Full Manual</button>
           <button onclick="reportFromChat()" title="Save the AI's latest reply to Reports → Manuals" style="background:#fff;color:#1E5BC0;border:1.5px solid #1E5BC0;padding:0 14px;border-radius:12px;font-weight:700;font-size:13px;cursor:pointer;height:44px;white-space:nowrap;flex-shrink:0">🗂 Report</button>
@@ -9207,14 +9215,49 @@ Before you send your reply, verify:
     return trimmed;
   }
 
+  // ── AI-project chat: attach a file (PDF/DOCX/TXT) the AI will read ─────────
+  // Extracted text is held here and folded into the NEXT sent message (keeping
+  // the visible bubble clean — just a chip + the user's question).
+  let _chatPendingAttachment = null;
+  async function projChatAttach(file) {
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { alert('File too large — max 5 MB.'); return; }
+    const safeName = String(file.name || 'file').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const chip = document.getElementById('proj-chat-attach-chip');
+    if (chip) { chip.style.display = 'flex'; chip.innerHTML = '<span style="font-size:12px;color:#64748B">⏳ Reading ' + safeName + '…</span>'; }
+    try {
+      const text = (typeof extractFileText === 'function') ? await extractFileText(file) : '';
+      if (!text || !text.trim()) { _projClearAttachChip(); alert('No readable text found in ' + file.name + '.'); return; }
+      _chatPendingAttachment = { name: file.name, text: text.trim() };
+      if (chip) {
+        chip.style.display = 'flex';
+        chip.innerHTML = '<span style="display:inline-flex;align-items:center;gap:6px;background:#EFF6FF;border:1px solid #BFDBFE;color:#1E40AF;border-radius:14px;padding:4px 10px;font-size:12px;font-weight:600;max-width:100%">📎 <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:220px">' + safeName + '</span> <span style="color:#64748B;font-weight:400">' + text.trim().length.toLocaleString() + ' chars</span> <span onclick="projChatRemoveAttach()" title="Remove" style="cursor:pointer;font-weight:700;margin-left:2px">×</span></span><span style="font-size:11px;color:#94A3B8">Add your question and Send — the AI will read this file.</span>';
+      }
+      const input = document.getElementById('proj-chat-input');
+      if (input) input.focus();
+    } catch(e) {
+      _projClearAttachChip();
+      if (e && e.message === 'UNSUPPORTED') { alert('Unsupported file type. Please attach a PDF, DOCX, or TXT.'); return; }
+      console.error('[projChatAttach] failed:', e);
+      alert('Could not read that file: ' + (e.message || e));
+    }
+  }
+  function _projClearAttachChip() {
+    const chip = document.getElementById('proj-chat-attach-chip');
+    if (chip) { chip.style.display = 'none'; chip.innerHTML = ''; }
+  }
+  function projChatRemoveAttach() { _chatPendingAttachment = null; _projClearAttachChip(); }
+  window.projChatAttach = projChatAttach;
+  window.projChatRemoveAttach = projChatRemoveAttach;
+
   async function sendProjectMsg() {
     const input = document.getElementById('proj-chat-input');
     let text = input?.value.trim();
     if (!_chatProjectKey) return;
-    // Empty Enter behavior:
+    // Empty Enter behavior (only when there's also no attached file):
     //  - No history yet → kick off per the project's specific instructions
     //  - Mid-conversation → ask the AI to follow up with its next workflow question
-    if (!text) {
+    if (!text && !_chatPendingAttachment) {
       if (_chatHistory.length === 0) {
         text = "Start the session now per the FULL instructions in your system prompt. If your instructions specify a Ready Message, Welcome Message, or first-turn output verbatim — output that EXACTLY as written. Present any menus, category lists, or mode options your instructions include, with every item. If your instructions include Branded Conversational Starters, use one verbatim. If your instructions require a password before responding, enforce that gate first. Do NOT abbreviate, summarize, or skip portions of your assigned welcome flow.";
       } else {
@@ -9226,6 +9269,15 @@ Before you send your reply, verify:
     let displayText = text;
     if (text.startsWith('Start the session now')) displayText = '▶ Begin';
     else if (text.startsWith('Continue per your project')) displayText = '▶ Continue';
+    // Fold an attached file's text into the message the AI sees; keep the
+    // visible bubble clean (the user's question + a 📎 chip).
+    if (_chatPendingAttachment) {
+      const att = _chatPendingAttachment;
+      _chatPendingAttachment = null;
+      _projClearAttachChip();
+      text = (text ? text + '\n\n' : 'Please review the attached file.\n\n') + '[Attached file: ' + att.name + ']\n"""\n' + att.text + '\n"""';
+      displayText = (displayText && !displayText.startsWith('▶') ? displayText + '\n\n' : '') + '📎 ' + att.name;
+    }
     _appendMsg('user', displayText);
     _chatHistory.push({ role:'user', content:text });
     await _runProjectAiTurn();
@@ -9281,6 +9333,82 @@ Before you send your reply, verify:
     const projName = (typeof PROJECTS !== 'undefined' && PROJECTS[_chatProjectKey]) ? PROJECTS[_chatProjectKey].name : 'AI';
     _openInReports(last.content, projName);
   }
+
+  // Compile the ENTIRE project conversation into a structured report
+  // (Executive Summary, Key Findings, Details, Recommendations + today's date)
+  // and auto-save it to Reports. Distinct from reportFromChat (saves the last
+  // reply verbatim) and genFullManual (generates a fresh manual from a prompt).
+  async function genProjectReport() {
+    if (!_chatProjectKey) { alert('Open an AI specialist chat first (AI Project Suite → pick a specialist).'); return; }
+    const convo = (_chatHistory || []).filter(m => m && (m.role === 'user' || m.role === 'assistant') && m.content && m.content.trim());
+    if (convo.length === 0) { alert('Have a conversation with this specialist first — then click 📄 Generate Report to compile it into a structured report.'); return; }
+    const proj = (typeof PROJECTS !== 'undefined' && PROJECTS[_chatProjectKey]) ? PROJECTS[_chatProjectKey] : {};
+    const projName = proj.name || 'AI Project';
+    const today = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+    const msgs = document.getElementById('proj-chat-msgs');
+    const typing = document.createElement('div');
+    typing.style.cssText = 'display:flex;justify-content:flex-start';
+    typing.innerHTML = '<div style="padding:12px 16px;border-radius:18px 18px 18px 4px;background:#fff;color:#94A3B8;font-size:14px;box-shadow:0 1px 4px rgba(0,0,0,0.08)">📄 Compiling your report…</div>';
+    if (msgs) { msgs.appendChild(typing); msgs.scrollTop = msgs.scrollHeight; }
+    const transcript = convo.map(m => (m.role === 'user' ? 'USER' : (projName.toUpperCase() + ' (specialist)')) + ':\n' + m.content).join('\n\n---\n\n');
+    const sysPrompt = `You are a professional report writer. Turn the WORKING SESSION below (a conversation between a user and the "${projName}" specialist, focused on ${proj.programArea || 'this project'}) into one clean, structured report. Use ONLY information that appears in the session — never invent facts, names, numbers, or dates.
+
+Use this structure with markdown headings:
+# ${projName} — Report
+**Date:** ${today}
+
+## Executive Summary
+2–4 sentences: the purpose and the most important outcome.
+
+## Key Findings
+Specific findings, decisions, and insights surfaced in the session (bulleted).
+
+## Details
+Organize the substance into clearly-headed ## sections as the content warrants.
+
+## Recommendations / Next Steps
+Concrete, actionable next steps drawn from the session.
+
+Keep it professional and tight. If the session is thin, keep the report short rather than padding it.`;
+    let streamBubble = null;
+    try {
+      const { text } = await askAI({
+        messages: [{ role:'system', content: sysPrompt }, { role:'user', content: 'WORKING SESSION TRANSCRIPT:\n\n' + transcript }],
+        project: _chatProjectKey,
+        msgsEl: msgs,
+        onChunk: (delta, full) => {
+          if (!streamBubble) { typing.remove(); streamBubble = _appendMsg('assistant', ''); }
+          streamBubble.classList.add('md-content');
+          streamBubble.innerHTML = mdRender(full);
+          if (msgs) msgs.scrollTop = msgs.scrollHeight;
+        }
+      });
+      const report = (cleanGroqResponse(text) || '').trim();
+      if (!report) { if (streamBubble) streamBubble.remove(); else typing.remove(); alert('Could not generate a report — try again in a moment.'); return; }
+      if (!streamBubble) { typing.remove(); streamBubble = _appendMsg('assistant', ''); }
+      streamBubble.classList.add('md-content');
+      streamBubble.innerHTML = mdRender(report);
+      _addAssistantActions(streamBubble, report);
+      _chatHistory.push({ role:'assistant', content: report });
+      _saveCurrentSession();
+      const titleLine = (report.split('\n').find(l => l.trim()) || (projName + ' Report')).replace(/^#+\s*/, '').slice(0, 100);
+      if (typeof saveToBusinessFile === 'function') {
+        saveToBusinessFile({
+          type: projName + ' Report',
+          title: titleLine,
+          content: _wrapManualHtml(titleLine, report),
+          meta: { showAsReport: true, source: projName },
+          skipPortalConfirm: true
+        });
+        if (typeof showToast === 'function') showToast('📄 Report saved to Reports', 'success');
+      }
+    } catch(e) {
+      if (streamBubble) streamBubble.remove(); else typing.remove();
+      console.error('[genProjectReport] failed:', e);
+      _appendMsg('assistant', '⚠️ Couldn\'t generate the report: ' + (e.message || e) + '\n\nWait a moment and try again, or shorten the conversation with ↺ New.');
+    }
+  }
+  window.genProjectReport = genProjectReport;
 
   // Explicit window exports — defense-in-depth so inline onclick handlers
   // always resolve even if the surrounding script context isn't pure global.
@@ -9501,7 +9629,7 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
           const { text } = await askAI({
             messages: [{role:'system', content: sysPrompt}, {role:'user', content: sectionPrompt}],
             project: _chatProjectKey,
-            maxTokens: 8192
+            maxTokens: 4096
           });
           sectionText = (typeof cleanGroqResponse === 'function' ? cleanGroqResponse(text) : text) || '';
         } catch (e) {
@@ -9658,7 +9786,7 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
     const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse';
     const body = {
       contents,
-      generationConfig: { temperature, maxOutputTokens: maxTokens }
+      generationConfig: { temperature, maxOutputTokens: maxTokens, thinkingConfig: { thinkingBudget: 0 } }
     };
     if (systemInstruction) body.systemInstruction = systemInstruction;
     const r = await fetch(url, {
@@ -10413,7 +10541,7 @@ You have tools to:
 
     const body = {
       contents,
-      generationConfig: { temperature: temperature == null ? 0.3 : temperature, maxOutputTokens: maxTokens || 2048 }
+      generationConfig: { temperature: temperature == null ? 0.3 : temperature, maxOutputTokens: maxTokens || 2048, thinkingConfig: { thinkingBudget: 0 } }
     };
     if (systemInstruction) body.systemInstruction = systemInstruction;
     if (functionDeclarations.length) {
@@ -11403,5 +11531,214 @@ Be fast. Don't over-explain. Ship working code.`;
     const wrap = document.getElementById('vc-frame-wrap');
     if (wrap && wrap.dataset.expanded === '1') vcExpand();
   });
+
+  // ── LVS × AGENCY OS COLLABORATION ─────────────────────────────────────────
+  // LVS creates the vision; Agency OS specialists bring it to life.
+  // agents.json is fetched once and cached; loaded only when the user clicks
+  // "✨ Bring to Life" in the LVS chat overlay — never on page load.
+
+  let _lvsAgentsCache = null;
+
+  async function _lvsLoadAgents() {
+    if (_lvsAgentsCache) return _lvsAgentsCache;
+    for (const url of ['agency-agents.json', '/agency-agents.json', 'agents.json', '/agents.json']) {
+      try {
+        const r = await fetch(url);
+        if (r.ok) { _lvsAgentsCache = await r.json(); return _lvsAgentsCache; }
+      } catch (_) {}
+    }
+    return [];
+  }
+
+  function _lvsMatchAgents(agents, lvsText) {
+    const t = (lvsText || '').toLowerCase();
+    const DIVISION_KEYS = {
+      'Academic':           ['history','culture','story','science','knowledge','ancient','society','myth','language','geography','psychology','research','education','art','music','spirituality','philosophy','narrative','anthropology'],
+      'Design':             ['design','visual','brand','art','image','color','style','aesthetic','logo','creative','illustration','fashion','typography','graphic'],
+      'Engineering':        ['build','engineer','system','technical','machine','code','software','hardware','mechanism','infrastructure','invention','technology','construct','blueprint','architecture','develop'],
+      'Finance':            ['business','money','finance','revenue','profit','investment','budget','economic','funding','startup','pricing','income','wealth','financial'],
+      'Game Development':   ['game','play','mechanic','level','player','world','simulation','interactive','virtual','quest','character','rules','gamification'],
+      'Gis':                ['map','geography','terrain','location','spatial','land','region','place','coordinate'],
+      'Integrations':       ['api','integration','connect','data','automate','workflow','pipeline','system'],
+      'Marketing':          ['market','launch','audience','promote','content','campaign','viral','social','reach','brand awareness','growth','marketing'],
+      'Paid Media':         ['advertise','ads','paid','ppc','campaign','traffic','conversion','media'],
+      'Product':            ['product','feature','user','ux','interface','prototype','roadmap','design'],
+      'Project Management': ['plan','project','timeline','milestone','team','manage','organize','schedule'],
+      'Sales':              ['sell','sales','customer','pitch','proposal','deal','client','revenue','close'],
+      'Security':           ['security','protect','safe','privacy','threat','risk','defense','cyber'],
+      'Spatial Computing':  ['space','3d','ar','vr','spatial','environment','metaverse','immersive','xr'],
+      'Specialized':        ['health','medicine','law','legal','policy','holistic','survival','craft','diy','niche'],
+      'Support':            ['support','help','user','service','experience','customer'],
+      'Testing':            ['test','quality','bug','verify','validate','qa'],
+    };
+    return agents
+      .map(a => {
+        const kws = DIVISION_KEYS[a.division] || [];
+        const blurb = (a.blurb || '').toLowerCase();
+        let score = kws.reduce((s, kw) => s + (t.includes(kw) ? 2 : 0) + (blurb.includes(kw) ? 1 : 0), 0);
+        if (t.includes(a.name.toLowerCase())) score += 3;
+        return { ...a, _score: score };
+      })
+      .filter(a => a._score > 0)
+      .sort((a, b) => b._score - a._score)
+      .slice(0, 15);
+  }
+
+  const _LVS_DCOLORS = {
+    'Academic':'#8B5CF6','Design':'#EC4899','Engineering':'#3B82F6','Finance':'#10B981',
+    'Game Development':'#F59E0B','Gis':'#84CC16','Integrations':'#06B6D4',
+    'Marketing':'#EF4444','Paid Media':'#F97316','Product':'#0EA5E9',
+    'Project Management':'#22C55E','Sales':'#14B8A6','Security':'#E11D48',
+    'Spatial Computing':'#A855F7','Specialized':'#C9A84C','Support':'#64748B','Testing':'#78716C',
+  };
+
+  function _lvsAgentCard(a) {
+    const c = _LVS_DCOLORS[a.division] || '#C9A84C';
+    return `<label style="display:flex;align-items:flex-start;gap:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;cursor:pointer;transition:border-color 0.15s" onmouseover="this.style.borderColor='${c}55'" onmouseout="this.style.borderColor='rgba(255,255,255,0.08)'">
+      <input type="checkbox" value="${a.id}" style="margin-top:3px;flex-shrink:0;accent-color:${c}">
+      <div style="min-width:0">
+        <div style="font-size:13px;font-weight:700;color:#F1F5F9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.name}</div>
+        <div style="font-size:10px;font-weight:700;color:${c};text-transform:uppercase;letter-spacing:0.06em;margin:2px 0">${a.division}</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.35);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">${(a.blurb||'').slice(0,90)}</div>
+      </div>
+    </label>`;
+  }
+
+  async function lvsAgentPanel() {
+    const existing = document.getElementById('lvs-agent-panel');
+    if (existing) { existing.remove(); return; }
+
+    const overlay = document.getElementById('proj-chat-overlay');
+    const sheet = overlay && overlay.querySelector('.chat-sheet');
+    if (!sheet) return;
+
+    const panel = document.createElement('div');
+    panel.id = 'lvs-agent-panel';
+    panel.style.cssText = 'background:#0A0F1E;border-bottom:1px solid rgba(201,168,76,0.25);padding:14px 16px;max-height:55vh;overflow-y:auto';
+    panel.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.4);font-size:13px;padding:20px 0">⏳ Loading specialists…</div>';
+    sheet.children[0].insertAdjacentElement('afterend', panel);
+
+    const agents = await _lvsLoadAgents();
+    if (!agents.length) {
+      panel.innerHTML = '<div style="text-align:center;padding:20px;color:#EF4444;font-size:13px">⚠️ Could not load agents. Place <code>agency-agents.json</code> in the help center root folder.</div>';
+      return;
+    }
+
+    const lastAsst = [..._chatHistory].reverse().find(m => m.role === 'assistant');
+    const matched = lastAsst ? _lvsMatchAgents(agents, lastAsst.content) : [];
+    const displayed = matched.length >= 3 ? matched : agents.slice(0, 12);
+
+    panel.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div>
+          <div style="color:#C9A84C;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase">✨ Bring to Life</div>
+          <div style="color:rgba(255,255,255,0.4);font-size:11px;margin-top:2px">Select specialists to develop your vision</div>
+        </div>
+        <button onclick="document.getElementById('lvs-agent-panel')?.remove()" style="background:none;border:none;color:rgba(255,255,255,0.35);cursor:pointer;font-size:22px;line-height:1;padding:0 4px">×</button>
+      </div>
+      <div id="lvs-agent-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin-bottom:12px">
+        ${displayed.map(_lvsAgentCard).join('')}
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <input id="lvs-agent-search" placeholder="Search all 233 agents…" style="flex:1;min-width:160px;padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:#F1F5F9;border-radius:8px;font-size:13px;outline:none" oninput="_lvsSearchAgents(this.value)">
+        <button onclick="document.getElementById('lvs-agent-panel')?.remove()" style="background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.5);border:1px solid rgba(255,255,255,0.1);padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px">Cancel</button>
+        <button onclick="_invokeSelectedAgents()" style="background:#C9A84C;color:#0F172A;border:none;padding:8px 20px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer">✨ Bring to Life</button>
+      </div>`;
+  }
+
+  async function _lvsSearchAgents(query) {
+    const agents = await _lvsLoadAgents();
+    const q = (query || '').toLowerCase().trim();
+    const grid = document.getElementById('lvs-agent-grid');
+    if (!grid) return;
+    const lastAsst = [..._chatHistory].reverse().find(m => m.role === 'assistant');
+    const filtered = q
+      ? agents.filter(a => (a.name + ' ' + a.division + ' ' + (a.blurb||'')).toLowerCase().includes(q)).slice(0, 15)
+      : (lastAsst ? _lvsMatchAgents(agents, lastAsst.content) : agents.slice(0, 12));
+    grid.innerHTML = filtered.length
+      ? filtered.map(_lvsAgentCard).join('')
+      : '<div style="color:rgba(255,255,255,0.3);font-size:13px;padding:12px;text-align:center;grid-column:1/-1">No agents match "' + query + '"</div>';
+  }
+
+  async function _invokeSelectedAgents() {
+    const grid = document.getElementById('lvs-agent-grid');
+    if (!grid) return;
+    const checked = [...grid.querySelectorAll('input[type=checkbox]:checked')];
+    if (!checked.length) { if (typeof showToast === 'function') showToast('Select at least one specialist.', 'warn'); return; }
+
+    document.getElementById('lvs-agent-panel')?.remove();
+
+    const agents = await _lvsLoadAgents();
+    const selected = checked.map(cb => agents.find(a => a.id === cb.value)).filter(Boolean);
+
+    const lastAsst = [..._chatHistory].reverse().find(m => m.role === 'assistant');
+    const lastUser = [..._chatHistory].reverse().find(m => m.role === 'user');
+    const contextBrief = `You are collaborating with **Limitless Vision Studio (LVS)**, a creative super-intelligence. LVS has generated the following vision in response to the user's request.
+
+**Original request:**
+${(lastUser?.content || '').slice(0, 400)}
+
+**LVS's creation:**
+${(lastAsst?.content || '').slice(0, 3000)}
+
+Your task: Take this vision and **develop it from your specific expertise**. Do not summarize or repeat what LVS said. Build on it — add depth, specificity, and expert knowledge to make it real. Be practical, detailed, and true to your discipline.`;
+
+    const msgs = document.getElementById('proj-chat-msgs');
+    if (msgs) {
+      const divider = document.createElement('div');
+      divider.style.cssText = 'display:flex;align-items:center;gap:10px;margin:18px 0 6px';
+      divider.innerHTML = '<div style="flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(201,168,76,0.5),transparent)"></div><span style="color:#C9A84C;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap">✨ BRINGING TO LIFE</span><div style="flex:1;height:1px;background:linear-gradient(90deg,rgba(201,168,76,0.5),transparent)"></div>';
+      msgs.appendChild(divider);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    for (const agent of selected) {
+      await _runAgentContribution(agent, contextBrief);
+    }
+  }
+
+  async function _runAgentContribution(agent, contextBrief) {
+    const msgs = document.getElementById('proj-chat-msgs');
+    if (!msgs) return;
+    const color = _LVS_DCOLORS[agent.division] || '#C9A84C';
+
+    const label = document.createElement('div');
+    label.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 12px 6px 10px;border-left:3px solid '+color+';background:rgba(0,0,0,0.03);border-radius:0 6px 6px 0;margin:10px 0 2px';
+    label.innerHTML = `<span style="font-size:12px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:0.06em">${agent.name}</span><span style="font-size:11px;color:#94A3B8">— ${agent.division}</span>`;
+    msgs.appendChild(label);
+
+    const typing = document.createElement('div');
+    typing.style.cssText = 'display:flex;justify-content:flex-start;margin-bottom:4px';
+    typing.innerHTML = `<div style="padding:10px 14px;border-radius:18px 18px 18px 4px;background:#fff;color:#94A3B8;font-size:13px;box-shadow:0 1px 4px rgba(0,0,0,0.08);border-left:2px solid ${color}">⏳ Developing your vision…</div>`;
+    msgs.appendChild(typing);
+    msgs.scrollTop = msgs.scrollHeight;
+
+    const sysPrompt = (agent.systemPrompt || 'You are a helpful expert.') + '\n\n' + (_EXECUTION_RULES || '');
+    const messages = [{ role: 'system', content: sysPrompt }, { role: 'user', content: contextBrief }];
+
+    let bubble = null;
+    try {
+      const { text } = await askAI({
+        messages,
+        project: 'lvs',
+        msgsEl: msgs,
+        onChunk: (delta, full) => {
+          if (!bubble) { typing.remove(); bubble = _appendMsg('assistant', ''); }
+          bubble.classList.add('md-content');
+          bubble.innerHTML = mdRender(full);
+          msgs.scrollTop = msgs.scrollHeight;
+        }
+      });
+      if (!bubble) { typing.remove(); bubble = _appendMsg('assistant', ''); }
+      bubble.classList.add('md-content');
+      bubble.innerHTML = mdRender(text || 'No response.');
+      _addAssistantActions(bubble, text || '');
+      _chatHistory.push({ role: 'assistant', content: `[${agent.name} — ${agent.division}]\n\n${text}` });
+      _saveCurrentSession();
+    } catch (e) {
+      typing.remove();
+      _appendMsg('assistant', `⚠️ ${agent.name} could not respond: ${e.message}`);
+    }
+  }
   // ══════════════════════════════════════════════════════════════════════════════
 

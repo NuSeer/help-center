@@ -376,6 +376,19 @@ const upload = multer({
 
 app.use('/uploads', express.static(UPLOADS_ROOT, { maxAge: '7d' }));
 
+// Agency OS agents — served for LVS collaboration feature
+app.get('/agency-agents.json', (req, res) => {
+  res.sendFile(path.join(__dirname, 'agency-agents.json'));
+});
+
+// Agency OS — serve the standalone app and its agents data
+app.get('/agency.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'agency.html'));
+});
+app.get('/agents.json', (req, res) => {
+  res.sendFile(path.join(__dirname, 'agency-agents.json'));
+});
+
 app.post('/api/upload', upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No file received (use field name "file")' });
   const cid = (req.body.clientId || 'misc').replace(/[^a-z0-9_-]/gi, '') || 'misc';

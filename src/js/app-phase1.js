@@ -7615,7 +7615,11 @@ ${biz} clients are serious, ambitious people building real businesses and real l
           contents,
           generationConfig: {
             temperature: opts.temperature == null ? 0.4 : opts.temperature,
-            maxOutputTokens: opts.maxTokens || 4096
+            maxOutputTokens: opts.maxTokens || 8192,
+            // Gemini 2.5 Flash is a thinking model; thinking tokens count against
+            // maxOutputTokens and were truncating answers mid-sentence. Disable it
+            // so the full budget goes to the visible response.
+            thinkingConfig: { thinkingBudget: 0 }
           }
         };
         if (systemInstruction) body.systemInstruction = systemInstruction;
@@ -7773,7 +7777,7 @@ ${biz} clients are serious, ambitious people building real businesses and real l
             if (m.role === 'system') { systemInstruction = { parts: [{ text: m.content }] }; continue; }
             contents.push({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: String(m.content || '') }] });
           }
-          const gBody = { contents, generationConfig: { temperature: 0.4, maxOutputTokens: 4096 } };
+          const gBody = { contents, generationConfig: { temperature: 0.4, maxOutputTokens: 8192, thinkingConfig: { thinkingBudget: 0 } } };
           if (systemInstruction) gBody.systemInstruction = systemInstruction;
           const gResp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse', {
             method: 'POST',
@@ -10640,6 +10644,49 @@ Write a complete brief they can send to a Fiverr designer: style, colors, must-h
       sel.innerHTML = html;
     }
 
+    // Shared text extractor — PDF (pdf.js) / DOCX (mammoth) / TXT. Returns the
+    // trimmed text, throws Error('UNSUPPORTED') for other types. Used by the
+    // Apply-10x resume uploader AND the AI-project chat attach feature.
+    async function extractFileText(file) {
+      if (!file) return '';
+      const lower = (file.name || '').toLowerCase();
+      if (lower.endsWith('.txt') || file.type === 'text/plain') {
+        return (await file.text()).trim();
+      } else if (lower.endsWith('.pdf') || file.type === 'application/pdf') {
+        if (typeof pdfjsLib === 'undefined') {
+          await new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+            s.onload = res; s.onerror = rej;
+            document.head.appendChild(s);
+          });
+          pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+        }
+        const buf = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        let text = '';
+        for (let p = 1; p <= pdf.numPages; p++) {
+          const page = await pdf.getPage(p);
+          const content = await page.getTextContent();
+          text += content.items.map(it => it.str).join(' ') + '\n\n';
+        }
+        return text.trim();
+      } else if (lower.endsWith('.docx')) {
+        if (typeof mammoth === 'undefined') {
+          await new Promise((res, rej) => {
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js';
+            s.onload = res; s.onerror = rej;
+            document.head.appendChild(s);
+          });
+        }
+        const buf = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer: buf });
+        return (result.value || '').trim();
+      }
+      throw new Error('UNSUPPORTED');
+    }
+
     async function a10xHandleFile(file) {
       if (!file) return;
       if (file.size > 5 * 1024 * 1024) { alert('File too large — max 5 MB.'); return; }
@@ -10647,49 +10694,11 @@ Write a complete brief they can send to a Fiverr designer: style, colors, must-h
       if (dropZone) dropZone.innerHTML = `<div style="font-size:13px;color:var(--brand-primary);font-weight:600">⏳ Reading ${file.name}…</div>`;
       const ta = document.getElementById('a10x-resume');
       try {
-        let text = '';
-        const lower = file.name.toLowerCase();
-        if (lower.endsWith('.txt') || file.type === 'text/plain') {
-          text = await file.text();
-        } else if (lower.endsWith('.pdf') || file.type === 'application/pdf') {
-          // Load pdf.js on demand
-          if (typeof pdfjsLib === 'undefined') {
-            await new Promise((res, rej) => {
-              const s = document.createElement('script');
-              s.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
-              s.onload = res; s.onerror = rej;
-              document.head.appendChild(s);
-            });
-            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
-          }
-          const buf = await file.arrayBuffer();
-          const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
-          for (let p = 1; p <= pdf.numPages; p++) {
-            const page = await pdf.getPage(p);
-            const content = await page.getTextContent();
-            text += content.items.map(it => it.str).join(' ') + '\n\n';
-          }
-        } else if (lower.endsWith('.docx')) {
-          // Load mammoth on demand for DOCX
-          if (typeof mammoth === 'undefined') {
-            await new Promise((res, rej) => {
-              const s = document.createElement('script');
-              s.src = 'https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js';
-              s.onload = res; s.onerror = rej;
-              document.head.appendChild(s);
-            });
-          }
-          const buf = await file.arrayBuffer();
-          const result = await mammoth.extractRawText({ arrayBuffer: buf });
-          text = result.value;
-        } else {
-          alert('Unsupported file type. Please upload PDF, DOCX, or TXT.');
-          a10xResetDropZone();
-          return;
-        }
-        if (ta) ta.value = text.trim();
+        const text = await extractFileText(file);
+        if (ta) ta.value = text;
         if (dropZone) dropZone.innerHTML = `<div style="font-size:13px;color:#10B981;font-weight:600">✅ Loaded: ${file.name} <span style="color:#94a3b8;font-weight:400">— ${text.length.toLocaleString()} characters</span></div><div style="font-size:11px;color:#94a3b8;margin-top:4px;cursor:pointer;text-decoration:underline" onclick="event.stopPropagation();a10xResetDropZone()">Upload a different file</div>`;
       } catch(e) {
+        if (e && e.message === 'UNSUPPORTED') { alert('Unsupported file type. Please upload PDF, DOCX, or TXT.'); a10xResetDropZone(); return; }
         console.error('[a10xHandleFile] failed:', e);
         alert('Could not read this file: ' + e.message + '\n\nTry pasting the text manually.');
         a10xResetDropZone();
@@ -10749,10 +10758,11 @@ Write a complete brief they can send to a Fiverr designer: style, colors, must-h
       noteBtn.onclick = () => {
         const content = grabContent();
         if (!content) { alert('Nothing to save yet.'); return; }
-        const notes = getData('notes') || [];
         const title = docType + ' — ' + new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
-        notes.unshift({ id: generateId(), title, body: content, dateCreated: new Date().toISOString(), tags: ['career', docType.toLowerCase()] });
-        setData('notes', notes);
+        // Route through the canonical helper so the note uses the shape the Notes
+        // page renders (subject/date/category) — the old inline object wrote
+        // title/dateCreated, so notes saved but rendered blank ("not saving").
+        saveAsNote(title, content, 'Career');
         noteBtn.textContent = '✓ Saved to Notes';
         setTimeout(() => noteBtn.textContent = '💾 Save to Notes', 2200);
       };
@@ -10783,6 +10793,7 @@ Write a complete brief they can send to a Fiverr designer: style, colors, must-h
       if (!a10xGetKey()) { alert('Add your Groq API key in Settings first.'); return; }
       const resume = (document.getElementById('a10x-resume') || {}).value || '';
       const job = (document.getElementById('a10x-job') || {}).value || '';
+      const extra = (document.getElementById('a10x-extra') || {}).value || '';
       if (!resume.trim()) { alert('Please paste your resume first.'); return; }
       if (!job.trim()) { alert('Please paste the job description first.'); return; }
       const resultEl = document.getElementById('a10x-analysis-result');
@@ -10805,10 +10816,12 @@ When given a resume and job description, you will:
 IMPORTANT: Start your response with a JSON block wrapped in \`\`\`json ... \`\`\` containing exactly:
 { "score": <number 0-100>, "full": <count>, "partial": <count>, "missing": <count> }
 
-Then provide the full detailed analysis in markdown below that JSON block.`;
+Then provide the full detailed analysis in markdown below that JSON block.
+
+If an "ADDITIONAL / OLDER EXPERIENCE" section is included, treat it as the candidate's real history too — count its skills, tools, and keywords toward Full and Partial matches (these come from earlier roles, so note that where relevant).`;
       const messages = [
         { role: 'system', content: sysPrompt },
-        { role: 'user', content: `RESUME:\n${resume}\n\n---\n\nJOB DESCRIPTION:\n${job}` }
+        { role: 'user', content: `RESUME:\n${resume}\n\n---\n\nJOB DESCRIPTION:\n${job}${extra.trim() ? '\n\n---\n\nADDITIONAL / OLDER EXPERIENCE (also the candidate\'s real history — count toward matches):\n' + extra : ''}` }
       ];
       try {
         let fullText = '';
@@ -10849,13 +10862,14 @@ Then provide the full detailed analysis in markdown below that JSON block.`;
       if (!a10xGetKey()) { alert('Add your Groq API key in Settings first.'); return; }
       const resume = (document.getElementById('a10x-resume') || {}).value || '';
       const job = (document.getElementById('a10x-job') || {}).value || '';
+      const extra = (document.getElementById('a10x-extra') || {}).value || '';
       if (!resume.trim()) { alert('Please paste your resume first.'); return; }
       if (!job.trim()) { alert('Please paste the job description first.'); return; }
       const resultEl = document.getElementById('a10x-resume-result');
       if (!resultEl) return;
       resultEl.style.display = 'block';
       resultEl.innerHTML = '<div style="color:var(--brand-primary);font-weight:600;padding:12px">✨ Optimizing your resume for this role… (this may take 30–60 seconds)</div>';
-      const sysPrompt = `You are an expert resume writer and ATS optimization specialist. ONE RULE OVERRIDES EVERYTHING ELSE: never add a skill, tool, system, certification, responsibility, or experience that is not already in the candidate's resume. If the job description requires something the candidate doesn't have, you do NOT add it — full stop.
+      const sysPrompt = `You are an expert resume writer and ATS optimization specialist. ONE RULE OVERRIDES EVERYTHING ELSE: never add a skill, tool, system, certification, responsibility, or experience that is not already in the candidate's MATERIALS. "The candidate's materials" / "the resume" throughout these rules means BOTH their current resume AND any "Additional / Older Experience" section they provide — both are the candidate's real history and may be used. If the job description requires something that appears in NEITHER, you do NOT add it — full stop.
 
 WHAT YOU MAY DO (rewriting only):
 - Reword existing bullets with stronger action verbs and clearer impact
@@ -10863,6 +10877,7 @@ WHAT YOU MAY DO (rewriting only):
 - Mirror the job description's keyword phrasing ONLY when the resume already shows the same underlying skill (e.g. resume says "answered customer questions about billing" + JD says "claims inquiries" → fine to use "billing inquiries"; resume never mentions billing → NOT fine)
 - Quantify achievements that are already on the resume (numbers, %, scale) only if the number is stated or is a faithful interpretation of what's truly there
 - Tighten language, fix grammar, fix formatting
+- Pull job-relevant roles, skills, or accomplishments from the "Additional / Older Experience" section into the resume, placed in correct chronological order and labeled WITH the dates given there. Use those dates exactly as written; never invent or guess a date — if an older item has no date, include it without one.
 
 WHAT YOU MUST NOT DO (no exceptions):
 - Add a skill, technology, tool, software, or system not on the resume (e.g. don't write "processed insurance claims" if the resume never mentions billing/claims)
@@ -10879,7 +10894,7 @@ If the job requires meaningful things the resume lacks, end the response with a 
 Output the FULL optimized resume in clean markdown (don't abbreviate sections), then the optional Skills-to-Consider section if relevant.`;
       const messages = [
         { role: 'system', content: sysPrompt },
-        { role: 'user', content: `Please optimize my resume for this job. CRITICAL: do not add anything that isn't already in my resume — only rephrase, reorder, and quantify what's truly there. If the job needs something I don't have, list those gaps separately at the end; never fold them into the resume body.\n\nMY RESUME:\n${resume}\n\n---\n\nJOB DESCRIPTION:\n${job}\n\n---\n\nProvide the full optimized resume in clean markdown format, followed by a "Skills to Consider Adding" list only if there are real gaps.` }
+        { role: 'user', content: `Please optimize my resume for this job. CRITICAL: do not add anything that isn't already in my resume OR my Additional / Older Experience below — only rephrase, reorder, quantify, and (from my older experience) pull in job-relevant items with their real dates. If the job needs something I have in neither, list those gaps separately at the end; never fold them into the resume body.\n\nMY RESUME:\n${resume}${extra.trim() ? '\n\n---\n\nADDITIONAL / OLDER EXPERIENCE (my real past history — you MAY integrate job-relevant items from here, in date order, using the dates shown):\n' + extra : ''}\n\n---\n\nJOB DESCRIPTION:\n${job}\n\n---\n\nProvide the full optimized resume in clean markdown format, followed by a "Skills to Consider Adding" list only if there are real gaps.` }
       ];
       try {
         let acc = '';
@@ -10898,13 +10913,14 @@ Output the FULL optimized resume in clean markdown (don't abbreviate sections), 
       if (!a10xGetKey()) { alert('Add your Groq API key in Settings first.'); return; }
       const resume = (document.getElementById('a10x-resume') || {}).value || '';
       const job = (document.getElementById('a10x-job') || {}).value || '';
+      const extra = (document.getElementById('a10x-extra') || {}).value || '';
       if (!resume.trim()) { alert('Please paste your resume first.'); return; }
       if (!job.trim()) { alert('Please paste the job description first.'); return; }
       const resultEl = document.getElementById('a10x-cover-result');
       if (!resultEl) return;
       resultEl.style.display = 'block';
       resultEl.innerHTML = '<div style="color:var(--brand-primary);font-weight:600;padding:12px">📝 Writing your cover letter…</div>';
-      const sysPrompt = `You are an expert cover letter writer. ONE RULE OVERRIDES EVERYTHING ELSE: never claim a skill, experience, tool, or accomplishment that is not on the candidate's resume. Only use examples and metrics that are truly there.
+      const sysPrompt = `You are an expert cover letter writer. ONE RULE OVERRIDES EVERYTHING ELSE: never claim a skill, experience, tool, or accomplishment that is not on the candidate's resume OR in any "Additional / Older Experience" section they provide (both are their real history). Only use examples and metrics that are truly there.
 
 Write a compelling, personalized cover letter that:
 1. Opens with a strong hook showing genuine interest in the specific role and company
@@ -10919,7 +10935,7 @@ Write a compelling, personalized cover letter that:
 Format: clean markdown, ready to copy directly into an application.`;
       const messages = [
         { role: 'system', content: sysPrompt },
-        { role: 'user', content: `Write a cover letter for this job application.\n\nMY RESUME:\n${resume}\n\n---\n\nJOB DESCRIPTION:\n${job}\n\n---\n\nWrite a compelling, job-specific cover letter I can use immediately.` }
+        { role: 'user', content: `Write a cover letter for this job application.\n\nMY RESUME:\n${resume}${extra.trim() ? '\n\n---\n\nADDITIONAL / OLDER EXPERIENCE (my real past history — you may reference job-relevant items from here):\n' + extra : ''}\n\n---\n\nJOB DESCRIPTION:\n${job}\n\n---\n\nWrite a compelling, job-specific cover letter I can use immediately.` }
       ];
       try {
         await a10xStreamFetch(messages, (full) => {

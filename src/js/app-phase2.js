@@ -5885,13 +5885,14 @@ async function _groqWithKeyFallback(messages, opts) {
   opts = opts || {};
   const cfg = JSON.parse(localStorage.getItem('settings') || '{}');
 
-  // ── Try Gemini first if a key is configured (primary provider).
-  if (cfg.geminiApiKey) {
+  // ── Try free Gemini first — both keys (doubled daily quota) before Groq.
+  const freeGeminiKeys = [cfg.geminiApiKey, cfg.geminiApiKey2].filter(Boolean);
+  for (let gi = 0; gi < freeGeminiKeys.length; gi++) {
     try {
-      const text = await _attemptGeminiNonStreaming(messages, cfg.geminiApiKey, opts);
-      return { content: text, modelUsed: 'gemini-2.5-flash', keyUsed: 'gemini' };
+      const text = await _attemptGeminiNonStreaming(messages, freeGeminiKeys[gi], opts);
+      return { content: text, modelUsed: 'gemini-2.5-flash', keyUsed: gi === 0 ? 'gemini' : 'gemini2' };
     } catch (e) {
-      console.warn('[_groqWithKeyFallback] Gemini failed, falling back to Groq:', e.message);
+      console.warn('[_groqWithKeyFallback] Gemini free#' + (gi+1) + ' failed:', e.message);
     }
   }
 
@@ -5935,6 +5936,18 @@ async function _groqWithKeyFallback(messages, opts) {
       } catch (e) { lastError = e.message; continue; }
     }
   }
+
+  // ── PAID Gemini — last resort, only after free Gemini ×2 AND Groq failed.
+  if (cfg.geminiApiKeyPaid) {
+    try {
+      const text = await _attemptGeminiNonStreaming(messages, cfg.geminiApiKeyPaid, opts);
+      return { content: text, modelUsed: 'gemini-2.5-flash (paid)', keyUsed: 'geminiPaid' };
+    } catch (e) {
+      lastError = 'Gemini paid: ' + e.message;
+      console.warn('[_groqWithKeyFallback] paid Gemini failed:', e.message);
+    }
+  }
+
   return { error: lastError || 'all keys/models exhausted' };
 }
 
@@ -9835,9 +9848,22 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
     // rest of the configured providers as automatic safety nets.
     const _try = {
       gemini: async () => {
-        if (!cfg.geminiApiKey) return null;
-        try { const text = await _attemptGemini({ messages, key: cfg.geminiApiKey, temperature, maxTokens, onChunk }); return { text, providerUsed:'gemini', modelUsed:'gemini-2.5-flash' }; }
-        catch (e) { lastErr = 'Gemini: ' + e.message; console.warn('[askAI] Gemini → ' + e.message); return null; }
+        // Free Gemini, both keys: walk free #1 then free #2 (doubled daily quota)
+        // before this step gives up and the chain drops to Groq.
+        const freeKeys = [cfg.geminiApiKey, cfg.geminiApiKey2].filter(Boolean);
+        if (!freeKeys.length) return null;
+        for (let ki = 0; ki < freeKeys.length; ki++) {
+          try { const text = await _attemptGemini({ messages, key: freeKeys[ki], temperature, maxTokens, onChunk }); return { text, providerUsed:'gemini', modelUsed:'gemini-2.5-flash' + (ki ? ' (free #2)' : '') }; }
+          catch (e) { lastErr = 'Gemini: ' + e.message; console.warn('[askAI] Gemini free#' + (ki+1) + ' → ' + e.message); }
+        }
+        return null;
+      },
+      geminiPaid: async () => {
+        // Paid (billing-enabled) Gemini — sits after Groq, so it's only ever
+        // reached once both free Gemini keys AND Groq have failed.
+        if (!cfg.geminiApiKeyPaid) return null;
+        try { const text = await _attemptGemini({ messages, key: cfg.geminiApiKeyPaid, temperature, maxTokens, onChunk }); return { text, providerUsed:'geminiPaid', modelUsed:'gemini-2.5-flash (paid)' }; }
+        catch (e) { lastErr = 'Gemini paid: ' + e.message; console.warn('[askAI] Gemini paid → ' + e.message); return null; }
       },
       groq: async () => {
         const groqKey = cfg.groqApiKey || '';
@@ -9872,11 +9898,6 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
         try { const text = await _aiStreamOpenAI(messages, onChunk, cfg.openaiApiKey, cfg.aiModel); return (text && text.trim()) ? { text, providerUsed:'openai', modelUsed:'openai' } : null; }
         catch (e) { lastErr = (lastErr ? lastErr + ' · ' : '') + 'OpenAI: ' + e.message; return null; }
       },
-      openrouter: async () => {
-        if (!cfg.openRouterApiKey) return null;
-        try { const text = await _attemptOpenRouter({ messages, key: cfg.openRouterApiKey, temperature, maxTokens, onChunk }); return { text, providerUsed:'openrouter', modelUsed:'llama-3.3-70b:free' }; }
-        catch (e) { lastErr = (lastErr ? lastErr + ' · OpenRouter: ' : 'OpenRouter: ') + e.message; console.warn('[askAI] OpenRouter → ' + e.message); return null; }
-      },
       ollama: async () => {
         if (!_ollamaConfigured()) return null;
         try { const text = await callOllama(messages, { temperature, task: 'general' }); if (onChunk) onChunk(text, text); return { text, providerUsed:'ollama', modelUsed: cfg.ollamaModel || 'ollama' }; }
@@ -9889,9 +9910,12 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
     const _order = [];
     const _add = p => { if (p && _try[p] && _order.indexOf(p) === -1) _order.push(p); };
     _add(cfg.aiProvider || 'gemini'); _add(cfg.aiFallbackProvider);
-    ['gemini','groq','claude','openai','openrouter','ollama'].forEach(_add);
+    // Free-first order: free Gemini (×2 keys) → Groq → PAID Gemini → Ollama.
+    // OpenRouter dropped (redundant with Groq's Llama 70B). Claude/OpenAI remain
+    // optional deeper nets only if the user has set those keys.
+    ['gemini','groq','geminiPaid','claude','openai','ollama'].forEach(_add);
 
-    const _niceName = { gemini:'Gemini', groq:'Groq', claude:'Claude', openai:'OpenAI', openrouter:'OpenRouter', ollama:'Ollama' };
+    const _niceName = { gemini:'Gemini', groq:'Groq', geminiPaid:'Gemini (paid)', claude:'Claude', openai:'OpenAI', ollama:'Ollama' };
     for (let oi = 0; oi < _order.length; oi++) {
       const name = _order[oi];
       const res = await _try[name]();
@@ -10008,9 +10032,10 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
       } else {
         // Build a compact summary of which providers are configured and what to do
         const tried = [];
-        if (cfg2.groqApiKey) tried.push('Groq');
         if (cfg2.geminiApiKey) tried.push('Gemini');
-        if (cfg2.openRouterApiKey) tried.push('OpenRouter');
+        if (cfg2.geminiApiKey2) tried.push('Gemini #2');
+        if (cfg2.groqApiKey) tried.push('Groq');
+        if (cfg2.geminiApiKeyPaid) tried.push('Gemini (paid)');
         if (cfg2.ollamaEnabled && cfg2.ollamaUrl && cfg2.ollamaModel) tried.push('Ollama');
         const reasons = [];
         const m = e.message || '';
@@ -10451,12 +10476,14 @@ You have tools to:
     const cfg = JSON.parse(localStorage.getItem('settings') || '{}');
     const errors = [];
 
-    if (cfg.geminiApiKey) {
+    // Free Gemini, both keys (doubled daily quota) before dropping to Groq.
+    const freeGeminiKeys = [cfg.geminiApiKey, cfg.geminiApiKey2].filter(Boolean);
+    for (let gi = 0; gi < freeGeminiKeys.length; gi++) {
       try {
-        return await _geminiToolCall({ messages, tools, key: cfg.geminiApiKey, temperature, maxTokens });
+        return await _geminiToolCall({ messages, tools, key: freeGeminiKeys[gi], temperature, maxTokens });
       } catch (e) {
-        errors.push('Gemini: ' + e.message);
-        console.warn('[ToolModel] Gemini failed, trying Groq —', e.message);
+        errors.push('Gemini free#' + (gi+1) + ': ' + e.message);
+        console.warn('[ToolModel] Gemini free#' + (gi+1) + ' failed —', e.message);
       }
     }
 
@@ -10487,7 +10514,17 @@ You have tools to:
       }
     }
 
-    const stem = (cfg.geminiApiKey || groqKey)
+    // ── PAID Gemini — last resort, only after free Gemini ×2 AND Groq failed.
+    if (cfg.geminiApiKeyPaid) {
+      try {
+        return await _geminiToolCall({ messages, tools, key: cfg.geminiApiKeyPaid, temperature, maxTokens });
+      } catch (e) {
+        errors.push('Gemini paid: ' + e.message);
+        console.warn('[ToolModel] paid Gemini failed —', e.message);
+      }
+    }
+
+    const stem = (cfg.geminiApiKey || cfg.geminiApiKey2 || cfg.geminiApiKeyPaid || groqKey)
       ? 'All AI providers failed. '
       : 'No AI key configured. Add a Gemini key in Settings → AI Integration. ';
     throw new Error(stem + errors.join(' | '));
@@ -10990,9 +11027,20 @@ Rules:
     history: [],
     activePath: null,
     busy: false,
+    premiumImages: false,   // when ON, generate_image forces paid Gemini (detailed) images
     _saveTimer: null,
     _editorTimer: null
   };
+
+  // Toggle premium (paid Gemini) image generation for Vibe Coder. Called from the
+  // checkbox in the input bar. Degrades to free Pollinations if no paid key is set.
+  function vbTogglePremiumImages(el) {
+    _vibe.premiumImages = !!(el && el.checked);
+    if (_vibe.premiumImages) {
+      const cfg = JSON.parse(localStorage.getItem('settings') || '{}');
+      if (!cfg.geminiApiKeyPaid) showToast('Add a paid Gemini key in Settings → AI to use detailed images. Falling back to free for now.', 'warning');
+    }
+  }
 
   const VIBE_SYSTEM_PROMPT = `You are Vibe Coder — an AI agent that builds complete, working web apps for Joy Watford's H.E.L.P. Center clients.
 
@@ -11040,11 +11088,27 @@ Be fast. Don't over-explain. Ship working code.`;
     { type:'function', function:{ name:'list_files', description:'List all files currently in the project', parameters:{ type:'object', properties:{} } } },
     { type:'function', function:{ name:'read_file', description:'Read the current contents of a file', parameters:{ type:'object', properties:{ path:{type:'string'} }, required:['path'] } } },
     { type:'function', function:{ name:'set_entry', description:'Set which file is the preview entry point (defaults to index.html)', parameters:{ type:'object', properties:{ path:{type:'string'} }, required:['path'] } } },
-    { type:'function', function:{ name:'generate_image', description:'Generate an image via Pollinations.ai (free, no API key). Returns a URL you can drop directly into an <img src="..."> tag in the HTML you write. Use this whenever the user asks for a hero image, photo, illustration, or background.', parameters:{ type:'object', properties:{ prompt:{type:'string',description:'Vivid description of the image. Include style, mood, lighting.'}, width:{type:'number',description:'Default 1024'}, height:{type:'number',description:'Default 1024'} }, required:['prompt'] } } },
+    { type:'function', function:{ name:'generate_image', description:'Generate an image. Quality "generic" (default) uses free Pollinations.ai and returns a URL. Quality "detailed" uses paid Gemini for photoreal / hero / high-detail images and returns an embeddable data URI — only set "detailed" when the user explicitly wants a hero, photoreal, or premium image, since it costs money. Either result drops straight into an <img src="..."> tag.', parameters:{ type:'object', properties:{ prompt:{type:'string',description:'Vivid description of the image. Include style, mood, lighting.'}, quality:{type:'string',enum:['generic','detailed'],description:'"generic" = free Pollinations (default). "detailed" = paid Gemini, high quality — use only for hero/photoreal images.'}, width:{type:'number',description:'Default 1024'}, height:{type:'number',description:'Default 1024'} }, required:['prompt'] } } },
     { type:'function', function:{ name:'finish', description:'Mark the build complete with a short summary', parameters:{ type:'object', properties:{ summary:{type:'string'} }, required:['summary'] } } }
   ];
 
-  function vbExecuteTool(name, args) {
+  // Paid Gemini image generation (gemini-2.5-flash-image). Returns a base64
+  // data: URI or throws. Caller degrades to Pollinations on any failure.
+  async function vbGeminiImage(prompt, key) {
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    if (!r.ok) { const t = await r.text().catch(() => ''); throw new Error('Gemini image HTTP ' + r.status + ': ' + t.slice(0, 160)); }
+    const data = await r.json();
+    const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
+    const img = parts.find(p => p.inlineData && p.inlineData.data);
+    if (!img) throw new Error('Gemini returned no image data');
+    return 'data:' + (img.inlineData.mimeType || 'image/png') + ';base64,' + img.inlineData.data;
+  }
+
+  async function vbExecuteTool(name, args) {
     args = args || {};
     switch (name) {
       case 'write_file': {
@@ -11078,8 +11142,21 @@ Be fast. Don't over-explain. Ship working code.`;
         if (!args.prompt) return { error: 'prompt required' };
         const w = parseInt(args.width, 10) || 1024;
         const h = parseInt(args.height, 10) || 1024;
+        const imgCfg = JSON.parse(localStorage.getItem('settings') || '{}');
+        // "detailed" = paid Gemini, requested by the AI's quality arg OR forced by
+        // the Vibe Coder premium toggle. Any failure (no paid key, unfunded key,
+        // API error) silently degrades to free Pollinations so it never breaks.
+        const wantsDetailed = args.quality === 'detailed' || _vibe.premiumImages === true;
+        if (wantsDetailed && imgCfg.geminiApiKeyPaid) {
+          try {
+            const dataUri = await vbGeminiImage(args.prompt, imgCfg.geminiApiKeyPaid);
+            return { url: dataUri, prompt: args.prompt, width: w, height: h, quality: 'detailed', note: 'Detailed image generated by paid Gemini, embedded as a data URI. Drop it into <img src="..." alt="...">.' };
+          } catch (e) {
+            console.warn('[vibe] paid Gemini image failed, using free Pollinations —', e.message);
+          }
+        }
         const url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(args.prompt) + '?width=' + w + '&height=' + h + '&nologo=true&seed=' + Math.floor(Math.random() * 100000);
-        return { url, prompt: args.prompt, width: w, height: h, note: 'Embed in HTML with <img src="' + url + '" alt="...">. The image generates on first request and is cached by Pollinations.' };
+        return { url, prompt: args.prompt, width: w, height: h, quality: 'generic', note: 'Embed in HTML with <img src="' + url + '" alt="...">. The image generates on first request and is cached by Pollinations.' };
       }
       case 'finish': return { ok: true, summary: args.summary || '' };
       default: return { error: 'unknown tool: ' + name };
@@ -11359,7 +11436,7 @@ Be fast. Don't over-explain. Ship working code.`;
         try { args = typeof call.function.arguments === 'string' ? JSON.parse(call.function.arguments) : (call.function.arguments || {}); }
         catch (e) { args = {}; }
         vbAppendToolCall(name, args);
-        const result = vbExecuteTool(name, args);
+        const result = await vbExecuteTool(name, args);
         messages.push({ role: 'tool', tool_call_id: call.id, name, content: JSON.stringify(result) });
         if (name === 'finish') {
           didFinish = true;

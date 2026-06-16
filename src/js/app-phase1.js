@@ -7602,7 +7602,20 @@ ${biz} clients are serious, ambitious people building real businesses and real l
     async function _aiStreamGeminiOrNull(messages, onTextChunk, opts) {
       opts = opts || {};
       const cfg = JSON.parse(localStorage.getItem('settings') || '{}');
-      const geminiKey = cfg.geminiApiKey || '';
+      // When an explicit key is passed (callAI uses this to walk free#1 → free#2 →
+      // paid one at a time), try just that key. Otherwise rotate BOTH free keys so
+      // every generator that calls this helper gets the doubled free quota for free.
+      const keys = opts.key ? [opts.key] : [cfg.geminiApiKey, cfg.geminiApiKey2].filter(Boolean);
+      for (const geminiKey of keys) {
+        const out = await _attemptGeminiStream(geminiKey, messages, onTextChunk, opts);
+        if (out) return out;
+      }
+      return null;
+    }
+
+    // Single Gemini streaming attempt with a specific key. Returns text or null.
+    async function _attemptGeminiStream(geminiKey, messages, onTextChunk, opts) {
+      opts = opts || {};
       if (!geminiKey) return null;
       try {
         let systemInstruction = null;
@@ -7766,54 +7779,12 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       if (_fallbackProv === 'claude' && anthropicKey) { const r = await _aiStreamClaude(safeMessages, onChunk, anthropicKey, ai.model); if (r) return r; }
       if (_fallbackProv === 'openai' && openaiKey)    { const r = await _aiStreamOpenAI(safeMessages, onChunk, openaiKey, ai.model); if (r) return r; }
 
-      // ── PRIMARY: Try Gemini 2.5 Flash first (higher daily cap than Groq) ──
-      const geminiKey = cfg.geminiApiKey || '';
-      if (geminiKey) {
-        try {
-          // Convert OpenAI-style messages → Gemini format
-          let systemInstruction = null;
-          const contents = [];
-          for (const m of safeMessages) {
-            if (m.role === 'system') { systemInstruction = { parts: [{ text: m.content }] }; continue; }
-            contents.push({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: String(m.content || '') }] });
-          }
-          const gBody = { contents, generationConfig: { temperature: 0.4, maxOutputTokens: 8192, thinkingConfig: { thinkingBudget: 0 } } };
-          if (systemInstruction) gBody.systemInstruction = systemInstruction;
-          const gResp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': geminiKey },
-            body: JSON.stringify(gBody)
-          });
-          if (gResp.ok) {
-            const reader = gResp.body.getReader(), dec = new TextDecoder();
-            let full = '', sseBuffer = '';
-            const handle = (line) => {
-              if (!line.startsWith('data: ')) return;
-              const d = line.slice(6);
-              try {
-                const ev = JSON.parse(d);
-                const dt = ev.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
-                if (dt) { full += dt; if (onChunk) onChunk(dt, full); }
-              } catch {}
-            };
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) { if (sseBuffer) handle(sseBuffer); break; }
-              sseBuffer += dec.decode(value, { stream: true });
-              const lines = sseBuffer.split('\n');
-              sseBuffer = lines.pop() || '';
-              for (const line of lines) handle(line);
-            }
-            if (full) return cleanGroqResponse(full);
-            // Empty response — fall through to Groq
-            console.warn('[callAI] Gemini returned empty, trying Groq');
-          } else {
-            const errTxt = await gResp.text().catch(() => '');
-            console.warn('[callAI] Gemini HTTP', gResp.status, errTxt.slice(0, 200), '— falling back to Groq');
-          }
-        } catch (e) {
-          console.warn('[callAI] Gemini error, falling back to Groq:', e.message);
-        }
+      // ── PRIMARY: free Gemini ×2 (higher daily cap than Groq). Walk free key #1
+      // then free key #2 — both are exhausted before we drop to Groq. ──
+      for (const gk of [cfg.geminiApiKey, cfg.geminiApiKey2]) {
+        if (!gk) continue;
+        const t = await _aiStreamGeminiOrNull(safeMessages, onChunk, { key: gk });
+        if (t) return cleanGroqResponse(t);
       }
 
       // ── FALLBACK: Call Groq directly when API key is set ──────────────
@@ -7871,6 +7842,13 @@ ${biz} clients are serious, ambitious people building real businesses and real l
           console.warn('Groq direct failed, trying VPS:', e.message);
           // fall through to VPS
         }
+      }
+
+      // ── PAID Gemini fallback — only reached after free Gemini ×2 AND Groq
+      // have failed, so you never pay until every free option is exhausted. ──
+      if (cfg.geminiApiKeyPaid) {
+        const t = await _aiStreamGeminiOrNull(safeMessages, onChunk, { key: cfg.geminiApiKeyPaid });
+        if (t) return cleanGroqResponse(t);
       }
 
       // ── Premium providers as last-resort fallback (key present, not yet tried) ──
@@ -8307,9 +8285,10 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       if(s.groqApiKey) sv('set-groq-key',s.groqApiKey);
       if(s.groqApiKey2) sv('set-groq-key-2',s.groqApiKey2);
       if(s.geminiApiKey) sv('set-gemini-key',s.geminiApiKey);
+      if(s.geminiApiKey2) sv('set-gemini-key-2',s.geminiApiKey2);
+      if(s.geminiApiKeyPaid) sv('set-gemini-key-paid',s.geminiApiKeyPaid);
       if(s.anthropicApiKey) sv('set-claude-key',s.anthropicApiKey);
       if(s.openaiApiKey) sv('set-openai-key',s.openaiApiKey);
-      if(s.openRouterApiKey) sv('set-openrouter-key',s.openRouterApiKey);
       if (typeof _applyTenantAiSettingsCopy === 'function') _applyTenantAiSettingsCopy();
       sv('set-ollama-url',s.ollamaUrl||'');
       sv('set-ollama-model',s.ollamaModel||'');
@@ -8425,12 +8404,14 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       if(gk2!==undefined) s.groqApiKey2=gk2;
       const gmk=document.getElementById('set-gemini-key')?.value.trim();
       if(gmk!==undefined) s.geminiApiKey=gmk;
+      const gmk2=document.getElementById('set-gemini-key-2')?.value.trim();
+      if(gmk2!==undefined) s.geminiApiKey2=gmk2;
+      const gmkp=document.getElementById('set-gemini-key-paid')?.value.trim();
+      if(gmkp!==undefined) s.geminiApiKeyPaid=gmkp;
       const clk=document.getElementById('set-claude-key')?.value.trim();
       if(clk!==undefined) s.anthropicApiKey=clk;
       const opk=document.getElementById('set-openai-key')?.value.trim();
       if(opk!==undefined) s.openaiApiKey=opk;
-      const ork=document.getElementById('set-openrouter-key')?.value.trim();
-      if(ork!==undefined) s.openRouterApiKey=ork;
       s.ollamaUrl=(document.getElementById('set-ollama-url')?.value.trim() || '').replace(/\/$/,'');
       s.ollamaModel=document.getElementById('set-ollama-model')?.value.trim() || '';
       s.ollamaEnabled=!!document.getElementById('set-ollama-enabled')?.checked;

@@ -7454,13 +7454,21 @@ Certifications: Notary Public (2016), QuickBooks ProAdvisor (2017)"></textarea>
 
             <div style="margin-top:18px;padding:14px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px">
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                <span style="font-size:11px;font-weight:700;color:#3B82F6;background:rgba(59,130,246,0.10);padding:2px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase">Free Tier · Backup</span>
-                <strong style="font-size:14px;color:#0F172A">Google Gemini (Optional fallback)</strong>
+                <span style="font-size:11px;font-weight:700;color:#3B82F6;background:rgba(59,130,246,0.10);padding:2px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase">Primary · Free</span>
+                <strong style="font-size:14px;color:#0F172A">Google Gemini</strong>
               </div>
-              <p style="font-size:12.5px;color:var(--gray-600);margin:0 0 10px;line-height:1.6">Free key at <a href="https://aistudio.google.com" target="_blank" style="color:var(--brand-primary)">aistudio.google.com</a> — gives ~1M tokens/day free. Used as a second-tier fallback when Groq is rate-limited.</p>
-              <div class="form-group" style="margin:0">
-                <label class="form-label">Gemini API Key <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — leave blank to skip)</span></label>
+              <p style="font-size:12.5px;color:var(--gray-600);margin:0 0 10px;line-height:1.6">Free keys at <a href="https://aistudio.google.com" target="_blank" style="color:var(--brand-primary)">aistudio.google.com</a> — ~1M tokens/day each. The app tries your free keys first; when both are exhausted it falls to Groq, then to your <strong>paid</strong> Gemini key (billing enabled). Add a second free key from a different Google account to double your free quota.</p>
+              <div class="form-group" style="margin:0 0 8px">
+                <label class="form-label">Gemini API Key — Free #1 <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — AIza...)</span></label>
                 <input type="password" id="set-gemini-key" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="AIza...">
+              </div>
+              <div class="form-group" style="margin:0 0 8px">
+                <label class="form-label">Gemini API Key — Free #2 <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — second free account, doubles daily quota)</span></label>
+                <input type="password" id="set-gemini-key-2" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="AIza... (optional)">
+              </div>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Gemini API Key — Paid <span style="font-size:11px;color:var(--gray-400);font-weight:400">(billing enabled — fallback + premium images &amp; voice)</span></label>
+                <input type="password" id="set-gemini-key-paid" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="AIza... (paid key)">
               </div>
             </div>
 
@@ -7485,18 +7493,6 @@ Certifications: Notary Public (2016), QuickBooks ProAdvisor (2017)"></textarea>
               <div class="form-group" style="margin:0">
                 <label class="form-label">OpenAI API Key <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — sk-...)</span></label>
                 <input type="password" id="set-openai-key" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="sk-...">
-              </div>
-            </div>
-
-            <div style="margin-top:14px;padding:14px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                <span style="font-size:11px;font-weight:700;color:#8B5CF6;background:rgba(139,92,246,0.10);padding:2px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase">Free Tier · Backup</span>
-                <strong style="font-size:14px;color:#0F172A">OpenRouter Free Models (Optional fallback)</strong>
-              </div>
-              <p style="font-size:12.5px;color:var(--gray-600);margin:0 0 10px;line-height:1.6">Free key at <a href="https://openrouter.ai" target="_blank" style="color:var(--brand-primary)">openrouter.ai</a> — gives access to free-tier Llama 3.3 70B and others. Third-tier fallback after Groq and Gemini.</p>
-              <div class="form-group" style="margin:0">
-                <label class="form-label">OpenRouter API Key <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — leave blank to skip)</span></label>
-                <input type="password" id="set-openrouter-key" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="sk-or-v1-...">
               </div>
             </div>
 
@@ -16812,7 +16808,20 @@ ${biz} clients are serious, ambitious people building real businesses and real l
     async function _aiStreamGeminiOrNull(messages, onTextChunk, opts) {
       opts = opts || {};
       const cfg = JSON.parse(localStorage.getItem('settings') || '{}');
-      const geminiKey = cfg.geminiApiKey || '';
+      // When an explicit key is passed (callAI uses this to walk free#1 → free#2 →
+      // paid one at a time), try just that key. Otherwise rotate BOTH free keys so
+      // every generator that calls this helper gets the doubled free quota for free.
+      const keys = opts.key ? [opts.key] : [cfg.geminiApiKey, cfg.geminiApiKey2].filter(Boolean);
+      for (const geminiKey of keys) {
+        const out = await _attemptGeminiStream(geminiKey, messages, onTextChunk, opts);
+        if (out) return out;
+      }
+      return null;
+    }
+
+    // Single Gemini streaming attempt with a specific key. Returns text or null.
+    async function _attemptGeminiStream(geminiKey, messages, onTextChunk, opts) {
+      opts = opts || {};
       if (!geminiKey) return null;
       try {
         let systemInstruction = null;
@@ -16976,54 +16985,12 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       if (_fallbackProv === 'claude' && anthropicKey) { const r = await _aiStreamClaude(safeMessages, onChunk, anthropicKey, ai.model); if (r) return r; }
       if (_fallbackProv === 'openai' && openaiKey)    { const r = await _aiStreamOpenAI(safeMessages, onChunk, openaiKey, ai.model); if (r) return r; }
 
-      // ── PRIMARY: Try Gemini 2.5 Flash first (higher daily cap than Groq) ──
-      const geminiKey = cfg.geminiApiKey || '';
-      if (geminiKey) {
-        try {
-          // Convert OpenAI-style messages → Gemini format
-          let systemInstruction = null;
-          const contents = [];
-          for (const m of safeMessages) {
-            if (m.role === 'system') { systemInstruction = { parts: [{ text: m.content }] }; continue; }
-            contents.push({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: String(m.content || '') }] });
-          }
-          const gBody = { contents, generationConfig: { temperature: 0.4, maxOutputTokens: 8192, thinkingConfig: { thinkingBudget: 0 } } };
-          if (systemInstruction) gBody.systemInstruction = systemInstruction;
-          const gResp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': geminiKey },
-            body: JSON.stringify(gBody)
-          });
-          if (gResp.ok) {
-            const reader = gResp.body.getReader(), dec = new TextDecoder();
-            let full = '', sseBuffer = '';
-            const handle = (line) => {
-              if (!line.startsWith('data: ')) return;
-              const d = line.slice(6);
-              try {
-                const ev = JSON.parse(d);
-                const dt = ev.candidates?.[0]?.content?.parts?.map(p => p.text || '').join('') || '';
-                if (dt) { full += dt; if (onChunk) onChunk(dt, full); }
-              } catch {}
-            };
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) { if (sseBuffer) handle(sseBuffer); break; }
-              sseBuffer += dec.decode(value, { stream: true });
-              const lines = sseBuffer.split('\n');
-              sseBuffer = lines.pop() || '';
-              for (const line of lines) handle(line);
-            }
-            if (full) return cleanGroqResponse(full);
-            // Empty response — fall through to Groq
-            console.warn('[callAI] Gemini returned empty, trying Groq');
-          } else {
-            const errTxt = await gResp.text().catch(() => '');
-            console.warn('[callAI] Gemini HTTP', gResp.status, errTxt.slice(0, 200), '— falling back to Groq');
-          }
-        } catch (e) {
-          console.warn('[callAI] Gemini error, falling back to Groq:', e.message);
-        }
+      // ── PRIMARY: free Gemini ×2 (higher daily cap than Groq). Walk free key #1
+      // then free key #2 — both are exhausted before we drop to Groq. ──
+      for (const gk of [cfg.geminiApiKey, cfg.geminiApiKey2]) {
+        if (!gk) continue;
+        const t = await _aiStreamGeminiOrNull(safeMessages, onChunk, { key: gk });
+        if (t) return cleanGroqResponse(t);
       }
 
       // ── FALLBACK: Call Groq directly when API key is set ──────────────
@@ -17081,6 +17048,13 @@ ${biz} clients are serious, ambitious people building real businesses and real l
           console.warn('Groq direct failed, trying VPS:', e.message);
           // fall through to VPS
         }
+      }
+
+      // ── PAID Gemini fallback — only reached after free Gemini ×2 AND Groq
+      // have failed, so you never pay until every free option is exhausted. ──
+      if (cfg.geminiApiKeyPaid) {
+        const t = await _aiStreamGeminiOrNull(safeMessages, onChunk, { key: cfg.geminiApiKeyPaid });
+        if (t) return cleanGroqResponse(t);
       }
 
       // ── Premium providers as last-resort fallback (key present, not yet tried) ──
@@ -17517,9 +17491,10 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       if(s.groqApiKey) sv('set-groq-key',s.groqApiKey);
       if(s.groqApiKey2) sv('set-groq-key-2',s.groqApiKey2);
       if(s.geminiApiKey) sv('set-gemini-key',s.geminiApiKey);
+      if(s.geminiApiKey2) sv('set-gemini-key-2',s.geminiApiKey2);
+      if(s.geminiApiKeyPaid) sv('set-gemini-key-paid',s.geminiApiKeyPaid);
       if(s.anthropicApiKey) sv('set-claude-key',s.anthropicApiKey);
       if(s.openaiApiKey) sv('set-openai-key',s.openaiApiKey);
-      if(s.openRouterApiKey) sv('set-openrouter-key',s.openRouterApiKey);
       if (typeof _applyTenantAiSettingsCopy === 'function') _applyTenantAiSettingsCopy();
       sv('set-ollama-url',s.ollamaUrl||'');
       sv('set-ollama-model',s.ollamaModel||'');
@@ -17635,12 +17610,14 @@ ${biz} clients are serious, ambitious people building real businesses and real l
       if(gk2!==undefined) s.groqApiKey2=gk2;
       const gmk=document.getElementById('set-gemini-key')?.value.trim();
       if(gmk!==undefined) s.geminiApiKey=gmk;
+      const gmk2=document.getElementById('set-gemini-key-2')?.value.trim();
+      if(gmk2!==undefined) s.geminiApiKey2=gmk2;
+      const gmkp=document.getElementById('set-gemini-key-paid')?.value.trim();
+      if(gmkp!==undefined) s.geminiApiKeyPaid=gmkp;
       const clk=document.getElementById('set-claude-key')?.value.trim();
       if(clk!==undefined) s.anthropicApiKey=clk;
       const opk=document.getElementById('set-openai-key')?.value.trim();
       if(opk!==undefined) s.openaiApiKey=opk;
-      const ork=document.getElementById('set-openrouter-key')?.value.trim();
-      if(ork!==undefined) s.openRouterApiKey=ork;
       s.ollamaUrl=(document.getElementById('set-ollama-url')?.value.trim() || '').replace(/\/$/,'');
       s.ollamaModel=document.getElementById('set-ollama-model')?.value.trim() || '';
       s.ollamaEnabled=!!document.getElementById('set-ollama-enabled')?.checked;
@@ -26115,13 +26092,14 @@ async function _groqWithKeyFallback(messages, opts) {
   opts = opts || {};
   const cfg = JSON.parse(localStorage.getItem('settings') || '{}');
 
-  // ── Try Gemini first if a key is configured (primary provider).
-  if (cfg.geminiApiKey) {
+  // ── Try free Gemini first — both keys (doubled daily quota) before Groq.
+  const freeGeminiKeys = [cfg.geminiApiKey, cfg.geminiApiKey2].filter(Boolean);
+  for (let gi = 0; gi < freeGeminiKeys.length; gi++) {
     try {
-      const text = await _attemptGeminiNonStreaming(messages, cfg.geminiApiKey, opts);
-      return { content: text, modelUsed: 'gemini-2.5-flash', keyUsed: 'gemini' };
+      const text = await _attemptGeminiNonStreaming(messages, freeGeminiKeys[gi], opts);
+      return { content: text, modelUsed: 'gemini-2.5-flash', keyUsed: gi === 0 ? 'gemini' : 'gemini2' };
     } catch (e) {
-      console.warn('[_groqWithKeyFallback] Gemini failed, falling back to Groq:', e.message);
+      console.warn('[_groqWithKeyFallback] Gemini free#' + (gi+1) + ' failed:', e.message);
     }
   }
 
@@ -26165,6 +26143,18 @@ async function _groqWithKeyFallback(messages, opts) {
       } catch (e) { lastError = e.message; continue; }
     }
   }
+
+  // ── PAID Gemini — last resort, only after free Gemini ×2 AND Groq failed.
+  if (cfg.geminiApiKeyPaid) {
+    try {
+      const text = await _attemptGeminiNonStreaming(messages, cfg.geminiApiKeyPaid, opts);
+      return { content: text, modelUsed: 'gemini-2.5-flash (paid)', keyUsed: 'geminiPaid' };
+    } catch (e) {
+      lastError = 'Gemini paid: ' + e.message;
+      console.warn('[_groqWithKeyFallback] paid Gemini failed:', e.message);
+    }
+  }
+
   return { error: lastError || 'all keys/models exhausted' };
 }
 
@@ -30065,9 +30055,22 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
     // rest of the configured providers as automatic safety nets.
     const _try = {
       gemini: async () => {
-        if (!cfg.geminiApiKey) return null;
-        try { const text = await _attemptGemini({ messages, key: cfg.geminiApiKey, temperature, maxTokens, onChunk }); return { text, providerUsed:'gemini', modelUsed:'gemini-2.5-flash' }; }
-        catch (e) { lastErr = 'Gemini: ' + e.message; console.warn('[askAI] Gemini → ' + e.message); return null; }
+        // Free Gemini, both keys: walk free #1 then free #2 (doubled daily quota)
+        // before this step gives up and the chain drops to Groq.
+        const freeKeys = [cfg.geminiApiKey, cfg.geminiApiKey2].filter(Boolean);
+        if (!freeKeys.length) return null;
+        for (let ki = 0; ki < freeKeys.length; ki++) {
+          try { const text = await _attemptGemini({ messages, key: freeKeys[ki], temperature, maxTokens, onChunk }); return { text, providerUsed:'gemini', modelUsed:'gemini-2.5-flash' + (ki ? ' (free #2)' : '') }; }
+          catch (e) { lastErr = 'Gemini: ' + e.message; console.warn('[askAI] Gemini free#' + (ki+1) + ' → ' + e.message); }
+        }
+        return null;
+      },
+      geminiPaid: async () => {
+        // Paid (billing-enabled) Gemini — sits after Groq, so it's only ever
+        // reached once both free Gemini keys AND Groq have failed.
+        if (!cfg.geminiApiKeyPaid) return null;
+        try { const text = await _attemptGemini({ messages, key: cfg.geminiApiKeyPaid, temperature, maxTokens, onChunk }); return { text, providerUsed:'geminiPaid', modelUsed:'gemini-2.5-flash (paid)' }; }
+        catch (e) { lastErr = 'Gemini paid: ' + e.message; console.warn('[askAI] Gemini paid → ' + e.message); return null; }
       },
       groq: async () => {
         const groqKey = cfg.groqApiKey || '';
@@ -30102,11 +30105,6 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
         try { const text = await _aiStreamOpenAI(messages, onChunk, cfg.openaiApiKey, cfg.aiModel); return (text && text.trim()) ? { text, providerUsed:'openai', modelUsed:'openai' } : null; }
         catch (e) { lastErr = (lastErr ? lastErr + ' · ' : '') + 'OpenAI: ' + e.message; return null; }
       },
-      openrouter: async () => {
-        if (!cfg.openRouterApiKey) return null;
-        try { const text = await _attemptOpenRouter({ messages, key: cfg.openRouterApiKey, temperature, maxTokens, onChunk }); return { text, providerUsed:'openrouter', modelUsed:'llama-3.3-70b:free' }; }
-        catch (e) { lastErr = (lastErr ? lastErr + ' · OpenRouter: ' : 'OpenRouter: ') + e.message; console.warn('[askAI] OpenRouter → ' + e.message); return null; }
-      },
       ollama: async () => {
         if (!_ollamaConfigured()) return null;
         try { const text = await callOllama(messages, { temperature, task: 'general' }); if (onChunk) onChunk(text, text); return { text, providerUsed:'ollama', modelUsed: cfg.ollamaModel || 'ollama' }; }
@@ -30119,9 +30117,12 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
     const _order = [];
     const _add = p => { if (p && _try[p] && _order.indexOf(p) === -1) _order.push(p); };
     _add(cfg.aiProvider || 'gemini'); _add(cfg.aiFallbackProvider);
-    ['gemini','groq','claude','openai','openrouter','ollama'].forEach(_add);
+    // Free-first order: free Gemini (×2 keys) → Groq → PAID Gemini → Ollama.
+    // OpenRouter dropped (redundant with Groq's Llama 70B). Claude/OpenAI remain
+    // optional deeper nets only if the user has set those keys.
+    ['gemini','groq','geminiPaid','claude','openai','ollama'].forEach(_add);
 
-    const _niceName = { gemini:'Gemini', groq:'Groq', claude:'Claude', openai:'OpenAI', openrouter:'OpenRouter', ollama:'Ollama' };
+    const _niceName = { gemini:'Gemini', groq:'Groq', geminiPaid:'Gemini (paid)', claude:'Claude', openai:'OpenAI', ollama:'Ollama' };
     for (let oi = 0; oi < _order.length; oi++) {
       const name = _order[oi];
       const res = await _try[name]();
@@ -30238,9 +30239,10 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
       } else {
         // Build a compact summary of which providers are configured and what to do
         const tried = [];
-        if (cfg2.groqApiKey) tried.push('Groq');
         if (cfg2.geminiApiKey) tried.push('Gemini');
-        if (cfg2.openRouterApiKey) tried.push('OpenRouter');
+        if (cfg2.geminiApiKey2) tried.push('Gemini #2');
+        if (cfg2.groqApiKey) tried.push('Groq');
+        if (cfg2.geminiApiKeyPaid) tried.push('Gemini (paid)');
         if (cfg2.ollamaEnabled && cfg2.ollamaUrl && cfg2.ollamaModel) tried.push('Ollama');
         const reasons = [];
         const m = e.message || '';
@@ -30681,12 +30683,14 @@ You have tools to:
     const cfg = JSON.parse(localStorage.getItem('settings') || '{}');
     const errors = [];
 
-    if (cfg.geminiApiKey) {
+    // Free Gemini, both keys (doubled daily quota) before dropping to Groq.
+    const freeGeminiKeys = [cfg.geminiApiKey, cfg.geminiApiKey2].filter(Boolean);
+    for (let gi = 0; gi < freeGeminiKeys.length; gi++) {
       try {
-        return await _geminiToolCall({ messages, tools, key: cfg.geminiApiKey, temperature, maxTokens });
+        return await _geminiToolCall({ messages, tools, key: freeGeminiKeys[gi], temperature, maxTokens });
       } catch (e) {
-        errors.push('Gemini: ' + e.message);
-        console.warn('[ToolModel] Gemini failed, trying Groq —', e.message);
+        errors.push('Gemini free#' + (gi+1) + ': ' + e.message);
+        console.warn('[ToolModel] Gemini free#' + (gi+1) + ' failed —', e.message);
       }
     }
 
@@ -30717,7 +30721,17 @@ You have tools to:
       }
     }
 
-    const stem = (cfg.geminiApiKey || groqKey)
+    // ── PAID Gemini — last resort, only after free Gemini ×2 AND Groq failed.
+    if (cfg.geminiApiKeyPaid) {
+      try {
+        return await _geminiToolCall({ messages, tools, key: cfg.geminiApiKeyPaid, temperature, maxTokens });
+      } catch (e) {
+        errors.push('Gemini paid: ' + e.message);
+        console.warn('[ToolModel] paid Gemini failed —', e.message);
+      }
+    }
+
+    const stem = (cfg.geminiApiKey || cfg.geminiApiKey2 || cfg.geminiApiKeyPaid || groqKey)
       ? 'All AI providers failed. '
       : 'No AI key configured. Add a Gemini key in Settings → AI Integration. ';
     throw new Error(stem + errors.join(' | '));
@@ -31220,9 +31234,20 @@ Rules:
     history: [],
     activePath: null,
     busy: false,
+    premiumImages: false,   // when ON, generate_image forces paid Gemini (detailed) images
     _saveTimer: null,
     _editorTimer: null
   };
+
+  // Toggle premium (paid Gemini) image generation for Vibe Coder. Called from the
+  // checkbox in the input bar. Degrades to free Pollinations if no paid key is set.
+  function vbTogglePremiumImages(el) {
+    _vibe.premiumImages = !!(el && el.checked);
+    if (_vibe.premiumImages) {
+      const cfg = JSON.parse(localStorage.getItem('settings') || '{}');
+      if (!cfg.geminiApiKeyPaid) showToast('Add a paid Gemini key in Settings → AI to use detailed images. Falling back to free for now.', 'warning');
+    }
+  }
 
   const VIBE_SYSTEM_PROMPT = `You are Vibe Coder — an AI agent that builds complete, working web apps for Joy Watford's H.E.L.P. Center clients.
 
@@ -31270,11 +31295,27 @@ Be fast. Don't over-explain. Ship working code.`;
     { type:'function', function:{ name:'list_files', description:'List all files currently in the project', parameters:{ type:'object', properties:{} } } },
     { type:'function', function:{ name:'read_file', description:'Read the current contents of a file', parameters:{ type:'object', properties:{ path:{type:'string'} }, required:['path'] } } },
     { type:'function', function:{ name:'set_entry', description:'Set which file is the preview entry point (defaults to index.html)', parameters:{ type:'object', properties:{ path:{type:'string'} }, required:['path'] } } },
-    { type:'function', function:{ name:'generate_image', description:'Generate an image via Pollinations.ai (free, no API key). Returns a URL you can drop directly into an <img src="..."> tag in the HTML you write. Use this whenever the user asks for a hero image, photo, illustration, or background.', parameters:{ type:'object', properties:{ prompt:{type:'string',description:'Vivid description of the image. Include style, mood, lighting.'}, width:{type:'number',description:'Default 1024'}, height:{type:'number',description:'Default 1024'} }, required:['prompt'] } } },
+    { type:'function', function:{ name:'generate_image', description:'Generate an image. Quality "generic" (default) uses free Pollinations.ai and returns a URL. Quality "detailed" uses paid Gemini for photoreal / hero / high-detail images and returns an embeddable data URI — only set "detailed" when the user explicitly wants a hero, photoreal, or premium image, since it costs money. Either result drops straight into an <img src="..."> tag.', parameters:{ type:'object', properties:{ prompt:{type:'string',description:'Vivid description of the image. Include style, mood, lighting.'}, quality:{type:'string',enum:['generic','detailed'],description:'"generic" = free Pollinations (default). "detailed" = paid Gemini, high quality — use only for hero/photoreal images.'}, width:{type:'number',description:'Default 1024'}, height:{type:'number',description:'Default 1024'} }, required:['prompt'] } } },
     { type:'function', function:{ name:'finish', description:'Mark the build complete with a short summary', parameters:{ type:'object', properties:{ summary:{type:'string'} }, required:['summary'] } } }
   ];
 
-  function vbExecuteTool(name, args) {
+  // Paid Gemini image generation (gemini-2.5-flash-image). Returns a base64
+  // data: URI or throws. Caller degrades to Pollinations on any failure.
+  async function vbGeminiImage(prompt, key) {
+    const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
+    if (!r.ok) { const t = await r.text().catch(() => ''); throw new Error('Gemini image HTTP ' + r.status + ': ' + t.slice(0, 160)); }
+    const data = await r.json();
+    const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
+    const img = parts.find(p => p.inlineData && p.inlineData.data);
+    if (!img) throw new Error('Gemini returned no image data');
+    return 'data:' + (img.inlineData.mimeType || 'image/png') + ';base64,' + img.inlineData.data;
+  }
+
+  async function vbExecuteTool(name, args) {
     args = args || {};
     switch (name) {
       case 'write_file': {
@@ -31308,8 +31349,21 @@ Be fast. Don't over-explain. Ship working code.`;
         if (!args.prompt) return { error: 'prompt required' };
         const w = parseInt(args.width, 10) || 1024;
         const h = parseInt(args.height, 10) || 1024;
+        const imgCfg = JSON.parse(localStorage.getItem('settings') || '{}');
+        // "detailed" = paid Gemini, requested by the AI's quality arg OR forced by
+        // the Vibe Coder premium toggle. Any failure (no paid key, unfunded key,
+        // API error) silently degrades to free Pollinations so it never breaks.
+        const wantsDetailed = args.quality === 'detailed' || _vibe.premiumImages === true;
+        if (wantsDetailed && imgCfg.geminiApiKeyPaid) {
+          try {
+            const dataUri = await vbGeminiImage(args.prompt, imgCfg.geminiApiKeyPaid);
+            return { url: dataUri, prompt: args.prompt, width: w, height: h, quality: 'detailed', note: 'Detailed image generated by paid Gemini, embedded as a data URI. Drop it into <img src="..." alt="...">.' };
+          } catch (e) {
+            console.warn('[vibe] paid Gemini image failed, using free Pollinations —', e.message);
+          }
+        }
         const url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(args.prompt) + '?width=' + w + '&height=' + h + '&nologo=true&seed=' + Math.floor(Math.random() * 100000);
-        return { url, prompt: args.prompt, width: w, height: h, note: 'Embed in HTML with <img src="' + url + '" alt="...">. The image generates on first request and is cached by Pollinations.' };
+        return { url, prompt: args.prompt, width: w, height: h, quality: 'generic', note: 'Embed in HTML with <img src="' + url + '" alt="...">. The image generates on first request and is cached by Pollinations.' };
       }
       case 'finish': return { ok: true, summary: args.summary || '' };
       default: return { error: 'unknown tool: ' + name };
@@ -31589,7 +31643,7 @@ Be fast. Don't over-explain. Ship working code.`;
         try { args = typeof call.function.arguments === 'string' ? JSON.parse(call.function.arguments) : (call.function.arguments || {}); }
         catch (e) { args = {}; }
         vbAppendToolCall(name, args);
-        const result = vbExecuteTool(name, args);
+        const result = await vbExecuteTool(name, args);
         messages.push({ role: 'tool', tool_call_id: call.id, name, content: JSON.stringify(result) });
         if (name === 'finish') {
           didFinish = true;

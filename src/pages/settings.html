@@ -86,13 +86,21 @@
 
             <div style="margin-top:18px;padding:14px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px">
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                <span style="font-size:11px;font-weight:700;color:#3B82F6;background:rgba(59,130,246,0.10);padding:2px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase">Free Tier · Backup</span>
-                <strong style="font-size:14px;color:#0F172A">Google Gemini (Optional fallback)</strong>
+                <span style="font-size:11px;font-weight:700;color:#3B82F6;background:rgba(59,130,246,0.10);padding:2px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase">Primary · Free</span>
+                <strong style="font-size:14px;color:#0F172A">Google Gemini</strong>
               </div>
-              <p style="font-size:12.5px;color:var(--gray-600);margin:0 0 10px;line-height:1.6">Free key at <a href="https://aistudio.google.com" target="_blank" style="color:var(--brand-primary)">aistudio.google.com</a> — gives ~1M tokens/day free. Used as a second-tier fallback when Groq is rate-limited.</p>
-              <div class="form-group" style="margin:0">
-                <label class="form-label">Gemini API Key <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — leave blank to skip)</span></label>
+              <p style="font-size:12.5px;color:var(--gray-600);margin:0 0 10px;line-height:1.6">Free keys at <a href="https://aistudio.google.com" target="_blank" style="color:var(--brand-primary)">aistudio.google.com</a> — ~1M tokens/day each. The app tries your free keys first; when both are exhausted it falls to Groq, then to your <strong>paid</strong> Gemini key (billing enabled). Add a second free key from a different Google account to double your free quota.</p>
+              <div class="form-group" style="margin:0 0 8px">
+                <label class="form-label">Gemini API Key — Free #1 <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — AIza...)</span></label>
                 <input type="password" id="set-gemini-key" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="AIza...">
+              </div>
+              <div class="form-group" style="margin:0 0 8px">
+                <label class="form-label">Gemini API Key — Free #2 <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — second free account, doubles daily quota)</span></label>
+                <input type="password" id="set-gemini-key-2" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="AIza... (optional)">
+              </div>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Gemini API Key — Paid <span style="font-size:11px;color:var(--gray-400);font-weight:400">(billing enabled — fallback + premium images &amp; voice)</span></label>
+                <input type="password" id="set-gemini-key-paid" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="AIza... (paid key)">
               </div>
             </div>
 
@@ -117,18 +125,6 @@
               <div class="form-group" style="margin:0">
                 <label class="form-label">OpenAI API Key <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — sk-...)</span></label>
                 <input type="password" id="set-openai-key" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="sk-...">
-              </div>
-            </div>
-
-            <div style="margin-top:14px;padding:14px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px">
-              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                <span style="font-size:11px;font-weight:700;color:#8B5CF6;background:rgba(139,92,246,0.10);padding:2px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase">Free Tier · Backup</span>
-                <strong style="font-size:14px;color:#0F172A">OpenRouter Free Models (Optional fallback)</strong>
-              </div>
-              <p style="font-size:12.5px;color:var(--gray-600);margin:0 0 10px;line-height:1.6">Free key at <a href="https://openrouter.ai" target="_blank" style="color:var(--brand-primary)">openrouter.ai</a> — gives access to free-tier Llama 3.3 70B and others. Third-tier fallback after Groq and Gemini.</p>
-              <div class="form-group" style="margin:0">
-                <label class="form-label">OpenRouter API Key <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — leave blank to skip)</span></label>
-                <input type="password" id="set-openrouter-key" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="sk-or-v1-...">
               </div>
             </div>
 

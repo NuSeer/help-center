@@ -5938,7 +5938,8 @@ async function _groqWithKeyFallback(messages, opts) {
   }
 
   // ── PAID Gemini — last resort, only after free Gemini ×2 AND Groq failed.
-  if (cfg.geminiApiKeyPaid) {
+  // Gated: owner always, tenants only if on the package.
+  if (cfg.geminiApiKeyPaid && (typeof _paidAiAllowed !== 'function' || _paidAiAllowed())) {
     try {
       const text = await _attemptGeminiNonStreaming(messages, cfg.geminiApiKeyPaid, opts);
       return { content: text, modelUsed: 'gemini-2.5-flash (paid)', keyUsed: 'geminiPaid' };
@@ -9910,17 +9911,22 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
     const _order = [];
     const _add = p => { if (p && _try[p] && _order.indexOf(p) === -1) _order.push(p); };
     _add(cfg.aiProvider || 'gemini'); _add(cfg.aiFallbackProvider);
-    // Free-first order: free Gemini (×2 keys) → Groq → PAID Gemini → Ollama.
-    // OpenRouter dropped (redundant with Groq's Llama 70B). Claude/OpenAI remain
-    // optional deeper nets only if the user has set those keys.
-    ['gemini','groq','geminiPaid','claude','openai','ollama'].forEach(_add);
+    // Free-first order: free Gemini (×2 keys) → Groq → PAID OpenAI → Ollama.
+    // OpenAI is the paid tier (reusing the owner's existing OpenAI billing);
+    // paid Gemini / Claude remain optional deeper nets if those keys are set.
+    ['gemini','groq','openai','geminiPaid','claude','ollama'].forEach(_add);
+
+    // Block PAID providers for non-package tenants (owner always allowed).
+    const _PAID = new Set(['openai','geminiPaid','claude']);
+    const _paidOK = (typeof _paidAiAllowed === 'function') ? _paidAiAllowed() : true;
+    const _orderUse = _order.filter(p => _paidOK || !_PAID.has(p));
 
     const _niceName = { gemini:'Gemini', groq:'Groq', geminiPaid:'Gemini (paid)', claude:'Claude', openai:'OpenAI', ollama:'Ollama' };
-    for (let oi = 0; oi < _order.length; oi++) {
-      const name = _order[oi];
+    for (let oi = 0; oi < _orderUse.length; oi++) {
+      const name = _orderUse[oi];
       const res = await _try[name]();
       if (res && res.text && res.text.trim()) {
-        if (oi > 0) _aiBanner(msgsEl, _BANNER_AMBER, '⚡ ' + _niceName[_order[0]] + ' was unavailable — used <strong>' + _niceName[name] + '</strong> for this reply only.');
+        if (oi > 0) _aiBanner(msgsEl, _BANNER_AMBER, '⚡ ' + _niceName[_orderUse[0]] + ' was unavailable — used <strong>' + _niceName[name] + '</strong> for this reply only.');
         return res;
       }
     }
@@ -10515,7 +10521,8 @@ You have tools to:
     }
 
     // ── PAID Gemini — last resort, only after free Gemini ×2 AND Groq failed.
-    if (cfg.geminiApiKeyPaid) {
+    // Gated: owner always, tenants only if on the package.
+    if (cfg.geminiApiKeyPaid && (typeof _paidAiAllowed !== 'function' || _paidAiAllowed())) {
       try {
         return await _geminiToolCall({ messages, tools, key: cfg.geminiApiKeyPaid, temperature, maxTokens });
       } catch (e) {
@@ -11038,7 +11045,7 @@ Rules:
     _vibe.premiumImages = !!(el && el.checked);
     if (_vibe.premiumImages) {
       const cfg = JSON.parse(localStorage.getItem('settings') || '{}');
-      if (!cfg.geminiApiKeyPaid) showToast('Add a paid Gemini key in Settings → AI to use detailed images. Falling back to free for now.', 'warning');
+      if (!cfg.openaiApiKey) showToast('Add your OpenAI key in Settings → AI to use detailed images. Falling back to free for now.', 'warning');
     }
   }
 
@@ -11108,6 +11115,22 @@ Be fast. Don't over-explain. Ship working code.`;
     return 'data:' + (img.inlineData.mimeType || 'image/png') + ';base64,' + img.inlineData.data;
   }
 
+  // Paid OpenAI image generation (DALL·E 3). Returns a base64 data: URI or throws.
+  // Caller degrades to free Pollinations on any failure. Reuses the owner's
+  // existing OpenAI billing (settings.openaiApiKey).
+  async function vbOpenAIImage(prompt, key) {
+    const r = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({ model: 'dall-e-3', prompt: String(prompt).slice(0, 3900), size: '1024x1024', n: 1, response_format: 'b64_json' })
+    });
+    if (!r.ok) { const t = await r.text().catch(() => ''); throw new Error('OpenAI image HTTP ' + r.status + ': ' + t.slice(0, 160)); }
+    const data = await r.json();
+    const b64 = data && data.data && data.data[0] && data.data[0].b64_json;
+    if (!b64) throw new Error('OpenAI returned no image data');
+    return 'data:image/png;base64,' + b64;
+  }
+
   async function vbExecuteTool(name, args) {
     args = args || {};
     switch (name) {
@@ -11143,16 +11166,18 @@ Be fast. Don't over-explain. Ship working code.`;
         const w = parseInt(args.width, 10) || 1024;
         const h = parseInt(args.height, 10) || 1024;
         const imgCfg = JSON.parse(localStorage.getItem('settings') || '{}');
-        // "detailed" = paid Gemini, requested by the AI's quality arg OR forced by
-        // the Vibe Coder premium toggle. Any failure (no paid key, unfunded key,
+        // "detailed" = paid OpenAI (DALL·E 3), requested by the AI's quality arg OR
+        // forced by the Vibe Coder premium toggle. Gated so a non-package tenant
+        // can't use the owner's paid image billing. Any failure (no key, billing,
         // API error) silently degrades to free Pollinations so it never breaks.
         const wantsDetailed = args.quality === 'detailed' || _vibe.premiumImages === true;
-        if (wantsDetailed && imgCfg.geminiApiKeyPaid) {
+        const paidImgOK = (typeof _paidAiAllowed === 'function') ? _paidAiAllowed() : true;
+        if (wantsDetailed && paidImgOK && imgCfg.openaiApiKey) {
           try {
-            const dataUri = await vbGeminiImage(args.prompt, imgCfg.geminiApiKeyPaid);
-            return { url: dataUri, prompt: args.prompt, width: w, height: h, quality: 'detailed', note: 'Detailed image generated by paid Gemini, embedded as a data URI. Drop it into <img src="..." alt="...">.' };
+            const dataUri = await vbOpenAIImage(args.prompt, imgCfg.openaiApiKey);
+            return { url: dataUri, prompt: args.prompt, width: w, height: h, quality: 'detailed', note: 'Detailed image generated by paid OpenAI (DALL·E 3), embedded as a data URI. Drop it into <img src="..." alt="...">.' };
           } catch (e) {
-            console.warn('[vibe] paid Gemini image failed, using free Pollinations —', e.message);
+            console.warn('[vibe] paid OpenAI image failed, using free Pollinations —', e.message);
           }
         }
         const url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(args.prompt) + '?width=' + w + '&height=' + h + '&nologo=true&seed=' + Math.floor(Math.random() * 100000);

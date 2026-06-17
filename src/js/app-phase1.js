@@ -15,6 +15,17 @@
     })();
     const TENANT_PREFIX = TENANT ? (TENANT + ':') : '';
     const _UNPREFIXED_RE = /^(portal:|cal:|share:|booking:|admin:)/;
+
+    // Gate for PAID AI providers (paid OpenAI / paid Gemini / Claude). The owner
+    // always has access. A tenant (shared copy) only gets the paid tier if they
+    // are part of the package — settings.aiPackage === true. This blocks the
+    // owner's paid AI from being shared via a tenant copy unless explicitly sold.
+    // Free tiers (free Gemini, Groq, Ollama) stay available to everyone.
+    function _paidAiAllowed() {
+      if (!(typeof TENANT !== 'undefined' && TENANT)) return true; // owner
+      try { const s = JSON.parse(localStorage.getItem('settings')) || {}; return s.aiPackage === true; }
+      catch (e) { return false; }
+    }
     // Override Storage.prototype directly — instance-level Object.defineProperty
     // can fail silently on Safari/Firefox. Restrict to window.localStorage only
     // (sessionStorage stays untouched) by checking `this`.
@@ -2480,6 +2491,15 @@
         originalDisplay: el.style.display || ''
       };
       el.style.display = 'none';
+      // For the AI Projects chat, discard the unsent draft on minimize — the user
+      // expects typed-but-unsent text to clear, not linger behind the tray chip.
+      // (Other modals keep their input, e.g. a half-filled form minimized for later.)
+      if (modalId === 'proj-chat-overlay') {
+        const _pci = document.getElementById('proj-chat-input');
+        if (_pci) { _pci.value = ''; _pci.style.height = '44px'; }
+        const _pcc = document.getElementById('proj-chat-attach-chip');
+        if (_pcc) { _pcc.style.display = 'none'; _pcc.innerHTML = ''; }
+      }
       const tray = _ensureMinTray();
       // Remove any existing chip for this modalId so we don't dupe
       const old = document.getElementById('min-chip-' + modalId);
@@ -6337,12 +6357,86 @@
 
         <div class="form-group"><label class="form-label">Notes <span style="color:#999;font-weight:400">(internal — not shown on proposal)</span></label>
           <textarea id="cf-notes" class="form-textarea">${client?.notes||''}</textarea></div>
+        <div class="form-group" style="margin-top:6px;padding:12px 14px;background:var(--gray-50,#f8fafc);border:1px solid var(--gray-200,#e2e8f0);border-radius:10px">
+          <label class="form-label" style="margin-bottom:4px">Current project name <span style="color:#999;font-weight:400">(distinguishes this engagement — optional)</span></label>
+          <input type="text" id="cf-project-name" class="form-input" style="margin:0" value="${(client?.activeProjectName||'').replace(/"/g,'&quot;')}" placeholder="e.g. Website Redesign 2026">
+          ${(client?.projects?.length) ? `<div style="margin-top:10px"><div style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">Past projects (${client.projects.length})</div>${client.projects.map(p=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 10px;background:#fff;border:1px solid var(--gray-200,#e2e8f0);border-radius:8px;margin-bottom:6px"><span style="font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><strong>${escH(p.name||'Project')}</strong> <span style="color:#94A3B8;font-size:11px">· ${escH(p.status||'')}${p.archivedAt?' · '+new Date(p.archivedAt).toLocaleDateString():''}</span></span><button type="button" onclick="viewArchivedProject('${id}','${p.id}')" style="padding:4px 10px;background:#fff;border:1px solid var(--gray-300);border-radius:6px;cursor:pointer;font-size:11px;font-weight:600;flex-shrink:0">View</button></div>`).join('')}</div>` : ''}
+          ${id ? `<button type="button" onclick="startNewProject('${id}')" class="btn btn-outline" style="margin-top:8px;padding:8px 14px;font-size:13px;width:100%">➕ Start New Project <span style="color:#94A3B8;font-weight:400">(archive current, blank slate)</span></button>` : ''}
+        </div>
         <input type="hidden" id="cf-id" value="${id}">
         <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:8px;">
           ${id?`<button onclick="deleteClient('${id}')" style="padding:10px 14px;background:none;border:1px solid var(--error);color:var(--error);border-radius:8px;cursor:pointer;font-weight:600;">Delete</button>`:''}
           <button onclick="closeModal('${id?'edit-client-modal':'add-client-modal'}')" style="padding:10px 14px;background:none;border:1px solid var(--gray-300);border-radius:8px;cursor:pointer;font-weight:600;">Cancel</button>
           <button onclick="saveClient()" class="btn btn-solid">Save Client</button>
         </div>`;
+    }
+
+    // Archive the client's CURRENT project (the top-level working fields) into
+    // client.projects[] and reset the active fields for a brand-new project.
+    // Additive + non-destructive: nothing is deleted — the contact, portal,
+    // messages, documents, and revenue history all stay at the client level.
+    function startNewProject(clientId) {
+      const clients = getData('clients') || [];
+      const idx = clients.findIndex(c => c.id === clientId);
+      if (idx < 0) return;
+      const c = clients[idx];
+      const name = (prompt('Name this NEW project (the current one will be archived to this client\'s history):', '') || '').trim();
+      if (!name) return;
+      if (!confirm('Archive the current project for ' + (c.name||'this client') + ' and start "' + name + '" with a blank slate?\n\nNothing is deleted — the current project moves to Past Projects, and the contact, portal, messages, and documents stay.')) return;
+      c.projects = Array.isArray(c.projects) ? c.projects : [];
+      c.projects.push({
+        id: 'proj-' + generateId(),
+        name: c.activeProjectName || (c.projectDescription ? c.projectDescription.slice(0,48) : (c.service || 'Project')),
+        status: c.status || '',
+        services: Array.isArray(c.services) ? c.services : (c.service ? [{ name:c.service, price:c.price||0, billingType:'flat' }] : []),
+        projectDescription: c.projectDescription || '',
+        timeline: c.timeline || '',
+        depositRequired: !!c.depositRequired,
+        depositAmount: c.depositAmount || '',
+        startDate: c.startDate || '',
+        invoice: c.invoice || null,
+        invoiceNumber: c.invoiceNumber || '',
+        archivedAt: new Date().toISOString()
+      });
+      // Reset the active working fields for the new project.
+      c.activeProjectName = name;
+      c.services = [];
+      c.service = '';
+      c.projectDescription = '';
+      c.timeline = '';
+      c.depositRequired = false;
+      c.depositAmount = '';
+      c.status = 'Active';
+      c.startDate = new Date().toISOString().slice(0,10);
+      delete c.invoice;
+      c.invoiceNumber = '';
+      setData('clients', clients);
+      if (typeof logActivity === 'function') logActivity('system', 'Started new project "' + name + '" for ' + (c.name||'client'));
+      showToast('New project "' + name + '" started — previous one archived to history', 'success');
+      if (typeof renderClients === 'function') renderClients();
+      openEditClientModal(clientId); // reopen on the fresh project
+    }
+
+    // Read-only view of an archived project from the client's history.
+    function viewArchivedProject(clientId, projectId) {
+      const c = (getData('clients') || []).find(x => x.id === clientId);
+      const p = c && (c.projects || []).find(x => x.id === projectId);
+      if (!p) return;
+      const svc = (p.services || []).map(s => `<div style="display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:1px solid var(--gray-100,#f1f5f9)"><span>${escH(s.name||'Service')}</span><span style="color:#64748B">$${Number(s.price||0).toLocaleString()}${s.billingType==='ongoing'?'/mo':''}</span></div>`).join('') || '<div style="font-size:13px;color:#94A3B8">No services recorded</div>';
+      const total = (p.services || []).reduce((a,s)=>a+(Number(s.price)||0),0);
+      const invLine = p.invoice && p.invoice.number ? `Invoice #${escH(String(p.invoice.number))} · ${escH(p.invoice.status||'')}` : (p.invoiceNumber ? 'Invoice #'+escH(String(p.invoiceNumber)) : 'No invoice');
+      const html = `
+        <div style="font-size:12px;color:#94A3B8;text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:4px">Archived Project</div>
+        <div style="font-size:18px;font-weight:800;margin-bottom:2px">${escH(p.name||'Project')}</div>
+        <div style="font-size:12.5px;color:#64748B;margin-bottom:12px">${escH(p.status||'')}${p.startDate?' · started '+escH(p.startDate):''}${p.archivedAt?' · archived '+new Date(p.archivedAt).toLocaleDateString():''}</div>
+        ${p.projectDescription?`<div style="font-size:13.5px;line-height:1.6;margin-bottom:12px;white-space:pre-wrap">${escH(p.projectDescription)}</div>`:''}
+        <div style="font-size:11px;font-weight:700;color:var(--gray-500);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Services</div>
+        ${svc}
+        <div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px;margin-top:8px"><span>Total</span><span>$${total.toLocaleString()}</span></div>
+        <div style="font-size:12.5px;color:#64748B;margin-top:10px">${invLine}</div>
+        <div style="display:flex;justify-content:flex-end;margin-top:16px"><button onclick="closeModal('archived-project-modal')" class="btn btn-solid" style="padding:9px 16px">Close</button></div>`;
+      const ex = document.getElementById('archived-project-modal'); if (ex) ex.remove();
+      document.body.appendChild(buildModal('archived-project-modal', '', html));
     }
 
     function saveClient() {
@@ -6377,6 +6471,7 @@
         depositRequired: !!document.getElementById('cf-deposit-required')?.checked,
         depositAmount: document.getElementById('cf-deposit-amount')?.value.trim() || '',
         athleteName: document.getElementById('cf-athlete')?.value.trim() || '',
+        activeProjectName: document.getElementById('cf-project-name')?.value.trim() || '',
         additionalContacts: (typeof cfGetPeople === 'function' ? cfGetPeople() : [])
       };
       const clients = getData('clients');
@@ -7773,11 +7868,13 @@ ${biz} clients are serious, ambitious people building real businesses and real l
 
       // ── Premium providers (Claude / OpenAI): try the chosen primary first, then
       // the chosen fallback. These run direct from the browser with the user's
-      // own key — this is how tenants run AI on their own accounts. ──
-      if (_primary === 'claude' && anthropicKey) { const r = await _aiStreamClaude(safeMessages, onChunk, anthropicKey, ai.model); if (r) return r; }
-      if (_primary === 'openai' && openaiKey)   { const r = await _aiStreamOpenAI(safeMessages, onChunk, openaiKey, ai.model); if (r) return r; }
-      if (_fallbackProv === 'claude' && anthropicKey) { const r = await _aiStreamClaude(safeMessages, onChunk, anthropicKey, ai.model); if (r) return r; }
-      if (_fallbackProv === 'openai' && openaiKey)    { const r = await _aiStreamOpenAI(safeMessages, onChunk, openaiKey, ai.model); if (r) return r; }
+      // own key. Gated: owner always, tenants only if on the package. ──
+      if (_paidAiAllowed()) {
+        if (_primary === 'claude' && anthropicKey) { const r = await _aiStreamClaude(safeMessages, onChunk, anthropicKey, ai.model); if (r) return r; }
+        if (_primary === 'openai' && openaiKey)   { const r = await _aiStreamOpenAI(safeMessages, onChunk, openaiKey, ai.model); if (r) return r; }
+        if (_fallbackProv === 'claude' && anthropicKey) { const r = await _aiStreamClaude(safeMessages, onChunk, anthropicKey, ai.model); if (r) return r; }
+        if (_fallbackProv === 'openai' && openaiKey)    { const r = await _aiStreamOpenAI(safeMessages, onChunk, openaiKey, ai.model); if (r) return r; }
+      }
 
       // ── PRIMARY: free Gemini ×2 (higher daily cap than Groq). Walk free key #1
       // then free key #2 — both are exhausted before we drop to Groq. ──
@@ -7844,16 +7941,15 @@ ${biz} clients are serious, ambitious people building real businesses and real l
         }
       }
 
-      // ── PAID Gemini fallback — only reached after free Gemini ×2 AND Groq
-      // have failed, so you never pay until every free option is exhausted. ──
-      if (cfg.geminiApiKeyPaid) {
-        const t = await _aiStreamGeminiOrNull(safeMessages, onChunk, { key: cfg.geminiApiKeyPaid });
-        if (t) return cleanGroqResponse(t);
+      // ── PAID tier — only after free Gemini ×2 AND Groq have failed, so you
+      // never pay until every free option is exhausted. OpenAI is the paid tier
+      // (reuses the owner's existing OpenAI billing); paid Gemini / Claude are
+      // optional deeper nets. Gated: owner always, tenants only if on the package. ──
+      if (_paidAiAllowed()) {
+        if (openaiKey)            { const r = await _aiStreamOpenAI(safeMessages, onChunk, openaiKey, ai.model); if (r) return r; }
+        if (cfg.geminiApiKeyPaid) { const t = await _aiStreamGeminiOrNull(safeMessages, onChunk, { key: cfg.geminiApiKeyPaid }); if (t) return cleanGroqResponse(t); }
+        if (anthropicKey)         { const r = await _aiStreamClaude(safeMessages, onChunk, anthropicKey, ai.model); if (r) return r; }
       }
-
-      // ── Premium providers as last-resort fallback (key present, not yet tried) ──
-      if (anthropicKey) { const r = await _aiStreamClaude(safeMessages, onChunk, anthropicKey, ai.model); if (r) return r; }
-      if (openaiKey)    { const r = await _aiStreamOpenAI(safeMessages, onChunk, openaiKey, ai.model); if (r) return r; }
 
       // Tenants run on THEIR OWN keys only — never fall through to the owner's
       // shared H.E.L.P. Center server. If nothing above produced a reply, tell

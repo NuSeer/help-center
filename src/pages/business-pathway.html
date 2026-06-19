@@ -1,0 +1,192 @@
+      <div id="business-pathway-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">Business Development</h1>
+          <p class="page-subtitle">Launch and scale your business the right way</p>
+        </div>
+        <div class="content">
+          <div class="path-tabs-container">
+            <div class="path-tabs-nav">
+              <button class="path-tab active" onclick="pTab('biz','assessment',this)">Assessment</button>
+              <button class="path-tab" onclick="pTab('biz','legal',this)">Legal Structure</button>
+              <button class="path-tab" onclick="pTab('biz','brand',this)">Brand &amp; Digital</button>
+              <button class="path-tab" onclick="pTab('biz','resources',this)">Resources</button>
+            </div>
+            <div id="biz-tab-assessment" class="path-tab-content active">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:4px;">Where is your business right now?</h3>
+                <p style="color:var(--gray-500);font-size:14px;margin-bottom:20px;">This assessment identifies your next priority action.</p>
+                <form id="biz-assess-form" onsubmit="submitBizAssessment(event)">
+                  <div class="assess-q">
+                    <label>1. What stage is your business in?</label>
+                    <label class="assess-option"><input type="radio" name="stage" value="idea" required> Idea stage — not yet launched</label>
+                    <label class="assess-option"><input type="radio" name="stage" value="launch"> Just launched — less than 1 year</label>
+                    <label class="assess-option"><input type="radio" name="stage" value="operating"> Operating 1–3 years</label>
+                    <label class="assess-option"><input type="radio" name="stage" value="scaling"> Scaling — 3+ years, ready to grow</label>
+                  </div>
+                  <div class="assess-q">
+                    <label>2. Are you legally registered?</label>
+                    <label class="assess-option"><input type="radio" name="legal" value="no" required> No</label>
+                    <label class="assess-option"><input type="radio" name="legal" value="sole"> Sole Proprietor / DBA only</label>
+                    <label class="assess-option"><input type="radio" name="legal" value="llc"> LLC or Corporation</label>
+                  </div>
+                  <div class="assess-q">
+                    <label>3. Do you have a dedicated business bank account?</label>
+                    <label class="assess-option"><input type="radio" name="bank" value="no" required> No — I use personal accounts</label>
+                    <label class="assess-option"><input type="radio" name="bank" value="yes"> Yes</label>
+                  </div>
+                  <div class="assess-q">
+                    <label>4. Do you have a professional website?</label>
+                    <label class="assess-option"><input type="radio" name="web" value="no" required> No</label>
+                    <label class="assess-option"><input type="radio" name="web" value="social"> Social media only</label>
+                    <label class="assess-option"><input type="radio" name="web" value="yes"> Yes, a real website</label>
+                  </div>
+                  <button type="submit" class="btn btn-solid" style="margin-top:8px;">See My Action Plan →</button>
+                </form>
+                <div id="biz-assess-results" style="display:none;margin-top:24px;"></div>
+              </div>
+            </div>
+            <div id="biz-tab-legal" class="path-tab-content">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Legal Structure Selector</h3>
+                <div style="overflow-x:auto;margin-bottom:20px;">
+                  <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                    <thead><tr style="background:var(--gray-100)">
+                      <th style="padding:10px;text-align:left;font-weight:700;">Structure</th>
+                      <th style="padding:10px;text-align:left;font-weight:700;">Best For</th>
+                      <th style="padding:10px;text-align:left;font-weight:700;">Liability</th>
+                      <th style="padding:10px;text-align:left;font-weight:700;">Tax Treatment</th>
+                    </tr></thead>
+                    <tbody>
+                      <tr style="border-bottom:1px solid var(--gray-200)"><td style="padding:10px;font-weight:600">Sole Proprietor</td><td style="padding:10px;color:var(--gray-600)">Side hustles, just starting</td><td style="padding:10px;color:#EF4444">Personal liability</td><td style="padding:10px">Pass-through</td></tr>
+                      <tr style="border-bottom:1px solid var(--gray-200)"><td style="padding:10px;font-weight:600">LLC</td><td style="padding:10px;color:var(--gray-600)">Most small businesses</td><td style="padding:10px;color:#10B981">Protected</td><td style="padding:10px">Flexible (default pass-through)</td></tr>
+                      <tr style="border-bottom:1px solid var(--gray-200)"><td style="padding:10px;font-weight:600">S-Corp</td><td style="padding:10px;color:var(--gray-600)">Profitable businesses, save on SE tax</td><td style="padding:10px;color:#10B981">Protected</td><td style="padding:10px">Pass-through + salary split</td></tr>
+                      <tr><td style="padding:10px;font-weight:600">C-Corp</td><td style="padding:10px;color:var(--gray-600)">Raising venture capital</td><td style="padding:10px;color:#10B981">Protected</td><td style="padding:10px">Double taxation risk</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div class="tip-box"><h4>Recommendation for Most H.E.L.P. Center Clients</h4><p>Start with an LLC. It protects your personal assets, is simple to maintain, and gives you flexibility to elect S-Corp taxation later when your profits justify it. File your Articles of Organization with your state Secretary of State — usually $50–$150.</p></div>
+                <h4 style="font-weight:700;margin:20px 0 12px;">Formation Checklist</h4>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('form1',this)"> <span><strong>Choose a business name</strong> — check availability on your state's SOS website and USPTO.gov for trademarks</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('form2',this)"> <span><strong>File Articles of Organization</strong> — with your state Secretary of State</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('form3',this)"> <span><strong>Get your EIN</strong> — free at IRS.gov, takes 5 minutes online</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('form4',this)"> <span><strong>Draft an Operating Agreement</strong> — even for single-member LLCs</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('form5',this)"> <span><strong>Open a business bank account</strong> — requires EIN + Articles of Organization</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('form6',this)"> <span><strong>Register for state/local business licenses</strong> — check your city and county requirements</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('form7',this)"> <span><strong>Get a registered agent</strong> — required in most states (you can be your own)</span></div>
+              </div>
+            </div>
+            <div id="biz-tab-brand" class="path-tab-content">
+              <!-- DIGITAL PRESENCE CHECKLIST (compact) -->
+              <div class="card" style="margin-bottom:16px">
+                <h3 style="font-size:16px;font-weight:700;margin-bottom:14px">Digital Presence Checklist</h3>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand1',this)"> <span><strong>Claim your domain name</strong> — .com preferred (yourname.com or yourbusiness.com)</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand2',this)"> <span><strong>Set up professional email</strong> — yourname@yourbusiness.com via Google Workspace</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand3',this)"> <span><strong>Launch a website</strong> — Home, About, Services, Testimonials, Contact + booking link</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand4',this)"> <span><strong>Set up Google Business Profile</strong> — free, critical for local visibility</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand5',this)"> <span><strong>Choose 1–2 social platforms</strong> — complete all profile fields before posting</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand6',this)"> <span><strong>Get a professional headshot</strong> — natural light works fine</span></div>
+                <div class="checklist-item"><input type="checkbox" onchange="saveBizCheck('brand7',this)"> <span><strong>Create a services menu / rate sheet</strong> — know your pricing before you quote</span></div>
+              </div>
+
+              <!-- BRAND WIZARD (embedded) -->
+              <div class="card" style="padding:28px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px">
+                  <h3 style="font-size:18px;font-weight:800;margin:0">Brand Builder Wizard</h3>
+                  <span style="font-size:12px;color:var(--gray-500)">4 steps → complete brand package</span>
+                </div>
+                <p style="font-size:13px;color:var(--gray-500);margin-bottom:20px">Answer 4 quick questions — AI builds your taglines, color palette, fonts, brand voice, logo brief, and social media bios.</p>
+
+                <!-- Progress -->
+                <div style="display:flex;gap:6px;margin-bottom:24px;align-items:center">
+                  <div id="bw2-prog-1" style="flex:1;height:4px;border-radius:4px;background:var(--brand-primary);transition:all .3s"></div>
+                  <div id="bw2-prog-2" style="flex:1;height:4px;border-radius:4px;background:#E2E8F0;transition:all .3s"></div>
+                  <div id="bw2-prog-3" style="flex:1;height:4px;border-radius:4px;background:#E2E8F0;transition:all .3s"></div>
+                  <div id="bw2-prog-4" style="flex:1;height:4px;border-radius:4px;background:#E2E8F0;transition:all .3s"></div>
+                  <span id="bw2-step-label" style="font-size:12px;color:var(--gray-500);white-space:nowrap;margin-left:8px">Step 1 of 4</span>
+                </div>
+
+                <!-- Step 1 -->
+                <div id="bw2-step-1">
+                  <div class="form-group"><label class="form-label">Business Name (leave blank for suggestions)</label>
+                    <input type="text" id="bw2-name" class="form-input" placeholder="e.g. H.E.L.P. Center"></div>
+                  <div class="form-group"><label class="form-label">What does your business do? *</label>
+                    <textarea id="bw2-what" class="form-textarea" style="min-height:70px" placeholder="e.g. We help Black entrepreneurs build credit, form LLCs, and launch businesses through 1-on-1 coaching."></textarea></div>
+                  <div class="form-group"><label class="form-label">Who do you serve? *</label>
+                    <input type="text" id="bw2-who" class="form-input" placeholder="e.g. Black women entrepreneurs ages 25–45"></div>
+                  <div class="form-group"><label class="form-label">What makes you different?</label>
+                    <input type="text" id="bw2-diff" class="form-input" placeholder="e.g. We combine spiritual community with real business strategy"></div>
+                  <button class="btn btn-solid" style="width:100%" onclick="bwNext2(2)">Next: Brand Personality →</button>
+                </div>
+
+                <!-- Step 2 -->
+                <div id="bw2-step-2" style="display:none">
+                  <p style="font-size:14px;font-weight:600;margin-bottom:12px">Pick up to 3 personality traits</p>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px" id="bw2-personality-opts">
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Bold & Confident">Bold & Confident</div>
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Warm & Nurturing">Warm & Nurturing</div>
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Professional & Authoritative">Professional</div>
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Creative & Innovative">Creative & Innovative</div>
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Community-Focused">Community-Focused</div>
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Spiritual & Purpose-Driven">Spiritual & Purpose-Driven</div>
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Luxury & Premium">Luxury & Premium</div>
+                    <div class="tool-option" onclick="bwToggle2(this,'bw2-personality')" data-val="Educational & Empowering">Educational & Empowering</div>
+                  </div>
+                  <input type="hidden" id="bw2-personality" value="">
+                  <div style="display:flex;gap:10px">
+                    <button class="btn btn-outline" style="flex:1" onclick="bwNext2(1)">← Back</button>
+                    <button class="btn btn-solid" style="flex:2" onclick="bwNext2(3)">Next: Visual Style →</button>
+                  </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div id="bw2-step-3" style="display:none">
+                  <p style="font-size:14px;font-weight:600;margin-bottom:10px">Visual style</p>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px" id="bw2-style-opts">
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-style')" data-val="Modern & Clean">Modern & Clean</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-style')" data-val="Classic & Traditional">Classic & Traditional</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-style')" data-val="Bold & Vibrant">Bold & Vibrant</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-style')" data-val="Minimal & Elegant">Minimal & Elegant</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-style')" data-val="Earthy & Natural">Earthy & Natural</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-style')" data-val="Afrocentric & Cultural">Afrocentric & Cultural</div>
+                  </div>
+                  <input type="hidden" id="bw2-style" value="">
+                  <p style="font-size:14px;font-weight:600;margin-bottom:10px">Color vibe</p>
+                  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px" id="bw2-color-opts">
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-color')" data-val="Blues & Navy" style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#1e3a6e;display:inline-block;flex-shrink:0"></span>Blues & Navy</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-color')" data-val="Greens" style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#2E7D32;display:inline-block;flex-shrink:0"></span>Greens</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-color')" data-val="Golds & Warm Tones" style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#C9A84C;display:inline-block;flex-shrink:0"></span>Golds & Warm</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-color')" data-val="Purples" style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#7B1FA2;display:inline-block;flex-shrink:0"></span>Purples</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-color')" data-val="Reds & Oranges" style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#E65100;display:inline-block;flex-shrink:0"></span>Reds & Oranges</div>
+                    <div class="tool-option" onclick="selectBbOption(this,'bw2-color')" data-val="Black, White & Gold" style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;background:#111;display:inline-block;flex-shrink:0"></span>Black & Gold</div>
+                  </div>
+                  <input type="hidden" id="bw2-color" value="">
+                  <div style="display:flex;gap:10px">
+                    <button class="btn btn-outline" style="flex:1" onclick="bwNext2(2)">← Back</button>
+                    <button class="btn btn-solid" style="flex:2" onclick="bwNext2(4)">Generate My Brand →</button>
+                  </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div id="bw2-step-4" style="display:none">
+                  <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+                    <button class="btn btn-outline" onclick="bwNext2(3)">← Edit</button>
+                    <button class="btn btn-solid" style="background:linear-gradient(135deg,var(--brand-primary),#7C3AED)" onclick="bwGenerate2()"><span class="icon icon-sm" data-icon="spark" style="margin-right:6px;vertical-align:-2px"></span>Build My Brand</button>
+                    <button class="btn btn-outline" onclick="bwPrint2()" style="margin-left:auto"><span class="icon icon-sm" data-icon="print" style="margin-right:6px;vertical-align:-2px"></span>Print</button>
+                  </div>
+                  <div id="bw2-result" class="md-content" style="font-size:14px;line-height:1.85;min-height:80px"></div>
+                </div>
+              </div>
+            </div>
+            <div id="biz-tab-resources" class="path-tab-content">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Business Development Resources</h3>
+                <a class="resource-link" href="https://www.sba.gov" target="_blank"><span class="icon" data-icon="shield"></span><div class="info"><strong>SBA.gov</strong><span>Free business guides, loan programs, SCORE mentoring</span></div></a>
+                <a class="resource-link" href="https://www.score.org" target="_blank"><span class="icon" data-icon="users"></span><div class="info"><strong>SCORE</strong><span>Free business mentoring from experienced executives</span></div></a>
+                <a class="resource-link" href="https://www.irs.gov/businesses/small-businesses-self-employed" target="_blank"><span class="icon" data-icon="chart"></span><div class="info"><strong>IRS Small Business Center</strong><span>Tax obligations, EIN, business structures</span></div></a>
+                <a class="resource-link" href="https://www.usa.gov/start-business" target="_blank"><span class="icon" data-icon="rocket"></span><div class="info"><strong>USA.gov Start a Business</strong><span>Federal checklist for launching a new business</span></div></a>
+                <a class="resource-link" href="https://www.mbda.gov" target="_blank"><span class="icon" data-icon="star"></span><div class="info"><strong>Minority Business Development Agency</strong><span>Grants, loans, federal contracting support</span></div></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>

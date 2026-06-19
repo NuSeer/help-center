@@ -1,0 +1,190 @@
+      <div id="youth-pathway-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">Youth Leadership</h1>
+          <p class="page-subtitle">Empower the next generation of leaders and entrepreneurs</p>
+        </div>
+        <div class="content">
+          <div class="path-tabs-container">
+            <div class="path-tabs-nav">
+              <button class="path-tab active" onclick="pTab('youth','planning',this)">Program Planning</button>
+              <button class="path-tab" onclick="pTab('youth','curriculum',this)">Curriculum Design</button>
+              <button class="path-tab" onclick="pTab('youth','launch',this)">Marketing &amp; Launch</button>
+              <button class="path-tab" onclick="pTab('youth','platform',this)">Platform Guide</button>
+            </div>
+            <div id="youth-tab-planning" class="path-tab-content active">
+              <div class="card" style="margin-bottom:20px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                  <h3 style="font-size:18px;font-weight:700">My Program Details</h3>
+                  <button onclick="saveYouthProgram()" class="btn btn-solid" style="padding:8px 18px">Save Program</button>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                  <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Program Name</label>
+                    <input id="yp-name" class="form-input" style="margin:0" placeholder="e.g. H.E.L.P. Youth Leaders Academy">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Target Age Group</label>
+                    <select id="yp-age" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>8–12 (Elementary)</option>
+                      <option>13–17 (Teens)</option>
+                      <option>18–24 (Young Adults)</option>
+                      <option>Mixed Ages</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Program Format</label>
+                    <select id="yp-format" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>In-Person</option>
+                      <option>Virtual</option>
+                      <option>Hybrid</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Program Model</label>
+                    <select id="yp-model" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>One-Day Workshop</option>
+                      <option>Multi-Week Cohort</option>
+                      <option>Ongoing Membership</option>
+                      <option>School Partnership</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Program Length</label>
+                    <input id="yp-length" class="form-input" style="margin:0" placeholder="e.g. 6 weeks, 1 day, 12 sessions">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Program Price</label>
+                    <input id="yp-price" class="form-input" style="margin:0" placeholder="e.g. $350 per participant">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Scholarship Policy</label>
+                    <input id="yp-scholarship" class="form-input" style="margin:0" placeholder="e.g. 20% of seats at 50% discount">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Max Cohort Size</label>
+                    <input id="yp-size" class="form-input" style="margin:0" placeholder="e.g. 15 participants">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Launch Date</label>
+                    <input id="yp-launch" type="date" class="form-input" style="margin:0">
+                  </div>
+                  <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Program Promise / Transformation Statement</label>
+                    <textarea id="yp-promise" class="form-input" style="height:70px;resize:vertical" placeholder="By the end of this program, participants will be able to..."></textarea>
+                  </div>
+                  <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Registration / Payment Link</label>
+                    <input id="yp-reg-link" class="form-input" style="margin:0" placeholder="https://...">
+                  </div>
+                  <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Notes</label>
+                    <textarea id="yp-notes" class="form-input" style="height:70px;resize:vertical" placeholder="Insurance provider, partner contacts, next steps..."></textarea>
+                  </div>
+                </div>
+                <div id="yp-saved-msg" style="display:none;color:var(--success);font-size:14px;font-weight:600;margin-top:8px">✅ Program saved!</div>
+              </div>
+              <div class="card">
+                <h4 style="font-weight:700;margin-bottom:12px;">Program Launch Checklist</h4>
+                <div class="checklist-item"><input type="checkbox" id="yc-p1" onchange="saveYouthCheck('p1',this)"> <span><strong>Define target age group and program model</strong> — workshop, cohort, or ongoing</span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-p2" onchange="saveYouthCheck('p2',this)"> <span><strong>Set pricing and scholarship policy</strong></span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-p3" onchange="saveYouthCheck('p3',this)"> <span><strong>Get liability insurance</strong> — at minimum $1M general liability</span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-p4" onchange="saveYouthCheck('p4',this)"> <span><strong>Set up background check process</strong> — for yourself and any facilitators</span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-p5" onchange="saveYouthCheck('p5',this)"> <span><strong>Create parent consent and media release forms</strong></span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-p6" onchange="saveYouthCheck('p6',this)"> <span><strong>Write your safeguarding/child protection policy</strong></span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-p7" onchange="saveYouthCheck('p7',this)"> <span><strong>Set up registration and payment system</strong> — Jotform + Stripe works well</span></div>
+              </div>
+            </div>
+            <div id="youth-tab-curriculum" class="path-tab-content">
+              <div class="card" style="margin-bottom:20px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+                  <h3 style="font-size:18px;font-weight:700">📚 My Curriculum</h3>
+                  <button onclick="openAddCurriculumWeek()" class="btn btn-solid">+ Add Week / Module</button>
+                </div>
+                <div id="curriculum-list"></div>
+              </div>
+            </div>
+            <div id="youth-tab-launch" class="path-tab-content">
+              <div class="card" style="margin-bottom:20px">
+                <h4 style="font-weight:700;margin-bottom:12px;">Launch Checklist</h4>
+                <div class="checklist-item"><input type="checkbox" id="yc-m1" onchange="saveYouthCheck('m1',this)"> <span><strong>Create a program one-pager</strong> — printable flyer for schools and churches</span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-m2" onchange="saveYouthCheck('m2',this)"> <span><strong>Build a landing page or website page</strong> — with registration link</span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-m3" onchange="saveYouthCheck('m3',this)"> <span><strong>Reach out to 5 schools or community orgs</strong> — offer a free intro workshop</span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-m4" onchange="saveYouthCheck('m4',this)"> <span><strong>Set a launch date and cohort size cap</strong> — scarcity creates urgency</span></div>
+                <div class="checklist-item"><input type="checkbox" id="yc-m5" onchange="saveYouthCheck('m5',this)"> <span><strong>Collect 3 testimonials or endorsements</strong> — before or at launch</span></div>
+              </div>
+              <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+                  <h3 style="font-size:18px;font-weight:700">🤝 Partnership Outreach Tracker</h3>
+                  <button onclick="openAddOutreachModal()" class="btn btn-solid">+ Add Contact</button>
+                </div>
+                <div id="outreach-list"></div>
+              </div>
+            </div>
+            <div id="youth-tab-platform" class="path-tab-content">
+              <div class="card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+                  <h3 style="font-size:18px;font-weight:700">🖥️ My Platform Choices</h3>
+                  <button onclick="saveYouthPlatform()" class="btn btn-solid" style="padding:8px 18px">Save</button>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                  <div class="form-group">
+                    <label class="form-label">Delivery Platform</label>
+                    <select id="ypl-delivery" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>Zoom</option><option>Google Meet</option><option>Microsoft Teams</option><option>In-Person Only</option><option>Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Course / Content Platform</label>
+                    <select id="ypl-course" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>Teachable</option><option>Thinkific</option><option>Kajabi</option><option>Google Classroom</option><option>None</option><option>Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Registration Tool</label>
+                    <select id="ypl-reg" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>Jotform</option><option>Eventbrite</option><option>Google Forms</option><option>Website Form</option><option>Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Payment Processor</label>
+                    <select id="ypl-payment" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>Stripe</option><option>PayPal</option><option>Square</option><option>Zelle</option><option>Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Community Platform</label>
+                    <select id="ypl-community" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>Mighty Networks</option><option>Facebook Group</option><option>Discord</option><option>None</option><option>Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Certificate / Badge Tool</label>
+                    <select id="ypl-cert" class="form-select" style="margin:0">
+                      <option value="">Select...</option>
+                      <option>Canva (printed)</option><option>Credly (digital badge)</option><option>Custom design</option><option>None yet</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="grid-column:1/-1">
+                    <label class="form-label">Platform Notes / Links / Login Info</label>
+                    <textarea id="ypl-notes" class="form-input" style="height:90px;resize:vertical" placeholder="URLs, login details, setup notes..."></textarea>
+                  </div>
+                </div>
+                <div id="ypl-saved-msg" style="display:none;color:var(--success);font-size:14px;font-weight:600;margin-top:8px">✅ Platform settings saved!</div>
+                <div style="margin-top:20px;border-top:1px solid var(--gray-200);padding-top:16px">
+                  <h4 style="font-weight:700;margin-bottom:12px">Resources</h4>
+                  <a class="resource-link" href="https://www.jumpstart.org" target="_blank"><span class="icon">🏃</span><div class="info"><strong>JumpStart Coalition</strong><span>National standards for youth financial literacy</span></div></a>
+                  <a class="resource-link" href="https://ngpf.org" target="_blank"><span class="icon">📚</span><div class="info"><strong>Next Gen Personal Finance</strong><span>Free curriculum and lesson plans for educators</span></div></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leave a Review — H.E.L.P. Center</title>
+<meta name="description" content="Worked with H.E.L.P. Center? Share your experience — your review helps other leaders and small businesses know what to expect. Takes 30 seconds.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://thehelpctr.com/review.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Leave a Review — H.E.L.P. Center">
+<meta property="og:description" content="Loved working with us? Share your experience — it takes 30 seconds.">
+<meta property="og:url" content="https://thehelpctr.com/review.html">
+<meta property="og:image" content="https://thehelpctr.com/og-image.jpg">
+<style>
+  :root{
+    --navy:#060e1e; --navy2:#0a0f1e; --green-dk:#0a180d;
+    --green-lt:#34d399; --orange:#F59E0B; --gold:#FFC107; --blue:#1E5BC0;
+    --muted:#94a3b8; --line:rgba(255,255,255,0.12);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy2) 55%,var(--green-dk) 100%);
+    color:#e2e8f0; min-height:100vh; display:flex; flex-direction:column;
+  }
+  a{color:inherit}
+  .nav{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 6%; border-bottom:1px solid var(--line); position:sticky; top:0;
+    background:rgba(6,14,30,0.85); backdrop-filter:blur(10px); z-index:10;
+  }
+  .brand{display:flex; align-items:center; gap:10px; text-decoration:none; font-weight:800; font-size:18px; letter-spacing:.3px; color:#fff}
+  .brand img{width:34px; height:34px; border-radius:8px; object-fit:cover}
+  .brand span{color:var(--green-lt)}
+  .nav-links{display:flex; gap:22px; align-items:center; font-size:14px; font-weight:600}
+  .nav-links a{text-decoration:none; color:#cbd5e1; transition:color .15s}
+  .nav-links a:hover{color:#fff}
+  .nav-cta{background:var(--orange); color:#1a1300!important; padding:9px 16px; border-radius:9px; font-weight:700}
+  main{flex:1; display:flex; align-items:flex-start; justify-content:center; padding:48px 6% 64px}
+  .wrap{width:100%; max-width:1040px; display:grid; grid-template-columns:0.85fr 1.15fr; gap:54px; align-items:start}
+  .lbl{font-size:12px; font-weight:800; letter-spacing:2px; text-transform:uppercase; color:var(--gold); margin-bottom:14px}
+  h1{font-size:clamp(32px,5vw,46px); line-height:1.05; margin:0 0 18px; color:#fff; font-weight:800}
+  h1 .g{color:var(--green-lt)}
+  .lede{font-size:16px; color:var(--muted); line-height:1.75; margin:0 0 26px; max-width:42ch}
+  .trust{font-size:13.5px; color:var(--muted); margin:0; line-height:1.7}
+  .trust strong{color:#fff}
+  .card{
+    background:rgba(255,255,255,0.04); border:1px solid var(--line); border-radius:18px;
+    padding:30px 28px; box-shadow:0 24px 60px rgba(0,0,0,0.35);
+  }
+  .card h2{margin:0 0 4px; font-size:20px; color:#fff; font-weight:800}
+  .card .sub{margin:0 0 20px; font-size:13px; color:var(--muted)}
+  .row{margin-bottom:16px}
+  .row label{display:block; font-size:12.5px; font-weight:700; color:#cbd5e1; margin-bottom:6px}
+  .row input, .row textarea{
+    width:100%; padding:12px 14px; border-radius:10px; border:1px solid rgba(255,255,255,0.14);
+    background:rgba(255,255,255,0.05); color:#fff; font-size:14px; font-family:inherit; outline:none; transition:border .15s,background .15s;
+  }
+  .row input::placeholder, .row textarea::placeholder{color:#64748b}
+  .row input:focus, .row textarea:focus{border-color:var(--green-lt); background:rgba(255,255,255,0.07)}
+  .row textarea{resize:vertical; min-height:120px}
+  /* star picker */
+  .stars{display:flex; gap:6px; font-size:38px; user-select:none; line-height:1; margin-top:2px}
+  .stars span{color:#475569; cursor:pointer; transition:color .12s, transform .08s}
+  .stars span:hover{transform:scale(1.12)}
+  .stars span.on{color:var(--gold)}
+  .submit{
+    width:100%; padding:14px; border:none; border-radius:10px; cursor:pointer; margin-top:4px;
+    background:linear-gradient(135deg,var(--gold),#f59e0b); color:#241a00; font-weight:800; font-size:15px; transition:opacity .15s,transform .05s;
+  }
+  .submit:hover{opacity:.92} .submit:active{transform:translateY(1px)} .submit:disabled{opacity:.6; cursor:default}
+  .success{display:none; margin-top:14px; padding:12px 14px; background:rgba(52,211,153,0.12); border:1px solid rgba(52,211,153,0.4); border-radius:10px; color:var(--green-lt); font-size:13.5px; font-weight:600}
+  #toast{position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px); background:#0f172a; color:#fff; padding:12px 20px; border-radius:10px; font-size:14px; box-shadow:0 10px 30px rgba(0,0,0,.4); opacity:0; pointer-events:none; transition:opacity .25s,transform .25s; z-index:50; border:1px solid var(--line)}
+  #toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+  footer{padding:22px 6%; border-top:1px solid var(--line); font-size:12.5px; color:#64748b; text-align:center}
+  footer a{color:var(--muted); text-decoration:none}
+  @media (max-width:780px){
+    .wrap{grid-template-columns:1fr; gap:30px}
+    .nav-links a:not(.nav-cta){display:none}
+    main{padding:32px 6% 48px}
+  }
+</style>
+</head>
+<body>
+
+  <nav class="nav">
+    <a class="brand" href="index.html">
+      <img src="og-image.jpg" alt="H.E.L.P. Center logo" onerror="this.style.display='none'">
+      H.E.L.P. <span>Center</span>
+    </a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="index.html#mockups">Portfolio</a>
+      <a class="nav-cta" href="contact.html">Contact</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="wrap">
+      <div class="intro">
+        <div class="lbl">★ Your Words Matter</div>
+        <h1>SHARE YOUR<br><span class="g">EXPERIENCE</span></h1>
+        <p class="lede">Loved working with H.E.L.P. Center? A few honest words takes 30 seconds — and helps other leaders and small businesses know exactly what to expect.</p>
+        <p class="trust"><strong>Thank you for trusting us</strong> with your vision. Every review helps us reach more people who could use the same help.</p>
+      </div>
+
+      <div class="card">
+        <h2>Leave a Review</h2>
+        <p class="sub">Tell us how it went — we read every one.</p>
+
+        <div class="row">
+          <label>Your Rating</label>
+          <div class="stars" id="stars" data-rating="5">
+            <span data-star="1">★</span><span data-star="2">★</span><span data-star="3">★</span><span data-star="4">★</span><span data-star="5">★</span>
+          </div>
+        </div>
+        <div class="row">
+          <label for="rv-name">Your Name <span style="color:var(--gold)">(shown publicly)</span></label>
+          <input type="text" id="rv-name" placeholder="First and last">
+        </div>
+        <div class="row">
+          <label for="rv-biz">Business Name (optional)</label>
+          <input type="text" id="rv-biz" placeholder="Your company or organization">
+        </div>
+        <div class="row">
+          <label for="rv-site">Your Website (optional)</label>
+          <input type="url" id="rv-site" placeholder="https://…">
+        </div>
+        <div class="row">
+          <label for="rv-text">Your Review</label>
+          <textarea id="rv-text" placeholder="What did we get right? What did the experience feel like? What would you tell someone considering H.E.L.P. Center?"></textarea>
+        </div>
+
+        <button class="submit" onclick="submitReview()">Submit Review ★</button>
+        <div class="success" id="rv-success">✅ Thank you! Your review was sent — we appreciate you.</div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    © <span id="yr"></span> H.E.L.P. Center · Henry County, GA — serving clients nationwide · <a href="index.html">thehelpctr.com</a>
+  </footer>
+
+  <div id="toast"></div>
+
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  // ---- star picker ----
+  const starsEl = document.getElementById('stars');
+  function paintStars(n){
+    starsEl.querySelectorAll('span').forEach(s => {
+      s.classList.toggle('on', parseInt(s.dataset.star,10) <= n);
+    });
+  }
+  starsEl.querySelectorAll('span').forEach(s => {
+    s.addEventListener('click', () => { const n = parseInt(s.dataset.star,10); starsEl.dataset.rating = String(n); paintStars(n); });
+    s.addEventListener('mouseenter', () => paintStars(parseInt(s.dataset.star,10)));
+  });
+  starsEl.addEventListener('mouseleave', () => paintStars(parseInt(starsEl.dataset.rating,10)));
+  paintStars(5); // default 5 stars
+
+  function showToast(msg){
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 4000);
+  }
+
+  async function submitReview(){
+    const name = document.getElementById('rv-name').value.trim();
+    const businessName = document.getElementById('rv-biz').value.trim();
+    const websiteUrl = document.getElementById('rv-site').value.trim();
+    const text = document.getElementById('rv-text').value.trim();
+    const rating = parseInt(starsEl.dataset.rating, 10) || 5;
+
+    if(!name || !text){ showToast('Please add your name and a review.'); return; }
+
+    const btn = document.querySelector('.submit');
+    const orig = btn ? btn.textContent : '';
+    if(btn){ btn.disabled = true; btn.textContent = 'Submitting…'; }
+
+    try {
+      const r = await fetch(location.origin + '/api/owner/review', {
+        method:'POST', headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ name, businessName, websiteUrl, rating, text })
+      });
+      if(!r.ok){ const j = await r.json().catch(()=>({})); throw new Error(j.error || ('HTTP ' + r.status)); }
+    } catch(e){
+      if(btn){ btn.disabled = false; btn.textContent = orig || 'Submit Review ★'; }
+      showToast("Couldn't send just now — please email joy@thehelpctr.com directly.");
+      return;
+    }
+
+    document.getElementById('rv-success').style.display = 'block';
+    ['rv-name','rv-biz','rv-site','rv-text'].forEach(id => document.getElementById(id).value = '');
+    starsEl.dataset.rating = '5'; paintStars(5);
+    if(btn){ btn.disabled = false; btn.textContent = orig || 'Submit Review ★'; }
+    showToast('✅ Thank you! Your review was sent.');
+  }
+</script>
+</body>
+</html>

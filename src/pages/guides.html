@@ -1,0 +1,23 @@
+      <div id="guides-page" class="page hidden">
+        <div class="page-header">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+            <div>
+              <h1 class="page-title">Business Guides</h1>
+              <p class="page-subtitle">Step-by-step guides for building your business</p>
+            </div>
+            <button class="btn btn-solid" onclick="openAddGuideModal()">+ New Guide</button>
+          </div>
+        </div>
+        <div class="content">
+          <div class="tabs" id="guide-tabs">
+            <div class="tab active" onclick="filterGuides('All',this)">All Guides</div>
+            <div class="tab" onclick="filterGuides('Formation',this)">Formation</div>
+            <div class="tab" onclick="filterGuides('Marketing',this)">Marketing</div>
+            <div class="tab" onclick="filterGuides('Finance',this)">Finance</div>
+            <div class="tab" onclick="filterGuides('Legal',this)">Legal</div>
+            <div class="tab" onclick="filterGuides('Leadership',this)">Leadership</div>
+            <div class="tab" onclick="filterGuides('Career',this)">Career</div>
+          </div>
+          <div id="guides-list"></div>
+        </div>
+      </div>

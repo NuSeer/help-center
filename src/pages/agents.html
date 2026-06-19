@@ -1,0 +1,13 @@
+      <!-- ═══════════════════════════════════════════════════════════
+           AGENT OS — iframe embed of Agency OS (served via nginx /agency/
+           reverse-proxy to the agency-os node app on :8096, over HTTPS).
+           ═══════════════════════════════════════════════════════════ -->
+      <div id="agent-os-page" class="page hidden" style="display:flex;flex-direction:column;height:100%;padding:0;margin:0">
+        <iframe
+          id="agent-os-frame"
+          src="/agency/agency.html"
+          style="flex:1;width:100%;border:none;min-height:calc(100vh - 56px)"
+          allow="clipboard-write"
+          title="Agent OS"
+        ></iframe>
+      </div>

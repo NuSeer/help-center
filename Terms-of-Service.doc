@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>The H.E.L.P. System — Terms of Service</title>
+  <style>
+    body { font-family: Calibri, Arial, sans-serif; line-height: 1.55; color: #1a1a1a; max-width: 7.5in; margin: 0 auto; padding: 0.75in; }
+    h1 { font-size: 22pt; color: #1E5BC0; border-bottom: 2px solid #1E5BC0; padding-bottom: 6px; margin-top: 0; }
+    h2 { font-size: 14pt; color: #1E5BC0; margin-top: 24px; }
+    h3 { font-size: 12pt; color: #333; margin-top: 14px; }
+    p { margin: 8px 0; }
+    .meta { color: #777; font-size: 10pt; margin-bottom: 24px; }
+    .callout { background: #fef5f5; border-left: 4px solid #b22222; padding: 10px 14px; margin: 14px 0; font-size: 10.5pt; }
+    .placeholder { background: #fffaf0; padding: 1px 4px; border-radius: 3px; color: #b8860b; font-family: Consolas, monospace; font-size: 10pt; }
+    ol li, ul li { margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+
+<h1>Terms of Service</h1>
+<div class="meta">
+  <strong>The H.E.L.P. System</strong><br>
+  Effective Date: <span class="placeholder">[EFFECTIVE DATE]</span><br>
+  Last Updated: 2026-05-14
+</div>
+
+<div class="callout">
+  <strong>NOT YET ATTORNEY REVIEWED.</strong> This document is a working draft. Before publishing publicly, have a Florida-licensed business attorney review and customize the placeholders. Common cost: $200-500 for a one-time SaaS-document review.
+</div>
+
+<h2>1. Acceptance of Terms</h2>
+<p>These Terms of Service ("Terms") govern your access to and use of The H.E.L.P. System (the "Service"), a software-as-a-service platform operated by <span class="placeholder">[LEGAL ENTITY NAME — e.g., H.E.L.P. Center LLC, or "Joy Watford d/b/a H.E.L.P. Center"]</span> ("H.E.L.P. Center," "we," "us," or "our"). By accessing the Service, creating an account, or paying for a subscription, you agree to be bound by these Terms and our Privacy Policy. If you do not agree to these Terms, you may not use the Service.</p>
+
+<h2>2. Description of Service</h2>
+<p>The H.E.L.P. System is a multi-tenant business management platform designed for coaches, faith-based leaders, women entrepreneurs, side-hustlers, and other everyday leaders ("Users") to manage clients, bookings, revenue, documents, and content from a single dashboard. The Service includes optional integrations with third-party providers including Groq (AI), Resend (email), Stripe (payments), and SignFlow or DocuSeal-compatible providers (e-signature).</p>
+
+<h2>3. Eligibility and Account Registration</h2>
+<p>You must be at least 18 years old and capable of entering into a legally binding agreement to use the Service. You are responsible for maintaining the confidentiality of your login credentials and for all activity that occurs under your account. You agree to notify us immediately at <span class="placeholder">[SUPPORT EMAIL]</span> of any unauthorized access or breach.</p>
+
+<h2>4. Subscription Plans and Billing</h2>
+
+<h3>4.1 Plans</h3>
+<p>The Service is offered on monthly recurring subscriptions:</p>
+<ul>
+  <li><strong>Solo — $29.99 per month</strong> with a 7-day free trial</li>
+  <li><strong>Pro — $59.99 per month</strong> with a 7-day free trial</li>
+</ul>
+<p>Pricing may change with at least 30 days' written notice. Existing subscriptions will continue at the current price until your next renewal after the notice period expires.</p>
+
+<h3>4.2 Billing</h3>
+<p>Payments are processed by Stripe, Inc. You authorize us to charge your provided payment method on a recurring monthly basis for the applicable subscription tier. You are responsible for keeping your payment method current. If a payment fails, the Service may be suspended after a reasonable retry period.</p>
+
+<h3>4.3 Taxes</h3>
+<p>You are responsible for all applicable sales, use, or value-added taxes. Where required, we will collect and remit tax via Stripe Tax.</p>
+
+<h2>5. Free Trial</h2>
+<p>New accounts receive a 7-day free trial of the selected plan. No charge is made during the trial. You may cancel at any time during the trial to avoid being charged. After the trial ends, your subscription automatically converts to a paid monthly subscription at the price of the selected tier. Trials are limited to one per person and one per payment method.</p>
+
+<h2>6. Cancellation and Refunds</h2>
+
+<h3>6.1 Cancellation</h3>
+<p>You may cancel your subscription at any time through your account settings or by emailing <span class="placeholder">[SUPPORT EMAIL]</span>. Cancellation takes effect at the end of your current billing period. You will retain access to the Service through the end of the period for which you have paid.</p>
+
+<h3>6.2 Refunds</h3>
+<p>If you are dissatisfied with the Service, you may request a refund within <strong>14 days</strong> of your <em>first</em> paid charge (after the free trial). Refunds are issued at our discretion and are not guaranteed for cause unrelated to a material defect of the Service. Beyond this 14-day window, all charges are non-refundable. Partial-month refunds are not provided.</p>
+
+<h2>7. User Responsibilities</h2>
+<p>You agree that:</p>
+<ul>
+  <li>All information you provide is accurate and current</li>
+  <li>You will use the Service only in compliance with all applicable laws</li>
+  <li>You are responsible for all content you upload, generate, send, or receive through the Service ("Your Content")</li>
+  <li>You will not use the Service to send spam, phishing messages, or other unsolicited communications</li>
+  <li>You will not attempt to gain unauthorized access to any portion of the Service or to other Users' data</li>
+  <li>You will obtain all necessary consents from your own clients and contacts before storing or sending their personal information through the Service</li>
+</ul>
+
+<h2>8. Prohibited Uses</h2>
+<p>You may not use the Service to:</p>
+<ul>
+  <li>Violate any law or regulation</li>
+  <li>Infringe upon any intellectual property right</li>
+  <li>Harass, threaten, defame, or impersonate any person</li>
+  <li>Distribute malware, viruses, or other harmful code</li>
+  <li>Attempt to reverse engineer, decompile, or copy the Service's code</li>
+  <li>Use automated means (bots, scrapers) to access the Service beyond reasonable use</li>
+  <li>Resell, rent, or sublicense access to the Service to third parties without our written consent</li>
+  <li>Generate, send, or store content that is unlawful, fraudulent, deceptive, or that promotes violence, discrimination, or self-harm</li>
+</ul>
+<p>We reserve the right to suspend or terminate accounts that violate this Section 8.</p>
+
+<h2>9. Intellectual Property</h2>
+
+<h3>9.1 Our Property</h3>
+<p>The Service, including its software, design, text, graphics, logos, and content created by H.E.L.P. Center (collectively, "Our Content"), is owned by us or our licensors and is protected by copyright, trademark, and other intellectual property laws. We grant you a limited, non-exclusive, non-transferable, revocable license to use the Service for your own internal business purposes during the term of your active subscription.</p>
+
+<h3>9.2 Your Content</h3>
+<p>You retain all ownership rights in Your Content. By using the Service, you grant us a worldwide, royalty-free, non-exclusive license to host, store, process, transmit, and display Your Content solely as necessary to provide the Service to you. We do not claim ownership of Your Content and will not use it to train models or for any purpose unrelated to providing the Service.</p>
+
+<h3>9.3 Joy Watford's Proprietary Content</h3>
+<p>Certain content within the Service — including but not limited to Joy Watford's coaching guides, business pathways, AI prompts, and educational materials — is the proprietary content of H.E.L.P. Center and is licensed to you solely for personal use within the Service. You may not redistribute, resell, or republish this content outside the Service.</p>
+
+<h2>10. E-Signature Service Disclaimer</h2>
+<p>The Service offers integrated e-signature functionality, either through our built-in service or via third-party providers configured by you. Electronic signatures collected through the Service are intended to comply with the U.S. ESIGN Act and applicable state UETA statutes. However, the legal validity and enforceability of any specific signed document depends on many factors including jurisdiction, document type, and the parties' intent. <strong>We do not provide legal advice and make no representation that any signature collected through the Service will be enforceable in any particular legal proceeding.</strong> You are solely responsible for the legal sufficiency of your documents and for retaining appropriate signed copies and audit trails for your records.</p>
+
+<h2>11. AI Service Disclaimer</h2>
+<p>The Service includes AI-powered features (AI Business Coach, AI Project Suite, content generation tools, etc.) that use third-party large language models. <strong>AI-generated output is not legal, financial, medical, tax, or professional advice. AI output may contain errors, inaccuracies, or fabricated information.</strong> You are responsible for reviewing, verifying, and validating any AI-generated content before relying on it for any decision. We are not liable for any loss or damage arising from your reliance on AI-generated content.</p>
+
+<h2>12. Third-Party Services</h2>
+<p>The Service integrates with third-party providers including but not limited to Groq, OpenAI, Anthropic, Stripe, Resend, SignFlow, and DocuSeal-compatible services. Your use of these third-party services is governed by their own terms and privacy policies, which we encourage you to review. We are not responsible for the acts, omissions, availability, accuracy, or content of third-party services.</p>
+
+<h2>13. Data Ownership and Portability</h2>
+<p>You own Your Content. At any time, you may export your data from the Service in JSON format through the in-product Export feature. Upon account termination, we will retain your data for 30 days to allow restoration if you change your mind, after which all data is permanently deleted from active systems. Backup copies may persist for an additional period before being purged per our backup rotation schedule.</p>
+
+<h2>14. Service Availability and Modifications</h2>
+<p>We strive to keep the Service available 24/7 but do not guarantee uninterrupted access. We may temporarily suspend the Service for maintenance, security, or other reasons with reasonable notice when possible. We may modify, add, or remove features at any time. We will provide notice of material changes that adversely affect your use of the Service.</p>
+
+<h2>15. Suspension and Termination</h2>
+<p>We may suspend or terminate your access to the Service immediately, without notice, if:</p>
+<ul>
+  <li>You materially breach these Terms</li>
+  <li>You fail to pay any amount owed when due (after a reasonable cure period)</li>
+  <li>Your use of the Service exposes us, other Users, or third parties to legal risk</li>
+  <li>We are required to do so by law or court order</li>
+  <li>Continued operation of the Service is no longer commercially viable</li>
+</ul>
+<p>Upon termination, your right to use the Service ends. Provisions of these Terms that by their nature should survive termination (including ownership, disclaimers, limitation of liability, and dispute resolution) will survive.</p>
+
+<h2>16. Disclaimer of Warranties</h2>
+<p>THE SERVICE IS PROVIDED "AS IS" AND "AS AVAILABLE" WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, NON-INFRINGEMENT, OR THAT THE SERVICE WILL BE ERROR-FREE OR UNINTERRUPTED. WE DO NOT WARRANT THAT THE SERVICE WILL MEET YOUR REQUIREMENTS OR THAT ANY DEFECTS WILL BE CORRECTED.</p>
+
+<h2>17. Limitation of Liability</h2>
+<p>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT WILL H.E.L.P. CENTER, ITS OWNERS, EMPLOYEES, OR AGENTS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, CONSEQUENTIAL, SPECIAL, EXEMPLARY, OR PUNITIVE DAMAGES (INCLUDING LOSS OF PROFITS, DATA, OR GOODWILL) ARISING OUT OF OR RELATED TO YOUR USE OF THE SERVICE, EVEN IF WE HAVE BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</p>
+<p>OUR TOTAL LIABILITY FOR ANY CLAIM ARISING FROM OR RELATED TO THE SERVICE IS LIMITED TO THE GREATER OF (A) THE AMOUNT YOU PAID US IN THE 12 MONTHS PRECEDING THE CLAIM, OR (B) ONE HUNDRED U.S. DOLLARS ($100).</p>
+<p>SOME JURISDICTIONS DO NOT ALLOW THE EXCLUSION OF CERTAIN WARRANTIES OR LIMITATIONS OF LIABILITY, SO THE ABOVE MAY NOT APPLY TO YOU IN FULL.</p>
+
+<h2>18. Indemnification</h2>
+<p>You agree to defend, indemnify, and hold harmless H.E.L.P. Center, its owners, employees, and agents from and against any claims, damages, losses, liabilities, costs, and expenses (including reasonable attorneys' fees) arising out of or related to (a) Your Content, (b) your use of the Service, (c) your violation of these Terms, or (d) your violation of any rights of a third party.</p>
+
+<h2>19. Dispute Resolution</h2>
+
+<h3>19.1 Informal Resolution</h3>
+<p>Before filing any formal claim, you agree to first contact us at <span class="placeholder">[SUPPORT EMAIL]</span> and make a good-faith effort to resolve the dispute informally for at least 30 days.</p>
+
+<h3>19.2 Binding Arbitration</h3>
+<p>Any dispute not resolved informally will be settled by binding arbitration administered by the American Arbitration Association under its Commercial Arbitration Rules. Arbitration will take place in Jacksonville, Florida (or remotely if both parties agree). Judgment on the arbitrator's award may be entered in any court of competent jurisdiction.</p>
+
+<h3>19.3 Class Action Waiver</h3>
+<p>You agree to resolve disputes individually and waive any right to participate in a class action or representative proceeding against H.E.L.P. Center.</p>
+
+<h3>19.4 Exception</h3>
+<p>Either party may seek injunctive relief in a court of competent jurisdiction to protect intellectual property rights or to prevent unauthorized use of the Service.</p>
+
+<h2>20. Governing Law</h2>
+<p>These Terms are governed by the laws of the State of Florida, U.S.A., without regard to conflict-of-law principles. The exclusive venue for any non-arbitration dispute is the state or federal courts located in Duval County, Florida.</p>
+
+<h2>21. Changes to These Terms</h2>
+<p>We may update these Terms from time to time. When we do, we will update the "Last Updated" date and notify active subscribers via email at least 14 days before material changes take effect. Continued use of the Service after the effective date of any change constitutes acceptance of the revised Terms.</p>
+
+<h2>22. Entire Agreement</h2>
+<p>These Terms, together with our Privacy Policy, constitute the entire agreement between you and H.E.L.P. Center regarding the Service and supersede all prior agreements. If any provision is found unenforceable, the remaining provisions will continue in full force and effect.</p>
+
+<h2>23. Contact Information</h2>
+<p>For questions, support, or notices under these Terms, contact us at:</p>
+<p>
+  H.E.L.P. Center<br>
+  Attn: Joy Watford, Founder<br>
+  <span class="placeholder">[BUSINESS ADDRESS]</span><br>
+  Email: <span class="placeholder">[SUPPORT EMAIL — e.g., support@thehelpctr.com]</span><br>
+  Web: thehelpctr.com
+</p>
+
+<hr>
+<p style="font-size:10pt;color:#777;margin-top:24px">
+<strong>Reminder before publishing:</strong> Replace all <span class="placeholder">[BRACKETED PLACEHOLDERS]</span>. Have a Florida-licensed business attorney review. Update the Effective Date to the date you publish.
+</p>
+
+</body>
+</html>

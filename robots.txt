@@ -1,0 +1,16 @@
+# H.E.L.P. Center — robots
+# Public marketing site is open to crawlers. Admin and client-portal
+# surfaces are not indexable.
+
+User-agent: *
+Allow: /
+Allow: /vibe-coder-pro/
+Disallow: /admin-frontend.html
+Disallow: /portal.html
+Disallow: /upload.html
+Disallow: /booking.html
+Disallow: /help-center-system.html
+Disallow: /pb/
+Disallow: /api/
+
+Sitemap: https://thehelpctr.com/sitemap.xml

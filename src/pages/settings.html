@@ -1,0 +1,380 @@
+      <div id="settings-page" class="page hidden">
+        <div class="page-header"><h1 class="page-title">Settings</h1><p class="page-subtitle">Manage your profile, password, and AI integration</p></div>
+        <div class="content">
+
+          <div class="card" style="margin-bottom:20px;background:linear-gradient(135deg,rgba(30,91,192,0.06),rgba(22,163,74,0.06));border:1px solid rgba(30,91,192,0.25)">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+              <div>
+                <div class="settings-section-title" style="margin-bottom:4px">Public Marketing Site</div>
+                <p style="font-size:13px;color:var(--gray-500);margin:0;line-height:1.6">Edit hero text, services, pricing, mockups, brand colors, and what visitors see at thehelpctr.com. Opens in a new tab.</p>
+              </div>
+              <a href="admin-frontend.html" target="_blank" class="btn btn-solid" style="white-space:nowrap;text-decoration:none">Open Frontend Manager →</a>
+            </div>
+          </div>
+
+          <div class="card" style="margin-bottom:20px">
+            <div class="settings-section-title">Profile</div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Your Name</label><input type="text" id="set-name" class="form-input" style="margin:0"></div>
+              <div class="form-group"><label class="form-label">Email</label><input type="email" id="set-email" class="form-input" style="margin:0"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Business Name</label><input type="text" id="set-biz" class="form-input" style="margin:0"></div>
+              <div class="form-group"><label class="form-label">Tagline</label><input type="text" id="set-tagline" class="form-input" style="margin:0"></div>
+            </div>
+            <div class="form-group" style="margin-top:4px"><label class="form-label">Client Portal Base URL <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--gray-400)">— the domain where this app is hosted (used in portal links)</span></label><input type="url" id="set-portal-url" class="form-input" style="margin:0" placeholder="https://yourdomain.com/helpcenter.html"></div>
+            <div style="display:flex;justify-content:flex-end;margin-top:12px"><button onclick="saveSettings()" class="btn btn-solid">Save Profile</button></div>
+          </div>
+          <div class="card" style="margin-bottom:20px">
+            <div class="settings-section-title">🔔 Notifications</div>
+            <p style="font-size:13px;color:var(--gray-500);margin:0 0 14px;line-height:1.6">Get push alerts on this device for new leads, bookings, reviews, and calendar reminders — even when the app is closed. Tap <strong>Enable</strong> on each device (phone + desktop) you want notified, then send a test.</p>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button onclick="enablePush()" class="btn btn-solid">Enable Notifications on This Device</button>
+              <button onclick="testPush()" class="btn btn-outline">Send Test Push</button>
+            </div>
+          </div>
+          <div class="card" style="margin-bottom:20px">
+            <div class="settings-section-title">Change Password</div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Current Password</label><input type="password" id="set-pw-current" class="form-input" style="margin:0" placeholder="Current password"></div>
+              <div class="form-group"><label class="form-label">New Password</label><input type="password" id="set-pw-new" class="form-input" style="margin:0" placeholder="New password"></div>
+              <div class="form-group"><label class="form-label">Confirm New</label><input type="password" id="set-pw-confirm" class="form-input" style="margin:0" placeholder="Confirm new password"></div>
+            </div>
+            <div id="set-pw-msg" style="font-size:13px;margin-top:6px;min-height:18px"></div>
+            <div style="display:flex;justify-content:flex-end;margin-top:12px"><button onclick="changePasswordSettings()" class="btn btn-solid">Update Password</button></div>
+          </div>
+          <div class="card" style="margin-bottom:20px;border:2px solid rgba(66,103,178,0.2)">
+            <div class="settings-section-title">AI Integration</div>
+            <p id="ai-owner-note" style="font-size:14px;color:var(--gray-500);margin-bottom:20px;line-height:1.7">Choose your preferred AI provider and model. AI is powered securely through the H.E.L.P. Center server — no API key required.</p>
+            <div id="ai-owner-banner" style="background:linear-gradient(135deg,rgba(66,103,178,0.08),rgba(66,103,178,0.04));border:1px solid rgba(66,103,178,0.2);border-radius:8px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:10px">
+              <span style="font-size:18px">✨</span>
+              <span style="font-size:13px;color:var(--accent);font-weight:600">AI powered by H.E.L.P. Center — no API key required</span>
+            </div>
+            <div id="ai-tenant-note" style="display:none;background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(124,58,237,0.04));border:1px solid rgba(124,58,237,0.25);border-radius:8px;padding:14px 16px;margin-bottom:16px">
+              <div style="font-size:13.5px;color:#5B21B6;font-weight:700;margin-bottom:4px">🔑 You run AI on your own account</div>
+              <div style="font-size:13px;color:#475569;line-height:1.6">Pick a provider below and paste in your own API key. Your key stays in your workspace and powers your AI Assistant + tools. New to this? See <a href="#" onclick="document.getElementById('ai-key-help').scrollIntoView({behavior:'smooth'});return false" style="color:var(--brand-primary);font-weight:600">How to get your keys</a> at the bottom of this card.</div>
+            </div>
+            <div class="form-group"><label class="form-label">AI Provider <span style="font-size:11px;color:var(--gray-400);font-weight:400">(primary — tried first)</span></label>
+              <select id="set-ai-provider" class="form-select" onchange="updateAiModelOptions()">
+                <option value="groq">Groq (Recommended — Fast, Free)</option>
+                <option value="gemini">Google Gemini (Free tier)</option>
+                <option value="openai">OpenAI</option>
+                <option value="claude">Claude (Anthropic) — Most Capable, Advanced Reasoning</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">Fallback Provider <span style="font-size:11px;color:var(--gray-400);font-weight:400">(used if your primary is rate-limited or down)</span></label>
+              <select id="set-ai-fallback" class="form-select">
+                <option value="">None (or auto — any other key you add below)</option>
+                <option value="groq">Groq</option>
+                <option value="gemini">Google Gemini</option>
+                <option value="openai">OpenAI</option>
+                <option value="claude">Claude (Anthropic)</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Model</label><select id="set-ai-model" class="form-select"></select></div>
+              <div class="form-group"><label class="form-label">AI Coach Name</label><input type="text" id="set-ai-name" class="form-input" style="margin:0" placeholder="e.g. HELP Coach, Coach V..."></div>
+            </div>
+            <div class="form-group" style="margin-top:8px">
+              <label class="form-label">Groq API Key — Primary <span style="font-size:11px;color:var(--gray-400);font-weight:400">(used first; free at console.groq.com)</span></label>
+              <input type="password" id="set-groq-key" class="form-input" style="margin:0" placeholder="gsk_...">
+            </div>
+            <div class="form-group" style="margin-top:8px">
+              <label class="form-label">Groq API Key — Secondary <span style="font-size:11px;color:var(--gray-400);font-weight:400">(falls over here when primary rate-limits — use a second account)</span></label>
+              <input type="password" id="set-groq-key-2" class="form-input" style="margin:0" placeholder="gsk_... (optional)">
+            </div>
+
+            <div style="margin-top:18px;padding:14px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:11px;font-weight:700;color:#3B82F6;background:rgba(59,130,246,0.10);padding:2px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase">Primary · Free</span>
+                <strong style="font-size:14px;color:#0F172A">Google Gemini</strong>
+              </div>
+              <p style="font-size:12.5px;color:var(--gray-600);margin:0 0 10px;line-height:1.6">Free keys at <a href="https://aistudio.google.com" target="_blank" style="color:var(--brand-primary)">aistudio.google.com</a> — ~1M tokens/day each. The app tries your free keys first; when both are exhausted it falls to Groq, then to your <strong>paid</strong> Gemini key (billing enabled). Add a second free key from a different Google account to double your free quota.</p>
+              <div class="form-group" style="margin:0 0 8px">
+                <label class="form-label">Gemini API Key — Free #1 <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — AIza...)</span></label>
+                <input type="password" id="set-gemini-key" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="AIza...">
+              </div>
+              <div class="form-group" style="margin:0 0 8px">
+                <label class="form-label">Gemini API Key — Free #2 <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — second free account, doubles daily quota)</span></label>
+                <input type="password" id="set-gemini-key-2" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="AIza... (optional)">
+              </div>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Gemini API Key — Paid <span style="font-size:11px;color:var(--gray-400);font-weight:400">(billing enabled — fallback + premium images &amp; voice)</span></label>
+                <input type="password" id="set-gemini-key-paid" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="AIza... (paid key)">
+              </div>
+            </div>
+
+            <div style="margin-top:14px;padding:14px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:11px;font-weight:700;color:#C2410C;background:rgba(234,88,12,0.10);padding:2px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase">Premium</span>
+                <strong style="font-size:14px;color:#0F172A">Claude (Anthropic)</strong>
+              </div>
+              <p style="font-size:12.5px;color:var(--gray-600);margin:0 0 10px;line-height:1.6">Most capable for legal docs, contracts, and long reasoning. Get a key at <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--brand-primary)">console.anthropic.com</a> (add billing first).</p>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">Anthropic API Key <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — sk-ant-...)</span></label>
+                <input type="password" id="set-claude-key" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="sk-ant-...">
+              </div>
+            </div>
+
+            <div style="margin-top:14px;padding:14px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:11px;font-weight:700;color:#0F766E;background:rgba(13,148,136,0.10);padding:2px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase">Premium</span>
+                <strong style="font-size:14px;color:#0F172A">OpenAI (GPT)</strong>
+              </div>
+              <p style="font-size:12.5px;color:var(--gray-600);margin:0 0 10px;line-height:1.6">GPT-4o / GPT-4o-mini. Get a key at <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--brand-primary)">platform.openai.com</a> (add billing first).</p>
+              <div class="form-group" style="margin:0">
+                <label class="form-label">OpenAI API Key <span style="font-size:11px;color:var(--gray-400);font-weight:400">(optional — sk-...)</span></label>
+                <input type="password" id="set-openai-key" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="sk-...">
+              </div>
+            </div>
+
+            <div style="margin-top:14px;padding:14px 16px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <span style="font-size:11px;font-weight:700;color:#10B981;background:rgba(16,185,129,0.10);padding:2px 8px;border-radius:99px;letter-spacing:0.04em;text-transform:uppercase">Local · Free · Unlimited</span>
+                <strong style="font-size:14px;color:#0F172A">Ollama Fallback (Optional)</strong>
+              </div>
+              <p style="font-size:12.5px;color:var(--gray-600);margin:0 0 12px;line-height:1.6">Use a local LLM via <a href="https://ollama.com" target="_blank" style="color:var(--brand-primary)">Ollama</a> when Groq is rate-limited. Runs on your computer with no usage cap. Required setup: start Ollama with <code style="background:#fff;padding:1px 6px;border-radius:4px;border:1px solid #E2E8F0;font-size:11.5px">OLLAMA_ORIGINS=*</code> so the dashboard can reach it.</p>
+              <div class="form-row" style="margin-bottom:8px">
+                <div class="form-group" style="flex:1"><label class="form-label">Ollama URL</label><input type="text" id="set-ollama-url" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="https://thehelpctr.com/ollama"></div>
+                <div class="form-group" style="flex:1"><label class="form-label">Ollama Model</label><input type="text" id="set-ollama-model" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="qwen2.5:7b or llama3.1:8b"></div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:#475569;cursor:pointer"><input type="checkbox" id="set-ollama-enabled"> Use as Groq fallback</label>
+                <button onclick="testOllamaConnection()" class="btn btn-outline" style="margin-left:auto;padding:6px 12px;font-size:12px">Test Connection</button>
+              </div>
+              <div id="ollama-status" style="font-size:12px;color:var(--gray-500);margin-top:6px;min-height:16px"></div>
+            </div>
+
+            <div id="ai-key-help" style="margin-top:18px;padding:16px 18px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px">
+              <div style="font-size:14px;font-weight:800;color:#92400E;margin-bottom:8px">📘 How to get your own API keys (free options first)</div>
+              <ol style="margin:0;padding-left:20px;font-size:13px;color:#475569;line-height:1.75">
+                <li><strong>Groq (free, recommended to start):</strong> Go to <a href="https://console.groq.com/keys" target="_blank" style="color:var(--brand-primary)">console.groq.com/keys</a> → sign up → "Create API Key" → copy the <code style="background:#fff;padding:1px 5px;border-radius:4px;border:1px solid #E2E8F0">gsk_...</code> value into the <em>Groq API Key — Primary</em> box above.</li>
+                <li><strong>Google Gemini (free ~1M tokens/day):</strong> <a href="https://aistudio.google.com/apikey" target="_blank" style="color:var(--brand-primary)">aistudio.google.com/apikey</a> → "Create API key" → paste the <code style="background:#fff;padding:1px 5px;border-radius:4px;border:1px solid #E2E8F0">AIza...</code> key into the Gemini box.</li>
+                <li><strong>Claude (paid, most capable):</strong> <a href="https://console.anthropic.com/settings/keys" target="_blank" style="color:var(--brand-primary)">console.anthropic.com</a> → add a payment method under Billing → "Create Key" → paste the <code style="background:#fff;padding:1px 5px;border-radius:4px;border:1px solid #E2E8F0">sk-ant-...</code> key.</li>
+                <li><strong>OpenAI (paid):</strong> <a href="https://platform.openai.com/api-keys" target="_blank" style="color:var(--brand-primary)">platform.openai.com/api-keys</a> → add billing → "Create new secret key" → paste the <code style="background:#fff;padding:1px 5px;border-radius:4px;border:1px solid #E2E8F0">sk-...</code> key.</li>
+              </ol>
+              <div style="font-size:12.5px;color:#92400E;margin-top:10px;line-height:1.6">💡 Tip: start with <strong>Groq + Gemini</strong> (both free). Add a paid key only when you need heavier reasoning. Set your <em>Primary</em> to the one you want used first and a <em>Fallback</em> for when it's busy. Keys are stored only in your own workspace.</div>
+            </div>
+            <div style="display:flex;justify-content:flex-end;margin-top:12px"><button onclick="saveAiSettings()" class="btn btn-solid">Save AI Settings</button></div>
+          </div>
+          <div id="pb-backend-card" class="card" style="margin-bottom:20px;border:2px solid rgba(16,185,129,0.2)">
+            <div class="settings-section-title">PocketBase Backend — VPS Hosting</div>
+            <p style="font-size:14px;color:var(--gray-500);margin-bottom:16px;line-height:1.7">Connect to a self-hosted <strong>PocketBase</strong> server on your VPS so all client and business data is stored server-side — not just in your browser. <a href="https://pocketbase.io" target="_blank" style="color:var(--accent)">pocketbase.io</a> is a free, single-file Go backend. Once set up, create a collection named <code style="background:var(--gray-100);padding:1px 5px;border-radius:4px">store</code> with fields: <code style="background:var(--gray-100);padding:1px 5px;border-radius:4px">key</code> (Text, unique) and <code style="background:var(--gray-100);padding:1px 5px;border-radius:4px">value</code> (JSON).</p>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">PocketBase URL</label><input type="url" id="set-pb-url" class="form-input" style="margin:0" placeholder="https://data.yourdomain.com"></div>
+              <div class="form-group"><label class="form-label">Admin Email</label><input type="email" id="set-pb-email" class="form-input" style="margin:0" placeholder="admin@yourdomain.com"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Admin Password</label><input type="password" id="set-pb-password" class="form-input" style="margin:0" placeholder="Admin password"></div>
+              <div class="form-group" style="display:flex;align-items:flex-end;gap:8px">
+                <button onclick="testPbConnection()" class="btn btn-outline" style="flex:1">Test Connection</button>
+                <button onclick="savePbSettings()" class="btn btn-solid" style="flex:1">Save & Enable</button>
+              </div>
+            </div>
+            <div id="set-pb-result" style="font-size:13px;margin-top:8px;min-height:18px"></div>
+            <div class="toggle-row" style="margin-top:16px;border-top:1px solid var(--gray-200);padding-top:16px">
+              <div><div style="font-weight:600">Push All Local Data to PocketBase</div><div style="font-size:13px;color:var(--gray-500);margin-top:2px">Upload everything currently in your browser to PocketBase for the first time</div></div>
+              <button onclick="pbPushAll()" class="btn btn-outline" style="white-space:nowrap">Push All Data</button>
+            </div>
+            <div class="toggle-row">
+              <div><div style="font-weight:600">Disable PocketBase</div><div style="font-size:13px;color:var(--gray-500);margin-top:2px">Switch back to browser-only local storage</div></div>
+              <button onclick="disablePb()" class="btn btn-outline" style="white-space:nowrap">Disable</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="settings-section-title">📧 Resend Email Integration</div>
+            <p style="font-size:13px;color:var(--gray-500);margin-bottom:12px">Send branded emails to your clients (booking confirmations, portal replies, invoices). <strong>Your sender email must be verified in Resend first.</strong></p>
+            <div style="margin-bottom:16px;padding:14px 16px;background:#FFFBEB;border:1px solid #FDE68A;border-radius:10px">
+              <div style="font-size:13.5px;font-weight:800;color:#92400E;margin-bottom:6px">📘 How to set up Resend</div>
+              <ol style="margin:0;padding-left:20px;font-size:13px;color:#475569;line-height:1.75">
+                <li>Sign up free at <a href="https://resend.com" target="_blank" style="color:var(--brand-primary)">resend.com</a> (free tier = 3,000 emails/mo).</li>
+                <li><strong>API key:</strong> <a href="https://resend.com/api-keys" target="_blank" style="color:var(--brand-primary)">resend.com/api-keys</a> → "Create API Key" → paste the <code style="background:#fff;padding:1px 5px;border-radius:4px;border:1px solid #E2E8F0">re_...</code> value below.</li>
+                <li><strong>Verify your domain:</strong> <a href="https://resend.com/domains" target="_blank" style="color:var(--brand-primary)">resend.com/domains</a> → add your domain → add the DNS records it shows you (at your domain registrar) → wait for "Verified." Your <em>Sender Email</em> must use that domain (e.g. <code style="background:#fff;padding:1px 5px;border-radius:4px;border:1px solid #E2E8F0">hello@yourbusiness.com</code>).</li>
+                <li>No domain yet? You can still test using Resend's <code style="background:#fff;padding:1px 5px;border-radius:4px;border:1px solid #E2E8F0">onboarding@resend.dev</code> sender, but get your own domain verified before emailing real clients.</li>
+              </ol>
+            </div>
+            <div style="display:grid;gap:12px">
+              <div>
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Resend API Key</label>
+                <input type="text" id="resend-api-key" class="form-input" style="margin:0" placeholder="re_..." oninput="saveIntegrationSettings()">
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                <div>
+                  <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Sender Name</label>
+                  <input type="text" id="resend-sender-name" class="form-input" style="margin:0" placeholder="Joy Watford" oninput="saveIntegrationSettings()">
+                </div>
+                <div>
+                  <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Sender Email</label>
+                  <input type="email" id="resend-sender-email" class="form-input" style="margin:0" placeholder="joy@yourdomain.com" oninput="saveIntegrationSettings()">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="settings-section-title">Branding</div>
+            <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">Drop in your logo and tune the brand colors. Changes apply live and re-skin the entire app — including the client portal that your clients see.</p>
+            <div style="display:grid;gap:14px">
+              <div>
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:6px">Logo</label>
+                <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+                  <div id="brand-logo-preview" style="width:72px;height:72px;border-radius:12px;background:#fff;border:1px solid var(--gray-200);display:flex;align-items:center;justify-content:center;overflow:hidden;padding:6px;flex-shrink:0">
+                    <span style="font-size:11px;color:var(--gray-400)">No logo</span>
+                  </div>
+                  <div style="flex:1;min-width:200px">
+                    <input type="file" id="brand-logo-upload" accept=".png,.jpg,.jpeg,.svg,.webp" style="font-size:13px" onchange="handleBrandLogoUpload(this)">
+                    <div style="font-size:11px;color:var(--gray-400);margin-top:6px">PNG / JPG / SVG · ideally square, 256px+ · max 2 MB</div>
+                  </div>
+                  <button onclick="resetBrandLogo()" class="btn btn-outline" style="padding:6px 12px;font-size:12px">Reset to default</button>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px">
+                <div>
+                  <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Primary</label>
+                  <input type="color" id="brand-color-primary" value="#1E5BC0" oninput="applyBrandColors()" style="width:100%;height:40px;border:1px solid var(--gray-300);border-radius:6px;padding:2px;cursor:pointer">
+                </div>
+                <div>
+                  <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Primary Dark</label>
+                  <input type="color" id="brand-color-primary-dark" value="#144298" oninput="applyBrandColors()" style="width:100%;height:40px;border:1px solid var(--gray-300);border-radius:6px;padding:2px;cursor:pointer">
+                </div>
+                <div>
+                  <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Primary Light</label>
+                  <input type="color" id="brand-color-primary-light" value="#4A86DD" oninput="applyBrandColors()" style="width:100%;height:40px;border:1px solid var(--gray-300);border-radius:6px;padding:2px;cursor:pointer">
+                </div>
+                <div>
+                  <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Secondary (success)</label>
+                  <input type="color" id="brand-color-secondary" value="#16A34A" oninput="applyBrandColors()" style="width:100%;height:40px;border:1px solid var(--gray-300);border-radius:6px;padding:2px;cursor:pointer">
+                </div>
+                <div>
+                  <label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px">Accent (warm)</label>
+                  <input type="color" id="brand-color-accent" value="#F97316" oninput="applyBrandColors()" style="width:100%;height:40px;border:1px solid var(--gray-300);border-radius:6px;padding:2px;cursor:pointer">
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button onclick="saveBrandSettings()" class="btn btn-solid" style="padding:10px 18px">Save Branding</button>
+                <button onclick="resetBrandColors()" class="btn btn-outline" style="padding:10px 18px">Reset Colors to H.E.L.P. Defaults</button>
+              </div>
+              <div id="brand-save-status" style="font-size:12px;color:var(--gray-500)"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="settings-section-title">💳 Stripe Payments</div>
+            <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">Accept invoice payments from clients via Stripe Checkout. Your <strong>secret key</strong> stays on your VPS — only the publishable key is in the browser. The Site Tag appears as a suffix on the customer's bank statement (e.g. <code style="background:#f1f1f1;padding:2px 6px;border-radius:4px">JOY WATFORD*HELPCENTER</code>) so you can tell which site each charge came from.</p>
+            <div style="display:grid;gap:12px">
+              <div>
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Stripe Publishable Key (pk_live_… or pk_test_…)</label>
+                <input type="text" id="stripe-pub-key" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="pk_live_..." oninput="saveIntegrationSettings()">
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Site Tag <span style="color:var(--gray-400);font-weight:400">(max 12 chars, A-Z 0-9, no spaces)</span></label>
+                <input type="text" id="stripe-site-tag" class="form-input" style="margin:0;text-transform:uppercase" placeholder="HELPCENTER" maxlength="12" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');saveIntegrationSettings()">
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Stripe Proxy URL <span style="color:var(--gray-400);font-weight:400">(your VPS endpoint that creates checkout sessions)</span></label>
+                <input type="url" id="stripe-proxy-url" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" placeholder="http://187.124.146.184:8787" oninput="saveIntegrationSettings()">
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Currency</label>
+                <select id="stripe-currency" class="form-input" style="margin:0" onchange="saveIntegrationSettings()">
+                  <option value="usd">USD</option>
+                  <option value="cad">CAD</option>
+                  <option value="eur">EUR</option>
+                  <option value="gbp">GBP</option>
+                </select>
+              </div>
+              <div id="stripe-status" style="font-size:12px;color:var(--gray-500)"></div>
+              <button onclick="testStripeConnection()" class="btn btn-outline" style="margin-top:4px">Test Stripe Connection</button>
+            </div>
+          </div>
+
+          <div class="card" id="settings-tenant-inbox-card">
+            <div class="settings-section-title"><span class="icon icon-sm" data-icon="message" style="margin-right:6px;vertical-align:-2px;color:#7C3AED"></span>Tenant Inbox <span style="font-size:11px;background:#EDE9FE;color:#7C3AED;padding:2px 8px;border-radius:99px;margin-left:6px;font-weight:600">OWNER</span></div>
+            <p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">Messages your tenants send via the "Contact Owner" button in their dashboard. New messages also email you automatically.</p>
+            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+              <button onclick="renderTenantInbox()" class="btn btn-outline" style="padding:6px 12px;font-size:12px">Refresh</button>
+            </div>
+            <div id="tenant-inbox-list" style="border:1px solid var(--gray-200);border-radius:10px;overflow:hidden;max-height:480px;overflow-y:auto"></div>
+          </div>
+
+          <div class="card" id="settings-tenants-card">
+            <div class="settings-section-title"><span class="icon icon-sm" data-icon="users" style="margin-right:6px;vertical-align:-2px;color:#7C3AED"></span>Tenants <span style="font-size:11px;background:#EDE9FE;color:#7C3AED;padding:2px 8px;border-radius:99px;margin-left:6px;font-weight:600">OWNER</span></div>
+            <p style="font-size:13px;color:var(--gray-500);margin-bottom:14px">Manage anyone running their own dashboard off your PocketBase. Each tenant gets a unique URL like <code style="background:#F1F5F9;padding:1px 6px;border-radius:4px;font-size:11px">?tenant=toby</code>, their own data, their own password. Their data is isolated by key prefix in your PB.</p>
+            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+              <button onclick="addTenantPrompt()" class="btn btn-solid" style="padding:8px 14px;font-size:13px;background:linear-gradient(135deg,#7C3AED,var(--brand-primary))">+ Add Tenant</button>
+              <button onclick="renderTenantsList()" class="btn btn-outline" style="padding:8px 14px;font-size:13px">Refresh</button>
+            </div>
+            <div id="tenants-list" style="border:1px solid var(--gray-200);border-radius:10px;overflow:hidden"></div>
+          </div>
+
+          <div class="card">
+            <div class="settings-section-title"><span class="icon icon-sm" data-icon="send" style="margin-right:6px;vertical-align:-2px;color:var(--brand-primary)"></span>Email History</div>
+            <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">Every email you send through the dashboard — to clients, team members, or document recipients — is logged here. Click any row to view the full message.</p>
+            <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+              <button onclick="renderEmailHistory()" class="btn btn-outline" style="padding:6px 12px;font-size:12px">Refresh</button>
+              <button onclick="if(confirm('Clear all email history? This only removes the log — sent emails are not unsent.')){setData('sentEmails',[]);renderEmailHistory();}" class="btn btn-outline" style="padding:6px 12px;font-size:12px;color:#dc2626;border-color:#fecaca">Clear log</button>
+            </div>
+            <div id="email-history-list" style="max-height:480px;overflow-y:auto;border:1px solid var(--gray-200);border-radius:10px"></div>
+          </div>
+
+          <div class="card">
+            <div class="settings-section-title"><span class="icon icon-sm" data-icon="calendar" style="margin-right:6px;vertical-align:-2px;color:var(--brand-primary)"></span>Calendar Subscription</div>
+            <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">Subscribe to your dashboard calendar from Google, Apple, or Outlook. New events you add here appear in your phone/laptop calendar within minutes — automatically. <strong>One-way</strong> (dashboard → your calendar). The URL is private to you; treat it like a password.</p>
+            <div style="display:grid;gap:12px">
+              <div>
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Your Subscription URL</label>
+                <div style="display:flex;gap:8px">
+                  <input type="text" id="cal-sub-url" class="form-input" style="margin:0;font-family:Consolas,monospace;font-size:12px" readonly>
+                  <button onclick="copyCalendarUrl()" class="btn btn-outline" style="white-space:nowrap;padding:9px 14px"><span class="icon icon-sm" data-icon="clipboard" style="margin-right:5px;vertical-align:-2px"></span>Copy</button>
+                  <button onclick="regenerateCalendarToken()" class="btn btn-outline" style="white-space:nowrap;padding:9px 14px" title="Rotate token — old URL stops working immediately">Regenerate</button>
+                </div>
+              </div>
+              <details style="font-size:13px;color:var(--gray-600);background:var(--gray-50,#f9fafb);border:1px solid var(--gray-200,#e5e7eb);border-radius:8px;padding:10px 14px">
+                <summary style="cursor:pointer;font-weight:600;color:var(--gray-700)">How to subscribe</summary>
+                <div style="margin-top:10px;line-height:1.65">
+                  <strong>Google Calendar:</strong> Open <a href="https://calendar.google.com" target="_blank" style="color:var(--brand-primary)">calendar.google.com</a> → left sidebar → "+" next to <em>Other calendars</em> → <em>From URL</em> → paste your URL → <em>Add calendar</em>. Google polls every few hours.<br><br>
+                  <strong>Apple Calendar (Mac):</strong> Calendar app → <em>File → New Calendar Subscription…</em> → paste URL → set <em>Auto-refresh</em> to "Every hour".<br><br>
+                  <strong>Apple Calendar (iPhone/iPad):</strong> Settings → Calendar → Accounts → Add Account → Other → Add Subscribed Calendar → paste URL.<br><br>
+                  <strong>Outlook:</strong> outlook.live.com → Calendar → <em>Add calendar → Subscribe from web</em> → paste URL.
+                </div>
+              </details>
+              <div id="cal-sub-status" style="font-size:12px;color:var(--gray-500)"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="settings-section-title"><span class="icon icon-sm" data-icon="note" style="margin-right:6px;vertical-align:-2px;color:var(--brand-primary)"></span>E-Signature &amp; Contracts</div>
+            <p style="font-size:13px;color:var(--gray-500);margin-bottom:16px">Send contracts and documents for legally-binding e-signature. Leave the fields blank to use the built-in H.E.L.P. signature service, or enter your own DocuSeal/SignFlow credentials to use a self-hosted provider. After saving, "Send Contract" / "Send for E-Signature" buttons unlock on bookings and documents.</p>
+            <div style="display:grid;gap:12px">
+              <div>
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Service URL <span style="color:var(--gray-500);font-weight:400">(optional)</span></label>
+                <input type="text" id="signature-url" class="form-input" style="margin:0" placeholder="Leave blank for built-in, or https://signflow.yourdomain.com" oninput="saveIntegrationSettings()">
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">API Token <span style="color:var(--gray-500);font-weight:400">(optional)</span></label>
+                <input type="text" id="signature-token" class="form-input" style="margin:0" placeholder="Required only when using your own provider" oninput="saveIntegrationSettings()">
+              </div>
+              <div>
+                <label style="font-size:13px;font-weight:600;display:block;margin-bottom:4px">Default Template ID <span style="color:var(--gray-500);font-weight:400">(optional)</span></label>
+                <input type="text" id="signature-template-id" class="form-input" style="margin:0" placeholder="e.g. 42" oninput="saveIntegrationSettings()">
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="settings-section-title">Data Management</div>
+            <div class="toggle-row">
+              <div><div style="font-weight:600">Export All Data</div><div style="font-size:13px;color:var(--gray-500);margin-top:2px">Download a full JSON backup (clients, bookings, revenue, notes, services, calendar, contracts, etc.)</div></div>
+              <button onclick="exportData()" class="btn btn-outline" style="white-space:nowrap">Export JSON</button>
+            </div>
+            <div class="toggle-row">
+              <div><div style="font-weight:600">Import Data</div><div style="font-size:13px;color:var(--gray-500);margin-top:2px">Upload a JSON backup. Choose merge (de-duped by id) or replace.</div></div>
+              <button onclick="importData()" class="btn btn-outline" style="white-space:nowrap">Import JSON</button>
+            </div>
+            <div class="toggle-row">
+              <div><div style="font-weight:600;color:var(--error)">Reset System</div><div style="font-size:13px;color:var(--gray-500);margin-top:2px">Clear all data and restore seed data — cannot be undone</div></div>
+              <button onclick="resetSystem()" class="btn btn-outline" style="color:var(--error);border-color:var(--error);white-space:nowrap">Reset</button>
+            </div>
+          </div>
+        </div>
+      </div>

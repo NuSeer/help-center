@@ -1,0 +1,77 @@
+      <div id="website-builder-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">🌐 Website Builder</h1>
+          <p class="page-subtitle">Describe your brand — AI builds a complete, download-ready website in seconds. 60 hand-crafted templates.</p>
+        </div>
+        <div class="content">
+          <div id="wb-grid" style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start">
+
+            <div>
+              <!-- Template picker -->
+              <div class="card" style="margin-bottom:16px">
+                <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+                  <h3 style="font-size:14px;font-weight:700;margin:0">🎨 Choose a Style</h3>
+                  <span id="wb-tmpl-hint" style="font-size:11px;color:var(--gray-500)">auto-picked from your prompt</span>
+                </div>
+                <div id="wb-templates" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+                <div id="wb-examples" style="margin-top:10px;display:none">
+                  <span style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gray-500)">Try these prompts: </span>
+                  <span id="wb-example-chips"></span>
+                </div>
+              </div>
+
+              <!-- Page count -->
+              <div class="card" style="margin-bottom:16px">
+                <h3 style="font-size:14px;font-weight:700;margin-bottom:10px">📄 Pages</h3>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button class="wb-page-btn active" onclick="wbSetPages(1,this)">1 Page <span style="font-size:10px;opacity:.6">Landing only</span></button>
+                  <button class="wb-page-btn" onclick="wbSetPages(2,this)">2 Pages <span style="font-size:10px;opacity:.6">+ About</span></button>
+                  <button class="wb-page-btn" onclick="wbSetPages(3,this)">3 Pages <span style="font-size:10px;opacity:.6">+ Pricing</span></button>
+                </div>
+              </div>
+
+              <!-- Prompt -->
+              <div class="card" style="margin-bottom:16px">
+                <h3 style="font-size:14px;font-weight:700;margin-bottom:10px">🚀 Describe Your Brand</h3>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <input id="wb-prompt" class="form-input" style="margin:0;flex:1;min-width:240px" placeholder='e.g. "Black-owned luxury candle brand for women 25–45…"' onkeydown="if(event.key==='Enter')wbBuild()">
+                  <button id="wb-build-btn" class="btn btn-solid" style="white-space:nowrap;padding:10px 20px" onclick="wbBuild()">⚡ Build It</button>
+                  <button id="wb-3styles-btn" class="btn btn-outline" style="white-space:nowrap;padding:10px 16px" onclick="wbBuildVariations()" title="One brand · three different styles">🎲 3 Styles</button>
+                </div>
+                <div style="margin-top:6px;font-size:11px;color:var(--gray-500)">⚡ uses your selected style (or auto-pick) · 🎲 builds the same brand in 3 different styles from one AI call</div>
+                <div id="wb-error" style="display:none;margin-top:8px;font-size:12px;color:var(--error)"></div>
+              </div>
+
+              <!-- Progress -->
+              <div id="wb-progress" class="card" style="display:none;margin-bottom:16px">
+                <h3 style="font-size:14px;font-weight:700;margin-bottom:12px" id="wb-progress-title">Building…</h3>
+                <div id="wb-steps"></div>
+              </div>
+
+              <!-- Preview -->
+              <div id="wb-preview-wrap" class="card" style="display:none;padding:0;overflow:hidden">
+                <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;border-bottom:1px solid var(--gray-200);flex-wrap:wrap">
+                  <span style="font-size:13px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="wb-preview-title">Preview</span>
+                  <div style="display:flex;border:1.5px solid var(--gray-200);border-radius:6px;overflow:hidden">
+                    <button id="wb-btn-preview" class="wb-view-btn active" onclick="wbToggleView('preview')">👁 Preview</button>
+                    <button id="wb-btn-code" class="wb-view-btn" onclick="wbToggleView('code')">&lt;/&gt; Code</button>
+                  </div>
+                  <button class="btn btn-outline" style="padding:6px 12px;font-size:12px" onclick="wbDownload()">⬇ Download</button>
+                  <button class="btn btn-outline" style="padding:6px 12px;font-size:12px" onclick="wbCopy()">📋 Copy HTML</button>
+                  <button class="btn btn-outline" style="padding:6px 12px;font-size:12px;border-color:#DC2626;color:#DC2626" onclick="wbClear()">✕</button>
+                </div>
+                <iframe id="wb-iframe" style="width:100%;height:600px;border:none;display:block" sandbox="allow-scripts allow-same-origin"></iframe>
+                <textarea id="wb-code-view" class="form-input" style="display:none;height:600px;font-family:monospace;font-size:12px;resize:vertical;border:none;border-radius:0" readonly></textarea>
+              </div>
+            </div>
+
+            <!-- Right: history -->
+            <div>
+              <div class="card">
+                <h3 style="font-size:14px;font-weight:700;margin-bottom:12px">📁 Recent Builds</h3>
+                <div id="wb-history"><div style="font-size:13px;color:var(--gray-400)">No builds yet.</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>

@@ -1,0 +1,17 @@
+      <div id="vibe-coder-page" class="page hidden">
+        <div class="page-header" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+          <div>
+            <h1 class="page-title">Vibe Coder</h1>
+            <p class="page-subtitle">Voice input, screenshot import, visual editor, AI modules. Powered by Vibe Coder Pro.</p>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button onclick="vcExpand()" id="vc-expand-btn" class="btn btn-outline" style="padding:8px 14px" title="Toggle full-screen preview"><span class="icon icon-sm" data-icon="rocket" style="margin-right:5px;vertical-align:-2px"></span>Expand</button>
+            <a href="/vibe-coder-pro/" target="_blank" rel="noopener" class="btn btn-outline" style="padding:8px 14px;text-decoration:none" title="Open Vibe Coder Pro in a new tab"><span class="icon icon-sm" data-icon="upload" style="margin-right:5px;vertical-align:-2px"></span>Open in new tab</a>
+          </div>
+        </div>
+        <div class="content" style="padding:0 16px 16px">
+          <div id="vc-frame-wrap" style="position:relative;background:#0F172A;border-radius:12px;overflow:hidden;border:1px solid var(--gray-200,#e5e7eb)">
+            <iframe id="vc-frame" src="about:blank" loading="lazy" allow="microphone; clipboard-read; clipboard-write" style="width:100%;height:calc(100vh - 200px);min-height:560px;border:none;background:#0F172A;display:block"></iframe>
+          </div>
+        </div>
+      </div>

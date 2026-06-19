@@ -1,0 +1,22 @@
+      <div id="state-resources-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">State Resources</h1>
+          <p class="page-subtitle">Business registration, LLC fees, and SOS links for all 50 states — H.E.L.P. Center is going nationwide</p>
+        </div>
+        <div class="content">
+          <div class="card" style="margin-bottom:20px;background:linear-gradient(135deg,#0F172A,#1e3a5f);color:#fff">
+            <div style="font-size:15px;font-weight:700;margin-bottom:6px">Expanding Nationwide?</div>
+            <p style="font-size:14px;opacity:0.85;line-height:1.7;margin:0">Each state has different LLC formation fees, processing times, and annual requirements. Use this guide to register your business, help your clients expand, or choose the right state for your holding company. Wyoming and Delaware are top choices for privacy and flexibility.</p>
+          </div>
+          <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap">
+            <input type="text" id="state-search" class="form-input" style="margin:0;max-width:300px" placeholder="Search state..." oninput="filterStates()">
+            <select id="state-filter-fee" class="form-select" style="margin:0;padding:10px 14px" onchange="filterStates()">
+              <option value="">All Fee Ranges</option>
+              <option value="low">Under $100</option>
+              <option value="mid">$100–$200</option>
+              <option value="high">Over $200</option>
+            </select>
+          </div>
+          <div id="states-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px"></div>
+        </div>
+      </div>

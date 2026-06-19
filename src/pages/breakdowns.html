@@ -1,0 +1,17 @@
+      <div id="breakdowns-page" class="page hidden">
+        <div class="page-header">
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+            <div>
+              <h1 class="page-title">Breakdowns</h1>
+              <p class="page-subtitle">Save step-by-step explainers of complex concepts. Big text, numbered steps, no walls of paragraphs — built for ADHD brains.</p>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onclick="bdAskAi()" class="btn btn-outline" style="padding:8px 14px"><span class="icon icon-sm" data-icon="spark" style="margin-right:5px;vertical-align:-2px"></span>Ask AI for a Breakdown</button>
+              <button onclick="bdAddManual()" class="btn btn-solid" style="padding:8px 14px"><span class="icon icon-sm" data-icon="plus" style="margin-right:5px;vertical-align:-2px"></span>Add Breakdown</button>
+            </div>
+          </div>
+        </div>
+        <div class="content">
+          <div id="breakdowns-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px"></div>
+        </div>
+      </div>

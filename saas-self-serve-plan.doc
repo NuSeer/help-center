@@ -1,0 +1,200 @@
+<!DOCTYPE html><html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head><meta charset='utf-8'><title>H.E.L.P. Center — Self-Serve SaaS Plan</title>
+<style>
+body{font-family:'Calibri','Inter',Arial,sans-serif;max-width:820px;margin:24px auto;padding:0 28px;color:#0F172A;line-height:1.6;font-size:13.5pt}
+h1{font-size:23pt;color:#0F172A;border-bottom:3px solid #7C3AED;padding-bottom:8px;margin:0 0 6px}
+h2{font-size:16pt;color:#1E5BC0;margin:26px 0 8px;border-bottom:1px solid #E2E8F0;padding-bottom:4px}
+h3{font-size:13.5pt;color:#0F172A;margin:18px 0 6px}
+p{margin:8px 0}
+ul,ol{margin:8px 0;padding-left:24px}
+li{margin:5px 0}
+ul ul,ol ul{margin:2px 0}
+em{color:#475569}
+code{font-family:Consolas,'Courier New',monospace;background:#F1F5F9;padding:1px 6px;border-radius:3px;font-size:11pt}
+table{border-collapse:collapse;width:100%;margin:12px 0}
+th,td{border:1px solid #CBD5E1;padding:7px 10px;text-align:left;font-size:11.5pt;vertical-align:top}
+th{background:#EEF2FF;font-weight:700;color:#3730A3}
+hr{border:0;border-top:1px solid #CBD5E1;margin:22px 0}
+.sub{color:#64748B;font-style:italic;font-size:11.5pt;margin-top:2px}
+.callout{background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;padding:12px 16px;margin:14px 0}
+@page{margin:0.8in}
+</style></head><body>
+
+<h1>H.E.L.P. Center — Self-Serve SaaS Plan</h1>
+<div class="sub">Signup &rarr; Pay &rarr; Auto-Provision &nbsp;·&nbsp; Planning document (no code yet — this is the map).</div>
+
+<h2>1. The goal in one sentence</h2>
+<p>Turn <em>"I manually create each tenant and email them a login"</em> into <strong>"a person finds the site, picks a plan, pays, and their workspace sets itself up — no action from me."</strong></p>
+<p>That single change is what makes this a real, sell-in-your-sleep SaaS instead of a hand-onboarded tool.</p>
+
+<h2>2. What "done" looks like (the customer's journey)</h2>
+<ol>
+<li>Visitor lands on a <strong>pricing/signup page</strong>.</li>
+<li>They pick a plan (Spark / Growth / Elite) and click <strong>Start</strong>.</li>
+<li>They enter email + business name and go to <strong>Stripe Checkout</strong> (secure, hosted by Stripe).</li>
+<li>They pay (or start a free trial).</li>
+<li><strong>Automatically</strong>, behind the scenes: their tenant workspace is created, their login is set up, and the AI tools their plan includes are turned on.</li>
+<li>They get a <strong>welcome email</strong> with their link and a "set your password" button.</li>
+<li>They log in to a working, empty-but-theirs workspace.</li>
+<li>Later they can <strong>manage/cancel</strong> their subscription themselves.</li>
+<li>If they cancel or a payment fails, their workspace <strong>suspends automatically</strong>.</li>
+</ol>
+<p><strong>You touch none of it unless something breaks.</strong></p>
+
+<h2>3. Where we are today (honest starting point)</h2>
+<p><strong>Already built (reusable):</strong></p>
+<ul>
+<li>Multi-tenant workspace with real data isolation (PocketBase rules).</li>
+<li>A provisioning routine that creates a tenant's login + seeds their settings (currently triggered by <em>you</em> in the SaaS Clients form).</li>
+<li>Stripe is already wired for one-off invoice payments (proxy on the VPS).</li>
+<li>Resend email + a welcome/credentials email template.</li>
+<li>Plans exist as <strong>labels</strong> (Spark/Growth/Elite) but nothing enforces them.</li>
+</ul>
+<p><strong>Missing (this plan fills it):</strong></p>
+<ul>
+<li>A public signup page tied to plan selection.</li>
+<li><strong>Subscriptions</strong> in Stripe (recurring), not just one-off charges.</li>
+<li>A <strong>webhook</strong> so Stripe tells our server "they paid" &rarr; server provisions automatically.</li>
+<li><strong>Plan enforcement</strong> (limits/features per tier).</li>
+<li><strong>Self-service billing</strong> (change/cancel) + lifecycle (suspend on cancel/failed payment).</li>
+</ul>
+
+<h2>4. The pieces we need to build</h2>
+<p>Seven connected parts (A–E are the core "cash register"; F–G are run-the-business + growth):</p>
+<table>
+<tr><th>#</th><th>Part</th><th>What it does</th><th>Where it lives</th></tr>
+<tr><td>A</td><td><strong>Signup page</strong></td><td>Pick plan, enter email/business, go to checkout</td><td>New public page (extend landing/welcome.html)</td></tr>
+<tr><td>B</td><td><strong>Stripe subscriptions</strong></td><td>Recurring billing for each plan</td><td>Stripe dashboard (products/prices) + checkout call</td></tr>
+<tr><td>C</td><td><strong>Webhook + auto-provision</strong></td><td>"Payment succeeded" &rarr; create tenant automatically</td><td>VPS backend (server.js)</td></tr>
+<tr><td>D</td><td><strong>Welcome + first login</strong></td><td>Email them their link + set-password flow</td><td>Resend + a small set-password page</td></tr>
+<tr><td>E</td><td><strong>Plan enforcement + billing portal</strong></td><td>Gate features by tier; let them manage/cancel</td><td>Dashboard code + Stripe Customer Portal</td></tr>
+<tr><td>F</td><td><strong>Owner KPI dashboard</strong></td><td>MRR, active tenants, trials, churn, new signups at a glance</td><td>New owner-only page in the dashboard</td></tr>
+<tr><td>G</td><td><strong>Affiliate / referral program</strong></td><td>Others refer customers for a commission — growth engine</td><td>Referral links + tracking + payout report</td></tr>
+</table>
+
+<h2>5. Build phases (sequenced so each step is usable)</h2>
+
+<h3>Phase 0 — Decisions only (you, ~30 min, no building)</h3>
+<p>Before code, lock these down (see Section 8): pricing, what each plan includes, free trial or not, signup domain.</p>
+
+<h3>Phase 1 — Signup page (frontend)</h3>
+<ul>
+<li>A clean pricing page with 3 plan cards and a "Start" button each.</li>
+<li>A short form: business name + email.</li>
+<li>Clicking Start kicks off Stripe Checkout for that plan.</li>
+<li><strong>Deliverable:</strong> a real signup page that hands off to payment.</li>
+</ul>
+
+<h3>Phase 2 — Stripe subscriptions</h3>
+<ul>
+<li>In Stripe: create one <strong>Product per plan</strong> with a <strong>monthly + annual price</strong>.</li>
+<li>Switch the checkout call from one-off charge &rarr; <strong>subscription mode</strong>.</li>
+<li>Store the Stripe customer/subscription IDs against the future tenant.</li>
+<li><strong>Deliverable:</strong> people can actually subscribe and Stripe bills them monthly.</li>
+</ul>
+
+<h3>Phase 3 — Webhook &rarr; auto-provision (the heart of it)</h3>
+<ul>
+<li>Add a Stripe <strong>webhook endpoint</strong> on the VPS backend.</li>
+<li>On <code>checkout.session.completed</code> / <code>subscription.created</code>: read the plan + email + business name, run the <strong>existing provisioning logic</strong> (create PB user, seed <code>&lt;slug&gt;:settings</code>, set <code>&lt;slug&gt;:tenantOfferedProjects</code> from the plan's tool list), and generate a slug automatically (from business name, de-duplicated).</li>
+<li><strong>Deliverable:</strong> payment &rarr; workspace exists, fully automatic. This is the milestone that makes it "a proper SaaS."</li>
+</ul>
+
+<h3>Phase 4 — Welcome email + first login</h3>
+<ul>
+<li>After provisioning, send the <strong>welcome email</strong> (link + "Set your password").</li>
+<li>A tiny <strong>set-password page</strong> so they choose their own password on first visit.</li>
+<li><strong>Deliverable:</strong> the new customer gets in by themselves.</li>
+</ul>
+
+<h3>Phase 5 — Plan enforcement</h3>
+<ul>
+<li>Map each plan to <strong>limits + features</strong> (e.g., Spark = 10 clients + 1 AI tool; Growth = unlimited + all tools; Elite = + white-label).</li>
+<li>Enforce in the app: when a tenant hits a limit, show "Upgrade to add more."</li>
+<li>Tie the <strong>AI tools list</strong> (already per-tenant) to the plan automatically.</li>
+<li><strong>Deliverable:</strong> plans actually mean something; upsell path exists.</li>
+</ul>
+
+<h3>Phase 6 — Self-service billing + lifecycle</h3>
+<ul>
+<li>Add a <strong>"Manage Billing"</strong> button &rarr; Stripe <strong>Customer Portal</strong> (they change card, upgrade, cancel — Stripe hosts it).</li>
+<li>Webhooks for <code>subscription.updated</code> / <code>deleted</code> / <code>invoice.payment_failed</code>: downgrade/upgrade plan automatically, <strong>suspend</strong> the tenant on cancel or repeated failed payment, reactivate on recovery.</li>
+<li><strong>Deliverable:</strong> the money side runs itself, including churn.</li>
+</ul>
+
+<h3>Phase 7 — Owner KPI dashboard (run it by the numbers)</h3>
+<p class="sub">Folded in from the boilerplate's "Super-Admin KPIs" idea.</p>
+<ul>
+<li>A new <strong>owner-only page</strong> (the upgrade to your SaaS Clients page) showing in real time: <strong>MRR</strong> + projected annual; <strong>active tenants</strong>, <strong>trials</strong>, <strong>past-due</strong>, <strong>canceled</strong>; <strong>new signups</strong> this week/month; and simple <strong>churn</strong>.</li>
+<li>Numbers come from data Phases 2–6 already store — this phase mostly <strong>reads and visualizes</strong> it.</li>
+<li><strong>Deliverable:</strong> one screen that tells you if the business is growing or leaking.</li>
+</ul>
+
+<h3>Phase 8 — Affiliate / referral program (growth engine)</h3>
+<p class="sub">Folded in from the boilerplate's "Affiliate system with commission payments."</p>
+<ul>
+<li>Give each tenant (or outside partner) a <strong>unique referral link</strong> (e.g. <code>thehelpctr.com/start?ref=joycoach</code>).</li>
+<li>On signup, <strong>record who referred them</strong>; on a paid conversion, <strong>credit a commission</strong> (e.g. 20% recurring or a flat first-month bounty).</li>
+<li>An <strong>affiliate view</strong> (their link, clicks, signups, earnings) + an <strong>owner payout report</strong>.</li>
+<li>Start simple (manual payouts from the report); automate later if it takes off.</li>
+<li><strong>Deliverable:</strong> other people sell your SaaS for you — the cheapest growth there is.</li>
+</ul>
+
+<h3>Phase 9 — Hardening (do once it's earning)</h3>
+<ul>
+<li>Move tenants to a <strong>separate SaaS PocketBase</strong> so they're not on your personal instance.</li>
+<li>Move the <strong>sensitive gating/IP server-side</strong> so the AI-project logic isn't fully shipped in the browser.</li>
+<li>Tenant-own <strong>Resend</strong> sending.</li>
+<li><strong>Deliverable:</strong> scales safely, IP protected.</li>
+</ul>
+
+<h2>6. Data we'll add (small)</h2>
+<p>On each tenant record / PB user: <code>stripeCustomerId</code>, <code>stripeSubscriptionId</code>, <code>plan</code> (already exists), <code>planStatus</code> (active / trialing / past_due / canceled), <code>currentPeriodEnd</code>.</p>
+<p>A new <strong>plan &rarr; features map</strong> (clients limit, AI tools included, feature flags per tier). For the <strong>affiliate program</strong>: <code>referredBy</code> on each tenant + a small <code>affiliates</code> record (link code, clicks, signups, commission owed/paid).</p>
+
+<h2>7. Security / trust notes</h2>
+<ul>
+<li>Stripe handles all card data — we never see card numbers.</li>
+<li>The <strong>webhook must verify Stripe's signature</strong> (so nobody can fake "they paid").</li>
+<li>Slugs auto-generated + de-duplicated (no collisions, no reserved words like <code>admin</code>).</li>
+<li>Suspended tenants lose access immediately (login URL stops working).</li>
+<li>Provisioning runs <strong>server-side</strong> (PB admin credentials never go in the browser).</li>
+</ul>
+
+<h2>8. Decisions needed before Phase 1</h2>
+<ol>
+<li><strong>Plans &amp; prices</strong> — confirm the 3 tiers and monthly/annual prices (Spark $19 / Growth $49 / Elite $97 — keep those?).</li>
+<li><strong>What each plan includes</strong> — client limit + which AI tools + which features per tier.</li>
+<li><strong>Free trial?</strong> — e.g., 7- or 14-day trial, card required or not.</li>
+<li><strong>Signup domain</strong> — where the signup page lives (e.g., <code>thehelpctr.com/start</code>).</li>
+<li><strong>Tenant URL style</strong> — keep <code>?tenant=slug</code> for now, or subdomains later.</li>
+<li><strong>Who picks the slug</strong> — auto from business name (recommended) or let them choose.</li>
+<li><strong>Affiliate commission</strong> — e.g. 20% recurring or a flat first-month bounty; any tenant or hand-picked partners.</li>
+</ol>
+
+<h2>9. Rough sizing (focused build sessions)</h2>
+<ul>
+<li>Phase 1 (signup page): small.</li>
+<li>Phase 2 (Stripe subscriptions): small–medium.</li>
+<li>Phase 3 (webhook + auto-provision): <strong>medium — the core</strong>.</li>
+<li>Phase 4 (welcome + set password): small.</li>
+<li>Phase 5 (plan enforcement): medium.</li>
+<li>Phase 6 (billing portal + lifecycle): medium.</li>
+<li>Phase 7 (owner KPI dashboard): small–medium.</li>
+<li>Phase 8 (affiliate program): medium.</li>
+<li>Phase 9 (hardening): larger, deferrable.</li>
+</ul>
+<div class="callout"><strong>Minimum to be a real self-serve SaaS: Phases 1–4.</strong> Phases 5–6 make it polished and churn-proof. Phase 7 (KPIs) is a small add once billing exists. Phase 8 (affiliates) is your cheapest growth lever. Phase 9 is for scale.</div>
+
+<h2>10. Recommended order</h2>
+<ol>
+<li><strong>Phase 0 decisions</strong> (you, ~30 min).</li>
+<li>Build <strong>Phases 1 &rarr; 4 as one push</strong> (signup &rarr; pay &rarr; auto-provision &rarr; welcome) — flips "I onboard people" into "people onboard themselves."</li>
+<li><strong>Phase 5 &rarr; 6</strong> (plan limits + self-service billing/churn) so it runs itself.</li>
+<li><strong>Phase 7</strong> (KPI dashboard) — quick win once billing data exists.</li>
+<li><strong>Phase 8</strong> (affiliates) — turn customers/partners into a sales force.</li>
+<li><strong>Phase 9</strong> (hardening) — when revenue justifies it.</li>
+</ol>
+<p>The three biggest upgrades — <strong>(1) subscriptions + self-serve signup</strong>, <strong>(2) the KPI/MRR dashboard</strong>, <strong>(3) the affiliate program</strong> — are Phases 1–6, 7, and 8. One master roadmap, in order. All on the existing system — no rebuild.</p>
+
+</body></html>

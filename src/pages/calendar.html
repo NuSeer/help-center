@@ -1,0 +1,42 @@
+<div id="calendar-page" class="page hidden">
+  <div class="page-header">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <div>
+        <h1 class="page-title">Calendar</h1>
+        <p class="page-subtitle">Schedule sessions, deadlines, and business milestones</p>
+      </div>
+      <button onclick="openAddEventModal()" class="btn btn-solid">+ Add Event</button>
+    </div>
+  </div>
+  <div class="content">
+    <!-- View switcher + nav -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <button onclick="calNav(-1)" class="btn btn-outline" style="padding:8px 14px;font-weight:700">‹</button>
+        <div id="cal-month-label" style="font-size:18px;font-weight:700;min-width:200px;text-align:center;color:var(--gray-900)"></div>
+        <button onclick="calNav(1)" class="btn btn-outline" style="padding:8px 14px;font-weight:700">›</button>
+        <button onclick="calGoToday()" class="btn btn-outline" style="padding:8px 14px;font-size:12px">Today</button>
+      </div>
+      <div style="display:flex;gap:6px;background:var(--gray-100);border-radius:8px;padding:4px">
+        <button id="cal-view-day" onclick="setCalView('day',this)" class="btn" style="padding:7px 14px;font-size:12px;font-weight:600;border-radius:6px;background:#fff;border:none;box-shadow:0 1px 3px rgba(0,0,0,0.1)">Day</button>
+        <button id="cal-view-week" onclick="setCalView('week',this)" class="btn" style="padding:7px 14px;font-size:12px;font-weight:600;border-radius:6px;background:none;border:none;color:var(--gray-500)">Week</button>
+        <button id="cal-view-month" onclick="setCalView('month',this)" class="btn" style="padding:7px 14px;font-size:12px;font-weight:600;border-radius:6px;background:none;border:none;color:var(--gray-500)">Month</button>
+        <button id="cal-view-year" onclick="setCalView('year',this)" class="btn" style="padding:7px 14px;font-size:12px;font-weight:600;border-radius:6px;background:none;border:none;color:var(--gray-500)">Year</button>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:20px;align-items:start">
+      <!-- Main calendar view -->
+      <div class="card" style="padding:0;overflow:hidden">
+        <div id="cal-main-view"></div>
+      </div>
+      <!-- Upcoming events sidebar -->
+      <div>
+        <div class="card">
+          <div style="font-weight:700;font-size:15px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--gray-100)">📋 Upcoming Events</div>
+          <div id="cal-upcoming"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

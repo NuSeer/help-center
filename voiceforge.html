@@ -1,0 +1,2109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>VoiceForge Studio — Powered by Groq</title>
+<meta name="theme-color" content="#ff6b2b">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VoiceForge">
+<meta name="description" content="Speak your ideas — AI transforms them into blogs, scripts, social posts and more. Powered by Groq.">
+<link rel="manifest" id="pwa-manifest">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c18;
+  --surface: #0d1221;
+  --surface2: #131929;
+  --surface3: #1a2235;
+  --border: rgba(255,107,43,0.10);
+  --border2: rgba(255,107,43,0.22);
+  --orange: #ff6b2b;
+  --orange-dim: rgba(255,107,43,0.13);
+  --orange-glow: rgba(255,107,43,0.28);
+  --teal: #00e5c0;
+  --teal-dim: rgba(0,229,192,0.10);
+  --amber: #ff9f43;
+  --text: #eef2ff;
+  --text2: #7a88aa;
+  --text3: #3a4560;
+  --coral: #ff4d6d;
+  --coral-dim: rgba(255,77,109,0.12);
+  --blue: #4d9fff;
+  --green: #2ecc71;
+  --green-dim: rgba(46,204,113,0.10);
+  --purple: #a78bfa;
+  --r: 10px;
+  --rl: 16px;
+  --sans: 'Sora', sans-serif;
+  --display: 'Playfair Display', serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 60% 40% at 80% 10%,rgba(255,107,43,0.12) 0%,transparent 60%),radial-gradient(ellipse 50% 50% at 10% 80%,rgba(0,229,192,0.07) 0%,transparent 55%)}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E")}
+
+/* ── API Key Setup Screen ── */
+.setup-screen{position:fixed;inset:0;z-index:200;background:var(--bg);display:flex;align-items:center;justify-content:center;padding:24px}
+.setup-screen::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 50% at 50% 40%,rgba(255,107,43,0.10) 0%,transparent 65%);pointer-events:none}
+.setup-card{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:40px 36px;max-width:460px;width:100%;position:relative;z-index:1;box-shadow:0 32px 80px rgba(0,0,0,0.6),0 0 0 1px rgba(255,107,43,0.05)}
+.setup-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
+.setup-logo-mark{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,rgba(255,107,43,0.2),rgba(255,159,67,0.1));border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:20px}
+.setup-logo-name{font-family:var(--display);font-size:20px;font-weight:700;color:var(--orange)}
+.setup-h1{font-family:var(--display);font-size:26px;font-weight:700;color:var(--text);line-height:1.3;margin-bottom:8px}
+.setup-h1 em{color:var(--orange);font-style:italic}
+.setup-sub{font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:24px}
+.setup-label{font-size:11px;color:var(--text2);font-weight:500;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:7px;display:block}
+.setup-input{width:100%;padding:12px 15px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface2);color:var(--text);font-size:13px;font-family:var(--sans);outline:none;transition:border 0.15s,box-shadow 0.15s;margin-bottom:14px;letter-spacing:0.05em}
+.setup-input:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,107,43,0.08)}
+.setup-input::placeholder{color:var(--text3);letter-spacing:0}
+.setup-note{font-size:11px;color:var(--text3);line-height:1.6;margin-bottom:20px;padding:10px 12px;background:var(--surface2);border-radius:var(--r);border-left:2px solid var(--border2)}
+.setup-note a{color:var(--orange);text-decoration:none}
+.setup-btn{width:100%;padding:14px;border-radius:var(--r);border:none;background:linear-gradient(135deg,#ff6b2b 0%,#ff9f43 60%,#ffcc55 100%);color:#fff;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--display);font-style:italic;letter-spacing:0.02em;box-shadow:0 4px 24px rgba(255,107,43,0.35);transition:all 0.2s}
+.setup-btn:hover{transform:translateY(-1px);box-shadow:0 8px 32px rgba(255,107,43,0.50)}
+.setup-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none}
+.setup-features{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:22px}
+.sf-item{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--text2)}
+.sf-icon{font-size:13px}
+
+/* ── Main Shell ── */
+.shell{position:relative;z-index:1;display:grid;grid-template-columns:240px 1fr;grid-template-rows:56px 1fr;min-height:100vh}
+.shell.hidden{display:none}
+
+/* ── Topbar ── */
+.topbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 20px;border-bottom:1px solid var(--border);background:var(--surface)}
+.logo{display:flex;align-items:center;gap:9px;cursor:pointer}
+.logo-mark{width:30px;height:30px;border-radius:7px;background:linear-gradient(135deg,rgba(255,107,43,0.2),rgba(255,159,67,0.1));border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:14px}
+.logo-name{font-family:var(--display);font-size:16px;font-weight:700;color:var(--orange)}
+.logo-sub{font-size:10px;color:var(--text3);letter-spacing:0.06em;margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:10px}
+.api-status{display:flex;align-items:center;gap:6px;font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid var(--border)}
+.api-dot{width:6px;height:6px;border-radius:50%}
+.api-dot.ok{background:var(--green);animation:glow 2s infinite}
+.api-dot.err{background:var(--coral)}
+@keyframes glow{0%,100%{opacity:1}50%{opacity:0.4}}
+.topbar-btn{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--sans);transition:all 0.15s}
+.topbar-btn:hover{border-color:var(--orange);color:var(--orange)}
+.model-badge{font-size:10px;padding:3px 10px;border-radius:12px;background:var(--orange-dim);border:1px solid var(--border2);color:var(--orange);font-weight:600;letter-spacing:0.04em}
+
+/* ── Sidebar ── */
+.sidebar{border-right:1px solid var(--border);padding:18px 12px;display:flex;flex-direction:column;gap:2px;background:var(--surface);overflow-y:auto}
+.nav-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.12em;padding:12px 10px 5px;font-weight:600}
+.nav-lbl:first-child{padding-top:0}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:var(--r);cursor:pointer;font-size:12px;color:var(--text2);transition:all 0.15s;border:1px solid transparent}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--orange-dim);color:var(--orange);border-color:var(--border2)}
+.nav-divider{height:1px;background:var(--border);margin:8px 0}
+.fmt-chip{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:var(--r);cursor:pointer;font-size:11px;color:var(--text2);transition:all 0.15s;border:1px solid transparent}
+.fmt-chip:hover{background:var(--surface2);color:var(--text)}
+.fmt-chip.active{background:var(--surface2);color:var(--text);border-color:var(--border)}
+.fmt-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── Main ── */
+.main{overflow-y:auto;display:flex;flex-direction:column;gap:0}
+
+/* ── Studio panels ── */
+.panel{display:none;padding:22px 24px;flex:1;flex-direction:column;gap:16px}
+.panel.active{display:flex}
+
+/* ── Page header ── */
+.page-hdr{margin-bottom:4px}
+.page-title{font-family:var(--display);font-size:22px;font-weight:700;color:var(--text);line-height:1.2}
+.page-title em{color:var(--orange);font-style:italic}
+.page-sub{font-size:12px;color:var(--text2);margin-top:4px;font-weight:300}
+
+/* ── Cards ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:18px 20px}
+.card-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;letter-spacing:0.02em}
+.card-sub{font-size:10px;color:var(--text3);font-weight:400}
+
+/* ── Stats bar ── */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.stat-cell{background:var(--surface);padding:10px 14px}
+.stat-val{font-size:18px;font-weight:600;color:var(--text);font-family:var(--display)}
+.stat-lbl{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-top:2px}
+
+/* ── Voice capture ── */
+.capture-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rec-zone{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:18px;position:relative;overflow:hidden;transition:border-color 0.3s,box-shadow 0.3s}
+.rec-zone.recording{border-color:rgba(255,77,109,0.4);box-shadow:0 0 30px rgba(255,77,109,0.08)}
+.rec-zone::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,var(--orange-glow) 0%,transparent 65%);pointer-events:none;opacity:0;transition:opacity 0.4s}
+.rec-zone.recording::after{opacity:0.6}
+.rz-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.rz-label{font-size:11px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:0.08em}
+.rec-timer{font-family:var(--display);font-size:14px;color:var(--coral);font-weight:700;letter-spacing:0.04em}
+
+/* Waveform */
+.waveform{height:52px;display:none;align-items:flex-end;justify-content:center;gap:2.5px;margin-bottom:10px;padding:0 4px}
+.waveform.show{display:flex}
+.wbar{width:3px;background:var(--teal);border-radius:2px;height:8px;transition:height 0.08s ease;opacity:0.8}
+
+/* Transcript */
+.transcript{width:100%;min-height:90px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;font-size:13px;color:var(--text);font-family:var(--sans);resize:vertical;outline:none;line-height:1.7;transition:border 0.15s}
+.transcript:focus{border-color:var(--border2)}
+.transcript::placeholder{color:var(--text3);font-size:12px}
+
+/* Record btn */
+.btn-row{display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.btn-rec{display:flex;align-items:center;gap:7px;padding:9px 18px;border-radius:var(--r);border:1px solid rgba(255,77,109,0.4);background:rgba(255,77,109,0.1);color:var(--coral);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all 0.2s}
+.btn-rec:hover{background:rgba(255,77,109,0.18);border-color:var(--coral)}
+.btn-rec.recording{animation:recpulse 1.4s infinite}
+@keyframes recpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,77,109,0)}50%{box-shadow:0 0 16px 3px rgba(255,77,109,0.18)}}
+.btn-rec.recording .rdot{animation:rdotpulse 0.7s infinite}
+@keyframes rdotpulse{0%,100%{opacity:1}50%{opacity:0.2}}
+.rdot{width:7px;height:7px;border-radius:50%;background:var(--coral);flex-shrink:0}
+.btn-sm{padding:8px 14px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--sans);transition:all 0.15s}
+.btn-sm:hover{border-color:var(--text2);color:var(--text)}
+.btn-transcribe{padding:9px 18px;border-radius:var(--r);border:1px solid rgba(0,229,192,0.3);background:rgba(0,229,192,0.08);color:var(--teal);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all 0.2s}
+.btn-transcribe:hover{background:rgba(0,229,192,0.14);border-color:var(--teal)}
+.btn-transcribe:disabled{opacity:0.35;cursor:not-allowed}
+.wc{font-size:11px;color:var(--text3);margin-left:auto}
+
+/* Detail zone */
+.detail-zone{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:18px}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.detail-field{display:flex;flex-direction:column;gap:6px}
+.detail-label{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.08em}
+.detail-input{padding:9px 12px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-family:var(--sans);outline:none;transition:border 0.15s}
+.detail-input:focus{border-color:var(--border2)}
+.detail-input::placeholder{color:var(--text3)}
+.detail-textarea{padding:9px 12px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-family:var(--sans);outline:none;resize:none;line-height:1.6;transition:border 0.15s;width:100%}
+.detail-textarea:focus{border-color:var(--border2)}
+.detail-textarea::placeholder{color:var(--text3)}
+.detail-select{padding:9px 12px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:12px;font-family:var(--sans);outline:none;cursor:pointer;width:100%}
+.detail-select:focus{border-color:var(--border2)}
+
+/* Format grid */
+.fmt-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.fmt-card{border:1px solid var(--border);border-radius:var(--r);padding:11px 12px;cursor:pointer;transition:all 0.15s;background:var(--surface)}
+.fmt-card:hover{border-color:var(--border2);background:var(--surface2)}
+.fmt-card.selected{background:var(--surface2);border-color:var(--border2)}
+.fmt-card.selected .fc-name{color:var(--orange)}
+.fc-accent{height:2px;border-radius:1px;margin-bottom:8px;opacity:0;transition:opacity 0.15s}
+.fmt-card.selected .fc-accent{opacity:1}
+.fc-ico{font-size:16px;margin-bottom:5px}
+.fc-name{font-size:11px;font-weight:600;color:var(--text);margin-bottom:2px;transition:color 0.15s}
+.fc-desc{font-size:10px;color:var(--text3);line-height:1.4}
+
+/* Forge button */
+.forge-row{display:flex;gap:10px;align-items:stretch}
+.forge-btn{flex:1;padding:14px 20px;border-radius:var(--r);border:none;background:linear-gradient(135deg,#ff6b2b 0%,#ff9f43 60%,#ffcc55 100%);color:#fff;font-size:15px;font-weight:700;cursor:pointer;font-family:var(--display);font-style:italic;letter-spacing:0.02em;box-shadow:0 4px 24px rgba(255,107,43,0.35),0 1px 0 rgba(255,255,255,0.1) inset;text-shadow:0 1px 2px rgba(0,0,0,0.2);transition:all 0.2s}
+.forge-btn:hover{transform:translateY(-1px);box-shadow:0 8px 36px rgba(255,107,43,0.50)}
+.forge-btn:disabled{opacity:0.4;cursor:not-allowed;transform:none;box-shadow:none}
+.tone-sel{padding:0 14px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:12px;font-family:var(--sans);outline:none;cursor:pointer;min-width:160px}
+
+/* Output */
+.output-zone{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;min-height:200px;transition:border-color 0.3s,box-shadow 0.3s}
+.output-zone.ready{border-color:rgba(255,107,43,0.25);box-shadow:0 0 40px rgba(255,107,43,0.06)}
+.out-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.out-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;font-weight:600}
+.out-actions{display:flex;gap:6px}
+.out-btn{padding:5px 12px;border-radius:var(--r);border:1px solid var(--border2);background:transparent;color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--sans);transition:all 0.15s}
+.out-btn:hover{border-color:var(--orange);color:var(--orange)}
+.out-btn.ok{border-color:var(--green);color:var(--green)}
+.out-content{font-size:13px;color:var(--text);line-height:1.85;white-space:pre-wrap;font-weight:300}
+.out-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;gap:10px;opacity:0.4}
+.out-empty-ico{font-size:36px}
+.out-empty-txt{font-size:12px;color:var(--text2);text-align:center;line-height:1.6}
+
+/* Loading */
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;gap:16px}
+.loading-bars{display:flex;align-items:center;gap:3.5px}
+.lb{width:3px;border-radius:2px;background:linear-gradient(to top,var(--orange),var(--amber));animation:lba 1.2s ease-in-out infinite}
+.lb:nth-child(1){height:18px;animation-delay:0s}
+.lb:nth-child(2){height:30px;animation-delay:0.1s}
+.lb:nth-child(3){height:22px;animation-delay:0.2s}
+.lb:nth-child(4){height:38px;animation-delay:0.3s}
+.lb:nth-child(5){height:26px;animation-delay:0.4s}
+.lb:nth-child(6){height:42px;animation-delay:0.5s}
+.lb:nth-child(7){height:30px;animation-delay:0.6s}
+.lb:nth-child(8){height:20px;animation-delay:0.7s}
+@keyframes lba{0%,100%{transform:scaleY(0.35);opacity:0.4}50%{transform:scaleY(1);opacity:1}}
+.loading-msg{font-size:13px;color:var(--text2);font-family:var(--display);font-style:italic}
+.loading-sub{font-size:11px;color:var(--text3)}
+
+/* Error box */
+.err-box{background:var(--coral-dim);border:1px solid rgba(255,77,109,0.3);border-radius:var(--r);padding:14px 16px;font-size:12px;color:var(--coral);line-height:1.6}
+
+/* Toast */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);padding:10px 16px;font-size:12px;color:var(--text);z-index:300;transform:translateY(60px);opacity:0;transition:all 0.3s;max-width:300px}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* History items */
+.hist-item{padding:8px 12px;border-radius:var(--r);background:var(--surface2);border:1px solid var(--border);margin-bottom:7px;cursor:pointer;transition:all 0.15s}
+.hist-item:hover{border-color:var(--border2)}
+.hist-fmt{font-size:10px;color:var(--orange);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:3px}
+.hist-preview{font-size:11px;color:var(--text2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* ── Image Gallery ── */
+.img-section{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:18px 20px}
+.img-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.img-hdr-left{display:flex;align-items:center;gap:10px}
+.img-title{font-size:12px;font-weight:600;color:var(--text);letter-spacing:0.02em}
+.img-status{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em}
+.img-controls{display:flex;align-items:center;gap:8px}
+.img-ctrl-lbl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em}
+.img-select{padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:11px;font-family:var(--sans);outline:none;cursor:pointer}
+.img-toggle{display:flex;align-items:center;gap:6px;cursor:pointer;font-size:11px;color:var(--text2)}
+.img-toggle input{accent-color:var(--orange);width:14px;height:14px;cursor:pointer}
+.img-grid{display:grid;gap:12px}
+.img-grid.count-1{grid-template-columns:1fr}
+.img-grid.count-2{grid-template-columns:1fr 1fr}
+.img-grid.count-3{grid-template-columns:1fr 1fr 1fr}
+.img-card{border-radius:var(--r);overflow:hidden;border:1px solid var(--border);position:relative;background:var(--surface2);aspect-ratio:16/9;cursor:pointer}
+.img-card img{width:100%;height:100%;object-fit:cover;display:block}
+.img-card-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(8,12,24,0.85) 0%,transparent 50%);transition:opacity 0.2s;pointer-events:none}
+.img-card:hover .img-card-overlay{opacity:1!important}
+.img-card-actions{position:absolute;bottom:10px;left:10px;right:10px;display:flex;gap:6px;transition:opacity 0.2s}
+.img-card:hover .img-card-actions{opacity:1!important}
+.img-act-btn{padding:5px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(8,12,24,0.7);color:#fff;font-size:10px;cursor:pointer;font-family:var(--sans);backdrop-filter:blur(4px);transition:all 0.15s;flex:1;text-align:center}
+.img-act-btn:hover{background:rgba(255,107,43,0.4);border-color:rgba(255,107,43,0.5)}
+.img-prompt-label{font-size:10px;color:var(--text3);margin-top:6px;line-height:1.4;font-style:italic;padding:0 2px}
+.img-loading-card{border-radius:var(--r);overflow:hidden;border:1px solid var(--border);background:var(--surface2);aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.img-loading-spinner{width:32px;height:32px;border-radius:50%;border:2px solid var(--border2);border-top-color:var(--orange);animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.img-loading-txt{font-size:11px;color:var(--text3);font-style:italic;font-family:var(--display)}
+.img-regen-btn{padding:6px 14px;border-radius:var(--r);border:1px solid var(--border2);background:var(--orange-dim);color:var(--orange);font-size:11px;cursor:pointer;font-family:var(--sans);font-weight:600;transition:all 0.15s}
+.img-regen-btn:hover{background:var(--orange-glow)}
+.img-regen-btn:disabled{opacity:0.4;cursor:not-allowed}
+.img-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px;gap:8px;opacity:0.4}
+.img-empty-ico{font-size:28px}
+.img-empty-txt{font-size:11px;color:var(--text2);text-align:center;line-height:1.5}
+
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:2px}
+
+/* ── Generate Ideas Button ── */
+.gen-ideas-btn{padding:6px 14px;border-radius:var(--r);border:1px solid var(--border2);background:var(--orange-dim);color:var(--orange);font-size:11px;font-weight:600;cursor:pointer;font-family:var(--sans);transition:all 0.15s;white-space:nowrap}
+.gen-ideas-btn:hover{background:var(--orange-glow)}
+.gen-ideas-btn:disabled{opacity:0.4;cursor:not-allowed}
+
+/* ── Ideas Panel (shows suggested detail) ── */
+.ideas-panel{background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);padding:12px 14px;margin-top:10px;display:none}
+.ideas-panel.on{display:block}
+.ideas-panel-title{font-size:11px;font-weight:600;color:var(--orange);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.idea-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:0.5px solid var(--border);cursor:pointer;transition:all 0.15s}
+.idea-row:last-child{border-bottom:none}
+.idea-row:hover{opacity:0.8}
+.idea-row-lbl{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.06em;min-width:80px;margin-top:1px}
+.idea-row-val{font-size:12px;color:var(--text);line-height:1.5;flex:1}
+.idea-apply-btn{font-size:10px;padding:2px 8px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--sans);white-space:nowrap;flex-shrink:0}
+.idea-apply-btn:hover{border-color:var(--orange);color:var(--orange)}
+.ideas-apply-all{width:100%;padding:8px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface);color:var(--text2);font-size:12px;cursor:pointer;font-family:var(--sans);margin-top:10px;transition:all 0.15s}
+.ideas-apply-all:hover{border-color:var(--orange);color:var(--orange)}
+
+/* ── Format Extra Panels (book planner, biz assistant) ── */
+.fmt-extra-panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:18px 20px;display:none;margin-bottom:14px}
+.fmt-extra-panel.on{display:block}
+.fep-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.fep-sub{font-size:11px;color:var(--text3);margin-bottom:14px}
+.fep-btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.fep-btn{padding:9px 16px;border-radius:var(--r);border:1px solid var(--border2);background:var(--surface2);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--sans);transition:all 0.15s;white-space:nowrap}
+.fep-btn:hover{border-color:var(--border2);background:var(--surface3);color:var(--text)}
+.fep-btn.active{border-color:var(--orange);background:var(--orange-dim);color:var(--orange)}
+.fep-btn:disabled{opacity:0.4;cursor:not-allowed}
+.fep-result{background:var(--surface2);border-radius:var(--r);padding:14px 16px;font-size:12px;color:var(--text);line-height:1.8;white-space:pre-wrap;display:none;border-left:3px solid var(--orange)}
+.fep-result.on{display:block}
+.fep-result-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.fep-result-lbl{font-size:10px;color:var(--orange);font-weight:600;text-transform:uppercase;letter-spacing:0.07em}
+.fep-copy-btn{font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--sans)}
+.fep-copy-btn:hover{border-color:var(--orange);color:var(--orange)}
+.fep-loading{display:flex;align-items:center;gap:8px;padding:12px 0;font-size:12px;color:var(--text3);font-style:italic;font-family:var(--display)}
+.install-bar{display:none;align-items:center;gap:10px;padding:10px 18px;background:var(--orange-dim);border-bottom:1px solid var(--border2)}
+.install-bar.visible{display:flex}
+.ib-text{flex:1;font-size:12px;color:var(--text2);line-height:1.4}
+.ib-btn{padding:7px 14px;border-radius:var(--r);border:none;background:var(--orange);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);white-space:nowrap}
+.ib-close{padding:4px 8px;background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:16px;line-height:1}
+
+/* ── CapCut Launch Button ── */
+.capcut-btn{width:100%;padding:13px 18px;border-radius:var(--rl);border:1.5px solid rgba(0,229,192,0.30);background:rgba(0,229,192,0.07);color:var(--teal);font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans);display:none;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;transition:all 0.15s}
+.capcut-btn.visible{display:flex}
+.capcut-btn:hover{background:rgba(0,229,192,0.13);border-color:rgba(0,229,192,0.5)}
+.capcut-copied{font-size:10px;font-weight:400;color:rgba(0,229,192,0.65)}
+
+/* ── Bottom Tab Bar (mobile only) ── */
+.bottom-tabs{display:none;border-top:1px solid var(--border);background:var(--surface);padding-bottom:env(safe-area-inset-bottom,0px)}
+.btab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:10px 4px;border:none;background:transparent;cursor:pointer;font-family:var(--sans);-webkit-tap-highlight-color:transparent;transition:all 0.1s}
+.btab-ico{font-size:20px}
+.btab-lbl{font-size:10px;font-weight:500;color:var(--text3);letter-spacing:0.04em}
+.btab.on .btab-lbl{color:var(--orange)}
+.btab:active .btab-ico{transform:scale(0.9)}
+
+/* ── MOBILE RESPONSIVE ── */
+@media (max-width:768px){
+  body{overflow:hidden;height:100vh;height:100dvh}
+  .shell{display:flex;flex-direction:column;height:100%;min-height:0;grid-template-columns:unset;grid-template-rows:unset;overflow:hidden}
+  .topbar{grid-column:unset;flex-shrink:0;padding-top:calc(12px + env(safe-area-inset-top,0px))}
+  .sidebar{display:none}
+  .main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
+  .bottom-tabs{display:flex;flex-shrink:0}
+  .panel{display:none}
+  .panel.active{display:block}
+  .studio{padding:14px 14px 0}
+  .transform-section{padding:0 14px 14px}
+  .capture-grid{grid-template-columns:1fr!important}
+  .format-grid{grid-template-columns:1fr 1fr}
+  .stats-bar{grid-template-columns:1fr 1fr}
+  .forge-row{flex-direction:column;gap:8px}
+  .tone-sel{width:100%}
+  .detail-grid{grid-template-columns:1fr!important}
+  .img-grid.count-2,.img-grid.count-3{grid-template-columns:1fr!important}
+  .forge-btn{padding:14px;font-size:15px;width:100%}
+  .model-badge{display:none}
+  .toast{bottom:calc(64px + env(safe-area-inset-bottom,0px) + 10px)!important;right:50%!important;left:auto!important;transform:translateX(50%) translateY(30px)!important}
+  .toast.show{transform:translateX(50%) translateY(0)!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     SETUP SCREEN
+══════════════════════════════════════════ -->
+<div class="setup-screen" id="setup-screen" style="display:none" hidden>
+  <div class="setup-card">
+    <div class="setup-logo">
+      <div class="setup-logo-mark">🎙️</div>
+      <div class="setup-logo-name">VoiceForge Studio</div>
+    </div>
+    <div class="setup-h1">Speak it.<br><em>We'll forge it.</em></div>
+    <div class="setup-sub">Turn raw voice recordings and rough ideas into polished blogs, scripts, books, social posts, and business documents — instantly, using real AI. Enter your Groq API key to begin.</div>
+
+    <div class="setup-features">
+      <div class="sf-item"><span class="sf-icon">🎤</span> Real voice recording</div>
+      <div class="sf-item"><span class="sf-icon">⚡</span> Groq Whisper transcription</div>
+      <div class="sf-item"><span class="sf-icon">🧠</span> LLaMA 3.3 70B generation</div>
+      <div class="sf-item"><span class="sf-icon">📝</span> 8 output formats</div>
+      <div class="sf-item"><span class="sf-icon">🎬</span> AI video generation</div>
+      <div class="sf-item"><span class="sf-icon">🖼️</span> AI image generation</div>
+      <div class="sf-item"><span class="sf-icon">🎨</span> Creative detail control</div>
+      <div class="sf-item"><span class="sf-icon">↺</span> Regenerate any image</div>
+      <div class="sf-item"><span class="sf-icon">💾</span> Export PDF / DOCX / TXT</div>
+    </div>
+
+    <label class="setup-label">Groq API Key</label>
+    <input class="setup-input" type="password" id="api-key-input" placeholder="gsk_••••••••••••••••••••••••••••••••••••••••••••••••••" autocomplete="off">
+
+    <label class="setup-label">Your Name (personalizes AI output)</label>
+    <input class="setup-input" type="text" id="user-name-input" placeholder="e.g. Jordan, Dr. Williams, Coach Maya...">
+
+    <div class="setup-note">
+      Get your free API key at <a href="https://console.groq.com" target="_blank">console.groq.com</a> → API Keys → Create new key. Groq is free to start and runs Whisper + LLaMA 3.3 at lightning speed. Your key stays in your browser only.
+    </div>
+
+    <button class="setup-btn" id="setup-btn" onclick="launchApp()">Launch VoiceForge Studio ↗</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════ -->
+<div class="shell" id="app-shell">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="logo" onclick="resetSetup()">
+      <div class="logo-mark">🎙️</div>
+      <div>
+        <div class="logo-name">VoiceForge Studio</div>
+        <div class="logo-sub">POWERED BY GROQ</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="api-status">
+        <div class="api-dot ok" id="api-dot"></div>
+        <span id="api-status-lbl" style="font-size:11px;color:var(--text2)">Groq connected</span>
+      </div>
+      <div class="model-badge">llama-3.3-70b + whisper-large-v3</div>
+      <button class="topbar-btn" onclick="resetSetup()">⚙ Settings</button>
+    </div>
+  </div>
+
+  <!-- PWA Install Banner -->
+  <div class="install-bar" id="install-bar">
+    <div class="ib-text">Add VoiceForge to your home screen for the full app experience</div>
+    <button class="ib-btn" onclick="installApp()">Install ↗</button>
+    <button class="ib-close" onclick="document.getElementById('install-bar').classList.remove('visible')">✕</button>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="nav-lbl">Studio</div>
+    <div class="nav-item active" onclick="showPanel('studio')">
+      <span>🎙️</span> Voice Studio
+    </div>
+    <div class="nav-item" onclick="showPanel('history')">
+      <span>📂</span> History
+    </div>
+
+    <div class="nav-divider"></div>
+    <div class="nav-lbl">Format</div>
+    <div class="fmt-chip active" id="fc-blog" onclick="sidebarFmt('blog')"><div class="fmt-dot" style="background:#ff6b2b"></div>Blog Post</div>
+    <div class="fmt-chip" id="fc-social" onclick="sidebarFmt('social')"><div class="fmt-dot" style="background:#00e5c0"></div>Social Pack (12 platforms)</div>
+    <div class="fmt-chip" id="fc-script" onclick="sidebarFmt('script')"><div class="fmt-dot" style="background:#ff4d6d"></div>Video Script</div>
+    <div class="fmt-chip" id="fc-book" onclick="sidebarFmt('book')"><div class="fmt-dot" style="background:#ff9f43"></div>Book Chapter</div>
+    <div class="fmt-chip" id="fc-email" onclick="sidebarFmt('email')"><div class="fmt-dot" style="background:#4d9fff"></div>Email</div>
+    <div class="fmt-chip" id="fc-podcast" onclick="sidebarFmt('podcast')"><div class="fmt-dot" style="background:#a78bfa"></div>Podcast Notes</div>
+    <div class="fmt-chip" id="fc-pitch" onclick="sidebarFmt('pitch')"><div class="fmt-dot" style="background:#2ecc71"></div>Pitch Deck</div>
+    <div class="fmt-chip" id="fc-biz" onclick="sidebarFmt('biz')"><div class="fmt-dot" style="background:#e8d060"></div>Business Doc</div>
+    <div class="fmt-chip" id="fc-streamer" onclick="sidebarFmt('streamer')"><div class="fmt-dot" style="background:#9147ff"></div>Streamer Pack</div>
+
+    <div class="nav-divider"></div>
+    <div class="nav-lbl">Stats</div>
+    <div style="padding:4px 10px;font-size:11px;color:var(--text3)">Created: <span id="sb-count" style="color:var(--orange)">0</span></div>
+    <div style="padding:4px 10px;font-size:11px;color:var(--text3)">Words: <span id="sb-words" style="color:var(--text2)">0</span></div>
+  </div>
+
+  <!-- Main area -->
+  <div class="main">
+
+    <!-- ── STUDIO PANEL ── -->
+    <div class="panel active" id="panel-studio">
+
+      <div class="page-hdr">
+        <div class="page-title">Voice <em>Studio</em></div>
+        <div class="page-sub">Record your voice or type your idea — add creative detail — then forge it into content</div>
+      </div>
+
+      <div class="stats-bar">
+        <div class="stat-cell"><div class="stat-val" id="stat-words">0</div><div class="stat-lbl">Words captured</div></div>
+        <div class="stat-cell"><div class="stat-val" id="stat-fmt">Blog</div><div class="stat-lbl">Selected format</div></div>
+        <div class="stat-cell"><div class="stat-val" id="stat-rec">0s</div><div class="stat-lbl">Rec time</div></div>
+        <div class="stat-cell"><div class="stat-val" id="stat-made">0</div><div class="stat-lbl">Forged today</div></div>
+      </div>
+
+      <!-- Capture + Detail -->
+      <div class="capture-grid">
+
+        <!-- Voice capture -->
+        <div class="rec-zone" id="rec-zone">
+          <div class="rz-top">
+            <div class="rz-label">🎤 Voice Input</div>
+            <div class="rec-timer" id="rec-timer" style="display:none">⏺ 0:00</div>
+          </div>
+          <div class="waveform" id="waveform">
+            <div class="wbar"></div><div class="wbar"></div><div class="wbar"></div><div class="wbar"></div>
+            <div class="wbar"></div><div class="wbar"></div><div class="wbar"></div><div class="wbar"></div>
+            <div class="wbar"></div><div class="wbar"></div><div class="wbar"></div><div class="wbar"></div>
+            <div class="wbar"></div><div class="wbar"></div><div class="wbar"></div><div class="wbar"></div>
+            <div class="wbar"></div><div class="wbar"></div><div class="wbar"></div><div class="wbar"></div>
+          </div>
+          <textarea class="transcript" id="transcript" rows="5"
+            placeholder="Click Record to capture your voice — or type/paste your raw idea, notes, or outline here.&#10;&#10;Example: 'I want to write about why most entrepreneurs fail not because of bad ideas but because they never actually start...'"></textarea>
+          <div class="btn-row">
+            <button class="btn-rec" id="rec-btn" onclick="toggleRecord()">
+              <div class="rdot"></div>
+              <span id="rec-lbl">Record</span>
+            </button>
+            <button class="btn-transcribe" id="transcribe-btn" onclick="transcribeAudio()" style="display:none">
+              ⚡ Transcribe with Whisper
+            </button>
+            <button class="btn-sm" onclick="clearAll()">Clear</button>
+            <button class="btn-sm" onclick="loadSample()">✦ Sample</button>
+            <div class="wc" id="wc">0 words</div>
+          </div>
+        </div>
+
+        <!-- Creative Detail -->
+        <div class="detail-zone">
+          <div class="card-title" style="margin-bottom:14px">
+            🎨 Creative Detail
+            <span style="display:flex;align-items:center;gap:8px">
+              <span class="card-sub">Tell the AI exactly what you want</span>
+              <button class="gen-ideas-btn" id="gen-ideas-btn" onclick="generateIdeas()">✦ Generate Ideas</button>
+            </span>
+          </div>
+
+          <!-- Ideas panel — appears when Generate Ideas is clicked -->
+          <div class="ideas-panel" id="ideas-panel">
+            <div class="ideas-panel-title">✦ AI Suggestions — click any field to apply it</div>
+            <div id="ideas-content"></div>
+          </div>
+
+          <div class="detail-grid">
+            <div class="detail-field">
+              <div class="detail-label">Topic / Title</div>
+              <input class="detail-input" id="detail-topic" placeholder="e.g. Why morning routines are overrated">
+            </div>
+            <div class="detail-field">
+              <div class="detail-label">Target Audience</div>
+              <input class="detail-input" id="detail-audience" placeholder="e.g. Entrepreneurs aged 25–40">
+            </div>
+            <div class="detail-field">
+              <div class="detail-label">Writing Style</div>
+              <select class="detail-select" id="detail-style">
+                <option value="conversational and engaging">Conversational & engaging</option>
+                <option value="bold, direct and provocative">Bold & provocative</option>
+                <option value="educational and authoritative">Educational & authoritative</option>
+                <option value="storytelling and narrative">Storytelling & narrative</option>
+                <option value="inspirational and motivational">Inspirational & motivational</option>
+                <option value="professional and formal">Professional & formal</option>
+                <option value="witty and humorous">Witty & humorous</option>
+                <option value="journalistic and fact-driven">Journalistic & fact-driven</option>
+              </select>
+            </div>
+            <div class="detail-field">
+              <div class="detail-label">Output Length</div>
+              <select class="detail-select" id="detail-length">
+                <option value="concise (300–500 words)">Concise (300–500 words)</option>
+                <option value="medium (600–900 words)" selected>Medium (600–900 words)</option>
+                <option value="detailed (1000–1500 words)">Detailed (1000–1500 words)</option>
+                <option value="comprehensive (1500+ words)">Comprehensive (1500+ words)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="detail-field" style="margin-bottom:10px">
+            <div class="detail-label">Key Points to Include (one per line)</div>
+            <textarea class="detail-textarea" id="detail-points" rows="3" placeholder="e.g.&#10;- Cite the stat that 92% of resolutions fail&#10;- Mention atomic habits approach&#10;- Include a real example from successful CEOs&#10;- End with an actionable 3-step framework"></textarea>
+          </div>
+
+          <div class="detail-field">
+            <div class="detail-label">Special Instructions</div>
+            <textarea class="detail-textarea" id="detail-instructions" rows="2" placeholder="e.g. Use a strong hook. Include a personal anecdote. Avoid jargon. Make it shareable. Use subheadings. Add statistics where relevant..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Format selector -->
+      <div class="card">
+        <div class="card-title">Output Format <span class="card-sub">Select what to create</span></div>
+        <div class="fmt-grid">
+          <div class="fmt-card selected" id="fmtc-blog" onclick="selectFmt('blog')">
+            <div class="fc-accent" style="background:#ff6b2b"></div>
+            <div class="fc-ico">📝</div><div class="fc-name">Blog Post</div>
+            <div class="fc-desc">SEO article with hooks & headings</div>
+          </div>
+          <div class="fmt-card" id="fmtc-social" onclick="selectFmt('social')">
+            <div class="fc-accent" style="background:#00e5c0"></div>
+            <div class="fc-ico">📱</div><div class="fc-name">Social Pack</div>
+            <div class="fc-desc">All 12 platforms in one shot</div>
+          </div>
+          <div class="fmt-card" id="fmtc-script" onclick="selectFmt('script')">
+            <div class="fc-accent" style="background:#ff4d6d"></div>
+            <div class="fc-ico">🎬</div><div class="fc-name">Video Script</div>
+            <div class="fc-desc">YouTube / TikTok with hooks</div>
+          </div>
+          <div class="fmt-card" id="fmtc-book" onclick="selectFmt('book')">
+            <div class="fc-accent" style="background:#ff9f43"></div>
+            <div class="fc-ico">📚</div><div class="fc-name">Book Chapter</div>
+            <div class="fc-desc">Literary prose with depth</div>
+          </div>
+          <div class="fmt-card" id="fmtc-email" onclick="selectFmt('email')">
+            <div class="fc-accent" style="background:#4d9fff"></div>
+            <div class="fc-ico">📧</div><div class="fc-name">Email</div>
+            <div class="fc-desc">Professional email in your voice</div>
+          </div>
+          <div class="fmt-card" id="fmtc-podcast" onclick="selectFmt('podcast')">
+            <div class="fc-accent" style="background:#a78bfa"></div>
+            <div class="fc-ico">🎙️</div><div class="fc-name">Podcast Notes</div>
+            <div class="fc-desc">Summary, timestamps & quotes</div>
+          </div>
+          <div class="fmt-card" id="fmtc-pitch" onclick="selectFmt('pitch')">
+            <div class="fc-accent" style="background:#2ecc71"></div>
+            <div class="fc-ico">📊</div><div class="fc-name">Pitch Deck</div>
+            <div class="fc-desc">Slide-by-slide investor outline</div>
+          </div>
+          <div class="fmt-card" id="fmtc-biz" onclick="selectFmt('biz')">
+            <div class="fc-accent" style="background:#e8d060"></div>
+            <div class="fc-ico">💼</div><div class="fc-name">Business Doc</div>
+            <div class="fc-desc">Proposal, memo, or exec brief</div>
+          </div>
+          <div class="fmt-card" id="fmtc-streamer" onclick="selectFmt('streamer')">
+            <div class="fc-accent" style="background:#9147ff"></div>
+            <div class="fc-ico">🎮</div><div class="fc-name">Streamer Pack</div>
+            <div class="fc-desc">Twitch, YouTube, Kick — full kit</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Forge -->
+      <div class="forge-row">
+        <button class="forge-btn" id="forge-btn" onclick="forge()">
+          Forge this content ↗
+        </button>
+        <select class="tone-sel" id="tone-sel">
+          <option value="professional and polished">Professional</option>
+          <option value="casual and conversational" selected>Casual & conversational</option>
+          <option value="bold and authoritative">Bold & authoritative</option>
+          <option value="warm and empathetic">Warm & empathetic</option>
+          <option value="academic and research-driven">Academic</option>
+          <option value="edgy and provocative">Edgy & provocative</option>
+        </select>
+        <select class="tone-sel" id="img-count-sel" style="min-width:110px">
+          <option value="1">1 image</option>
+          <option value="2" selected>2 images</option>
+          <option value="3">3 images</option>
+        </select>
+        <select class="tone-sel" id="img-style-sel" style="min-width:160px">
+          <option value="photorealistic, professional photography, high detail, 8K">Photorealistic</option>
+          <option value="cinematic, dramatic lighting, movie still, widescreen">Cinematic</option>
+          <option value="digital illustration, vibrant, modern design">Illustration</option>
+          <option value="minimalist, clean, flat design, geometric">Minimalist</option>
+          <option value="oil painting, artistic, masterpiece, detailed brushwork">Oil Painting</option>
+          <option value="futuristic, sci-fi, neon, cyberpunk aesthetic">Futuristic</option>
+          <option value="warm, cozy, lifestyle photography, natural light">Lifestyle</option>
+          <option value="editorial magazine photography, fashion, high-end">Editorial</option>
+        </select>
+      </div>
+
+      <!-- Output -->
+      <div class="output-zone" id="output-zone">
+        <div class="out-hdr">
+          <div class="out-lbl" id="out-lbl">Output</div>
+          <div class="out-actions">
+            <button class="out-btn" id="copy-btn" onclick="copyOut()">Copy</button>
+            <button class="out-btn" onclick="downloadOut()">↓ Download</button>
+            <button class="out-btn" onclick="forge()">↺ Regenerate</button>
+          </div>
+        </div>
+        <div id="out-area">
+          <div class="out-empty">
+            <div class="out-empty-ico">🎙️</div>
+            <div class="out-empty-txt">Your forged content appears here.<br>Record voice or type an idea above, fill in creative detail, then hit <strong>Forge this content</strong>.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CapCut Copy & Launch -->
+      <button class="capcut-btn" id="capcut-btn" onclick="launchCapCut()">
+        <span>✂️</span>
+        <span>Copy & Open CapCut</span>
+        <span class="capcut-copied" id="capcut-copied"></span>
+      </button>
+
+      <!-- Book Planner (shows when format = book) -->
+      <div class="fmt-extra-panel" id="book-panel">
+        <div class="fep-title">📚 Book Planner</div>
+        <div class="fep-sub">Turn this chapter into a full book — generate titles, outlines, and a complete table of contents</div>
+        <div class="fep-btn-row">
+          <button class="fep-btn" id="book-btn-titles" onclick="bookAction('titles')">✦ Suggest Book Titles</button>
+          <button class="fep-btn" id="book-btn-outline" onclick="bookAction('outline')">✦ Chapter Outline</button>
+          <button class="fep-btn" id="book-btn-toc" onclick="bookAction('toc')">✦ Full Table of Contents</button>
+          <button class="fep-btn" id="book-btn-next" onclick="bookAction('next')">✦ Write Next Chapter</button>
+        </div>
+        <div class="fep-result" id="book-result">
+          <div class="fep-result-hdr">
+            <div class="fep-result-lbl" id="book-result-lbl">Result</div>
+            <button class="fep-copy-btn" onclick="copyFepResult('book')">Copy</button>
+          </div>
+          <div id="book-result-content"></div>
+        </div>
+      </div>
+
+      <!-- Business Doc Assistant (shows when format = biz) -->
+      <div class="fmt-extra-panel" id="biz-panel">
+        <div class="fep-title">💼 Document Assistant</div>
+        <div class="fep-sub">Expand, improve, and get AI feedback on your business document</div>
+        <div class="fep-btn-row">
+          <button class="fep-btn" id="biz-btn-more" onclick="bizAction('more')">✦ Generate More</button>
+          <button class="fep-btn" id="biz-btn-suggest" onclick="bizAction('suggest')">✦ AI Suggestions</button>
+          <button class="fep-btn" id="biz-btn-exec" onclick="bizAction('exec')">✦ Executive Summary</button>
+          <button class="fep-btn" id="biz-btn-email" onclick="bizAction('email')">✦ Email Version</button>
+        </div>
+        <div class="fep-result" id="biz-result">
+          <div class="fep-result-hdr">
+            <div class="fep-result-lbl" id="biz-result-lbl">Result</div>
+            <button class="fep-copy-btn" onclick="copyFepResult('biz')">Copy</button>
+          </div>
+          <div id="biz-result-content"></div>
+        </div>
+      </div>
+
+      <!-- Streamer Studio (shows when format = streamer) -->
+      <div class="fmt-extra-panel" id="streamer-panel">
+        <div class="fep-title">🎮 Streamer Studio</div>
+        <div class="fep-sub">Build your full channel — clip titles, stream schedule, channel about page and more</div>
+        <div class="fep-btn-row">
+          <button class="fep-btn" id="str-btn-clips" onclick="streamerAction('clips')">🎬 Clip Titles</button>
+          <button class="fep-btn" id="str-btn-schedule" onclick="streamerAction('schedule')">📅 Stream Schedule</button>
+          <button class="fep-btn" id="str-btn-about" onclick="streamerAction('about')">📝 Channel About Page</button>
+          <button class="fep-btn" id="str-btn-rules" onclick="streamerAction('rules')">📋 Chat Rules</button>
+          <button class="fep-btn" id="str-btn-panels" onclick="streamerAction('panels')">🎨 Channel Panels</button>
+          <button class="fep-btn" id="str-btn-commands" onclick="streamerAction('commands')">⚡ Chat Commands</button>
+        </div>
+        <div class="fep-result" id="streamer-result">
+          <div class="fep-result-hdr">
+            <div class="fep-result-lbl" id="streamer-result-lbl">Result</div>
+            <button class="fep-copy-btn" onclick="copyFepResult('streamer')">Copy</button>
+          </div>
+          <div id="streamer-result-content"></div>
+        </div>
+      </div>
+
+      <!-- Image Gallery -->
+      <div class="img-section" id="img-section">
+        <div class="img-hdr">
+          <div class="img-hdr-left">
+            <div class="img-title">🖼️ AI-Generated Images</div>
+            <div class="img-status" id="img-status">Auto-generates after forging</div>
+          </div>
+          <div class="img-controls">
+            <button class="img-regen-btn" id="img-regen-btn" onclick="generateImages()" disabled>↺ New Images</button>
+          </div>
+        </div>
+        <div id="img-grid-area">
+          <div class="img-empty">
+            <div class="img-empty-ico">🎨</div>
+            <div class="img-empty-txt">Images will be generated automatically<br>after you forge your content above.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video Generation -->
+    </div><!-- /panel-studio -->
+
+    <!-- ── HISTORY PANEL ── -->
+    <div class="panel" id="panel-history">
+      <div class="page-hdr">
+        <div class="page-title">Creation <em>History</em></div>
+        <div class="page-sub">Your forged content from this session — click to reload</div>
+      </div>
+      <div id="history-list"><div style="font-size:12px;color:var(--text3)">No content forged yet — head to Voice Studio to create your first piece.</div></div>
+    </div>
+
+  </div><!-- /main -->
+
+  <!-- Bottom Tab Bar (mobile) -->
+  <div class="bottom-tabs">
+    <button class="btab on" id="btab-studio" onclick="showPanelMobile('studio')">
+      <div class="btab-ico">🎙️</div><div class="btab-lbl">Studio</div>
+    </button>
+    <button class="btab" id="btab-history" onclick="showPanelMobile('history')">
+      <div class="btab-ico">🕐</div><div class="btab-lbl">History</div>
+    </button>
+    <button class="btab" id="btab-settings" onclick="resetSetup()">
+      <div class="btab-ico">⚙️</div><div class="btab-lbl">Settings</div>
+    </button>
+  </div>
+
+</div><!-- /shell -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════
+let GROQ_KEY = '';
+let USER_NAME = '';
+let selectedFmt = 'blog';
+let mediaRecorder = null;
+let audioChunks = [];
+let recInterval = null;
+let recSeconds = 0;
+let isRecording = false;
+let waveInterval = null;
+let lastOutput = '';
+let outputCount = 0;
+let history = [];
+let totalWords = 0;
+
+// ══════════════════════════════════════════════
+// FORMAT DEFINITIONS
+// ══════════════════════════════════════════════
+const FORMATS = {
+  blog: {
+    label: 'Blog Post', color: '#ff6b2b',
+    system: `You are a world-class content writer and blogger. You write engaging, well-researched blog posts that people actually want to read — not generic AI filler. Use real statistics, credible examples, proper structure, and a compelling voice. Every blog post should have: a magnetic headline, a hook opening paragraph, clearly organized sections with subheadings (H2/H3 style), genuine insights backed by real-world examples or data, and a strong conclusion with a call to action. Write as if you're the smartest person in the room who can also explain things clearly to anyone.`,
+    prompt: (name, topic, audience, style, length, points, instructions, tone, raw) =>
+      `Write a ${length} blog post in a ${style} style with a ${tone} tone.
+${name ? `Author voice: ${name}` : ''}
+${topic ? `Topic/Title: ${topic}` : ''}
+${audience ? `Target audience: ${audience}` : ''}
+${points ? `Key points to include:\n${points}` : ''}
+${instructions ? `Special instructions: ${instructions}` : ''}
+
+Raw input / transcript to expand and transform:
+"${raw}"
+
+Format with a compelling headline, hook intro, organized sections with bold subheadings, and a strong conclusion. Use real examples, statistics, and specific insights — not generic platitudes. Make every sentence earn its place.`
+  },
+  social: {
+    label: 'Social Pack', color: '#00e5c0',
+    system: `You are a viral social media strategist who has grown accounts to millions of followers across every major platform. You have deep platform-specific knowledge — you know Twitter's algorithm, LinkedIn's engagement patterns, Instagram's hashtag strategy, TikTok's hook formula, YouTube's SEO, Facebook's reach mechanics, Pinterest's keyword game, Reddit's community culture, Discord's announcement style, Threads' conversational tone, and Snapchat's casual energy. Every post you write feels native to its platform.`,
+    prompt: (name, topic, audience, style, length, points, instructions, tone, raw) =>
+      `Create a COMPLETE social media content pack across ALL major platforms. Style: ${style}. Tone: ${tone}.
+${topic ? `Topic: ${topic}` : ''}
+${audience ? `Audience: ${audience}` : ''}
+${points ? `Key points: ${points}` : ''}
+${instructions ? `Instructions: ${instructions}` : ''}
+
+Raw content:
+"${raw}"
+
+Deliver ALL of the following sections — each clearly labeled, each native to that platform:
+
+**🐦 TWITTER/X THREAD** (8 tweets max 280 chars each, numbered 1/, 2/... — killer hook on tweet 1, value throughout, CTA + reply ask on last)
+
+**💼 LINKEDIN POST** (200–300 words — professional but human, personal story angle, line breaks every 1–2 sentences, ends with a question)
+
+**📸 INSTAGRAM CAPTION** (2–3 punchy sentences, emotional hook, call to action, 15–20 targeted hashtags grouped at end)
+
+**📱 INSTAGRAM STORIES** (3 story slide scripts — Slide 1: bold hook text, Slide 2: key insight, Slide 3: CTA with poll or question sticker idea)
+
+**🎵 TIKTOK CAPTION** (under 150 chars, punchy hook, 3–5 trending hashtags, drives saves and shares)
+
+**👥 FACEBOOK POST** (150–200 words, conversational, asks a question to spark comments, slightly longer and more casual than LinkedIn)
+
+**▶️ YOUTUBE DESCRIPTION** (200–300 words — SEO-optimized, first 2 lines are the hook visible before "more", includes timestamps placeholder, links section, hashtags at bottom)
+
+**📌 PINTEREST PIN DESCRIPTION** (100–150 words, keyword-rich, describes the value of the content, ends with CTA)
+
+**🧵 THREADS POST** (150–200 chars, casual and conversational, feels like a thought not a promotion)
+
+**👻 SNAPCHAT STORY** (2–3 short punchy text overlays for a story — very casual, use slang if appropriate, fun energy)
+
+**💬 DISCORD ANNOUNCEMENT** (formatted announcement with @everyone tag, bold title, brief description, relevant emoji, call to action)
+
+**📱 REDDIT POST** (Title: compelling and specific. Body: 150–200 words in Reddit's authentic community voice — adds value, not promotional, ends with a question for discussion)
+
+Make every post feel 100% native to its platform. No copy-paste. Real voice, real energy.`
+  },
+  streamer: {
+    label: 'Streamer Pack', color: '#9147ff',
+    system: `You are a professional streaming content strategist who has helped streamers grow from zero to hundreds of thousands of followers on Twitch, YouTube Live, and Kick. You understand stream discoverability, community building, clip culture, and how to turn viewers into loyal subscribers. You write stream titles that get clicks, descriptions that rank, and social posts that drive live viewers. You know the culture — you speak the language of gaming, IRL, and variety streaming.`,
+    prompt: (name, topic, audience, style, length, points, instructions, tone, raw) =>
+      `Create a COMPLETE streaming content pack. Style: ${style}. Tone: ${tone}.
+${name ? `Streamer name: ${name}` : ''}
+${topic ? `Stream topic/game/content: ${topic}` : ''}
+${audience ? `Target audience: ${audience}` : ''}
+${points ? `Key details: ${points}` : ''}
+${instructions ? `Instructions: ${instructions}` : ''}
+
+Raw notes / stream idea:
+"${raw}"
+
+Deliver ALL of the following sections:
+
+**🎮 STREAM TITLES** (5 options — A/B test ready, each under 60 chars, curiosity-driven, SEO-optimized for Twitch/YouTube/Kick search. Mix styles: question, bold claim, number hook)
+
+**📝 STREAM DESCRIPTION** (150–200 words — covers what the stream is, when it happens, what viewers can expect, community rules, social links placeholders)
+
+**🔴 GOING LIVE ANNOUNCEMENTS**
+- Twitter/X: (punchy, under 240 chars, hype energy, relevant hashtags)
+- Instagram Story text: (3 slides — countdown, what's happening, join link)
+- TikTok caption: (casual, fun, trending hashtags)
+- Discord: (full formatted server announcement with role ping placeholder)
+- Facebook: (friendly community post, slightly longer)
+
+**✂️ CLIP HIGHLIGHT CAPTIONS** (3 different caption templates for posting clips — one hype, one funny, one informational — each with hashtags for Twitch, YouTube Shorts, TikTok)
+
+**📅 STREAM SCHEDULE POST** (social post announcing weekly schedule — works for Twitter, Instagram, Discord)
+
+**💬 CHAT ENGAGEMENT PROMPTS** (5 questions/polls to ask your chat live during stream to drive engagement — format: "Chat, [question]?" style)
+
+**🎯 RAID MESSAGE** (message to send when raiding another streamer — hype, fun, introduces your community)
+
+**🏆 COMMUNITY/SUBSCRIBER POST** (appreciation post thanking subscribers/members — warm, genuine, makes people feel seen)
+
+**▶️ VOD YOUTUBE DESCRIPTION** (full YouTube description for the recorded VOD — SEO title suggestion, 200-word description, chapters placeholder, hashtags, subscribe CTA)
+
+Write everything in authentic streamer culture language. High energy where it counts, genuine where it matters.`
+  },
+  script: {
+    label: 'Video Script', color: '#ff4d6d',
+    system: `You are a YouTube and TikTok script writer who has written scripts for channels with millions of subscribers. You know the MrBeast hook formula, the "Pattern Interrupt" technique, pacing, chapter structure, and how to keep viewers watching. You write scripts that feel natural when spoken out loud — no stiff sentences. You use [VISUAL CUE] and [B-ROLL] notes to help creators know what to show on screen.`,
+    prompt: (name, topic, audience, style, length, points, instructions, tone, raw) =>
+      `Write a video script in a ${style} style, ${tone} tone.
+${topic ? `Video topic: ${topic}` : ''}
+${audience ? `Audience: ${audience}` : ''}
+${points ? `Key points to cover: ${points}` : ''}
+${instructions ? `Instructions: ${instructions}` : ''}
+
+Raw content to turn into a script:
+"${raw}"
+
+Structure:
+🪝 HOOK (first 15 seconds — bold statement, question, or shocking fact to stop the scroll)
+📖 INTRO (briefly tease what they'll learn/get — "In this video...")
+📚 CHAPTER 1 / SECTION 1 (with [VISUAL CUE] notes)
+📚 CHAPTER 2 / SECTION 2
+📚 CHAPTER 3 / SECTION 3
+🎯 CONCLUSION (summarize key takeaways)
+📢 CTA (subscribe, like, comment — specific ask)
+
+Write every line to be spoken naturally out loud. Add [B-ROLL: ...] notes where relevant. Make the hook impossible to skip.`
+  },
+  book: {
+    label: 'Book Chapter', color: '#ff9f43',
+    system: `You are a literary author and ghostwriter who has written bestselling non-fiction books. You write with depth, texture, and a distinctive voice. Every chapter you write has: a compelling opening scene or anecdote, smooth paragraph transitions, a balance of storytelling and insight, concrete examples that illuminate abstract ideas, and a reflective close that leaves the reader thinking. You never write generic filler — every word has purpose.`,
+    prompt: (name, topic, audience, style, length, points, instructions, tone, raw) =>
+      `Write a book chapter in a ${style} narrative style, ${tone} tone.
+${name ? `Author: ${name}` : ''}
+${topic ? `Chapter theme/title: ${topic}` : ''}
+${audience ? `Reader: ${audience}` : ''}
+${points ? `Ideas to weave in: ${points}` : ''}
+${instructions ? `Instructions: ${instructions}` : ''}
+
+Raw thoughts to transform into a chapter:
+"${raw}"
+
+Structure:
+- Evocative chapter title
+- Opening scene, anecdote, or bold statement (draw them in immediately)
+- 3–5 rich body sections flowing naturally from one to the next
+- Concrete examples, stories, or case studies throughout
+- Closing paragraph that leaves a lasting impression and bridges to what's next
+
+Write with literary quality. No bullet points — pure flowing prose. Make it feel like something worth highlighting and quoting.`
+  },
+  email: {
+    label: 'Email', color: '#4d9fff',
+    system: `You are an expert email copywriter and communication strategist. You write emails that get opened, read, and acted upon. You understand subject line psychology, the right amount of personalization, clear asks, and how to balance warmth with professionalism. Every email you write has a purpose and gets to the point without wasting the reader's time.`,
+    prompt: (name, topic, audience, style, length, points, instructions, tone, raw) =>
+      `Write a professional email in a ${style} style, ${tone} tone.
+${name ? `From: ${name}` : ''}
+${topic ? `Purpose/Subject: ${topic}` : ''}
+${audience ? `Recipient: ${audience}` : ''}
+${points ? `Key points to cover: ${points}` : ''}
+${instructions ? `Instructions: ${instructions}` : ''}
+
+Raw content:
+"${raw}"
+
+Deliver:
+**Subject line** (compelling, specific — not generic)
+**Email body** (personalized opener, clear organized body, one specific ask, professional sign-off)
+
+Keep it tight. Respect the reader's time. Sound human, not automated.`
+  },
+  podcast: {
+    label: 'Podcast Notes', color: '#a78bfa',
+    system: `You are a podcast producer who creates show notes that listeners actually want to read. You understand SEO for podcast discovery, how to write punchy summaries, pull the best quotes, and structure timestamps that help listeners navigate. Your show notes extend the value of every episode.`,
+    prompt: (name, topic, audience, style, length, points, instructions, tone, raw) =>
+      `Create complete podcast show notes in a ${style} style.
+${topic ? `Episode topic: ${topic}` : ''}
+${audience ? `Listeners: ${audience}` : ''}
+${points ? `Key segments: ${points}` : ''}
+${instructions ? `Instructions: ${instructions}` : ''}
+
+Raw content:
+"${raw}"
+
+Deliver:
+**Episode Title** (SEO-optimized and intriguing)
+**Episode Summary** (2–3 sentences that make people want to listen)
+**What You'll Learn** (4–6 bullet points)
+**Key Timestamps** (suggested with topic descriptions, e.g. [00:02:30] - Topic name)
+**Top Quotes** (3 pull quotes formatted for social sharing)
+**Resources Mentioned** (placeholder format)
+**Connect** (standard CTA)`,
+  },
+  pitch: {
+    label: 'Pitch Deck', color: '#2ecc71',
+    system: `You are a pitch deck consultant who has helped companies raise millions. You know the Y Combinator format, Sequoia's investment memo structure, and what makes investors lean forward. Every deck you outline has a compelling narrative arc, not just slides — it tells the story of why this company must exist and why now.`,
+    prompt: (name, topic, audience, style, length, points, instructions, tone, raw) =>
+      `Create a pitch deck outline in a ${style} style.
+${name ? `Founder: ${name}` : ''}
+${topic ? `Company/Idea: ${topic}` : ''}
+${audience ? `Investor type: ${audience}` : ''}
+${points ? `Key details: ${points}` : ''}
+${instructions ? `Instructions: ${instructions}` : ''}
+
+Raw concept:
+"${raw}"
+
+Create a complete slide-by-slide outline:
+For each slide include: **Slide #: [Title]** | Key message (1 sentence) | 3 talking points | Suggested visual/data
+
+Slides to include: Cover → Problem → Solution → Market Size (TAM/SAM/SOM) → Product → Business Model → Traction → Team → Competition → Go-to-Market → Financial Projections → The Ask
+
+Make the narrative flow like a story, not a list. Include specific placeholders for real data (e.g. "$X billion market", "X% MoM growth").`
+  },
+  biz: {
+    label: 'Business Doc', color: '#e8d060',
+    system: `You are a business strategist and professional writer who creates clear, compelling business documents. You understand executive communication — what leaders need to read, in what order, and how to make complex ideas scannable and actionable. You write proposals, memos, briefs, and reports that get approved.`,
+    prompt: (name, topic, audience, style, length, points, instructions, tone, raw) =>
+      `Write a business document in a ${style} style, ${tone} tone.
+${name ? `Author: ${name}` : ''}
+${topic ? `Document purpose: ${topic}` : ''}
+${audience ? `Reader: ${audience}` : ''}
+${points ? `Key content: ${points}` : ''}
+${instructions ? `Instructions: ${instructions}` : ''}
+
+Raw input:
+"${raw}"
+
+Structure:
+**Executive Summary** (3–5 sentences — the entire document in a nutshell)
+**Background / Context** (why this exists)
+**Key Findings / Situation Analysis**
+**Recommendations** (clear, numbered, actionable)
+**Implementation / Next Steps**
+**Conclusion**
+
+Write with precision and authority. Use data where possible. Make every recommendation specific and defensible.`
+  }
+};
+
+const SAMPLES = {
+  blog: "I've been thinking about why so many smart entrepreneurs completely fail at execution. It's not the idea — it never is. The graveyard is full of brilliant ideas. What kills companies is the gap between insight and action. Most founders spend 80% of their time perfecting the plan and 20% doing the actual work. That ratio needs to flip. I want to explore why we procrastinate on the things that matter most and what the research actually says about overcoming this — not the generic advice, but what actually works in practice.",
+  social: "Just turned down a $2 million partnership deal. Everyone around me thought I was crazy. Here's what they didn't see: the terms would have locked me out of my own creative direction for 4 years. Money is replaceable. Creative freedom isn't. The best business decision I ever made was saying no to the thing that looked like success from the outside.",
+  streamer: "I'm going live tonight playing the new Elden Ring DLC for the first time ever — completely blind, no guides, no spoilers. I've been waiting months for this. My chat is always unhinged when I play souls games and I rage quit at least once per session. Should be a legendary night. I also want to do a giveaway for my subs halfway through the stream.",
+  script: "Most people think the secret to building wealth is working harder. They're wrong. And I can prove it with one simple question — if working hard built wealth, every construction worker would be a millionaire. The real secret is something nobody teaches you in school and most rich people don't want to talk about. Today I'm going to break it down so clearly you'll wonder why no one ever explained it this way before.",
+  book: "There is a specific afternoon I return to again and again when I think about the moment everything changed. I was sitting in a conference room in a building I'd worked in for six years, listening to someone explain why my biggest project was being cancelled. And instead of feeling devastated, I felt — for the first time in months — genuinely free. That moment taught me something about ambition, about the stories we tell ourselves to justify staying comfortable, and about what it really means to build a life that belongs to you.",
+  email: "I want to follow up on the conversation we had last month about a potential collaboration. I've been sitting with your feedback and I think there's a way to structure this that solves the timing issue you flagged while still moving things forward meaningfully. I have a specific proposal I'd love to walk you through — it would take about 20 minutes and I think you'll find it worth the conversation.",
+};
+
+// ══════════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════════
+function launchApp() {
+  const key = document.getElementById('api-key-input').value.trim();
+  const name = document.getElementById('user-name-input').value.trim();
+  if (!key || !key.startsWith('gsk_')) {
+    showToast('Please enter a valid Groq API key (starts with gsk_)');
+    return;
+  }
+  GROQ_KEY = key;
+  USER_NAME = name;
+  document.getElementById('setup-screen').style.display = 'none';
+  document.getElementById('app-shell').classList.remove('hidden');
+  showToast('Welcome' + (name ? ', ' + name : '') + '! VoiceForge Studio is ready ⚡');
+}
+
+function resetSetup() {
+  document.getElementById('setup-screen').style.display = 'flex';
+  document.getElementById('api-key-input').value = GROQ_KEY;
+  document.getElementById('user-name-input').value = USER_NAME;
+}
+
+// ══════════════════════════════════════════════
+// PANEL NAVIGATION
+// ══════════════════════════════════════════════
+function showPanel(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+// FORMAT SELECTION
+// ══════════════════════════════════════════════
+function selectFmt(fmt) {
+  selectedFmt = fmt;
+  document.querySelectorAll('[id^="fmtc-"]').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('[id^="fc-"]').forEach(c => c.classList.remove('active'));
+  document.getElementById('fmtc-' + fmt).classList.add('selected');
+  document.getElementById('fc-' + fmt).classList.add('active');
+  document.getElementById('stat-fmt').textContent = FORMATS[fmt].label.split(' ')[0];
+  updateFmtPanels();
+}
+
+function sidebarFmt(fmt) {
+  selectFmt(fmt);
+}
+
+// ══════════════════════════════════════════════
+// RECORDING
+// ══════════════════════════════════════════════
+async function toggleRecord() {
+  if (isRecording) stopRecord();
+  else startRecord();
+}
+
+async function startRecord() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+    mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+    mediaRecorder.start(250);
+    isRecording = true;
+    recSeconds = 0;
+
+    document.getElementById('rec-btn').classList.add('recording');
+    document.getElementById('rec-lbl').textContent = 'Stop';
+    document.getElementById('rec-zone').classList.add('recording');
+    document.getElementById('rec-timer').style.display = 'block';
+    document.getElementById('waveform').classList.add('show');
+    document.getElementById('transcribe-btn').style.display = 'none';
+
+    recInterval = setInterval(() => {
+      recSeconds++;
+      const m = Math.floor(recSeconds / 60), s = recSeconds % 60;
+      document.getElementById('rec-timer').textContent = `⏺ ${m}:${s.toString().padStart(2,'0')}`;
+      document.getElementById('stat-rec').textContent = recSeconds + 's';
+    }, 1000);
+
+    waveInterval = setInterval(animateWave, 100);
+  } catch(e) {
+    showToast('Microphone access denied — please allow mic permissions or type your idea instead');
+  }
+}
+
+function stopRecord() {
+  if (!mediaRecorder) return;
+  mediaRecorder.stop();
+  mediaRecorder.stream.getTracks().forEach(t => t.stop());
+  isRecording = false;
+  clearInterval(recInterval);
+  clearInterval(waveInterval);
+
+  document.getElementById('rec-btn').classList.remove('recording');
+  document.getElementById('rec-lbl').textContent = 'Record';
+  document.getElementById('rec-zone').classList.remove('recording');
+  document.getElementById('rec-timer').style.display = 'none';
+  document.getElementById('waveform').classList.remove('show');
+
+  // Show transcribe button
+  setTimeout(() => {
+    if (audioChunks.length > 0) {
+      document.getElementById('transcribe-btn').style.display = 'inline-flex';
+      showToast('Recording complete! Click "Transcribe with Whisper" to convert to text ⚡');
+    }
+  }, 300);
+}
+
+function animateWave() {
+  document.querySelectorAll('.wbar').forEach(b => {
+    b.style.height = (Math.random() * 44 + 6) + 'px';
+    b.style.opacity = (Math.random() * 0.5 + 0.5).toFixed(2);
+  });
+}
+
+// ══════════════════════════════════════════════
+// WHISPER TRANSCRIPTION
+// ══════════════════════════════════════════════
+async function transcribeAudio() {
+  if (!audioChunks.length) { showToast('No recording found'); return; }
+  const btn = document.getElementById('transcribe-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Transcribing...';
+
+  try {
+    const blob = new Blob(audioChunks, { type: 'audio/webm' });
+    const formData = new FormData();
+    formData.append('file', blob, 'recording.webm');
+    formData.append('model', 'whisper-large-v3');
+    formData.append('response_format', 'json');
+    formData.append('language', 'en');
+
+    const res = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + GROQ_KEY },
+      body: formData
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || 'Transcription failed');
+    }
+
+    const data = await res.json();
+    const transcript = data.text || '';
+    const existing = document.getElementById('transcript').value.trim();
+    document.getElementById('transcript').value = existing ? existing + ' ' + transcript : transcript;
+    updateWordCount();
+    audioChunks = [];
+    btn.style.display = 'none';
+    showToast('Transcribed successfully! Review the text, then forge ↗');
+  } catch(e) {
+    showToast('Transcription error: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = '⚡ Transcribe with Whisper';
+  }
+}
+
+// ══════════════════════════════════════════════
+// CONTENT FORGE
+// ══════════════════════════════════════════════
+async function forge() {
+  const raw = document.getElementById('transcript').value.trim();
+  if (!raw || raw.length < 15) {
+    showToast('Please add some content first — record your voice or type an idea');
+    return;
+  }
+
+  const topic = document.getElementById('detail-topic').value.trim();
+  const audience = document.getElementById('detail-audience').value.trim();
+  const style = document.getElementById('detail-style').value;
+  const length = document.getElementById('detail-length').value;
+  const points = document.getElementById('detail-points').value.trim();
+  const instructions = document.getElementById('detail-instructions').value.trim();
+  const tone = document.getElementById('tone-sel').value;
+  const fmt = FORMATS[selectedFmt];
+
+  const forgeBtn = document.getElementById('forge-btn');
+  forgeBtn.disabled = true;
+  forgeBtn.textContent = 'Forging...';
+
+  document.getElementById('out-lbl').textContent = fmt.label + ' — Generating with LLaMA 3.3...';
+  document.getElementById('output-zone').classList.remove('ready');
+  document.getElementById('out-area').innerHTML = `
+    <div class="loading-wrap">
+      <div class="loading-bars">
+        <div class="lb"></div><div class="lb"></div><div class="lb"></div><div class="lb"></div>
+        <div class="lb"></div><div class="lb"></div><div class="lb"></div><div class="lb"></div>
+      </div>
+      <div class="loading-msg">Forging your ${fmt.label.toLowerCase()}...</div>
+      <div class="loading-sub">LLaMA 3.3 70B is crafting something exceptional</div>
+    </div>`;
+
+  try {
+    const userPrompt = fmt.prompt(USER_NAME, topic, audience, style, length, points, instructions, tone, raw);
+
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + GROQ_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 4096,
+        temperature: 0.82,
+        top_p: 0.95,
+        messages: [
+          { role: 'system', content: fmt.system },
+          { role: 'user', content: userPrompt }
+        ]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error?.message || 'API error ' + res.status);
+    }
+
+    const data = await res.json();
+    lastOutput = data.choices?.[0]?.message?.content || 'No response received.';
+    outputCount++;
+    totalWords += lastOutput.split(/\s+/).filter(w=>w).length;
+
+    document.getElementById('out-lbl').textContent = fmt.label + ' — Ready ✓';
+    document.getElementById('out-area').innerHTML = `<div class="out-content">${escHtml(lastOutput)}</div>`;
+    document.getElementById('output-zone').classList.add('ready');
+    document.getElementById('stat-made').textContent = outputCount;
+    document.getElementById('sb-count').textContent = outputCount;
+    document.getElementById('sb-words').textContent = totalWords.toLocaleString();
+
+    // Save to history
+    history.unshift({ fmt: fmt.label, topic: topic || raw.substring(0,50), content: lastOutput, ts: new Date() });
+    renderHistory();
+
+    showToast('✓ ' + fmt.label + ' forged! ' + data.usage?.completion_tokens + ' tokens used');
+    updateFmtPanels();
+
+    // Auto-generate images after content is ready
+    generateImages();
+
+  } catch(e) {
+    document.getElementById('out-area').innerHTML = `<div class="err-box">❌ Error: ${escHtml(e.message)}<br><br>Check your Groq API key in Settings, or try again in a moment.</div>`;
+    document.getElementById('out-lbl').textContent = 'Error';
+  }
+
+  forgeBtn.disabled = false;
+  forgeBtn.textContent = 'Forge this content ↗';
+}
+
+// ══════════════════════════════════════════════
+// IMAGE GENERATION
+// ══════════════════════════════════════════════
+async function generateImages() {
+  const count = parseInt(document.getElementById('img-count-sel').value);
+  const imgStyle = document.getElementById('img-style-sel').value;
+  const topic = document.getElementById('detail-topic').value.trim();
+  const raw = document.getElementById('transcript').value.trim();
+  const fmt = FORMATS[selectedFmt].label;
+
+  if (!raw && !lastOutput) {
+    showToast('Forge content first — then images will generate!');
+    return;
+  }
+
+  const regenBtn = document.getElementById('img-regen-btn');
+  regenBtn.disabled = true;
+  document.getElementById('img-status').textContent = 'Generating image prompts with LLaMA...';
+
+  // Show loading cards
+  const gridEl = document.getElementById('img-grid-area');
+  gridEl.innerHTML = `<div class="img-grid count-${count}">` +
+    Array.from({length: count}, () => `
+      <div>
+        <div class="img-loading-card">
+          <div class="img-loading-spinner"></div>
+          <div class="img-loading-txt">Crafting image...</div>
+        </div>
+      </div>`).join('') + '</div>';
+
+  try {
+    // Step 1: Use Groq LLaMA to generate smart, specific image prompts
+    const promptContext = lastOutput
+      ? lastOutput.substring(0, 600)
+      : raw.substring(0, 400);
+
+    const promptRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + GROQ_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 600,
+        temperature: 0.9,
+        messages: [{
+          role: 'system',
+          content: `You are an expert AI image prompt engineer. Generate highly specific, vivid, detailed image prompts for AI image generators. Each prompt must be concrete and visual — no abstract concepts. Focus on scene, subject, lighting, mood, composition. Output ONLY a JSON array of ${count} prompt strings, no other text.`
+        }, {
+          role: 'user',
+          content: `Generate exactly ${count} unique, detailed image prompts to visually illustrate this ${fmt} content.
+
+Topic: ${topic || 'general'}
+Content excerpt: "${promptContext}"
+Image style: ${imgStyle}
+
+Rules:
+- Each prompt must be 30–60 words
+- Be extremely specific — name actual objects, scenes, settings, people types, lighting
+- Make prompts that will produce stunning, professional-quality visuals
+- Each image should illustrate a different aspect of the content
+- Do NOT use abstract words like "concept", "idea", "success" alone — show it visually
+- Format: ["prompt 1 here", "prompt 2 here", ...]
+
+Return ONLY the JSON array, nothing else.`
+        }]
+      })
+    });
+
+    const promptData = await promptRes.json();
+    const promptText = promptData.choices?.[0]?.message?.content?.trim() || '[]';
+
+    let prompts = [];
+    try {
+      const cleaned = promptText.replace(/```json|```/g, '').trim();
+      prompts = JSON.parse(cleaned);
+      if (!Array.isArray(prompts)) throw new Error('Not array');
+      prompts = prompts.slice(0, count);
+    } catch(e) {
+      // Fallback prompts if parsing fails
+      const base = topic || raw.substring(0, 40);
+      prompts = Array.from({length: count}, (_, i) => [
+        `${base}, professional photography, natural lighting, detailed, high quality, 8K`,
+        `${base}, cinematic scene, dramatic lighting, wide angle shot, photorealistic`,
+        `${base}, editorial magazine style, vibrant colors, sharp focus, studio lighting`
+      ][i] || `${base}, high quality photography`);
+    }
+
+    // Step 2: Build Pollinations URLs
+    document.getElementById('img-status').textContent = `Rendering ${count} image${count > 1 ? 's' : ''}...`;
+
+    const cards = [];
+    for (let i = 0; i < prompts.length; i++) {
+      // Keep prompt under 400 chars to avoid URL issues
+      const safePrompt = (prompts[i] + ', ' + imgStyle).substring(0, 400);
+      const seed = Math.floor(Math.random() * 99999);
+      const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(safePrompt)}?width=1024&height=576&nologo=true&seed=${seed}`;
+      cards.push({ prompt: prompts[i], url, seed });
+    }
+
+    // Render image cards
+    const countClass = `count-${cards.length}`;
+    gridEl.innerHTML = `<div class="img-grid ${countClass}">` +
+      cards.map((c, i) => `
+        <div>
+          <div class="img-card" id="imgcard-${i}">
+            <img src="${c.url}"
+              alt="Generated image ${i+1}"
+              style="width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.5s;display:block"
+              onload="this.style.opacity=1;this.nextElementSibling.style.opacity='';this.nextElementSibling.nextElementSibling.style.opacity=''"
+              onerror="this.parentElement.innerHTML='<div style=&quot;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:8px;padding:12px&quot;><div style=&quot;font-size:20px&quot;>⚠️</div><div style=&quot;font-size:10px;color:var(--text3);text-align:center&quot;>Image failed — tap to retry</div></div>';this.parentElement.onclick=function(){regenSingle(${i},&quot;${encodeURIComponent(c.prompt)}&quot;)}">
+            <div class="img-card-overlay" style="opacity:0;transition:opacity 0.2s"></div>
+            <div class="img-card-actions" style="opacity:0;transition:opacity 0.2s">
+              <div class="img-act-btn" onclick="regenSingle(${i},'${encodeURIComponent(c.prompt)}')">↺ New</div>
+              <div class="img-act-btn" onclick="downloadImg('${c.url}',${i})">↓ Save</div>
+              <div class="img-act-btn" onclick="openImgFull('${c.url}')">⤢ Full</div>
+            </div>
+          </div>
+          <div class="img-prompt-label">✦ ${c.prompt.substring(0, 90)}${c.prompt.length > 90 ? '...' : ''}</div>
+        </div>`).join('') + '</div>';
+
+    document.getElementById('img-status').textContent = `${cards.length} image${cards.length > 1 ? 's' : ''} generating — takes 10–20s ⚡`;
+
+  } catch(e) {
+    document.getElementById('img-status').textContent = 'Image generation failed — try again';
+    gridEl.innerHTML = `<div class="img-empty">
+      <div class="img-empty-ico">⚠️</div>
+      <div class="img-empty-txt">Could not generate images: ${e.message}<br>Check your Groq key and try regenerating.</div>
+    </div>`;
+  }
+
+  regenBtn.disabled = false;
+}
+
+function regenSingle(idx, encodedPrompt) {
+  const prompt = decodeURIComponent(encodedPrompt);
+  const imgStyle = document.getElementById('img-style-sel').value;
+  const seed = Math.floor(Math.random() * 99999);
+  const safePrompt = (prompt + ', ' + imgStyle).substring(0, 400);
+  const url = `https://image.pollinations.ai/prompt/${encodeURIComponent(safePrompt)}?width=1024&height=576&nologo=true&seed=${seed}`;
+  const card = document.getElementById('imgcard-' + idx);
+  if (!card) return;
+  card.innerHTML = `
+    <img src="${url}" alt="Regenerated image"
+      style="width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.5s;display:block"
+      onload="this.style.opacity=1;this.nextElementSibling.style.opacity='';this.nextElementSibling.nextElementSibling.style.opacity=''"
+      onerror="this.parentElement.innerHTML='<div style=&quot;display:flex;align-items:center;justify-content:center;height:100%;font-size:10px;color:var(--text3);padding:12px;text-align:center&quot;>⚠️ Failed — tap to retry</div>';this.parentElement.onclick=function(){regenSingle(${idx},&quot;${encodeURIComponent(prompt)}&quot;)}">
+    <div class="img-card-overlay" style="opacity:0;transition:opacity 0.2s"></div>
+    <div class="img-card-actions" style="opacity:0;transition:opacity 0.2s">
+      <div class="img-act-btn" onclick="regenSingle(${idx},'${encodeURIComponent(prompt)}')">↺ New</div>
+      <div class="img-act-btn" onclick="downloadImg('${url}',${idx})">↓ Save</div>
+      <div class="img-act-btn" onclick="openImgFull('${url}')">⤢ Full</div>
+    </div>`;
+  showToast('Generating a fresh image...');
+}
+
+function openImgFull(url) {
+  window.open(url, '_blank');
+}
+
+async function downloadImg(url, idx) {
+  showToast('Downloading image...');
+  try {
+    const res = await fetch(url);
+    const blob = await res.blob();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `voiceforge-image-${idx + 1}-${Date.now()}.jpg`;
+    a.click();
+    showToast('Image saved!');
+  } catch(e) {
+    // Fallback: open in new tab
+    window.open(url, '_blank');
+    showToast('Opening image in new tab — right click to save');
+  }
+}
+
+// ══════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════
+function updateWordCount() {
+  const w = document.getElementById('transcript').value.trim().split(/\s+/).filter(w=>w).length;
+  document.getElementById('wc').textContent = w + ' words';
+  document.getElementById('stat-words').textContent = w;
+}
+document.getElementById('transcript').addEventListener('input', updateWordCount);
+
+function clearAll() {
+  document.getElementById('transcript').value = '';
+  audioChunks = [];
+  document.getElementById('transcribe-btn').style.display = 'none';
+  updateWordCount();
+  document.getElementById('stat-rec').textContent = '0s';
+  recSeconds = 0;
+}
+
+function loadSample() {
+  document.getElementById('transcript').value = SAMPLES[selectedFmt] || SAMPLES.blog;
+  updateWordCount();
+  showToast('Sample loaded for ' + FORMATS[selectedFmt].label);
+}
+
+function copyOut() {
+  if (!lastOutput) { showToast('Nothing to copy yet!'); return; }
+  navigator.clipboard.writeText(lastOutput).then(() => {
+    const b = document.getElementById('copy-btn');
+    b.textContent = '✓ Copied!';
+    b.classList.add('ok');
+    showToast('Copied to clipboard!');
+    setTimeout(() => { b.textContent = 'Copy'; b.classList.remove('ok'); }, 2000);
+  });
+}
+
+function downloadOut() {
+  if (!lastOutput) { showToast('Nothing to download yet!'); return; }
+  const blob = new Blob([lastOutput], { type: 'text/plain' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'voiceforge-' + selectedFmt + '-' + Date.now() + '.txt';
+  a.click();
+  showToast('Downloaded!');
+}
+
+function escHtml(t) {
+  return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>').replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>');
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!history.length) { el.innerHTML = '<div style="font-size:12px;color:var(--text3)">No content yet.</div>'; return; }
+  el.innerHTML = history.map((h,i) => `
+    <div class="hist-item" onclick="loadHistory(${i})">
+      <div class="hist-fmt">${h.fmt} · ${h.ts.toLocaleTimeString()}</div>
+      <div class="hist-preview">${h.topic}</div>
+    </div>`).join('');
+}
+
+function loadHistory(i) {
+  const h = history[i];
+  lastOutput = h.content;
+  document.getElementById('out-area').innerHTML = `<div class="out-content">${escHtml(h.content)}</div>`;
+  document.getElementById('out-lbl').textContent = h.fmt + ' — Loaded from history';
+  document.getElementById('output-zone').classList.add('ready');
+  document.getElementById('capcut-btn').classList.add('visible');
+  updateFmtPanels();
+  showPanel('studio');
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Enter key on setup
+document.getElementById('api-key-input').addEventListener('keydown', e => { if(e.key==='Enter') launchApp(); });
+
+// ══════════════════════════════════════════════
+// GENERATE IDEAS — auto-fills creative detail
+// ══════════════════════════════════════════════
+async function generateIdeas() {
+  const raw = document.getElementById('transcript').value.trim();
+  if (!raw || raw.length < 20) { showToast('Add some content first — record or type an idea'); return; }
+
+  const btn = document.getElementById('gen-ideas-btn');
+  btn.disabled = true; btn.textContent = '⏳ Thinking...';
+  const panel = document.getElementById('ideas-panel');
+  const content = document.getElementById('ideas-content');
+  panel.classList.add('on');
+  content.innerHTML = `<div class="fep-loading"><div class="loading-bars" style="transform:scale(0.7)"><div class="lb"></div><div class="lb"></div><div class="lb"></div><div class="lb"></div></div>Generating creative ideas...</div>`;
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + GROQ_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 600,
+        temperature: 0.9,
+        messages: [{
+          role: 'system',
+          content: 'You analyze raw content and generate specific creative detail suggestions for a content creator. Return ONLY valid JSON, no other text, no markdown code blocks.'
+        }, {
+          role: 'user',
+          content: `Analyze this raw content and suggest specific creative details for turning it into a ${FORMATS[selectedFmt].label}.
+
+Raw content: "${raw.substring(0, 500)}"
+
+Return this exact JSON structure:
+{
+  "title": "A specific compelling title or topic (not generic)",
+  "audience": "Specific target audience description",
+  "style": "One of: conversational and engaging | bold, direct and provocative | educational and authoritative | storytelling and narrative | inspirational and motivational | professional and formal",
+  "keyPoints": "- Specific point 1\\n- Specific point 2\\n- Specific point 3\\n- Specific point 4",
+  "instructions": "2-3 specific formatting or tone instructions",
+  "altTitles": ["Alternative title 1", "Alternative title 2", "Alternative title 3"]
+}`
+        }]
+      })
+    });
+
+    const data = await res.json();
+    let ideas = {};
+    try {
+      const raw2 = (data.choices?.[0]?.message?.content || '{}').replace(/```json|```/g, '').trim();
+      ideas = JSON.parse(raw2);
+    } catch(e) {
+      throw new Error('Could not parse suggestions — try again');
+    }
+
+    content.innerHTML = `
+      <div class="idea-row" onclick="applyIdea('detail-topic','${escAttr(ideas.title || '')}')">
+        <div class="idea-row-lbl">Title</div>
+        <div class="idea-row-val">${escHtml(ideas.title || '')}</div>
+        <button class="idea-apply-btn">Apply</button>
+      </div>
+      ${ideas.altTitles?.length ? `<div class="idea-row" style="flex-direction:column;align-items:flex-start;gap:6px">
+        <div class="idea-row-lbl" style="margin-bottom:2px">Alt Titles</div>
+        ${ideas.altTitles.map(t => `<div style="display:flex;align-items:center;gap:8px;width:100%"><div class="idea-row-val">${escHtml(t)}</div><button class="idea-apply-btn" onclick="event.stopPropagation();applyIdea('detail-topic','${escAttr(t)}')">Apply</button></div>`).join('')}
+      </div>` : ''}
+      <div class="idea-row" onclick="applyIdea('detail-audience','${escAttr(ideas.audience || '')}')">
+        <div class="idea-row-lbl">Audience</div>
+        <div class="idea-row-val">${escHtml(ideas.audience || '')}</div>
+        <button class="idea-apply-btn">Apply</button>
+      </div>
+      <div class="idea-row" onclick="applyIdea('detail-points','${escAttr(ideas.keyPoints || '')}')">
+        <div class="idea-row-lbl">Key Points</div>
+        <div class="idea-row-val" style="white-space:pre-line">${escHtml(ideas.keyPoints || '')}</div>
+        <button class="idea-apply-btn">Apply</button>
+      </div>
+      <div class="idea-row" onclick="applyIdea('detail-instructions','${escAttr(ideas.instructions || '')}')">
+        <div class="idea-row-lbl">Instructions</div>
+        <div class="idea-row-val">${escHtml(ideas.instructions || '')}</div>
+        <button class="idea-apply-btn">Apply</button>
+      </div>
+      <button class="ideas-apply-all" onclick="applyAllIdeas(${JSON.stringify(ideas).replace(/"/g,'&quot;')})">✦ Apply All Suggestions</button>`;
+
+    showToast('Ideas generated — click any row to apply ✓');
+  } catch(e) {
+    content.innerHTML = `<div style="font-size:12px;color:var(--coral);padding:8px 0">Could not generate ideas: ${e.message}</div>`;
+  }
+  btn.disabled = false; btn.textContent = '✦ Generate Ideas';
+}
+
+function applyIdea(fieldId, value) {
+  const el = document.getElementById(fieldId);
+  if (!el) return;
+  el.value = value.replace(/\\n/g, '\n');
+  showToast('Applied ✓');
+}
+
+function applyAllIdeas(ideas) {
+  if (ideas.title) document.getElementById('detail-topic').value = ideas.title;
+  if (ideas.audience) document.getElementById('detail-audience').value = ideas.audience;
+  if (ideas.keyPoints) document.getElementById('detail-points').value = ideas.keyPoints.replace(/\\n/g, '\n');
+  if (ideas.instructions) document.getElementById('detail-instructions').value = ideas.instructions;
+  if (ideas.style) {
+    const sel = document.getElementById('detail-style');
+    for (let o of sel.options) { if (o.value === ideas.style) { sel.value = ideas.style; break; } }
+  }
+  document.getElementById('ideas-panel').classList.remove('on');
+  showToast('All suggestions applied! ✓');
+}
+
+function escAttr(str) {
+  return (str || '').replace(/'/g, '&#39;').replace(/"/g, '&quot;').replace(/\n/g, '\\n');
+}
+
+// ══════════════════════════════════════════════
+// BOOK PLANNER
+// ══════════════════════════════════════════════
+const BOOK_ACTIONS = {
+  titles: {
+    label: 'Book Title Suggestions',
+    prompt: (content, topic) => `Based on this book chapter content, suggest 8 compelling book titles. Make them specific, memorable, and marketable. Include subtitle options. Format each as:\n\nTitle: [Main Title]\nSubtitle: [Subtitle]\nWhy it works: [1 sentence]\n\nChapter content: "${content.substring(0,600)}"\nTopic: ${topic || 'as identified from content'}`
+  },
+  outline: {
+    label: 'Chapter Outline',
+    prompt: (content, topic) => `Create a detailed outline for this chapter. Include: Chapter title, key premise, 5-8 main sections with sub-points, opening hook suggestion, and closing summary. Make it specific to the content.\n\nContent: "${content.substring(0,600)}"`
+  },
+  toc: {
+    label: 'Full Table of Contents',
+    prompt: (content, topic) => `Based on this chapter, design a complete table of contents for the full book. Create 10-15 chapters with: chapter number, chapter title, 2-sentence description, and key topics covered. Make the arc logical and compelling.\n\nThis chapter's content: "${content.substring(0,600)}"\nTopic: ${topic || 'inferred from content'}`
+  },
+  next: {
+    label: 'Next Chapter Draft',
+    prompt: (content, topic) => `Based on this chapter, write the opening of the NEXT chapter — including a chapter title, a compelling opening paragraph that hooks the reader from where the last chapter left off, and an outline of what this next chapter will cover. Keep the same voice and style.\n\nPrevious chapter: "${content.substring(0,600)}"`
+  }
+};
+
+async function bookAction(type) {
+  if (!lastOutput) { showToast('Forge a book chapter first'); return; }
+  const topic = document.getElementById('detail-topic').value.trim();
+  const action = BOOK_ACTIONS[type];
+  const btn = document.getElementById('book-btn-' + type);
+  const result = document.getElementById('book-result');
+  const resultContent = document.getElementById('book-result-content');
+  const resultLbl = document.getElementById('book-result-lbl');
+
+  document.querySelectorAll('.fep-btn[id^="book-btn"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.disabled = true;
+
+  result.classList.add('on');
+  resultLbl.textContent = action.label;
+  resultContent.innerHTML = `<div class="fep-loading"><div class="loading-bars" style="transform:scale(0.7)"><div class="lb"></div><div class="lb"></div><div class="lb"></div><div class="lb"></div></div>Generating ${action.label.toLowerCase()}...</div>`;
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + GROQ_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 2000,
+        temperature: 0.85,
+        messages: [
+          { role: 'system', content: 'You are a literary editor and bestselling book strategist. You help authors develop compelling books with strong structure, memorable titles, and well-organized chapters. Be specific and detailed — no generic advice.' },
+          { role: 'user', content: action.prompt(lastOutput, topic) }
+        ]
+      })
+    });
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || 'No response received.';
+    resultContent.innerHTML = `<div style="font-size:12px;color:var(--text);line-height:1.85;white-space:pre-wrap">${escHtml(text)}</div>`;
+    showToast(action.label + ' ready ✓');
+  } catch(e) {
+    resultContent.innerHTML = `<div style="font-size:12px;color:var(--coral)">Error: ${e.message}</div>`;
+  }
+  btn.disabled = false;
+}
+
+// ══════════════════════════════════════════════
+// BUSINESS DOC ASSISTANT
+// ══════════════════════════════════════════════
+const BIZ_ACTIONS = {
+  more: {
+    label: 'Expanded Document',
+    prompt: (content) => `This business document needs more depth. Expand it significantly by: adding more detailed analysis to each section, including specific data placeholders (e.g. [INSERT Q3 REVENUE DATA]), adding a Risk Assessment section, strengthening the recommendations with implementation steps, and adding a Metrics & KPIs section. Keep the same professional tone.\n\nOriginal document:\n${content.substring(0,800)}`
+  },
+  suggest: {
+    label: 'AI Suggestions & Improvements',
+    prompt: (content) => `Review this business document as a senior consultant and provide specific, actionable improvement suggestions. Format as:\n\n**STRENGTHS** (what works well)\n**GAPS** (what's missing or weak)\n**SPECIFIC IMPROVEMENTS** (numbered, actionable changes)\n**QUESTIONS TO ANSWER** (things the reader will want to know that aren't addressed)\n**TONE & CLARITY** (feedback on writing quality)\n\nDocument:\n${content.substring(0,800)}`
+  },
+  exec: {
+    label: 'Executive Summary',
+    prompt: (content) => `Write a standalone Executive Summary for this business document. It should be 200-300 words, cover the situation, key findings, recommendation, and expected outcome. Write it so a busy executive can read it in 60 seconds and know whether to approve this.\n\nFull document:\n${content.substring(0,800)}`
+  },
+  email: {
+    label: 'Email Version',
+    prompt: (content) => `Convert this business document into a professional email that presents the same information in email format. Include: subject line, brief context opener, 3-4 key points as scannable bullets, one clear ask or next step, and a professional close. Max 250 words.\n\nDocument:\n${content.substring(0,800)}`
+  }
+};
+
+async function bizAction(type) {
+  if (!lastOutput) { showToast('Forge a business document first'); return; }
+  const action = BIZ_ACTIONS[type];
+  const btn = document.getElementById('biz-btn-' + type);
+  const result = document.getElementById('biz-result');
+  const resultContent = document.getElementById('biz-result-content');
+  const resultLbl = document.getElementById('biz-result-lbl');
+
+  document.querySelectorAll('.fep-btn[id^="biz-btn"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.disabled = true;
+
+  result.classList.add('on');
+  resultLbl.textContent = action.label;
+  resultContent.innerHTML = `<div class="fep-loading"><div class="loading-bars" style="transform:scale(0.7)"><div class="lb"></div><div class="lb"></div><div class="lb"></div><div class="lb"></div></div>Generating ${action.label.toLowerCase()}...</div>`;
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + GROQ_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 2000,
+        temperature: 0.75,
+        messages: [
+          { role: 'system', content: 'You are a senior business strategist and corporate writer. You write clear, persuasive, professional business documents that get approved. Be specific, data-oriented, and action-focused.' },
+          { role: 'user', content: action.prompt(lastOutput) }
+        ]
+      })
+    });
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || 'No response received.';
+    resultContent.innerHTML = `<div style="font-size:12px;color:var(--text);line-height:1.85;white-space:pre-wrap">${escHtml(text)}</div>`;
+    showToast(action.label + ' ready ✓');
+  } catch(e) {
+    resultContent.innerHTML = `<div style="font-size:12px;color:var(--coral)">Error: ${e.message}</div>`;
+  }
+  btn.disabled = false;
+}
+
+function copyFepResult(type) {
+  const el = document.getElementById(type + '-result-content');
+  if (!el) return;
+  navigator.clipboard.writeText(el.innerText).then(() => showToast('Copied ✓'));
+}
+
+// Show/hide format extra panels based on selected format
+// ══════════════════════════════════════════════
+// STREAMER STUDIO
+// ══════════════════════════════════════════════
+const STREAMER_ACTIONS = {
+  clips: {
+    label: 'Viral Clip Titles',
+    prompt: (content, name) => `Based on this stream content, generate 15 viral clip title options. Make them punchy, curiosity-driving, and platform-native for TikTok, YouTube Shorts, and Twitch clips. Include a mix of: reaction titles, hype titles, funny/meme titles, achievement titles, and fail titles. Each title should be under 60 characters. Format as a numbered list with the category in brackets.
+
+${name ? `Streamer: ${name}` : ''}
+Stream content: "${content.substring(0, 600)}"
+
+Also suggest: 5 hashtag sets (3-5 hashtags each) optimized for TikTok and YouTube Shorts discoverability.`
+  },
+  schedule: {
+    label: 'Stream Schedule',
+    prompt: (content, name) => `Create a complete weekly stream schedule for this streamer. Based on their content style, suggest an optimal streaming schedule that maximizes viewership. Include:
+
+**WEEKLY SCHEDULE** — Day, time slot (with timezone note), content type, expected duration, and a short description for each stream day
+
+**STREAM THEMES** — Give each day of the week a themed identity (e.g. "Midnight Mondays", "Throwback Thursdays") to build community habit
+
+**SCHEDULE GRAPHIC TEXT** — Pre-written text for a schedule graphic or panel: concise, visual, shareable
+
+**CONSISTENCY TIPS** — 3 specific tips for this streamer to stick to their schedule and grow
+
+${name ? `Streamer: ${name}` : ''}
+Their content / vibe: "${content.substring(0, 500)}"`
+  },
+  about: {
+    label: 'Channel About Page',
+    prompt: (content, name) => `Write a complete, compelling channel About / Bio page for this streamer. This should work for both Twitch and YouTube. Include:
+
+**SHORT BIO** (2-3 sentences — who they are, what they stream, what makes them unique — for the channel description header)
+
+**FULL ABOUT** (150-200 words — their streaming story, personality, community vibe, what new viewers can expect, schedule mention, and community invite)
+
+**CONTENT PILLARS** — 4-5 bullet points describing what their channel is about
+
+**STREAMER FACTS** — 5 fun/interesting facts about the streamer formatted as a quick-read list
+
+**CTA BLOCK** — Follow/Subscribe call to action, social media invite, Discord invite placeholder
+
+Make it authentic, not corporate. Match the streamer's personality and energy.
+
+${name ? `Streamer: ${name}` : ''}
+Their style / content: "${content.substring(0, 500)}"`
+  },
+  rules: {
+    label: 'Chat Rules',
+    prompt: (content, name) => `Write a complete chat rules set for this streamer's community. Make them clear, firm, but fun — not robotic or scary. Include:
+
+**CHAT RULES** — 8-10 numbered rules with a short explanation for each. Cover: respect, spam, self-promo, spoilers, politics/sensitive topics, hate speech, backseat gaming, and any content-specific rules.
+
+**SHORT VERSION** — A condensed 1-sentence-per-rule version for a panel or command
+
+**WELCOME MESSAGE** — A warm bot welcome message for new viewers (2-3 sentences, friendly, mentions the rules exist)
+
+**TIMEOUT WARNING MESSAGE** — What the bot or mods say before timing someone out (firm but fair)
+
+**MOD GUIDELINES** — 5 bullet points for mods on how to handle common situations
+
+${name ? `Streamer: ${name}` : ''}
+Streamer vibe / content: "${content.substring(0, 500)}"`
+  },
+  panels: {
+    label: 'Channel Panels',
+    prompt: (content, name) => `Design a complete set of Twitch/YouTube channel panels for this streamer. For each panel provide: the panel title, the full text content, and any relevant link placeholders. Create these panels:
+
+**ABOUT ME PANEL** — Personal intro, personality, streaming origin story (100 words max)
+**SCHEDULE PANEL** — Days/times formatted cleanly
+**PC / SETUP PANEL** — Generic setup template with [PLACEHOLDER] fields
+**DONATE / SUPPORT PANEL** — Thank you message + support link placeholder
+**SOCIAL MEDIA PANEL** — Links list with icons reference
+**DISCORD PANEL** — Community invite with 2-sentence hype
+**SUBSCRIBE PANEL** — Benefits of subscribing listed as bullets
+**RULES PANEL** — Mini rules (5 max, brief)
+**MERCH PANEL** (if relevant) — Shop link + tagline
+
+Format each panel with a clear header and copy ready to paste directly.
+
+${name ? `Streamer: ${name}` : ''}
+Content / vibe: "${content.substring(0, 400)}"`
+  },
+  commands: {
+    label: 'Chat Commands',
+    prompt: (content, name) => `Create a complete set of chat commands for this streamer's Nightbot, StreamElements, or Streamlabs chatbot. For each command provide: the command trigger, the response text, cooldown suggestion, and permission level (everyone / subscriber / mod).
+
+Include these command types:
+
+**INFO COMMANDS** — !schedule, !discord, !socials, !donate, !setup, !merch
+**FUN COMMANDS** — 5 personality-specific fun commands based on their content (e.g. !clip, !hype, !lose, !win, !rage)
+**COMMUNITY COMMANDS** — !lurk, !unlurk, !love, !quote (with 3 sample quotes)
+**GAME COMMANDS** — !game, !title, !uptime
+**CUSTOM COMMANDS** — 3 streamer-specific commands based on their content/memes/catchphrases
+**MOD COMMANDS** — !ban, !timeout, !permit descriptions
+
+Format as: \`!command\` → "Response text" | Cooldown: Xs | Who: everyone/sub/mod
+
+${name ? `Streamer: ${name}` : ''}
+Content / personality: "${content.substring(0, 400)}"`
+  }
+};
+
+async function streamerAction(type) {
+  if (!lastOutput) { showToast('Forge a Streamer Pack first'); return; }
+  const action = STREAMER_ACTIONS[type];
+  const name = USER_NAME || document.getElementById('detail-topic').value.trim();
+  const btn = document.getElementById('str-btn-' + type);
+  const result = document.getElementById('streamer-result');
+  const resultContent = document.getElementById('streamer-result-content');
+  const resultLbl = document.getElementById('streamer-result-lbl');
+
+  document.querySelectorAll('.fep-btn[id^="str-btn"]').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  btn.disabled = true;
+
+  result.classList.add('on');
+  resultLbl.textContent = action.label;
+  resultContent.innerHTML = `<div class="fep-loading"><div class="loading-bars" style="transform:scale(0.7)"><div class="lb"></div><div class="lb"></div><div class="lb"></div><div class="lb"></div></div>Generating ${action.label.toLowerCase()}...</div>`;
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + GROQ_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        max_tokens: 2500,
+        temperature: 0.88,
+        messages: [
+          {
+            role: 'system',
+            content: `You are an elite streaming growth strategist and copywriter who has helped streamers grow from 0 to 100k+ followers on Twitch, YouTube Live, and Kick. You know platform culture deeply — you write copy that feels native, not corporate. Your output is always specific, actionable, and ready to use. Never write generic filler — every word should be tailored to this specific streamer's voice and content.`
+          },
+          { role: 'user', content: action.prompt(lastOutput, name) }
+        ]
+      })
+    });
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || 'No response received.';
+    resultContent.innerHTML = `<div style="font-size:12px;color:var(--text);line-height:1.85;white-space:pre-wrap">${escHtml(text)}</div>`;
+    showToast(action.label + ' ready ✓');
+  } catch(e) {
+    resultContent.innerHTML = `<div style="font-size:12px;color:var(--coral)">Error: ${e.message}</div>`;
+  }
+  btn.disabled = false;
+}
+
+function updateFmtPanels() {
+  document.getElementById('book-panel').classList.toggle('on', selectedFmt === 'book' && !!lastOutput);
+  document.getElementById('biz-panel').classList.toggle('on', selectedFmt === 'biz' && !!lastOutput);
+  document.getElementById('streamer-panel').classList.toggle('on', selectedFmt === 'streamer' && !!lastOutput);
+}
+
+// ══════════════════════════════════════════════
+// CAPCUT COPY & LAUNCH
+// ══════════════════════════════════════════════
+async function launchCapCut() {
+  if (!lastOutput) { showToast('Forge content first!'); return; }
+  try {
+    await navigator.clipboard.writeText(lastOutput);
+    const copied = document.getElementById('capcut-copied');
+    copied.textContent = '✓ Script copied!';
+    setTimeout(() => copied.textContent = '', 2500);
+  } catch(e) {}
+  showToast('Script copied — opening CapCut! ✂️');
+  setTimeout(() => window.open('https://www.capcut.com', '_blank'), 500);
+}
+
+// Show capcut button after forge completes (hook into existing output render)
+const _origForge = forge;
+forge = async function() {
+  await _origForge.apply(this, arguments);
+  if (lastOutput) document.getElementById('capcut-btn').classList.add('visible');
+};
+
+// ══════════════════════════════════════════════
+// MOBILE PANEL NAVIGATION
+// ══════════════════════════════════════════════
+function showPanelMobile(id) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.btab').forEach(t => t.classList.remove('on'));
+  const panel = document.getElementById('panel-' + id);
+  const tab = document.getElementById('btab-' + id);
+  if (panel) panel.classList.add('active');
+  if (tab) tab.classList.add('on');
+}
+
+// Sync mobile tabs when desktop sidebar nav is clicked
+const _origShowPanel = showPanel;
+showPanel = function(id) {
+  _origShowPanel.apply(this, arguments);
+  document.querySelectorAll('.btab').forEach(t => t.classList.remove('on'));
+  const tab = document.getElementById('btab-' + id);
+  if (tab) tab.classList.add('on');
+};
+
+// ══════════════════════════════════════════════
+// PWA — INSTALL PROMPT
+// ══════════════════════════════════════════════
+let deferredInstall = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstall = e;
+  document.getElementById('install-bar').classList.add('visible');
+});
+async function installApp() {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  const { outcome } = await deferredInstall.userChoice;
+  if (outcome === 'accepted') {
+    document.getElementById('install-bar').classList.remove('visible');
+    showToast('VoiceForge installed! ✓');
+  }
+  deferredInstall = null;
+}
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-bar').classList.remove('visible');
+  showToast('VoiceForge is now installed on your device! 🎉');
+});
+
+// ══════════════════════════════════════════════
+// PWA — MANIFEST (inline blob)
+// ══════════════════════════════════════════════
+const manifest = {
+  name: 'VoiceForge Studio',
+  short_name: 'VoiceForge',
+  description: 'Speak your ideas — AI transforms them into content',
+  start_url: './',
+  display: 'standalone',
+  orientation: 'portrait-primary',
+  background_color: '#080c18',
+  theme_color: '#ff6b2b',
+  icons: [
+    { src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='115' fill='%23080c18'/%3E%3Crect x='188' y='80' width='136' height='220' rx='68' fill='%23ff6b2b'/%3E%3Cpath d='M140 240c0 64 52 116 116 116s116-52 116-116' stroke='%23ff9f43' stroke-width='28' stroke-linecap='round' fill='none'/%3E%3Cline x1='256' y1='356' x2='256' y2='420' stroke='%23ff6b2b' stroke-width='28' stroke-linecap='round'/%3E%3Cline x1='188' y1='420' x2='324' y2='420' stroke='%23ff6b2b' stroke-width='28' stroke-linecap='round'/%3E%3C/svg%3E", sizes:"512x512", type:"image/svg+xml", purpose:"any maskable" },
+    { src:"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%23080c18'/%3E%3Crect x='70' y='28' width='52' height='84' rx='26' fill='%23ff6b2b'/%3E%3Cpath d='M48 92c0 26 21 48 48 48s48-22 48-48' stroke='%23ff9f43' stroke-width='12' stroke-linecap='round' fill='none'/%3E%3Cline x1='96' y1='140' x2='96' y2='164' stroke='%23ff6b2b' stroke-width='12' stroke-linecap='round'/%3E%3Cline x1='68' y1='164' x2='124' y2='164' stroke='%23ff6b2b' stroke-width='12' stroke-linecap='round'/%3E%3C/svg%3E", sizes:"192x192", type:"image/svg+xml", purpose:"any maskable" }
+  ],
+  shortcuts: [{ name:"New Recording", short_name:"Record", url:"./?action=record" }]
+};
+try {
+  const mBlob = new Blob([JSON.stringify(manifest)], { type:'application/json' });
+  document.getElementById('pwa-manifest').href = URL.createObjectURL(mBlob);
+} catch(e) {}
+
+// ══════════════════════════════════════════════
+// PWA — SERVICE WORKER (inline blob)
+// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// PWA — SERVICE WORKER
+// Registers sw.js when hosted on a server (HTTPS required).
+// No error when running locally — SW simply won't activate.
+// Place sw.js in the same folder as this HTML file when deploying.
+// ══════════════════════════════════════════════
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('VoiceForge SW registered ✓', reg.scope))
+      .catch(e => console.log('SW skipped (needs sw.js file):', e.message));
+  });
+}
+
+// ══════════════════════════════════════════════
+// AUTO-KEY BOOTSTRAP — the setup screen has been removed; the key comes
+// from (1) the dashboard's localStorage (same origin, key 'settings'),
+// (2) postMessage from a parent iframe, or (3) ?key=gsk_... in the URL.
+// ══════════════════════════════════════════════
+(function bootstrapKey() {
+  // 1) localStorage: dashboard stores its config under 'settings' as JSON.
+  try {
+    const raw = localStorage.getItem('settings');
+    if (raw) {
+      const s = JSON.parse(raw) || {};
+      const k = (s.groqApiKey || s.groqApiKey2 || '').trim();
+      if (k.startsWith('gsk_')) {
+        GROQ_KEY = k;
+        USER_NAME = (s.userName || s.ownerName || s.fullName || '').trim();
+      }
+    }
+  } catch (_) {}
+  // 2) URL ?key= override (handy for direct bookmarks)
+  try {
+    const m = (location.search || '').match(/[?&]key=(gsk_[^&#]+)/i);
+    if (m) GROQ_KEY = decodeURIComponent(m[1]);
+  } catch (_) {}
+})();
+
+// 3) Parent iframe handshake — overrides bootstrap if a parent posts a key.
+window.addEventListener('message', function (e) {
+  if (!e || !e.data || e.data.type !== 'voiceforge:set-key') return;
+  if (window.parent === window || e.source !== window.parent) return;
+  const key = (e.data.key || '').trim();
+  if (!key || !key.startsWith('gsk_')) return;
+  GROQ_KEY = key;
+  if (e.data.name) USER_NAME = String(e.data.name).trim();
+});
+
+if (window.parent !== window) {
+  try { window.parent.postMessage({ type: 'voiceforge:ready' }, '*'); } catch (_) {}
+}
+
+// Setup screen is permanently gone — neutralize the legacy reset entrypoint.
+window.resetSetup = function () {};</script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+      <div id="confidence-pathway-page" class="page hidden">
+        <div class="page-header">
+          <h1 class="page-title">Confidence &amp; Leadership</h1>
+          <p class="page-subtitle">Build your leadership identity and show up fully</p>
+        </div>
+        <div class="content">
+          <div class="path-tabs-container">
+            <div class="path-tabs-nav">
+              <button class="path-tab active" onclick="pTab('conf','assessment',this)">Assessment</button>
+              <button class="path-tab" onclick="pTab('conf','profile',this)">Your Profile</button>
+              <button class="path-tab" onclick="pTab('conf','challenges',this)">Weekly Challenges</button>
+              <button class="path-tab" onclick="pTab('conf','library',this)">Mindset Library</button>
+            </div>
+            <div id="conf-tab-assessment" class="path-tab-content active">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:4px;">Leadership Confidence Assessment</h3>
+                <p style="color:var(--gray-500);font-size:14px;margin-bottom:20px;">Rate yourself honestly on a scale of 1–5 in each area.</p>
+                <form id="conf-assess-form" onsubmit="submitConfAssessment(event)">
+                  <div class="assess-q">
+                    <label>1. I speak up and share my ideas in groups.</label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="voice" value="1" required> 1 — Never</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="voice" value="2"> 2 — Rarely</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="voice" value="3"> 3 — Sometimes</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="voice" value="4"> 4 — Often</label>
+                      <label class="assess-option" style="min-width:80px"><input type="radio" name="voice" value="5"> 5 — Always</label>
+                    </div>
+                  </div>
+                  <div class="assess-q">
+                    <label>2. I set boundaries and say no without guilt.</label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="boundary" value="1" required> 1</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="boundary" value="2"> 2</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="boundary" value="3"> 3</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="boundary" value="4"> 4</label>
+                      <label class="assess-option" style="min-width:80px"><input type="radio" name="boundary" value="5"> 5</label>
+                    </div>
+                  </div>
+                  <div class="assess-q">
+                    <label>3. I charge what I'm worth without discounting out of fear.</label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="worth" value="1" required> 1</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="worth" value="2"> 2</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="worth" value="3"> 3</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="worth" value="4"> 4</label>
+                      <label class="assess-option" style="min-width:80px"><input type="radio" name="worth" value="5"> 5</label>
+                    </div>
+                  </div>
+                  <div class="assess-q">
+                    <label>4. I recover quickly from setbacks and criticism.</label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="resilience" value="1" required> 1</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="resilience" value="2"> 2</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="resilience" value="3"> 3</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="resilience" value="4"> 4</label>
+                      <label class="assess-option" style="min-width:80px"><input type="radio" name="resilience" value="5"> 5</label>
+                    </div>
+                  </div>
+                  <div class="assess-q">
+                    <label>5. I delegate and trust others to help me.</label>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="delegate" value="1" required> 1</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="delegate" value="2"> 2</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="delegate" value="3"> 3</label>
+                      <label class="assess-option" style="min-width:70px"><input type="radio" name="delegate" value="4"> 4</label>
+                      <label class="assess-option" style="min-width:80px"><input type="radio" name="delegate" value="5"> 5</label>
+                    </div>
+                  </div>
+                  <button type="submit" class="btn btn-solid" style="margin-top:8px;">See My Leadership Profile →</button>
+                </form>
+                <div id="conf-assess-results" style="display:none;margin-top:24px;"></div>
+              </div>
+            </div>
+            <div id="conf-tab-profile" class="path-tab-content">
+              <div class="card" id="conf-profile-display">
+                <p style="color:var(--gray-400);text-align:center;padding:30px;">Complete the Assessment tab to generate your Leadership Profile.</p>
+              </div>
+            </div>
+            <div id="conf-tab-challenges" class="path-tab-content">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:4px;">Weekly Leadership Challenges</h3>
+                <p style="color:var(--gray-500);font-size:14px;margin-bottom:20px;">One action per week. Small moves build massive confidence.</p>
+                <div class="strategy-card">
+                  <h3>Week 1: Speak First</h3>
+                  <p style="font-size:13px;color:var(--gray-600);margin-bottom:10px;">In your next meeting or group setting, speak up first or second — before you talk yourself out of it. Your voice matters.</p>
+                  <div style="font-size:12px;font-weight:600;color:var(--accent);background:rgba(88,67,220,0.07);padding:8px 12px;border-radius:6px;">Journal prompt: What did it feel like? What reaction did you get?</div>
+                </div>
+                <div class="strategy-card">
+                  <h3>Week 2: Raise Your Rate</h3>
+                  <p style="font-size:13px;color:var(--gray-600);margin-bottom:10px;">Identify one service you're undercharging for and increase the price by at least 20%. Send an updated proposal or announcement this week.</p>
+                  <div style="font-size:12px;font-weight:600;color:var(--accent);background:rgba(88,67,220,0.07);padding:8px 12px;border-radius:6px;">Journal prompt: What fear came up? Did anyone actually leave?</div>
+                </div>
+                <div class="strategy-card">
+                  <h3>Week 3: Say No Once</h3>
+                  <p style="font-size:13px;color:var(--gray-600);margin-bottom:10px;">Decline one request, opportunity, or commitment that doesn't align with your goals — without over-explaining or apologizing.</p>
+                  <div style="font-size:12px;font-weight:600;color:var(--accent);background:rgba(88,67,220,0.07);padding:8px 12px;border-radius:6px;">Journal prompt: How did it feel? What opened up when you said no?</div>
+                </div>
+                <div class="strategy-card">
+                  <h3>Week 4: Ask for the Room</h3>
+                  <p style="font-size:13px;color:var(--gray-600);margin-bottom:10px;">Request a speaking opportunity, panel seat, podcast interview, or collaboration with someone whose platform is bigger than yours.</p>
+                  <div style="font-size:12px;font-weight:600;color:var(--accent);background:rgba(88,67,220,0.07);padding:8px 12px;border-radius:6px;">Journal prompt: Did they say yes? What happened when you simply asked?</div>
+                </div>
+              </div>
+            </div>
+            <div id="conf-tab-library" class="path-tab-content">
+              <div class="card">
+                <h3 style="font-size:18px;font-weight:700;margin-bottom:16px;">Mindset Library</h3>
+                <div class="tip-box"><h4>Imposter Syndrome Is a Liar</h4><p>Imposter syndrome — the feeling that you'll be "found out" as incompetent — affects 70% of high achievers. Research by Pauline Clance shows it's most common among high-performing women and people of color. The antidote: collect evidence of competence, not feelings about it. Keep a "wins file" — a list of real accomplishments you can review when doubt surfaces.</p></div>
+                <div class="tip-box"><h4>The Authority Principle</h4><p>People follow those who act like leaders before they're recognized as one. Leadership isn't a title — it's a posture, a voice, a consistency of action. You build authority by: showing up prepared, making decisions, taking responsibility, and doing what you said you'd do. Every time. Authority is earned in small moments, not big announcements.</p></div>
+                <div class="tip-box"><h4>Confidence Is a Skill, Not a Feeling</h4><p>Waiting to feel confident before acting is backwards. Confidence comes from doing the thing — especially when you're afraid. Take the action first. Analyze the result. Adjust. Repeat. Over time, your evidence base grows and the fear shrinks. Act your way into the feeling, not the other way around.</p></div>
+                <div class="tip-box"><h4>The Power of Regulation</h4><p>Leaders who can self-regulate — managing their emotional responses under pressure — are consistently rated higher by their teams. Techniques: box breathing (4-4-4-4 count) before high-stakes conversations, naming the emotion ("I notice I'm feeling anxious"), and creating a pause between stimulus and response. Regulation is a leadership superpower.</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>

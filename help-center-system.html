@@ -30549,6 +30549,38 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
     window.fmRenderSections= fmRenderSections;
   } catch(e) { /* non-fatal */ }
 
+  // Upsert a growing draft of an in-progress manual into Business File / Reports.
+  // fmExpandAll previously only saved at the very end — a minimized/backgrounded
+  // tab, a closed browser, or any interruption mid-generation lost everything
+  // that had already been written, with nothing recoverable. Now every finished
+  // section is saved as it completes, so at worst you lose the ONE section that
+  // was in flight when something interrupted it — never the whole manual.
+  function _fmSaveDraftProgress(id, outline, assembled, sectionsDone) {
+    try {
+      const projName = PROJECTS[_chatProjectKey]?.name || 'AI';
+      const docs = getData('businessFile') || [];
+      const idx = docs.findIndex(d => d.id === id);
+      const doc = {
+        id,
+        type: projName + ' Manual Draft',
+        title: outline.title + ' (in progress — ' + sectionsDone + '/' + outline.sections.length + ')',
+        content: _wrapManualHtml(outline.title + ' (in progress)', assembled),
+        clientId: '', clientName: '',
+        meta: { showInReports: true, partial: true, sections: sectionsDone, totalSections: outline.sections.length, generatedAt: new Date().toISOString() },
+        createdAt: idx > -1 ? docs[idx].createdAt : Date.now(),
+        date: new Date().toISOString().split('T')[0]
+      };
+      if (idx > -1) docs[idx] = doc; else docs.unshift(doc);
+      setData('businessFile', docs);
+    } catch (e) { console.error('[fmSaveDraftProgress]', e); }
+  }
+  function _fmRemoveDraft(id) {
+    try {
+      const docs = getData('businessFile') || [];
+      const idx = docs.findIndex(d => d.id === id);
+      if (idx > -1) { docs.splice(idx, 1); setData('businessFile', docs); }
+    } catch (e) { console.error('[fmRemoveDraft]', e); }
+  }
   async function fmExpandAll() {
     if (!_fmOutline) return;
     const titleInput = document.getElementById('fm-title');
@@ -30559,6 +30591,7 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
     const msgs = document.getElementById('proj-chat-msgs');
     const projName = PROJECTS[_chatProjectKey]?.name || 'AI';
     const sysPrompt = (PROJECT_SYSTEM_PROMPTS[_chatProjectKey] || 'You are an expert.') + _EXECUTION_RULES;
+    const _fmDraftId = (typeof generateId === 'function' ? generateId() : ('draft_' + Date.now()));
 
     const progressBubble = _appendMsg('assistant', '');
     progressBubble.style.maxWidth = '680px';
@@ -30623,8 +30656,8 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
         } catch (e) {
           if (attempts >= 2) {
             if (!confirm('Section ' + (i+1) + ' "' + s.title + '" failed:\n\n' + e.message + '\n\nOK = skip this section · Cancel = abort manual')) {
-              progressBubble.innerHTML = '<div style="color:#dc2626;padding:12px;background:#fef2f2;border-radius:8px">⚠️ Manual generation aborted. Partial content saved as draft.</div>';
-              saveToBusinessFile({ type:projName+' Manual Draft', title: outline.title + ' (partial)', content: _wrapManualHtml(outline.title+' (partial)', assembled), meta:{showInReports:true, partial:true}, skipPortalConfirm:true });
+              progressBubble.innerHTML = '<div style="color:#dc2626;padding:12px;background:#fef2f2;border-radius:8px">⚠️ Manual generation aborted. Everything finished so far (' + i + ' of ' + outline.sections.length + ' sections) is saved as a draft in Business File and Reports.</div>';
+              _fmSaveDraftProgress(_fmDraftId, outline, assembled, i);
               return;
             }
             sectionText = '## ' + s.title + '\n\n_(Section skipped due to error)_\n';
@@ -30632,6 +30665,7 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
         }
       }
       assembled += sectionText.trim() + '\n\n---\n\n';
+      _fmSaveDraftProgress(_fmDraftId, outline, assembled, i + 1);
     }
 
     progressBubble.innerHTML = '⏳ Assembling and saving…';
@@ -30644,6 +30678,7 @@ Decide the section count based on the topic — small SOP = 5-8 sections, full c
       meta: { showInReports: true, source: projName, sections: outline.sections.length, generatedAt: new Date().toISOString() },
       skipPortalConfirm: true
     });
+    _fmRemoveDraft(_fmDraftId);
     window._fmLast = { title: finalTitle, html: finalHtml };
     _fmOutline = null;
     _chatHistory.push({role:'assistant', content:'Generated manual: ' + finalTitle + ' (' + outline.sections.length + ' sections, ~' + Math.round(assembled.length/1000) + 'KB)'});
